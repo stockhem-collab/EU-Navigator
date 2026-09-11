@@ -16,15 +16,21 @@ export default function Header() {
           <span className="text-lg font-bold text-navy-900">Navigator</span>
         </Link>
 
-        <nav className="hidden items-center gap-8 text-sm font-medium text-navy-700 md:flex">
-          <Link href="/#workflow" className="hover:text-navy-900">
-            {t.nav.workflow}
+        <nav className="hidden items-center gap-6 text-sm font-medium text-navy-700 lg:flex">
+          <Link href="/projektbank" className="hover:text-navy-900">
+            {t.nav.projectBank}
           </Link>
-          <Link href="/#personas" className="hover:text-navy-900">
-            {t.nav.personas}
+          <Link href="/eu-databas" className="hover:text-navy-900">
+            {t.nav.euDatabase}
           </Link>
-          <Link href="/#pricing" className="hover:text-navy-900">
-            {t.nav.pricing}
+          <Link href="/referensprojekt" className="hover:text-navy-900">
+            {t.nav.referenceProjects}
+          </Link>
+          <Link href="/projekt" className="hover:text-navy-900">
+            {t.nav.myProjects}
+          </Link>
+          <Link href="/datacenter" className="hover:text-navy-900">
+            {t.nav.datacenter}
           </Link>
         </nav>
 

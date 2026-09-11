@@ -1,4 +1,4 @@
-import { FundingProgram, MatchResult, ProjectInput } from "@/lib/types";
+import { FundingCall, FundingProgram, ProjectInput } from "@/lib/types";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 
 export interface ProjectLogicRow {
@@ -14,7 +14,11 @@ export interface ReviewerNote {
   text_en: string;
 }
 
-export function generateProjectLogic(project: ProjectInput, program: FundingProgram): ProjectLogicRow[] {
+export function generateProjectLogic(
+  project: ProjectInput,
+  call: FundingCall,
+  program: FundingProgram
+): ProjectLogicRow[] {
   const sectorSv = sectorLabel(project.sector, "sv");
   const sectorEn = sectorLabel(project.sector, "en");
   return [
@@ -39,8 +43,8 @@ export function generateProjectLogic(project: ProjectInput, program: FundingProg
     {
       label_sv: "Outputs",
       label_en: "Outputs",
-      content_sv: `Genomförda leveranser kopplade till ${program.name_sv} och programmets stödberättigade aktiviteter.`,
-      content_en: `Delivered outputs aligned with ${program.shortName}'s eligible activities.`,
+      content_sv: `Genomförda leveranser kopplade till ${call.title_sv} och utlysningens stödberättigade aktiviteter.`,
+      content_en: `Delivered outputs aligned with ${call.title_en}'s eligible activities.`,
     },
     {
       label_sv: "Effekter (outcomes)",
@@ -57,16 +61,16 @@ export function generateProjectLogic(project: ProjectInput, program: FundingProg
   ];
 }
 
-export function generateReviewerNotes(project: ProjectInput, program: FundingProgram): ReviewerNote[] {
+export function generateReviewerNotes(project: ProjectInput, call: FundingCall): ReviewerNote[] {
   const notes: ReviewerNote[] = [];
 
-  if (program.requiresPartnership && !project.hasInternationalPartner) {
+  if (call.requiresPartnership && !project.hasInternationalPartner) {
     notes.push({
       type: "warning",
-      text_sv: `${program.shortName} kräver gränsöverskridande samarbete. Projektet saknar för närvarande en internationell partner — lägg till detta innan ansökan lämnas in.`,
-      text_en: `${program.shortName} requires cross-border cooperation. The project currently lacks an international partner — add one before submitting.`,
+      text_sv: `Utlysningen kräver gränsöverskridande samarbete. Projektet saknar för närvarande en internationell partner — lägg till detta innan ansökan lämnas in.`,
+      text_en: `This call requires cross-border cooperation. The project currently lacks an international partner — add one before submitting.`,
     });
-  } else if (program.requiresPartnership) {
+  } else if (call.requiresPartnership) {
     notes.push({
       type: "positive",
       text_sv: "Partnerskapskravet är uppfyllt.",
@@ -91,8 +95,8 @@ export function generateReviewerNotes(project: ProjectInput, program: FundingPro
   if (project.sector === "climate" || project.sector === "energy") {
     notes.push({
       type: "positive",
-      text_sv: "Projektets klimat-/energimål har en stark koppling till programmets miljöprioriteringar.",
-      text_en: "The project's climate/energy goals have a strong link to the programme's environmental priorities.",
+      text_sv: "Projektets klimat-/energimål har en stark koppling till utlysningens miljöprioriteringar.",
+      text_en: "The project's climate/energy goals have a strong link to the call's environmental priorities.",
     });
   }
 

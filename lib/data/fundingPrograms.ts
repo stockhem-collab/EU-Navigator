@@ -1,8 +1,9 @@
 import { FundingProgram } from "@/lib/types";
 
-// Illustrative demo data modeled on the real structure of EU funding
-// programmes. Not live data — see the EU Funding & Tenders Portal
-// (ec.europa.eu/info/funding-tenders) for actual current calls.
+// Level 1: programme/fund. Permanent, slow-changing information — purpose,
+// priorities, typical support levels. Illustrative, modeled on the real
+// structure of EU funding programmes; not live data. See the EU Funding &
+// Tenders Portal (ec.europa.eu/info/funding-tenders) for current calls.
 export const fundingPrograms: FundingProgram[] = [
   {
     id: "life",
@@ -30,12 +31,8 @@ export const fundingPrograms: FundingProgram[] = [
       "retrofit",
       "emissions",
     ],
-    minBudgetSEK: 15_000_000,
-    maxBudgetSEK: 400_000_000,
-    requiresPartnership: false,
     geographicScope: "eu-wide",
     typicalCoFinancingRate: 0.6,
-    nextDeadlineMonthsFromNow: 3,
     typicalDurationYears: [2, 4],
   },
   {
@@ -62,12 +59,8 @@ export const fundingPrograms: FundingProgram[] = [
       "digitalization",
       "mobility",
     ],
-    minBudgetSEK: 5_000_000,
-    maxBudgetSEK: 200_000_000,
-    requiresPartnership: false,
     geographicScope: "sweden",
     typicalCoFinancingRate: 0.4,
-    nextDeadlineMonthsFromNow: 5,
     typicalDurationYears: [1, 3],
   },
   {
@@ -95,12 +88,8 @@ export const fundingPrograms: FundingProgram[] = [
       "social",
       "care",
     ],
-    minBudgetSEK: 2_000_000,
-    maxBudgetSEK: 60_000_000,
-    requiresPartnership: false,
     geographicScope: "sweden",
     typicalCoFinancingRate: 0.5,
-    nextDeadlineMonthsFromNow: 2,
     typicalDurationYears: [1, 3],
   },
   {
@@ -124,12 +113,8 @@ export const fundingPrograms: FundingProgram[] = [
       "cooperation",
       "nordic",
     ],
-    minBudgetSEK: 3_000_000,
-    maxBudgetSEK: 80_000_000,
-    requiresPartnership: true,
     geographicScope: "cross-border-region",
     typicalCoFinancingRate: 0.65,
-    nextDeadlineMonthsFromNow: 6,
     typicalDurationYears: [2, 3],
   },
   {
@@ -155,12 +140,8 @@ export const fundingPrograms: FundingProgram[] = [
       "pilot",
       "consortium",
     ],
-    minBudgetSEK: 20_000_000,
-    maxBudgetSEK: 500_000_000,
-    requiresPartnership: true,
     geographicScope: "eu-wide",
     typicalCoFinancingRate: 1.0,
-    nextDeadlineMonthsFromNow: 4,
     typicalDurationYears: [3, 4],
   },
   {
@@ -186,12 +167,8 @@ export const fundingPrograms: FundingProgram[] = [
       "automation",
       "citizen service",
     ],
-    minBudgetSEK: 4_000_000,
-    maxBudgetSEK: 100_000_000,
-    requiresPartnership: false,
     geographicScope: "eu-wide",
     typicalCoFinancingRate: 0.5,
-    nextDeadlineMonthsFromNow: 3,
     typicalDurationYears: [1, 3],
   },
   {
@@ -216,12 +193,8 @@ export const fundingPrograms: FundingProgram[] = [
       "grid",
       "broadband",
     ],
-    minBudgetSEK: 10_000_000,
-    maxBudgetSEK: 300_000_000,
-    requiresPartnership: false,
     geographicScope: "eu-wide",
     typicalCoFinancingRate: 0.3,
-    nextDeadlineMonthsFromNow: 7,
     typicalDurationYears: [2, 4],
   },
   {
@@ -247,12 +220,12 @@ export const fundingPrograms: FundingProgram[] = [
       "teachers",
       "training",
     ],
-    minBudgetSEK: 500_000,
-    maxBudgetSEK: 15_000_000,
-    requiresPartnership: true,
     geographicScope: "eu-wide",
     typicalCoFinancingRate: 0.8,
-    nextDeadlineMonthsFromNow: 2,
     typicalDurationYears: [1, 2],
   },
 ];
+
+export function findProgram(id: string): FundingProgram | undefined {
+  return fundingPrograms.find((p) => p.id === id);
+}

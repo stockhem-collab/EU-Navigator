@@ -2,14 +2,7 @@
 
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { MatchResult } from "@/lib/types";
-
-function fmtSEK(n: number, lang: "sv" | "en"): string {
-  const millions = n / 1_000_000;
-  const formatted = millions.toLocaleString(lang === "sv" ? "sv-SE" : "en-US", {
-    maximumFractionDigits: 1,
-  });
-  return lang === "sv" ? `${formatted} mnkr` : `SEK ${formatted}M`;
-}
+import { fmtSEK } from "@/lib/format";
 
 interface Props {
   matches: MatchResult[];
@@ -47,19 +40,17 @@ export default function MatchResults({ matches, onSelect, onBack }: Props) {
 
       <div className="mt-8 space-y-5">
         {matches.map((match) => (
-          <div key={match.program.id} className="rounded-xl border border-navy-100 bg-white p-6 shadow-sm">
+          <div key={match.call.id} className="rounded-xl border border-navy-100 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-start gap-4">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-sm font-bold text-white">
                   {match.program.logoLetter}
                 </span>
                 <div>
+                  <p className="text-xs font-semibold uppercase text-navy-400">{match.program.shortName}</p>
                   <h2 className="font-bold text-navy-900">
-                    {lang === "sv" ? match.program.name_sv : match.program.name}
+                    {lang === "sv" ? match.call.title_sv : match.call.title_en}
                   </h2>
-                  <p className="mt-1 max-w-md text-sm text-navy-600">
-                    {lang === "sv" ? match.program.description_sv : match.program.description_en}
-                  </p>
                 </div>
               </div>
               <div className="text-right">
