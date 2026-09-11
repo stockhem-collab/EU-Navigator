@@ -12,6 +12,10 @@ export interface TranslationTree {
     referenceProjects: string;
     myProjects: string;
     datacenter: string;
+    overview: string;
+    monitoring: string;
+    settings: string;
+    menu: string;
   };
   home: {
     entryTitle: string;
@@ -173,6 +177,14 @@ export interface TranslationTree {
     detailMatchesTitle: string;
     detailNoMatches: string;
     back: string;
+    importButton: string;
+    downloadTemplate: string;
+    importHint: string;
+    clearImported: string;
+    economicsTitle: string;
+    statPortfolioBudget: string;
+    statFundingPotential: string;
+    statCoFinancingNeed: string;
   };
   euDatabase: {
     title: string;
@@ -254,6 +266,49 @@ export interface TranslationTree {
     exampleDisclaimer: (orgName: string) => string;
     documentsLabel: string;
     rolesLabel: string;
+    customiseLabel: string;
+    customisedLabel: string;
+  };
+  bevakning: {
+    title: string;
+    subtitle: string;
+    disclaimer: string;
+    columnCall: string;
+    columnDeadline: string;
+    matchingProjectsLabel: (n: number) => string;
+    noMatchingProjects: string;
+    viewCall: string;
+    startApplication: string;
+  };
+  orgSettings: {
+    title: string;
+    subtitle: string;
+    orgNameLabel: string;
+    orgNamePlaceholder: string;
+    tasksHint: string;
+    resetAll: string;
+    savedIndicator: string;
+  };
+  oversikt: {
+    title: string;
+    subtitle: string;
+    roleLabel: string;
+    roleLedning: string;
+    roleLedningDesc: string;
+    roleSamordnare: string;
+    roleSamordnareDesc: string;
+    roleVerksamhet: string;
+    roleVerksamhetDesc: string;
+    sectionTopMatches: string;
+    sectionStatusBreakdown: string;
+    sectionUpcomingDeadlines: string;
+    sectionDocumentsNeedingUpdate: string;
+    sectionYourProjects: string;
+    departmentFilterLabel: string;
+    allDepartments: string;
+    describeNewProject: string;
+    viewAllInPortfolio: string;
+    viewAllInBevakning: string;
   };
 }
 
@@ -270,6 +325,10 @@ export const translations: Record<Lang, TranslationTree> = {
       referenceProjects: "Beviljade projekt",
       myProjects: "Mina projekt",
       datacenter: "Datacenter",
+      overview: "Översikt",
+      monitoring: "Bevakning",
+      settings: "Inställningar",
+      menu: "Meny",
     },
     home: {
       entryTitle: "Var är ni just nu?",
@@ -533,6 +592,15 @@ export const translations: Record<Lang, TranslationTree> = {
       detailNoMatches: "Inga utlysningar att matcha mot just nu.",
       detailFindFunding: "Hitta finansiering för detta projekt",
       back: "Tillbaka till projektbanken",
+      importButton: "Importera projekt (CSV)",
+      downloadTemplate: "Ladda ner mall",
+      importHint:
+        "Kolumner: Titel, Förvaltning, Ägare, Budget, Startår, Slutår, Sektor, Beskrivning, Internationell partner. Sparas i din webbläsare (ingen delning mellan användare i den här demon).",
+      clearImported: "Rensa importerade projekt",
+      economicsTitle: "Portföljekonomi",
+      statPortfolioBudget: "Total portföljbudget",
+      statFundingPotential: "Identifierad EU-finansieringspotential",
+      statCoFinancingNeed: "Uppskattat medfinansieringsbehov",
     },
     euDatabase: {
       title: "EU-databas",
@@ -618,6 +686,50 @@ export const translations: Record<Lang, TranslationTree> = {
         `Exempel: så här fördelar ${orgName} internt ansvar i detta steg. Varje organisation konfigurerar sin egen process — det här är inte en standard i systemet.`,
       documentsLabel: "Stödmaterial för detta steg",
       rolesLabel: "Roller och ansvar",
+      customiseLabel: "Anpassa för er organisation",
+      customisedLabel: "Anpassat för er organisation",
+    },
+    bevakning: {
+      title: "Bevakning",
+      subtitle: "Kommande deadlines, och vilka projekt i portföljen som passar bäst.",
+      disclaimer:
+        "I en skarp version skulle detta skickas som ett återkommande veckobrev till EU-samordnaren. Här visas samma information direkt i gränssnittet.",
+      columnCall: "Utlysning",
+      columnDeadline: "Deadline",
+      matchingProjectsLabel: (n) => `${n} matchande projekt i portföljen`,
+      noMatchingProjects: "Inga projekt i portföljen matchar denna utlysning ännu.",
+      viewCall: "Visa utlysning",
+      startApplication: "Starta ansökan",
+    },
+    orgSettings: {
+      title: "Organisationsinställningar",
+      subtitle: "Anpassa processen och rollernas ansvar efter er egen organisation.",
+      orgNameLabel: "Organisationens namn",
+      orgNamePlaceholder: "T.ex. Exempelstad kommun",
+      tasksHint: "En uppgift per rad.",
+      resetAll: "Återställ allt till exempeldata",
+      savedIndicator: "Sparat i din webbläsare",
+    },
+    oversikt: {
+      title: "Översikt",
+      subtitle: "Samma data, olika vy beroende på vad du behöver se.",
+      roleLabel: "Visa som",
+      roleLedning: "Kommunledning / ekonomi",
+      roleLedningDesc: "Portföljekonomi och status över hela investeringsplanen.",
+      roleSamordnare: "EU-/finansieringssamordnare",
+      roleSamordnareDesc: "Alla projekt rankade efter matchning, kommande deadlines och dokument som behöver ses över.",
+      roleVerksamhet: "Verksamhetsutvecklare",
+      roleVerksamhetDesc: "Dina förvaltningens projekt och vad som saknas för bästa matchning.",
+      sectionTopMatches: "Starkaste matchningarna just nu",
+      sectionStatusBreakdown: "Projekt per status",
+      sectionUpcomingDeadlines: "Närmaste deadlines",
+      sectionDocumentsNeedingUpdate: "Dokument som behöver ses över",
+      sectionYourProjects: "Projekt",
+      departmentFilterLabel: "Förvaltning",
+      allDepartments: "Alla förvaltningar",
+      describeNewProject: "Beskriv ett nytt projekt",
+      viewAllInPortfolio: "Se hela projektbanken →",
+      viewAllInBevakning: "Se all bevakning →",
     },
   },
   en: {
@@ -632,6 +744,10 @@ export const translations: Record<Lang, TranslationTree> = {
       referenceProjects: "Awarded projects",
       myProjects: "My projects",
       datacenter: "Datacenter",
+      overview: "Overview",
+      monitoring: "Monitoring",
+      settings: "Settings",
+      menu: "Menu",
     },
     home: {
       entryTitle: "Where are you right now?",
@@ -895,6 +1011,15 @@ export const translations: Record<Lang, TranslationTree> = {
       detailNoMatches: "No calls to match against right now.",
       detailFindFunding: "Find funding for this project",
       back: "Back to the project bank",
+      importButton: "Import projects (CSV)",
+      downloadTemplate: "Download template",
+      importHint:
+        "Columns: Titel, Förvaltning, Ägare, Budget, Startår, Slutår, Sektor, Beskrivning, Internationell partner. Saved in your browser (not shared between users in this demo).",
+      clearImported: "Clear imported projects",
+      economicsTitle: "Portfolio economics",
+      statPortfolioBudget: "Total portfolio budget",
+      statFundingPotential: "Identified EU funding potential",
+      statCoFinancingNeed: "Estimated co-financing need",
     },
     euDatabase: {
       title: "EU database",
@@ -979,6 +1104,50 @@ export const translations: Record<Lang, TranslationTree> = {
         `Example: this is how ${orgName} divides internal responsibility at this step. Every organisation configures its own process — this is not a system default.`,
       documentsLabel: "Supporting material for this step",
       rolesLabel: "Roles and responsibilities",
+      customiseLabel: "Customise for your organisation",
+      customisedLabel: "Customised for your organisation",
+    },
+    bevakning: {
+      title: "Monitoring",
+      subtitle: "Upcoming deadlines, and which portfolio projects fit them best.",
+      disclaimer:
+        "In a production version this would be sent as a recurring weekly digest to the EU coordinator. Here it's shown directly in the interface instead.",
+      columnCall: "Call",
+      columnDeadline: "Deadline",
+      matchingProjectsLabel: (n) => `${n} matching projects in the portfolio`,
+      noMatchingProjects: "No projects in the portfolio match this call yet.",
+      viewCall: "View call",
+      startApplication: "Start application",
+    },
+    orgSettings: {
+      title: "Organisation settings",
+      subtitle: "Customise the process and each role's responsibilities for your own organisation.",
+      orgNameLabel: "Organisation name",
+      orgNamePlaceholder: "E.g. Example City Municipality",
+      tasksHint: "One task per line.",
+      resetAll: "Reset everything to the example data",
+      savedIndicator: "Saved in your browser",
+    },
+    oversikt: {
+      title: "Overview",
+      subtitle: "The same data, arranged differently depending on what you need to see.",
+      roleLabel: "View as",
+      roleLedning: "Municipal leadership / finance",
+      roleLedningDesc: "Portfolio economics and status across the whole investment plan.",
+      roleSamordnare: "EU / funding coordinator",
+      roleSamordnareDesc: "Every project ranked by match, upcoming deadlines, and documents needing a review.",
+      roleVerksamhet: "Service developer",
+      roleVerksamhetDesc: "Your department's projects and what's missing for the best possible match.",
+      sectionTopMatches: "Strongest matches right now",
+      sectionStatusBreakdown: "Projects by status",
+      sectionUpcomingDeadlines: "Nearest deadlines",
+      sectionDocumentsNeedingUpdate: "Documents needing a review",
+      sectionYourProjects: "Projects",
+      departmentFilterLabel: "Department",
+      allDepartments: "All departments",
+      describeNewProject: "Describe a new project",
+      viewAllInPortfolio: "See the full project bank →",
+      viewAllInBevakning: "See all monitoring →",
     },
   },
 };

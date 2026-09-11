@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { findProjectBankEntry } from "@/lib/data/projectBank";
+import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { fundingCalls } from "@/lib/data/fundingCalls";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import { computeMatchesForEntry } from "@/lib/matching/portfolio";
@@ -18,8 +18,31 @@ export default function ProjectBankDetailPage() {
   const pb = t.projectBank;
   const results = t.demo.results;
 
-  const entry = findProjectBankEntry(params.id);
-  if (!entry) return notFound();
+  // Imported (CSV) entries only exist in this browser's localStorage, which
+  // isn't available during the server render — so we can't decide "not
+  // found" until the project-bank hook has actually finished checking the
+  // client. Seeded entries render immediately either way; imported ones
+  // appear once `hydrated` flips true.
+  const { all, hydrated } = useProjectBank();
+  const entry = all.find((p) => p.id === params.id);
+
+  if (!entry) {
+    if (!hydrated) return null;
+    return (
+      <>
+        <Header />
+        <main className="section max-w-3xl">
+          <Link href="/projektbank" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
+            ← {pb.back}
+          </Link>
+          <p className="mt-8 text-sm text-navy-500">
+            {lang === "sv" ? "Hittade inget projekt med det här id:t." : "No project found with that id."}
+          </p>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   const missing = lang === "sv" ? entry.missingFields_sv : entry.missingFields_en;
   const matches = computeMatchesForEntry(entry, fundingCalls);

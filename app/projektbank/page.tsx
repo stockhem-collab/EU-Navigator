@@ -5,15 +5,17 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
+import CsvImportPanel from "@/components/projectbank/CsvImportPanel";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { projectBank } from "@/lib/data/projectBank";
+import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { fundingCalls } from "@/lib/data/fundingCalls";
-import { computeBestMatchForEntry } from "@/lib/matching/portfolio";
+import { computeBestMatchForEntry, computePortfolioEconomics } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
 
 export default function ProjectBankPage() {
   const { t, lang } = useLanguage();
   const pb = t.projectBank;
+  const { all: projectBank, imported, addImported, clearImported } = useProjectBank();
 
   // Run every project bank entry through the matching engine once, so the
   // portfolio can be sorted by "what matches best" instead of requiring a
@@ -23,12 +25,14 @@ export default function ProjectBankPage() {
       projectBank
         .map((entry) => ({ entry, match: computeBestMatchForEntry(entry, fundingCalls) }))
         .sort((a, b) => (b.match?.score ?? -1) - (a.match?.score ?? -1)),
-    []
+    [projectBank]
   );
 
   const proceedCount = rows.filter((r) => r.match && r.match.recommendation === "proceed").length;
   const avgBest =
     rows.length > 0 ? Math.round(rows.reduce((sum, r) => sum + (r.match?.score ?? 0), 0) / rows.length) : 0;
+
+  const economics = useMemo(() => computePortfolioEconomics(projectBank, fundingCalls), [projectBank]);
 
   return (
     <>
@@ -36,6 +40,19 @@ export default function ProjectBankPage() {
       <main className="section">
         <h1 className="text-2xl font-bold text-navy-900">{pb.title}</h1>
         <p className="mt-2 text-sm text-navy-600">{pb.subtitle}</p>
+
+        <div className="mt-6">
+          <CsvImportPanel onImport={addImported} />
+          {imported.length > 0 && (
+            <button
+              type="button"
+              onClick={clearImported}
+              className="mt-2 text-xs font-semibold text-navy-400 hover:text-amber-700"
+            >
+              {pb.clearImported} ({imported.length})
+            </button>
+          )}
+        </div>
 
         <div className="mt-6 grid grid-cols-3 gap-4 sm:max-w-lg">
           <div className="rounded-xl border border-navy-100 bg-white p-4">
@@ -51,6 +68,24 @@ export default function ProjectBankPage() {
             <p className="text-xs text-navy-500">{pb.statProceedReady}</p>
           </div>
         </div>
+
+        <section className="mt-6 rounded-xl bg-navy-800 p-6 text-white">
+          <h2 className="font-bold">{pb.economicsTitle}</h2>
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div>
+              <p className="text-2xl font-bold text-white">{fmtSEK(economics.totalBudgetSEK, lang)}</p>
+              <p className="text-sm text-navy-300">{pb.statPortfolioBudget}</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gold-300">{fmtSEK(economics.totalIdentifiedFundingSEK, lang)}</p>
+              <p className="text-sm text-navy-300">{pb.statFundingPotential}</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">{fmtSEK(economics.totalCoFinancingNeededSEK, lang)}</p>
+              <p className="text-sm text-navy-300">{pb.statCoFinancingNeed}</p>
+            </div>
+          </div>
+        </section>
 
         <div className="mt-6 overflow-x-auto rounded-xl border border-navy-100 bg-white">
           <table className="w-full min-w-[820px] text-left text-sm">

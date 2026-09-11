@@ -7,7 +7,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { fundingCalls, allDocuments } from "@/lib/data/fundingCalls";
 import { referenceProjects } from "@/lib/data/referenceProjects";
-import { projectBank } from "@/lib/data/projectBank";
+import { useProjectBank } from "@/lib/hooks/useProjectBank";
 
 function StatTile({ label, value }: { label: string; value: string | number }) {
   return (
@@ -21,6 +21,7 @@ function StatTile({ label, value }: { label: string; value: string | number }) {
 export default function DatacenterPage() {
   const { t, lang } = useLanguage();
   const dc = t.datacenter;
+  const { all: projectBank } = useProjectBank();
 
   const docs = allDocuments();
   const docsNeedingUpdate = docs.filter((d) => d.needsUpdate);
