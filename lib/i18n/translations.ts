@@ -111,6 +111,8 @@ export interface TranslationTree {
       back: string;
       title: string;
       logicTitle: string;
+      logicHint: string;
+      resetField: string;
       reviewerTitle: string;
       reviewerSubtitle: string;
       budgetTitle: string;
@@ -119,6 +121,11 @@ export interface TranslationTree {
       coFinancing: string;
       nextStepsTitle: string;
       nextSteps: string[];
+      tabApplication: string;
+      tabAssessment: string;
+      tabProcess: string;
+      topPriorityLabel: string;
+      topPriorityNone: string;
     };
     gapAnalysis: {
       title: string;
@@ -151,6 +158,10 @@ export interface TranslationTree {
     columnCost: string;
     columnPeriod: string;
     columnReadiness: string;
+    columnBestMatch: string;
+    statTotal: string;
+    statAvgMatch: string;
+    statProceedReady: string;
     statusLabels: Record<
       "idea" | "in-development" | "applying" | "awarded" | "delivering" | "closed",
       string
@@ -159,6 +170,8 @@ export interface TranslationTree {
     detailMissingInfoTitle: string;
     detailMissingInfoBody: string;
     detailFindFunding: string;
+    detailMatchesTitle: string;
+    detailNoMatches: string;
     back: string;
   };
   euDatabase: {
@@ -204,7 +217,6 @@ export interface TranslationTree {
     rolePartner: string;
     periodLegacyBadge: string;
     noBudgetDisclosed: string;
-    viewProjectLink: string;
   };
   datacenter: {
     title: string;
@@ -447,6 +459,8 @@ export const translations: Record<Lang, TranslationTree> = {
         back: "Tillbaka till matchningar",
         title: "AI-stödd ansökningsyta",
         logicTitle: "Projektlogik",
+        logicHint: "AI-genererat förslag — redigera direkt i fälten nedan.",
+        resetField: "Återställ AI-förslag",
         reviewerTitle: "AI-granskning",
         reviewerSubtitle: "Kontrollpunkter innan ansökan lämnas in",
         budgetTitle: "Budget & medfinansiering",
@@ -454,6 +468,11 @@ export const translations: Record<Lang, TranslationTree> = {
         estEuShare: "Uppskattat EU-bidrag",
         coFinancing: "Kommunal medfinansiering (uppskattad)",
         nextStepsTitle: "Nästa steg",
+        tabApplication: "Ansökan",
+        tabAssessment: "Bedömning",
+        tabProcess: "Process & granskning",
+        topPriorityLabel: "Viktigast att åtgärda",
+        topPriorityNone: "Inga akuta åtgärder — ansökan ser stark ut.",
         nextSteps: [
           "Åtgärda punkterna som AI-granskningen flaggat",
           "Bekräfta partnerskap/konsortium vid behov",
@@ -494,6 +513,10 @@ export const translations: Record<Lang, TranslationTree> = {
       columnCost: "Uppskattad kostnad",
       columnPeriod: "Period",
       columnReadiness: "AI-beredskap",
+      columnBestMatch: "Bästa matchning",
+      statTotal: "Projekt i portföljen",
+      statAvgMatch: "Genomsnittlig bästa matchning",
+      statProceedReady: "Redo att gå vidare",
       statusLabels: {
         idea: "Idé",
         "in-development": "Under utveckling",
@@ -506,6 +529,8 @@ export const translations: Record<Lang, TranslationTree> = {
       detailMissingInfoTitle: "Information som saknas för optimal EU-matchning",
       detailMissingInfoBody:
         "Projektinformationen är inte tillräcklig för optimal EU-matchning. Komplettera enligt nedan innan en specifik utlysning väljs.",
+      detailMatchesTitle: "Matchningar mot öppna och kommande utlysningar",
+      detailNoMatches: "Inga utlysningar att matcha mot just nu.",
       detailFindFunding: "Hitta finansiering för detta projekt",
       back: "Tillbaka till projektbanken",
     },
@@ -535,25 +560,24 @@ export const translations: Record<Lang, TranslationTree> = {
       title: "Beviljade referensprojekt",
       subtitle: "Vad har faktiskt fått finansiering tidigare — och varför?",
       disclaimer:
-        "Verklig data: Stockholms stads faktiska register över EU-finansierade projekt 2014–2027, hämtat från stadens egen dokumentation. Inte alla projekt har publicerat en fullständig budgetsiffra.",
+        "Verklig data: en anonymiserad kommuns faktiska register över EU-finansierade projekt 2014–2027, hämtat ur kommunens egen dokumentation (organisationsnamn ersatta med \"Exempelstad\"). Inte alla projekt har publicerat en fullständig budgetsiffra.",
       filterAll: "Alla program",
       statsTitle: "Statistik för valt program",
       statsIntro: (n) => `${n} beviljade projekt`,
-      statOwnerShare: "Stockholm var projektägare i",
+      statOwnerShare: "Kommunen var projektägare i",
       statAvgBudget: "Genomsnittlig projektbudget",
       statTopTheme: "Vanligaste tema",
       statCurrentVsLegacy: (current, legacy) => `${current} pågående/aktuella (2021–2027), ${legacy} avslutade (2014–2020)`,
       fieldOrganisation: "Organisation",
       fieldFund: "Fond/program",
       fieldPeriod: "Projektperiod",
-      fieldRole: "Stockholms roll",
+      fieldRole: "Kommunens roll",
       fieldBudget: "Total budget",
       fieldEuFunding: "Varav EU-finansiering",
       roleOwner: "Projektägare",
       rolePartner: "Projektpartner",
       periodLegacyBadge: "Avslutat 2014–2020",
       noBudgetDisclosed: "Ej redovisad",
-      viewProjectLink: "Läs mer på start.stockholm",
     },
     datacenter: {
       title: "Datacenter",
@@ -797,6 +821,8 @@ export const translations: Record<Lang, TranslationTree> = {
         back: "Back to matches",
         title: "AI-assisted application workspace",
         logicTitle: "Project logic",
+        logicHint: "AI-generated draft — edit directly in the fields below.",
+        resetField: "Reset to AI suggestion",
         reviewerTitle: "AI review",
         reviewerSubtitle: "Checkpoints before submitting the application",
         budgetTitle: "Budget & co-financing",
@@ -804,6 +830,11 @@ export const translations: Record<Lang, TranslationTree> = {
         estEuShare: "Estimated EU contribution",
         coFinancing: "Municipal co-financing (estimated)",
         nextStepsTitle: "Next steps",
+        tabApplication: "Application",
+        tabAssessment: "Assessment",
+        tabProcess: "Process & review",
+        topPriorityLabel: "Top priority",
+        topPriorityNone: "No urgent action items — the application looks strong.",
         nextSteps: [
           "Address the points flagged by the AI review",
           "Confirm partnership/consortium if required",
@@ -844,6 +875,10 @@ export const translations: Record<Lang, TranslationTree> = {
       columnCost: "Estimated cost",
       columnPeriod: "Period",
       columnReadiness: "AI readiness",
+      columnBestMatch: "Best match",
+      statTotal: "Projects in portfolio",
+      statAvgMatch: "Average best match",
+      statProceedReady: "Ready to proceed",
       statusLabels: {
         idea: "Idea",
         "in-development": "In development",
@@ -856,6 +891,8 @@ export const translations: Record<Lang, TranslationTree> = {
       detailMissingInfoTitle: "Information missing for optimal EU matching",
       detailMissingInfoBody:
         "The project information isn't sufficient for optimal EU matching. Complete it as below before selecting a specific call.",
+      detailMatchesTitle: "Matches against open and upcoming calls",
+      detailNoMatches: "No calls to match against right now.",
       detailFindFunding: "Find funding for this project",
       back: "Back to the project bank",
     },
@@ -885,25 +922,24 @@ export const translations: Record<Lang, TranslationTree> = {
       title: "Awarded reference projects",
       subtitle: "What has actually been funded before — and why?",
       disclaimer:
-        "Real data: Stockholms stad's actual register of EU-funded projects 2014-2027, drawn from the city's own documentation. Not every project has published a full budget figure.",
+        "Real data: an anonymised municipality's actual register of EU-funded projects 2014-2027, drawn from its own documentation (organisation names replaced with \"Exempelstad\"). Not every project has published a full budget figure.",
       filterAll: "All programmes",
       statsTitle: "Statistics for the selected programme",
       statsIntro: (n) => `${n} awarded projects`,
-      statOwnerShare: "Stockholm was project owner in",
+      statOwnerShare: "The municipality was project owner in",
       statAvgBudget: "Average project budget",
       statTopTheme: "Most common theme",
       statCurrentVsLegacy: (current, legacy) => `${current} ongoing/current (2021-2027), ${legacy} closed (2014-2020)`,
       fieldOrganisation: "Organisation",
       fieldFund: "Fund/programme",
       fieldPeriod: "Project period",
-      fieldRole: "Stockholm's role",
+      fieldRole: "Municipality's role",
       fieldBudget: "Total budget",
       fieldEuFunding: "Of which EU funding",
       roleOwner: "Project owner",
       rolePartner: "Project partner",
       periodLegacyBadge: "Closed 2014-2020",
       noBudgetDisclosed: "Not disclosed",
-      viewProjectLink: "Read more on start.stockholm",
     },
     datacenter: {
       title: "Datacenter",

@@ -9,7 +9,9 @@ import MatchResults from "@/components/demo/MatchResults";
 import ApplicationWorkspace from "@/components/demo/ApplicationWorkspace";
 import { fundingCalls, findCall } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
+import { findProjectBankEntry } from "@/lib/data/projectBank";
 import { computeMatches, scoreMatch } from "@/lib/matching/scoreMatch";
+import { projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
 import { MatchResult, ProjectInput } from "@/lib/types";
 
 type Step =
@@ -28,7 +30,15 @@ export default function DemoPage() {
 function DemoPageInner() {
   const searchParams = useSearchParams();
   const preselectedCallId = searchParams.get("call");
+  const preselectedProjectId = searchParams.get("project");
   const [step, setStep] = useState<Step>({ name: "intake" });
+
+  const initialProject = preselectedProjectId
+    ? (() => {
+        const entry = findProjectBankEntry(preselectedProjectId);
+        return entry ? projectBankEntryToProjectInput(entry) : undefined;
+      })()
+    : undefined;
 
   return (
     <>
@@ -36,6 +46,7 @@ function DemoPageInner() {
       <main className="section min-h-[70vh]">
         {step.name === "intake" && (
           <ProjectForm
+            initialProject={initialProject}
             onSubmit={(project) => {
               // Coming from a specific call in the EU database ("Hjälp mig
               // söka") locks the AI straight into that call's context,

@@ -3,14 +3,14 @@ import { FundingProgram } from "@/lib/types";
 // Level 1: programme/fund — permanent, slow-changing information (purpose,
 // priorities, typical support levels).
 //
-// REAL DATA: this list reflects the EU funds and programmes Stockholms stad
-// itself tracks and has been awarded from, per the city's own "Utlysningar
-// för EU-finansieringar" overview and its full record of awarded projects
-// 2014-2027. Descriptions for the funds the city itself curates (AMIF,
-// Erasmus+, European Urban Initiative, ERDF, ESF+, Havs-fiskeri- och
-// vattenbruksprogrammet, Horisont Europa) are adapted from that material;
-// the rest are concise general descriptions of real, named EU programmes
-// that appear in the city's project register. `status: "legacy"` marks
+// REAL DATA: this list reflects the EU funds and programmes an example
+// municipality tracks and has been awarded from, per that municipality's own
+// "Utlysningar för EU-finansieringar" overview and its full record of
+// awarded projects 2014-2027. Descriptions for the funds the municipality
+// itself curates (AMIF, Erasmus+, European Urban Initiative, ERDF, ESF+,
+// Havs-fiskeri- och vattenbruksprogrammet, Horisont Europa) are adapted from
+// that material; the rest are concise general descriptions of real, named EU
+// programmes that appear in the register. `status: "legacy"` marks
 // programmes from the closed 2014-2020 period.
 export const fundingPrograms: FundingProgram[] = [
   {
@@ -71,9 +71,9 @@ export const fundingPrograms: FundingProgram[] = [
     shortName: "ERDF",
     logoLetter: "R",
     description_sv:
-      "Bidrar till investeringar i regional tillväxt och sysselsättning. Den övergripande målsättningen för Stockholmsprogrammet är hållbar urban utveckling som stärker tillväxt och utveckling i regionens urbana miljöer.",
+      "Bidrar till investeringar i regional tillväxt och sysselsättning. Den övergripande målsättningen för regionens program är hållbar urban utveckling som stärker tillväxt och utveckling i regionens urbana miljöer.",
     description_en:
-      "Supports investment in regional growth and employment. The overarching goal of the Stockholm programme is sustainable urban development that strengthens growth in the region's urban environments.",
+      "Supports investment in regional growth and employment. The overarching goal of the region's programme is sustainable urban development that strengthens growth in the region's urban environments.",
     sectors: ["digital", "mobility", "energy", "climate"],
     keywords: ["regional utveckling", "innovation", "infrastruktur", "digitalisering", "cirkulär ekonomi", "digital", "innovation", "infrastructure"],
     geographicScope: "sweden",

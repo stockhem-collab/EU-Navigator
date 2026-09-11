@@ -29,8 +29,8 @@ documentation.
   and suggests concrete additions, plus a dual-compliance check against
   the organisation's own internal process (`Organisationens regelverk`).
 - **Beviljade referensprojekt / "Lär av vinnarna"** (`/referensprojekt`) —
-  **real data**: Stockholms stads actual register of 74 EU-funded projects
-  2014-2027 (fund, budget, EU share, role, theme), with aggregated
+  **real data**: an anonymised municipality's actual register of 74
+  EU-funded projects 2014-2027 (fund, budget, EU share, role, theme), with aggregated
   statistics (share led as project owner, average budget, most common
   theme), reachable standalone or from any call page.
 - **Projekt & rapportering** (`/projekt`) — awarded projects, where
@@ -48,17 +48,19 @@ finansiering"* → `/projekt`.
 
 ## What's real data vs. illustrative example data
 
-- **Real**: `lib/data/referenceProjects.ts` (74 of Stockholms stads actual
-  awarded EU projects, 2014-2027, extracted from the city's own "Projekt
-  med beviljade medel" documentation), `lib/data/fundingPrograms.ts` (the
-  real EU funds/programmes the city tracks and has been awarded from), and
-  `lib/data/orgProcess.ts` (the city's real four-phase EU-project process —
-  Idea → Application → Delivery → Closure — including its own document
-  list per phase, from the city's EU-project handbook).
+- **Real, source anonymised**: `lib/data/referenceProjects.ts` (74 of a real
+  municipality's actual awarded EU projects, 2014-2027, extracted from its
+  own "Projekt med beviljade medel" documentation — organisation names,
+  contact emails and source links replaced with a fictional "Exempelstad"
+  so the source municipality isn't identifiable), `lib/data/fundingPrograms.ts`
+  (the real EU funds/programmes that municipality tracks and has been
+  awarded from), and `lib/data/orgProcess.ts` (that municipality's real
+  four-phase EU-project process — Idea → Application → Delivery → Closure —
+  including its own document list per phase, from its EU-project handbook).
 - **One example, not a system default**: the internal role breakdown
   attached to each `orgProcess` phase (Verksamhet / Stadsledningskontoret /
-  Serviceförvaltningen) is Stockholm's own specific internal organisation.
-  It's shown labelled as one example of how a municipality *could* divide
+  Serviceförvaltningen) is that example organisation's specific internal
+  setup. It's shown labelled as one example of how a municipality *could* divide
   responsibility — every organisation would configure its own equivalent
   (or none) in a real deployment. See `OrgProcessPanel`'s disclaimer text.
 - **Still illustrative**: `lib/data/projectBank.ts` (a municipality's own

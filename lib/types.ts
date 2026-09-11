@@ -120,9 +120,10 @@ export interface ProjectBankEntry {
 
 // ---------------------------------------------------------------------------
 // Reference projects — previously awarded projects used to teach the system
-// patterns of what gets funded ("Lär av vinnarna"). This is REAL data:
-// Stockholms stads faktiska EU-finansierade projekt 2014-2027, extracted
-// from the municipality's own "Projekt med beviljade medel" documentation.
+// patterns of what gets funded ("Lär av vinnarna"). This is REAL data: an
+// example municipality's actual EU-funded projects 2014-2027, extracted
+// from that municipality's own "Projekt med beviljade medel" documentation
+// (organisation names anonymised to "Exempelstad").
 // ---------------------------------------------------------------------------
 export interface ReferenceProjectIndicator {
   label_sv: string;
@@ -136,21 +137,20 @@ export interface ReferenceProjectIndicator {
 export interface ReferenceProject {
   id: string;
   title: string;
-  url?: string;
   organisation: string;
   theme_sv: string;
   theme_en: string;
   programId: string;
   fundName: string; // the original, un-normalized name of the fund/programme
-  /** Which of Stockholm's own two published EU programme periods this project
-   * belongs to — a real distinction in the source data, not an invented one. */
+  /** Which of the source organisation's two published EU programme periods
+   * this project belongs to — a real distinction in the source data, not an
+   * invented one. */
   period: "2021-2027" | "2014-2020";
   periodLabel: string; // raw project period text, e.g. "2023-01-01 till 2028-01-01"
   role: "owner" | "partner";
   description_sv: string;
   totalBudgetSEK: number | null;
   euFundingSEK: number | null;
-  contactEmail?: string;
   /** Only populated for the small number of projects where a detailed final
    * report was available (e.g. Digitalt kompetenslyft) — most entries rely on
    * the summary description instead. */
@@ -183,10 +183,11 @@ export interface AwardedProject {
 
 // ---------------------------------------------------------------------------
 // Organisation's own internal process — a second, independent rule layer
-// alongside the EU's own requirements. This is real (Stockholms stads
-// faktiska 5-fas EU-projektprocess), but the specific internal roles below
-// belong to one example organisation — every municipality structures its own
-// internal support functions differently, so this is not a system default.
+// alongside the EU's own requirements. This is real (an example
+// municipality's actual 4-phase EU-project process), but the specific
+// internal roles below belong to one example organisation — every
+// municipality structures its own internal support functions differently,
+// so this is not a system default.
 // ---------------------------------------------------------------------------
 export interface OrgProcessDocument {
   title_sv: string;

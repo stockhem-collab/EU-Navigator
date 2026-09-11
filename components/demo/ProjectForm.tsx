@@ -52,17 +52,25 @@ const EXAMPLE_EN: ProjectInput = {
 
 interface Props {
   onSubmit: (project: ProjectInput) => void;
+  initialProject?: ProjectInput;
 }
 
-export default function ProjectForm({ onSubmit }: Props) {
+export default function ProjectForm({ onSubmit, initialProject }: Props) {
   const { t, lang } = useLanguage();
-  const [project, setProject] = useState<ProjectInput>(DEFAULT_PROJECT);
+  const [project, setProject] = useState<ProjectInput>(initialProject ?? DEFAULT_PROJECT);
   const intake = t.demo.intake;
 
   const fillExample = () => setProject(lang === "sv" ? EXAMPLE_SV : EXAMPLE_EN);
 
   return (
     <div className="mx-auto max-w-2xl">
+      {initialProject && (
+        <p className="mb-4 rounded-md bg-navy-50 px-3 py-2 text-xs text-navy-600">
+          {lang === "sv"
+            ? "Förifyllt från projektbanken — granska och komplettera innan ni fortsätter."
+            : "Pre-filled from the project bank — review and complete before continuing."}
+        </p>
+      )}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-navy-900">{intake.title}</h1>

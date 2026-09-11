@@ -2,8 +2,8 @@ import { ReferenceProject } from "@/lib/types";
 
 // Level: real awarded-project register.
 //
-// REAL DATA extracted from Stockholms stads own documentation
-// ("Projekt med beviljade medel", start.stockholm) covering the city's
+// REAL DATA extracted from Exempelstads own documentation
+// ("Projekt med beviljade medel", start.exempelstad) covering the city's
 // actual EU-funded projects across both the 2021-2027 and 2014-2020
 // programme periods. Budget/funding figures are as published by the
 // city; a small number of projects did not publish a figure (null).
@@ -11,8 +11,7 @@ export const referenceProjects: ReferenceProject[] = [
   {
     id: "ai-driven-atervinning",
     title: `AI-driven återvinning`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/ai-driven-atervinning/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "erdf",
@@ -20,7 +19,7 @@ export const referenceProjects: ReferenceProject[] = [
     period: "2021-2027",
     periodLabel: `2026-01-12 till 2029-01-12`,
     role: "owner",
-    description_sv: `Projektet ska förbättra matavfallssorteringen i Stockholm genom att
+    description_sv: `Projektet ska förbättra matavfallssorteringen i Exempelstad genom att
 minska felsortering, öka incitamenten och förbättra kommunikationen.
 
 Många boende felanvänder idag den gröna påsen, som enbart ska användas
@@ -35,13 +34,11 @@ Projektet omfattar tekniska förstudier, installation av
 övervakningssystem, informationskampanjer och beteendeanalyser.`,
     totalBudgetSEK: 21851994,
     euFundingSEK: 8180604,
-    contactEmail: `johan.orngren@extern.svoa.se`,
   },
   {
     id: "anchor",
     title: `ANCHOR`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/anchor/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "interreg-north-sea",
@@ -71,18 +68,15 @@ Weimar Universitet
 
 DuCoop
 
-Stockholms stads exploateringskontor.
-
-**`,
+Exempelstads exploateringskontor.
+`,
     totalBudgetSEK: 49473742,
     euFundingSEK: 1794000,
-    contactEmail: `norradjurgardsstaden@stockholm.se`,
   },
   {
     id: "ascend",
     title: `ASCEND`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/ascend/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "horizon",
@@ -97,22 +91,20 @@ Lyon och München är Lighthouse-städer i denna ansökan till PED-projekt,
 och kommer att demonstrera hur ett Positive Energy District utformas i
 dessa städer.
 
-Miljöförvaltningen i Stockholms stad ansvarar för workshops samt att
+Miljöförvaltningen i kommunen ansvarar för workshops samt att
 arrangemanget, upplägget och innehållet genomförs i samarbete med
-nyckelpersoner i de två JPI-projekten i NDS och Hammarby sjöstad.
+nyckelpersoner i de två JPI-projekten i Sjöstaden och Bryggkvarteren.
 
 Miljöförvaltningen genomför fördjupade utredningar avseende möjligheten
-att utveckla upp till 5 PED i Stockholm. 
-
-**`,
+att utveckla upp till 5 PED i Exempelstad. 
+`,
     totalBudgetSEK: 28886350,
     euFundingSEK: 1776880,
   },
   {
     id: "chemclimcircle1",
     title: `ChemClimCircle1`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/chemclimcircle1/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "interreg-baltic-sea",
@@ -135,13 +127,11 @@ Projektet kartlägger hur kommuner i olika länder runt Östersjön arbetar
 med frågorna i dagsläget.`,
     totalBudgetSEK: 5562716,
     euFundingSEK: 1232000,
-    contactEmail: `kemikaliecentrum@stockholm.se`,
   },
   {
     id: "chemclimcircle2",
     title: `ChemClimCircle2`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/chemclimcircle2/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "interreg-baltic-sea",
@@ -150,7 +140,7 @@ med frågorna i dagsläget.`,
     periodLabel: `2025-03-01 till 2028-02-29`,
     role: "partner",
     description_sv: `Projektet är en fortsättning på ChemClimCircle1 (2022--2024) där
-Miljöförvaltningen i Stockholms stad var Lead partner. ChemClimCircle1
+Miljöförvaltningen i kommunen var Lead partner. ChemClimCircle1
 syftade till att utveckla processer för koordinering av hållbarhetskrav
 i upphandlingar.
 
@@ -165,13 +155,11 @@ approach to Green Public Procurement in the Baltic Sea Region"
 (ChemClimCircle -2) leds av Litauens upphandlingsmyndighet.`,
     totalBudgetSEK: 47804628,
     euFundingSEK: 2109000,
-    contactEmail: `kemikaliecentrum@stockholm.se`,
   },
   {
     id: "cityam",
     title: `CITYAM`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/cityam/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "interreg-baltic-sea",
@@ -194,8 +182,7 @@ gällande regelverk, fysiska förutsättningar och framtida behov.`,
   {
     id: "deploy-emds",
     title: `Deploy EMDS`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/deploy-emds/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "digital-europe",
@@ -211,20 +198,18 @@ Inom ramen för projektet kommer ett antal use cases att genomföras i
 städer/regioner som ska ge input till det övergripande arbetet med
 harmonisering inom EU.
 
-Stockholms use case har sitt ursprung i de mål staden har satt vad
+Exempelstads use case har sitt ursprung i de mål staden har satt vad
 gäller miljö och framkomlighet. Införandet av miljözon 3 är ett exempel
 på hur staden jobbar för att uppfylla de högt uppsatta målen och
 projektet ämnar skapa förutsättningar för att följa upp effekterna av
 miljözonen.`,
     totalBudgetSEK: 84000000,
     euFundingSEK: 5411500,
-    contactEmail: `info@deployEMDS.eu`,
   },
   {
     id: "eureka-european-urban-exchange-knowledge",
     title: `EUREKA -- European URban Exchange Knowledge on climAte neutrality`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/eureka--european-urban-exchange-knowledge-on-climate-neutrality/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "interreg-europe",
@@ -238,20 +223,18 @@ arbetssätt och lära av varandra.
 
 I projektet sker utbyte av erfarenheter med andra städer i projektet. En
 plan ska tas fram för hur utvecklingsarbete och genomförande ska ske för
-arbetet med Klimathandlingsplan och CCC i Stockholm, med inspiration och
-lärdomar från andra och inspel från andra aktörer i Stockholm.
+arbetet med Klimathandlingsplan och CCC i Exempelstad, med inspiration och
+lärdomar från andra och inspel från andra aktörer i Exempelstad.
 
 En utvärdering kommer att ske av genomförda åtgärder och genom att
 utvärdera effekterna av genomförda förändringar och förbättringar.`,
     totalBudgetSEK: null,
     euFundingSEK: 2280000,
-    contactEmail: `miljoforvaltningen@stockholm.se`,
   },
   {
     id: "fossilfritt-2030-del-2",
     title: `Fossilfritt 2030 -- del 2`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/fossilfritt-2030--del-2/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "erdf",
@@ -268,16 +251,14 @@ Miljöfordon: expertkompetens kring miljöfordon och upphandling och
 Nätverk för omställning arbetsmaskiner.
 
 Miljöförvaltningen stödjer övriga medverkande kommuner.
-
-**`,
+`,
     totalBudgetSEK: 4600000,
     euFundingSEK: 1855000,
   },
   {
     id: "kompetensutveckling-for-hallbara-skolmal",
     title: `Kompetensutveckling för hållbara skolmåltider`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/kompetensutveckling-for-hallbara-skolmaltider/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "esf",
@@ -286,7 +267,7 @@ Miljöförvaltningen stödjer övriga medverkande kommuner.
     periodLabel: `2025-10-01 till 2028-09-30`,
     role: "owner",
     description_sv: `Projektet syftar till att säkerställa en mer hållbar och klimatsmart
-måltidsverksamhet i Stockholms stads kommunala skolor.
+måltidsverksamhet i kommunens kommunala skolor.
 
 För att nå syftet ska kompetenshöjande åtgärder riktas mot olika nivåer
 i utbildningsnämndens organisation.
@@ -297,17 +278,15 @@ tjänstepersoner på central förvaltning ska inkluderas i
 kompetensutvecklingsinsatser.`,
     totalBudgetSEK: 27288522,
     euFundingSEK: 14735802,
-    contactEmail: `utbf.skolmaltider@edu.stockholm.se`,
   },
   {
     id: "klimatpaverkan-i-detaljplaneringsprocess",
     title: `Klimatpåverkan i detaljplaneringsprocessen`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/klimatpaverkan-i-detaljplaneringsprocessen/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "erdf",
-    fundName: `Europeiska regionala utvecklingsfonden. Stödet avser Stockholm, Främja övergången till en cirkulär och resurseffektiv ekonomi`,
+    fundName: `Europeiska regionala utvecklingsfonden. Stödet avser Exempelstad, Främja övergången till en cirkulär och resurseffektiv ekonomi`,
     period: "2021-2027",
     periodLabel: `2025-11-01 till 2026-09-30`,
     role: "owner",
@@ -317,7 +296,7 @@ kompetensutvecklingsinsatser.`,
 
 Stadsutvecklingen, särskilt bygg- och anläggningssektorn, står för
     en stor del av de utsläpp som påverkar klimatet. Idag saknar
-    Stockholms stad etablerade arbetssätt för att systematiskt bedöma
+    Exempelstad etablerade arbetssätt för att systematiskt bedöma
     klimatpåverkan i den fysiska planeringen.
 
 Det här förstudieprojektet använder flera pågående
@@ -326,13 +305,11 @@ Det här förstudieprojektet använder flera pågående
     klimatpåverkan redan i detaljplaneskedet.`,
     totalBudgetSEK: 1613700,
     euFundingSEK: 645480,
-    contactEmail: `stadsbyggnadskontoret@stockholm.se`,
   },
   {
     id: "nonhazcity3",
     title: `NonHazCity3`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/nonhazcity3/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "interreg-baltic-sea",
@@ -355,13 +332,11 @@ och byggmaterial. Detta gör att materialen i sin tur ska kunna gå att
 återanvändas eller materialåtervinnas.`,
     totalBudgetSEK: 54474720,
     euFundingSEK: 2816000,
-    contactEmail: `kemikaliecentrum@stockholm.se`,
   },
   {
     id: "npets",
     title: `nPETS`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/npets/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "horizon",
@@ -376,18 +351,16 @@ Målsättningen med det föreslagna projektet med arbetsnamnet nPETS
     kvantifiera utsläppen från olika delar av transportsektorn --
     vägtrafik, tåg, flyg och sjöfart.
 
-SLB-analys medverkar i en EU-ansökan inom ramen för Horisont
+Kommunens miljöanalysenhet medverkar i en EU-ansökan inom ramen för Horisont
     2020-programmet.
-
-**`,
+`,
     totalBudgetSEK: 50000000,
     euFundingSEK: 3500000,
   },
   {
     id: "refocus",
     title: `Refocus`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/refocus/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "interreg-baltic-sea",
@@ -416,8 +389,7 @@ Förbättra datainsamling och datadelning avseende laddning och
   {
     id: "rev-eu-regenerative-vital-water-for-euro",
     title: `REV:EU -- REgenerative Vital water for EUropean cities`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/reveu--regenerative-vital-water-for-european-cities/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "driving-urban-transitions",
@@ -439,13 +411,11 @@ Projektet tar fram teknisk, organisatorisk och policyinriktad vägledning
 som stöd för en mer cirkulär och framtidssäker urban vattenförvaltning.`,
     totalBudgetSEK: 16000000,
     euFundingSEK: 2900000,
-    contactEmail: `norradjurgardsstaden@stockholm.se`,
   },
   {
     id: "samordning-av-skyddsjakt-pa-skarv-samt-s",
     title: `Samordning av skyddsjakt på skarv samt sälskyddade åtgärder`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/samordning-av-skyddsjakt-pa-skarv-samt-salskyddade-atgarder/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "havs-fiskeri",
@@ -453,50 +423,46 @@ som stöd för en mer cirkulär och framtidssäker urban vattenförvaltning.`,
     period: "2021-2027",
     periodLabel: `2022-12-06 till 2026-02-28`,
     role: "owner",
-    description_sv: `Projektet ska säkerställa måluppfyllnad i Stockholms läns
+    description_sv: `Projektet ska säkerställa måluppfyllnad i regionens
 förvaltningsplan för skarv, vilket innefattar att reducera antalet
 aktiva skarvbon till planens slutdatum nås år 2030.
 
 Projektets partners är
 
-Idrottsförvaltningen i Stockholms stad
+Idrottsförvaltningen i kommunen
 
 Jordbruksverket inom havs-, fiskeri- och vattenbruksprogrammet
     2021--2027.
-
-**`,
+`,
     totalBudgetSEK: 830550,
     euFundingSEK: 581385,
-    contactEmail: `funktion.ekonomi.idrott@stockholm.se`,
   },
   {
-    id: "scale-stockholm",
-    title: `Scale Stockholm`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/scale-stockholm/`,
-    organisation: "Stockholms stad",
+    id: "scale-exempelstad",
+    title: `Scale Exempelstad`,
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "horizon2020",
-    fundName: `Scale Stockholm ingår i den europeiska satsningen NetZeroCities som finansieras inom EU:s program Horizon 2020.`,
+    fundName: `Scale Exempelstad ingår i den europeiska satsningen NetZeroCities som finansieras inom EU:s program Horizon 2020.`,
     period: "2021-2027",
     periodLabel: `2024-05-02 till 2026-04-30`,
     role: "owner",
-    description_sv: `EU-projektet Scale Stockholm ska bidra till att stadens ambitiösa
-klimatmål nås 2030 och till att förbättra stockholmarnas hälsa. I Scale
-Stockholm involverar staden invånare, föreningar och lokala företag för
-att accelerera klimatomställningen i Stockholm.
+    description_sv: `EU-projektet Scale Exempelstad ska bidra till att stadens ambitiösa
+klimatmål nås 2030 och till att förbättra kommuninvånarnas hälsa. I Scale
+Exempelstad involverar staden invånare, föreningar och lokala företag för
+att accelerera klimatomställningen i Exempelstad.
 
-Stockholms stadsdelsförvaltningar, fackförvaltningar och bolag arbetar i
+Exempelstadsdelsförvaltningar, fackförvaltningar och bolag arbetar i
 projektet tillsammans med invånare, föreningar och företag för att
 utveckla delaktighet, samverkan och lokala åtgärder för att uppnå målet.`,
     totalBudgetSEK: null,
     euFundingSEK: 4684200,
   },
   {
-    id: "stockholms-havsoringsaar-iv",
-    title: `Stockholms Havsöringsåar IV`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/stockholms-havsoringsaar-iv/`,
-    organisation: "Stockholms stad",
+    id: "exempelstads-havsoringsaar-iv",
+    title: `Exempelstads Havsöringsåar IV`,
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "havs-fiskeri",
@@ -526,21 +492,18 @@ ta fram ett underlag för framtida åtgärder i havsöringsförande
 
 Projektets partners är
 
-idrottsförvaltningen i Stockholms stad
+idrottsförvaltningen i kommunen
 
 Jordbruksverket inom havs-, fiskeri- och vattenbruksprogrammet
     2021--2027.
-
-**`,
+`,
     totalBudgetSEK: 1485337,
     euFundingSEK: 1039736,
-    contactEmail: `funktion.ekonomi.idrott@stockholm.se`,
   },
   {
-    id: "stockholms-stad-bygger-cirkulart-forstud",
-    title: `Stockholms stad bygger cirkulärt (förstudie -- ESF)`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/stockholms-stad-bygger-cirkulart-forstudie--esf/`,
-    organisation: "Stockholms stad",
+    id: "exempelstads-stad-bygger-cirkulart-forstud",
+    title: `Exempelstad bygger cirkulärt (förstudie -- ESF)`,
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "esf",
@@ -548,9 +511,7 @@ Jordbruksverket inom havs-, fiskeri- och vattenbruksprogrammet
     period: "2021-2027",
     periodLabel: `2024-08-12 till 2025-08-11`,
     role: "owner",
-    description_sv: `]](https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/stockholms-stad-bygger-cirkulart-forstudie--esf/)
-
-Projektet var en förstudie som kartlade stadens behov kring
+    description_sv: `Projektet var en förstudie som kartlade stadens behov kring
 kompetensutveckling inom cirkulärt och klimateffektivt byggande.
 
 Förstudien kartlade kompetensutvecklingsbehoven bland medverkande bolag
@@ -563,13 +524,11 @@ Resultaten visade att fler yrkesgrupper är relevanta, utöver bygg- och
 miljöstöd.`,
     totalBudgetSEK: 1810000,
     euFundingSEK: 1004400,
-    contactEmail: `miljoforvaltningen@stockholm.se`,
   },
   {
     id: "taas-tourism-as-a-service",
     title: `TAAS -- Tourism as a Service`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/taas-tourism-as-a-service/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "interreg-europe",
@@ -582,9 +541,9 @@ forskningsinstitutet. De täcker in hela kedjan av resenärers behov, från
 planering till genomförande och reflektion efter resan.
 
 Syftet med projektet är att identifiera åtgärder som kan minska utsläpp
-från transporter orsakade av turistaktiviteter i Stockholm.
+från transporter orsakade av turistaktiviteter i Exempelstad.
 
-TAAS ska också bidra till besöksnäringen i Stockholms arbete med
+TAAS ska också bidra till besöksnäringen i Exempelstads arbete med
 klimatomställningen.
 
 Det kan till exempel ske genom
@@ -600,8 +559,7 @@ workshoppar, studiebesök och andra lokala- och europeiska utbyten.`,
   {
     id: "tango-w",
     title: `TANGO-W`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/klimat-miljo-och-mobilitet/tango-w/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "jpi-urban-europe",
@@ -616,7 +574,7 @@ kompetenser som behövs i omställningen till ett mer hållbart samhälle.
 I projektet studeras framförallt synergier i gränssnittet mellan energi,
 mat och vatten.
 
-Syftet för Norra Djurgårdsstaden är att i en förstudie undersöka hur
+Syftet för Sjöstaden är att i en förstudie undersöka hur
 urban odling kan öka, genom att identifiera plats och utrymmen för både
 stadsbönder och fritidsodlare.
 
@@ -624,13 +582,11 @@ Målet är att få ökad förståelse för hur stadsplaneringen ska kunna ta
 höjd för odling.`,
     totalBudgetSEK: null,
     euFundingSEK: 1030000,
-    contactEmail: `norradjurgardsstaden@stockholm.se`,
   },
   {
     id: "aktiv-fritid-jarva",
-    title: `Aktiv Fritid Järva`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/arbetsmarknad-utbildning-och-social-inkludering/aktiv-fritid-jarva/`,
-    organisation: "Stockholms stad",
+    title: `Aktiv Fritid Nordkvarteren`,
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -638,14 +594,14 @@ höjd för odling.`,
     period: "2021-2027",
     periodLabel: `2026-01-15 till 2028-05-15`,
     role: "owner",
-    description_sv: `Aktiv Fritid Järva är ett projekt som hjälper barn och unga i Järva
+    description_sv: `Aktiv Fritid Nordkvarteren är ett projekt som hjälper barn och unga i Nordkvarteren
     till en meningsfull fritid. Hittills har fritidslotsarna hjälpt
     flera hundra barn att hitta strukturerade, trygga och meningsfulla
     fritidsaktiviteter som passar just dem.
 
-Syftet med projektet Aktiv Fritid Järva är att erbjuda en trygg och
-    meningsfull fritid för barn och unga bosatta i områdena Rinkeby,
-    Husby och Tensta i åldrarna 6--17 år som i dag saknar tillgång till
+Syftet med projektet Aktiv Fritid Nordkvarteren är att erbjuda en trygg och
+    meningsfull fritid för barn och unga bosatta i Nordkvarterens
+    stadsdelar i åldrarna 6--17 år som i dag saknar tillgång till
     strukturerade fritidsaktiviteter.`,
     totalBudgetSEK: 4990693,
     euFundingSEK: 4990693,
@@ -653,8 +609,7 @@ Syftet med projektet Aktiv Fritid Järva är att erbjuda en trygg och
   {
     id: "digitalt-kompetenslyft",
     title: `Digitalt kompetenslyft`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/arbetsmarknad-utbildning-och-social-inkludering/digitalt-kompetenslyft/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -662,9 +617,9 @@ Syftet med projektet Aktiv Fritid Järva är att erbjuda en trygg och
     period: "2021-2027",
     periodLabel: `2023-09-01 till 2026-03-31`,
     role: "owner",
-    description_sv: `Kulturförvaltningen i Stockholms stad låg vid en mätning i november 2022 tio procentenheter under genomsnittet för landets kommuner i digital mognad. Nästan en tredjedel av medarbetarna använde inte digitala verktyg i det dagliga arbetet, och var tionde medarbetare uppgav begränsade baskunskaper.
+    description_sv: `Kulturförvaltningen i kommunen låg vid en mätning i november 2022 tio procentenheter under genomsnittet för landets kommuner i digital mognad. Nästan en tredjedel av medarbetarna använde inte digitala verktyg i det dagliga arbetet, och var tionde medarbetare uppgav begränsade baskunskaper.
 
-Digitalt kompetenslyft finansierades av Svenska ESF-rådet för att höja den digitala kompetensen hos medarbetare inom fem avdelningar och tre staber på kulturförvaltningen (bland annat Stadsbiblioteket, Kulturskolan och Museer och konst), samt en mindre målgrupp hos Nacka kommun. Arbetet byggde på individuella självskattningar och utvecklingssamtal, och erbjöd ett brett, behovsanpassat utbud av läraktiviteter — från grundläggande stöd till avancerade utbildningar — inom ett agilt och utforskande arbetssätt.
+Digitalt kompetenslyft finansierades av Svenska ESF-rådet för att höja den digitala kompetensen hos medarbetare inom fem avdelningar och tre staber på kulturförvaltningen (bland annat Stadsbiblioteket, Kulturskolan och Museer och konst), samt en mindre målgrupp hos en grannkommun. Arbetet byggde på individuella självskattningar och utvecklingssamtal, och erbjöd ett brett, behovsanpassat utbud av läraktiviteter — från grundläggande stöd till avancerade utbildningar — inom ett agilt och utforskande arbetssätt.
 
 Projektet överträffade sina kvantitativa mål: den digitala mognaden steg från 40 % till 50,1 % (i nivå med det nationella snittet), och fler medarbetare än planerat deltog med fler utbildningstimmar än väntat. Identifierade framgångsfaktorer var det breda och behovsanpassade lärutbudet, det agila arbetssättet, tvärfunktionell samverkan och starkt engagemang från chefer. Kvarstående utmaningar var tidsbrist i vardagen, varierande digitala förutsättningar mellan medarbetare och tekniska begränsningar i upphandlade system.`,
     totalBudgetSEK: 28000000,
@@ -679,8 +634,7 @@ Projektet överträffade sina kvantitativa mål: den digitala mognaden steg frå
   {
     id: "care-for-ukrainian-refugees",
     title: `Care For Ukrainian Refugees`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/arbetsmarknad-utbildning-och-social-inkludering/care-for-ukrainian-refugees/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -710,16 +664,14 @@ Rädda barnen
 War Child
 
 Care in Change.
-
-**`,
+`,
     totalBudgetSEK: 17700000,
     euFundingSEK: null,
   },
   {
     id: "kompetensutveckling-for-framtidens-socia",
     title: `Kompetensutveckling för framtidens socialtjänst`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/arbetsmarknad-utbildning-och-social-inkludering/kompetensutveckling-for-framtidens-socialtjanst/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -746,8 +698,7 @@ socialtjänstlagens intentioner.`,
   {
     id: "kompetensutveckling-i-aldreomsorgen",
     title: `Kompetensutveckling i äldreomsorgen`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/arbetsmarknad-utbildning-och-social-inkludering/kompetensutveckling-i-aldreomsorgen/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -762,18 +713,14 @@ Bakgrunden till projektet är att undersköterska blev en skyddad
     yrkestitel 2023. Projektet består av en utbildningsdel riktad mot
     medarbetare och en del riktad mot chefer/organisationsansvariga.  
 
-[[Kompetensutveckling i äldreomsorgen, webbplatsen Vuxpedagog
-    Stockholm]](https://vuxpedagog.stockholm.se/projekt-och-utveckling/utvecklingsprojekt/kompetensutveckling-i-aldreomsorgen/)
-
-**`,
+`,
     totalBudgetSEK: 60023732,
     euFundingSEK: 32618492,
   },
   {
     id: "kvinnors-etablering",
     title: `Kvinnors etablering`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/arbetsmarknad-utbildning-och-social-inkludering/kvinnors-etablering/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -790,8 +737,7 @@ Projektet ska bidra till en stärkt samverkan mellan staden och
     Arbetsförmedlingen kring målgruppen och tillsammans med
     civilsamhället identifiera och utveckla insatser för målgruppen. 
 
-Det operativa arbetet utgår från stadens jobbtorg i Skärholmen,
-    Farsta, Kista och Vällingby. Där stöttas varje deltagare av en
+Det operativa arbetet utgår från stadens jobbtorg i flera av kommunens ytterområden. Där stöttas varje deltagare av en
     jobbcoach, en arbetsförmedlare och en uppsökare på vägen mot arbete
     eller studier.`,
     totalBudgetSEK: 68870004,
@@ -800,8 +746,7 @@ Det operativa arbetet utgår från stadens jobbtorg i Skärholmen,
   {
     id: "net-pes",
     title: `NET-PES`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/arbetsmarknad-utbildning-och-social-inkludering/net-pes/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "erasmus",
@@ -814,7 +759,7 @@ mellan åtta europeiska partners.
 
 Projektets partners är
 
-Stockholms stads arbetsmarknadsförvaltning
+Exempelstads arbetsmarknadsförvaltning
 
 Helsingfors stad
 
@@ -833,16 +778,14 @@ Le forem i Belgien.
 Syftet med projektet är att lära av varandra när det gäller att ställa
 om arbetsmarknadsinsatserna för att möta den digitala och gröna
 omställningen.
-
-**`,
+`,
     totalBudgetSEK: 4600000,
     euFundingSEK: 632500,
   },
   {
     id: "ratt-kompetens-for-framtidens-socialtjan",
     title: `Rätt kompetens för framtidens socialtjänst`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/arbetsmarknad-utbildning-och-social-inkludering/ratt-kompetens-for-framtidens-socialtjanst/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -869,9 +812,8 @@ hur dessa ska genomföras och organiseras.`,
   },
   {
     id: "starka-skyddsfaktorer-hos-nyanlanda-fami",
-    title: `Stärka skyddsfaktorer hos nyanlända familjer i Hässelby-Vällingby`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/arbetsmarknad-utbildning-och-social-inkludering/starka-skyddsfaktorer-hos-nyanlanda-familjer-i-hasselby-vallingby/`,
-    organisation: "Stockholms stad",
+    title: `Stärka skyddsfaktorer hos nyanlända familjer i Västerkvarteren`,
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "amif",
@@ -879,26 +821,24 @@ hur dessa ska genomföras och organiseras.`,
     period: "2021-2027",
     periodLabel: `2025-01-01 till 2027-06-30`,
     role: "owner",
-    description_sv: `Hässelby-Vällingby stadsdelsförvaltning arbetar för att alla barn och
+    description_sv: `Västerkvarteren stadsdelsförvaltning arbetar för att alla barn och
 unga ska få en meningsfull fritid. Utöver fritidsaktiviteter och ett
 rikt föreningsliv erbjuder stadsdelsförvaltningen ett stort utbud av
 föräldrastödjande insatser för att stärka föräldrar.
 
 Projektet Stärka skyddsfaktorer hos nyanlända familjer i
-Hässelby-Vällingby, som är medfinansierat av Europeiska unionen genom
+Västerkvarteren, som är medfinansierat av Europeiska unionen genom
 Asyl-, migrations- och integrationsfonden (AMIF), ska stärka
-skyddsfaktorer hos nyanlända barn i Hässelby-Vällingby. Detta genom att
+skyddsfaktorer hos nyanlända barn i Västerkvarteren. Detta genom att
 utveckla och implementera beprövade metoder för att tidigt nå nyanlända
 familjer med föräldrastöd och fritidsaktiviteter.`,
     totalBudgetSEK: 8431829,
     euFundingSEK: 7588646,
-    contactEmail: `Funktion.SD04.trygghetochsakerhet@stockholm.se`,
   },
   {
     id: "triangle-for-ukrainian-artists",
     title: `Triangle for Ukrainian Artists`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/arbetsmarknad-utbildning-och-social-inkludering/triangle-for-ukrainian-artists/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "kreativa-europa",
@@ -931,9 +871,8 @@ Inom projektet beställs nya pjäser av ukrainska dramatiker, som
   },
   {
     id: "ung-kraft-jarva-din-vag-mot-sysselsattni",
-    title: `Ung kraft Järva -- din väg mot sysselsättning`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/arbetsmarknad-utbildning-och-social-inkludering/ung-kraft-jarva--din-vag-mot-sysselsattning/`,
-    organisation: "Stockholms stad",
+    title: `Ung kraft Nordkvarteren -- din väg mot sysselsättning`,
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -941,12 +880,11 @@ Inom projektet beställs nya pjäser av ukrainska dramatiker, som
     period: "2021-2027",
     periodLabel: `2024-04-22 till 2027-04-21`,
     role: "owner",
-    description_sv: `Projektmål: Stärkta möjligheter för unga vuxna 18--29 år i Husby, Tensta
-och Rinkeby att ta aktiv del av samhällslivet inklusive studier och
+    description_sv: `Projektmål: Stärkta möjligheter för unga vuxna 18--29 år i Nordkvarterens stadsdelar att ta aktiv del av samhällslivet inklusive studier och
 arbete.
 
 Projektets målgrupp är unga vuxna mellan 18 och 29 år som lever i
-relativ fattigdom bosatta i Husby, Rinkeby och Tensta.
+relativ fattigdom bosatta i Nordkvarterens stadsdelar.
 
 Av dessa är följande särskilt prioriterade i projektet: 
 
@@ -964,13 +902,11 @@ tillgodogöra sig de möjligheter som finns för att ta steget mot arbete
 eller studier.`,
     totalBudgetSEK: 9996311,
     euFundingSEK: null,
-    contactEmail: `ungkraftjarva@stockholm.se`,
   },
   {
     id: "rescue",
     title: `RESCUE`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/naringslivsframjande-insatser-20212027/rescue/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Näringslivsfrämjande insatser`,
     theme_en: `Business development initiatives`,
     programId: "horizon",
@@ -990,22 +926,17 @@ RESCUE står för "Resilient Edge Systems for Critical Infrastructure
 Projektet leds av Sveriges forskningsinstitut RISE härifrån
     Sverige. 
 
-**Samarbetspartners**
-
-Stockholms stad ingår i en grupp av 12 företag och organisationer
+Samarbetspartners: Exempelstad ingår i en grupp av 12 företag och organisationer
     från Tyskland, Nederländerna, Spanien och Schweiz. Från Sverige
     ingår också Västra Götalandsregionen.
-
-**`,
+`,
     totalBudgetSEK: null,
     euFundingSEK: null,
-    contactEmail: `rescue-project@ri.se`,
   },
   {
-    id: "stockholm-archipelago-trail",
-    title: `Stockholm Archipelago Trail`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/naringslivsframjande-insatser-20212027/stockholm-archipelago-trail/`,
-    organisation: "Stockholms stad",
+    id: "exempelstad-archipelago-trail",
+    title: `Exempelstad Archipelago Trail`,
+    organisation: "Exempelstad",
     theme_sv: `Näringslivsfrämjande insatser`,
     theme_en: `Business development initiatives`,
     programId: "landsbygdsprogrammet",
@@ -1013,12 +944,12 @@ Stockholms stad ingår i en grupp av 12 företag och organisationer
     period: "2021-2027",
     periodLabel: `2023-04-01 till 2025-03-31`,
     role: "owner",
-    description_sv: `Projektets mål är en vandringsled längs Nord-Sydlinjen genom Stockholms
+    description_sv: `Projektets mål är en vandringsled längs Nord-Sydlinjen genom Exempelstads
 skärgård.
 
-Syftet med projektet är att anlägga en vandringsled, SAT Stockholm
+Syftet med projektet är att anlägga en vandringsled, SAT Exempelstad
 Archipelago Trail, på öarna längs båtlinjen Nord-Sydlinjens sträckning
-genom Stockholms skärgård som förlänger säsongen för besöksnäringen på
+genom Exempelstads skärgård som förlänger säsongen för besöksnäringen på
 öarna och skapar samverkan i närområdet.
 
 Målet med projektet är att etablera en 270 kilometer lång led på 19
@@ -1028,13 +959,11 @@ förutsättningar för att kunna förlänga säsongen för naturintresserade
 besökare och därmed en mer levande skärgård året runt.`,
     totalBudgetSEK: 6941940,
     euFundingSEK: 6941940,
-    contactEmail: `GeneralinfoSAT@gmail.com`,
   },
   {
     id: "city-memories-visualizing-change-in-thre",
     title: `City Memories -- Visualizing change in three Europan capitals`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2021-2027/digitalisering-och-utveckling-av-stadens-valfardstjanster/city-memories--visualizing-change-in-three-europan-capitals/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Digitalisering och utveckling av stadens välfärdstjänster`,
     theme_en: `Digitalisation and development of city welfare services`,
     programId: "kreativa-europa",
@@ -1049,7 +978,7 @@ historiska byggnadsritningar.
 Medborgarinvolvering, hållbarhet och inkludering har varit viktiga
 utgångspunkter i projektets arbete.
 
-Stadsarkiven i Stockholm är koordinator för projektet som drivs
+Stadsarkiven i Exempelstad är koordinator för projektet som drivs
 tillsammans med
 
 stadsarkiven i Köpenhamn
@@ -1067,13 +996,11 @@ Contemporary Architecture Centre i Budapest (KÉK)
 Università Politecnica delle Marche i Ancona.`,
     totalBudgetSEK: 2839823,
     euFundingSEK: 941816,
-    contactEmail: `stadsarkivet@stockholm.se`,
   },
   {
     id: "civitas-eccentric",
     title: `Civitas Eccentric`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/civitas-eccentric/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "horizon2020",
@@ -1083,12 +1010,12 @@ Università Politecnica delle Marche i Ancona.`,
     role: "partner",
     description_sv: `Civitas Eccentric främjar innovativa lösningar inom mobilitetsområdet
 som bidrar till stadens arbete för ett mer klimatsmart och hållbart
-Stockholm. Fokus är att utveckla formerna för att resa och transportera
+Exempelstad. Fokus är att utveckla formerna för att resa och transportera
 varor.
 
 Projektet lyfter fram åtgärder som främjar hållbar mobilitet och
 transportlösningar i stadsnära ytterområden i fem europeiska städer.
-Tolv demonstrationsprojekt genomförs i Stockholm med syftet att stödja
+Tolv demonstrationsprojekt genomförs i Exempelstad med syftet att stödja
 utvecklingen av kommunikationslösningar, exempelvis
 
 mobilitetstjänster
@@ -1100,10 +1027,9 @@ förbättringar inom kollektivtrafiken.`,
     euFundingSEK: null,
   },
   {
-    id: "fossilfritt-2030-stockholm",
-    title: `Fossilfritt 2030 Stockholm`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/fossilfritt-2030-stockholm/`,
-    organisation: "Stockholms stad",
+    id: "fossilfritt-2030-exempelstad",
+    title: `Fossilfritt 2030 Exempelstad`,
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "erdf",
@@ -1111,7 +1037,7 @@ förbättringar inom kollektivtrafiken.`,
     period: "2014-2020",
     periodLabel: `2020-01-01 till 2023-10-21`,
     role: "partner",
-    description_sv: `Fossilfritt 2030 är en kraftsamling i Stockholms län som syftar till att
+    description_sv: `Fossilfritt 2030 är en kraftsamling i regionen som syftar till att
 växla upp och underlätta omställningen till fossilfria transporter så
 att 2030-målet för transportsektorn kan nås.
 
@@ -1135,8 +1061,7 @@ delad mobilitet.`,
   {
     id: "frevue-freight-electric-vehicles-in-urba",
     title: `Frevue, Freight Electric Vehicles in Urban Europe`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/frevue-freight-electric-vehicles-in-urban-europe/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "fp7",
@@ -1147,7 +1072,7 @@ delad mobilitet.`,
     description_sv: `Frevue, Freight Electric Vehicles in Urban Europé, främjar innovativa
 lösningar för elektrifieringen av logistikverksamhet i stadsmiljö.
 
-I Stockholm testas olika lösningar för tunga och lätta lastbilar.
+I Exempelstad testas olika lösningar för tunga och lätta lastbilar.
 Målsättningen är att de lösningar som projektet identifierar ska bidra
 till stadens arbete för en hållbar urban utveckling.
 
@@ -1162,8 +1087,7 @@ godsleveranser.`,
   {
     id: "grow-smarter",
     title: `Grow Smarter`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/grow-smarter/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "horizon2020",
@@ -1173,10 +1097,10 @@ godsleveranser.`,
     role: "owner",
     description_sv: `GrowSmarter utvecklar smarta miljö- och klimatlösningar för att stärka
 städers arbete för en hållbar stadsutveckling. Målsättningen är att
-stockholmarnas livskvalitet förbättras samtidigt som akademi och
+kommuninvånarnas livskvalitet förbättras samtidigt som akademi och
 näringsliv får möjlighet att testa innovationer inom området.
 
-Stockholms stad leder och deltar i projektet med tolv smarta lösningar i
+Exempelstad leder och deltar i projektet med tolv smarta lösningar i
 Årsta och Slakthusområdet.
 
 Genom projektet samarbetar staden med ytterligare sju europeiska
@@ -1190,8 +1114,7 @@ infrastruktur- och transporterområdet.`,
   {
     id: "life-aspire",
     title: `Life Aspire`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/life-aspire/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "life",
@@ -1223,8 +1146,7 @@ hur de på andra sätt bidrar till bättre miljö/klimat/framkomlighet.`,
   {
     id: "meister",
     title: `Meister`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/meister/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "horizon2020",
@@ -1262,8 +1184,7 @@ Berlin och Malaga samt forskningsinstitutet RISE Viktoria.`,
   {
     id: "nextgenlink",
     title: `NextGenLink`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/nextgenlink/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "cef",
@@ -1276,10 +1197,10 @@ Finland för att på så sätt bidra till mer klimatvänliga sjötransporter
 på Östersjön.
 
 Projektet uppgraderar sjöfartsförbindelsen mellan
-Åbo-Mariehamn-Stockholm med ett nytt LNG-fartyg samt förbättringar i
+Åbo-Mariehamn-Exempelstad med ett nytt LNG-fartyg samt förbättringar i
 hamnarnas infrastruktur.
 
-Förbindelsen Åbo-Stockholm ligger på den så kallade
+Förbindelsen Åbo-Exempelstad ligger på den så kallade
 Scandinavian-Mediterranean Core Network Corridor, en korridor av
 transportinfrastruktur som EU har pekat ut som särskilt prioriterad inom
 ramen för det transeuropeiska transportnätverket, TEN-T.`,
@@ -1289,8 +1210,7 @@ ramen för det transeuropeiska transportnätverket, TEN-T.`,
   {
     id: "nezer",
     title: `NeZeR`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/nezer/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "iee",
@@ -1308,8 +1228,8 @@ kan deltagande städer ta steg mot en mer hållbar stadsutveckling.
 Projektet främjar samarbeten mellan olika aktörer under hela
 byggprocessen för att öka medvetenheten om fördelarna med
 energieffektiviseringar av byggnader till nära-noll-nivå. Under
-projektets gång delar Stockholms stad med sig av erfarenheterna från
-energieffektiviseringsprojekt inom ramen för projekten Hållbara Järva
+projektets gång delar Exempelstad med sig av erfarenheterna från
+energieffektiviseringsprojekt inom ramen för projekten Hållbara Nordkvarteren
 och GrowSmarter.`,
     totalBudgetSEK: null,
     euFundingSEK: null,
@@ -1317,8 +1237,7 @@ och GrowSmarter.`,
   {
     id: "nonhazcity",
     title: `NonHazCity`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/nonhazcity/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "interreg-baltic-sea",
@@ -1337,7 +1256,7 @@ Målsättningen är att mängden skadliga ämnen som tillförs Östersjön ska
 minska och projektet riktar sig bland annat till invånare samt små och
 medelstora företag.
 
-I Stockholm genomförs exempelvis analyser av avloppsvatten och olika
+I Exempelstad genomförs exempelvis analyser av avloppsvatten och olika
 informationskampanjer, men staden delar också lärande exempel kring hur
 städer kan arbeta för en minskad kemikalieanvändning.`,
     totalBudgetSEK: 34780447,
@@ -1346,8 +1265,7 @@ städer kan arbeta för en minskad kemikalieanvändning.`,
   {
     id: "prosfet",
     title: `Prosfet`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/prosfet/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "horizon2020",
@@ -1375,8 +1293,7 @@ samverkanspartners.`,
   {
     id: "smartimpact",
     title: `SmartImpact`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/smartimpact/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "urbact",
@@ -1403,8 +1320,7 @@ hur städer kan skapa lokala ekosystem för innovationsfrågor.`,
   {
     id: "the-northern-scanmed-ports-sustainable-m",
     title: `The Northern ScanMed Ports -- Sustainable Maritime Links`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/the-northern-scanmed-ports--sustainable-maritime-links/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "cef",
@@ -1432,8 +1348,7 @@ olika faciliteter för avloppsvatten.`,
   {
     id: "urban-learning",
     title: `Urban Learning`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/klimat-miljo-och-mobilitet/urban-learning/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Klimat, miljö och mobilitet`,
     theme_en: `Climate, environment and mobility`,
     programId: "horizon2020",
@@ -1460,8 +1375,7 @@ verktyg för energifrågor i samband med stadsplanering.`,
   {
     id: "action-gallery",
     title: `Action Gallery`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/action-gallery/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "erasmus",
@@ -1469,28 +1383,26 @@ verktyg för energifrågor i samband med stadsplanering.`,
     period: "2014-2020",
     periodLabel: `2016-09-17 till 2017-08-20`,
     role: "partner",
-    description_sv: `Genom projektet Action Gallery får unga stockholmare i åldern 18--30
+    description_sv: `Genom projektet Action Gallery får unga kommuninvånare i åldern 18--30
     år tillsammans med unga från andra europeiska städer använda kultur
     för att illustrera en europeisk gemenskap och de möjligheter som
     EU:s sektorsprogram Erasmus+ kan erbjuda.
 
 Projektdeltagarna är medskapare vid en större utställning samt
-    genomför olika aktiviteter på Stockholms gymnasium och i samverkan
+    genomför olika aktiviteter på Exempelstads gymnasium och i samverkan
     med kulturorganisationer.
 
 Målsättningen är att fler unga ska få kännedom om
     kulturförvaltningens verksamheter samt de möjligheter som EU:s
     program medför för Europas unga.
-
-**`,
+`,
     totalBudgetSEK: 324060,
     euFundingSEK: null,
   },
   {
     id: "battre-halsa",
     title: `Bättre hälsa`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/battre-halsa/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -1500,7 +1412,7 @@ Målsättningen är att fler unga ska få kännedom om
     role: "partner",
     description_sv: `Bättre Hälsa stärker utsatta kvinnors förutsättningar för social
 delaktighet och egenmakt. Målgruppen är kvinnor som är EU-medborgare och
-som befinner sig i Stockholm, men som försörjer sig i gatumiljö.
+som befinner sig i Exempelstad, men som försörjer sig i gatumiljö.
 
 Majoriteten av målgruppen är romska kvinnor från Central- och Östeuropa.
 
@@ -1514,8 +1426,7 @@ välbefinnandet.`,
   {
     id: "come-2-join-us",
     title: `Come 2 Join Us`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/come-2-join-us/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "erasmus",
@@ -1524,7 +1435,7 @@ välbefinnandet.`,
     periodLabel: `2016-02-01 till 2017-11-30`,
     role: "owner",
     description_sv: `Come 2 Join Us följer upp stadens tidigare projekt Come Join Us, med
-syfte att ge Stockholms unga kulturella erfarenheter och möjlighet att
+syfte att ge Exempelstads unga kulturella erfarenheter och möjlighet att
 uttrycka sig genom olika konstformer oavsett bakgrund och hur deras
 livssituation ser ut.
 
@@ -1545,16 +1456,14 @@ Keski-Uudenmaan koulutuskuntayhtymä
 Bochums Stadt
 
 Maison de l\\'Europe Bordeaux-Aquitaine.
-
-**`,
+`,
     totalBudgetSEK: 1384129,
     euFundingSEK: null,
   },
   {
     id: "come-join-us",
     title: `Come Join Us`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/come-join-us/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "erasmus",
@@ -1581,8 +1490,7 @@ kapacitet att ta emot ungdomsvolontärer.`,
   {
     id: "creating-workshops-in-disadvantaged-area",
     title: `Creating workshops in disadvantaged areas`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/creating-workshops-in-disadvantaged-areas/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "erasmus",
@@ -1591,25 +1499,23 @@ kapacitet att ta emot ungdomsvolontärer.`,
     periodLabel: `2016-05-02 till 2017-09-01`,
     role: "owner",
     description_sv: `Inom ramen för projektet Creating workshops in disadvantaged areas
-    arbetar två volontärer med unga stockholmare i åldrarna 13--22 år
+    arbetar två volontärer med unga kommuninvånare i åldrarna 13--22 år
     från socioekonomiskt från utsatta områden.
 
 Volontärerna genomför olika workshops för att stärka de deltagande
     ungdomars egenmakt. Arbetet sker i nära kontakt med lärare vid
-    Kulturskolan Stockholm.
+    Kulturskolan Exempelstad.
 
 Externa samverkanspartners är ungdomsorganisationer i de tyska
     städerna Karlsruhe och Wuerttemberg.
-
-**`,
+`,
     totalBudgetSEK: 139526,
     euFundingSEK: null,
   },
   {
     id: "entreprenor-i-sverige",
     title: `Entreprenör i Sverige`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/entreprenor-i-sverige/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -1628,7 +1534,7 @@ Genom projektet förbereds deltagarna inför och slussas vidare till
 affärs- och innovationsrådgivning under en tidig fas i etableringen för
 nyanlända. Projektet har ett särskilt mål att nå nyanlända kvinnor.
 
-Staden leder samverkansprojektet där åtta kommuner i Stockholms län
+Staden leder samverkansprojektet där åtta kommuner i regionen
 samverkar för att stärka deltagarnas möjligheter till egenförsörjning.`,
     totalBudgetSEK: 11629785,
     euFundingSEK: null,
@@ -1636,8 +1542,7 @@ samverkar för att stärka deltagarnas möjligheter till egenförsörjning.`,
   {
     id: "hallbar-etablering",
     title: `Hållbar etablering`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/hallbar-etablering/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -1648,14 +1553,14 @@ samverkar för att stärka deltagarnas möjligheter till egenförsörjning.`,
     description_sv: `Hållbar Etablering utvecklar arbetet med att ge ett samlat och
 holistiskt stöd för nyanlända.
 
-Projektet drivs av arbetsmarknadsförvaltningen i Stockholms stad i
+Projektet drivs av arbetsmarknadsförvaltningen i kommunen i
 samarbete med
 
-socialförvaltningen (genom Intro Stockholm)
+socialförvaltningen (genom Intro Exempelstad)
 
 Arbetsförmedlingen
 
-Region Stockholm.
+Region Exempelstad.
 
 Projektet medfinansieras av Europeiska socialfonden (ESF).
 
@@ -1670,8 +1575,7 @@ deltagarna erbjuds olika kompetenshöjningsinsatser.`,
   {
     id: "imotole",
     title: `IMoToLe`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/imotole/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "erasmus",
@@ -1680,7 +1584,7 @@ deltagarna erbjuds olika kompetenshöjningsinsatser.`,
     periodLabel: `2017 till 2019`,
     role: "partner",
     description_sv: `IMoToLe bidrar till att utveckla kulturskolans arbete för att nå
-    målgruppen nyanlända stockholmare samt utveckla den egna
+    målgruppen nyanlända kommuninvånare samt utveckla den egna
     verksamheten i enlighet med målgruppens behov.
 
 Målsättningen är att fler inom målgruppen ska delta i kulturskolans
@@ -1696,10 +1600,9 @@ Genom workshops riktade mot nyanlända och asylsökande boende i
     euFundingSEK: null,
   },
   {
-    id: "nystart-stockholm",
-    title: `Nystart Stockholm`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/nystart-stockholm/`,
-    organisation: "Stockholms stad",
+    id: "nystart-exempelstad",
+    title: `Nystart Exempelstad`,
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -1707,7 +1610,7 @@ Genom workshops riktade mot nyanlända och asylsökande boende i
     period: "2014-2020",
     periodLabel: `2018-01-02 till 2020-12-31`,
     role: "owner",
-    description_sv: `Nystart Stockholm stödjer nyanlända ungdomar i åldern 15--19 år med
+    description_sv: `Nystart Exempelstad stödjer nyanlända ungdomar i åldern 15--19 år med
 bristfällig skolbakgrund under deras första år på
 språkintroduktionsprogrammet på gymnasiet.
 
@@ -1728,8 +1631,7 @@ kvinnor.`,
   {
     id: "ratt-stod-for-mig",
     title: `Rätt stöd för mig`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/ratt-stod-for-mig/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -1741,7 +1643,7 @@ kvinnor.`,
     långt från arbetsmarknaden och behöver extra mycket stöd för att
     komma vidare.
 
-I projektet ingår fem insatser inom Stockholms län där personalen
+I projektet ingår fem insatser inom regionen där personalen
     utgår från individens egna intressen i planeringen mot arbete eller
     studier.
 
@@ -1755,8 +1657,7 @@ Målsättningen är att bygga en förtroendefull relation och en
   {
     id: "samverkan-for-okad-skolnarvaro",
     title: `Samverkan för ökad skolnärvaro`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/samverkan-for-okad-skolnarvaro/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -1782,8 +1683,7 @@ minska skolfrånvaro.`,
   {
     id: "sprakutveckling-granada",
     title: `Språkutveckling Granada`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/sprakutveckling-granada/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "erasmus",
@@ -1799,16 +1699,14 @@ Med hjälp av olika former av erfarenhetsutbyten kan personal dela
     pedagogiska arbetet i flerspråkiga förskolegrupper.
 
 Extern samverkanspartner är Granada stad.
-
-**`,
+`,
     totalBudgetSEK: 280459,
     euFundingSEK: null,
   },
   {
     id: "spangen",
     title: `Spången`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/spangen/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -1835,10 +1733,9 @@ Utbildningarna ges som uppdragsutbildningar med språk- och it-stöd
     euFundingSEK: null,
   },
   {
-    id: "susa-stockholms-unga-studerar-eller-arbe",
-    title: `SUSA -- Stockholms unga studerar eller arbetar`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/susa--stockholms-unga-studerar-eller-arbetar/`,
-    organisation: "Stockholms stad",
+    id: "susa-exempelstads-unga-studerar-eller-arbe",
+    title: `SUSA -- Exempelstads unga studerar eller arbetar`,
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -1846,7 +1743,7 @@ Utbildningarna ges som uppdragsutbildningar med språk- och it-stöd
     period: "2014-2020",
     periodLabel: `2015-09-01 till 2019-08-30`,
     role: "owner",
-    description_sv: `SUSA - Stockholms unga studerar eller arbetar, samordnar riktade
+    description_sv: `SUSA - Exempelstads unga studerar eller arbetar, samordnar riktade
 insatser till unga i 15-19 åringar som står långt ifrån arbetsmarknaden
 och riskerar att inte fullfölja studier på gymnasienivå.
 
@@ -1862,10 +1759,9 @@ och förutsättningar för.`,
     euFundingSEK: null,
   },
   {
-    id: "suvas-stockholms-unga-vuxna-arbetar-elle",
-    title: `SUVAS - Stockholms unga vuxna arbetar eller studerar`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/suvas---stockholms-unga-vuxna-arbetar-eller-studerar/`,
-    organisation: "Stockholms stad",
+    id: "suvas-exempelstads-unga-vuxna-arbetar-elle",
+    title: `SUVAS - Exempelstads unga vuxna arbetar eller studerar`,
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -1873,15 +1769,15 @@ och förutsättningar för.`,
     period: "2014-2020",
     periodLabel: `2015-09-01 till 2019-08-30`,
     role: "owner",
-    description_sv: `SUVAS - Stockholms unga vuxna arbetar eller studerar utvecklar och
-utökar Jobbtorg Stockholms uppsökande och motiverande arbete.
+    description_sv: `SUVAS - Exempelstads unga vuxna arbetar eller studerar utvecklar och
+utökar Jobbtorg Exempelstads uppsökande och motiverande arbete.
 
 Verksamheten riktas mot målgruppen personer som är 20--29 år och som
 inte studerar, arbetar eller innehar en känd aktivitet. Målsättningen är
-att unga stockholmare ska ta ett steg närmare arbetsmarknaden.
+att unga kommuninvånare ska ta ett steg närmare arbetsmarknaden.
 
 Det uppsökande arbetet riktar sig till samtliga i målgruppen i
-Stockholm, men med särskilt fokus på att utveckla och förstärka arbetet
+Exempelstad, men med särskilt fokus på att utveckla och förstärka arbetet
 i socioekonomiskt utsatta områden samt få fler unga kvinnor i
 arbetsfrämjande insatser.
 
@@ -1893,8 +1789,7 @@ utifrån den deltagande individers behov.`,
   {
     id: "sverige-bygger-nytt",
     title: `Sverige bygger nytt`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/sverige-bygger-nytt/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -1902,11 +1797,11 @@ utifrån den deltagande individers behov.`,
     period: "2014-2020",
     periodLabel: `2016-08-01 till 2019-07-31`,
     role: "partner",
-    description_sv: `Byggindustrin i Stockholmsregionen är i stort behov av arbetskraft
-samtidigt som det finns ett stort antal arbetssökande stockholmare.
+    description_sv: `Byggindustrin i regionen är i stort behov av arbetskraft
+samtidigt som det finns ett stort antal arbetssökande kommuninvånare.
 
 Under projektet Sverige bygger nytt utvecklar berörda aktörer i
-Stockholm olika modeller för att erbjuda
+Exempelstad olika modeller för att erbjuda
 
 kompetensvalidering
 
@@ -1927,8 +1822,7 @@ nya metoder och arbetssätt för en ökad inkludering på arbetsmarknaden.`,
   {
     id: "esf-projektet-syven",
     title: `ESF-projektet SYVen`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/syv/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -1955,8 +1849,7 @@ Inom ramen för projektet studerades vägledningsmetoder från andra
   {
     id: "valj-inkludering-delaktighet-och-aktivit",
     title: `Välj inkludering delaktighet och aktivitet (VIDA)`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/valj-inkludering-delaktighet-och-aktivitet-vida/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "amif",
@@ -1964,25 +1857,22 @@ Inom ramen för projektet studerades vägledningsmetoder från andra
     period: "2014-2020",
     periodLabel: `2016-08-15 till 2019-02-15`,
     role: "partner",
-    description_sv: `]](https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/valj-inkludering-delaktighet-och-aktivitet-vida/)
-
-Välj inkludering delaktighet och aktivitet (VIDA) bidrar till social
+    description_sv: `Välj inkludering delaktighet och aktivitet (VIDA) bidrar till social
 inkludering och främjar möjligheter på arbetsmarknaden för nyanlända
-stockholmare.
+kommuninvånare.
 
 Stort fokus läggs på att använda civilsamhället som en arena för social
 inkludering.
 
 Det civila samhället är en central och kontaktskapande arena för nya
-stockholmare och kan vara ett viktigt första steg in på arbetsmarknaden.`,
+kommuninvånare och kan vara ett viktigt första steg in på arbetsmarknaden.`,
     totalBudgetSEK: 16094118,
     euFundingSEK: null,
   },
   {
     id: "vaxgo",
     title: `Växgo`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/vaxgo/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "erasmus",
@@ -1990,8 +1880,8 @@ stockholmare och kan vara ett viktigt första steg in på arbetsmarknaden.`,
     period: "2014-2020",
     periodLabel: `2015-06-01 till 2017-05-31`,
     role: "owner",
-    description_sv: `Projektet Växgo utvecklar samarbetet mellan Stockholm stad,
-    civilsamhället och lokala aktörer i Stockholms ytterstadsområden med
+    description_sv: `Projektet Växgo utvecklar samarbetet mellan Exempelstad stad,
+    civilsamhället och lokala aktörer i Exempelstads ytterstadsområden med
     särskilt fokus på unga vuxna.
 
 Genom kultur och kulturella aktiviteter ska målgruppens kontaktnät
@@ -2005,16 +1895,14 @@ Målsättningen är att bidra till ett bättre och likvärdigt bemötande
     samtidigt som det kulturella utbudet blir tillgängligt för fler.
     Projektet ska även stärka ledarskapet och öka mångfalden bland
     stadens personal.
-
-**`,
+`,
     totalBudgetSEK: 179264,
     euFundingSEK: null,
   },
   {
     id: "yfi-yrkesutbildning-for-invandrare-med-i",
     title: `YFI -- Yrkesutbildning för invandrare med integrerad språkutbildning`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/yfi--yrkesutbildning-for-invandrare-med-integrerad-sprakutbildning/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "esf",
@@ -2040,8 +1928,7 @@ mellan olika branschföretag.`,
   {
     id: "alskade-barn-i-skolan",
     title: `Älskade barn i skolan`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/arbetsmarknad-utbildning-och-social-inkludering/alskade-barn-i-skolan/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Arbetsmarknad, utbildning och social inkludering`,
     theme_en: `Labour market, education and social inclusion`,
     programId: "amif",
@@ -2061,16 +1948,14 @@ Målsättningen är att fler föräldrar kan delta i den lokala
     grundskolan.
 
 Extern samverkanspartner är Studiefrämjandet.
-
-**`,
+`,
     totalBudgetSEK: 3597107,
     euFundingSEK: null,
   },
   {
-    id: "omstallning-stockholm",
-    title: `Omställning Stockholm`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/naringslivsframjande-insatser/omstallning-stockholm/`,
-    organisation: "Stockholms stad",
+    id: "omstallning-exempelstad",
+    title: `Omställning Exempelstad`,
+    organisation: "Exempelstad",
     theme_sv: `Näringslivsfrämjande insatser`,
     theme_en: `Business development initiatives`,
     programId: "erdf",
@@ -2078,11 +1963,11 @@ Extern samverkanspartner är Studiefrämjandet.
     period: "2014-2020",
     periodLabel: ``,
     role: "owner",
-    description_sv: `Projektet Omställning Stockholm bidrar till stärkt samverkan mellan
+    description_sv: `Projektet Omställning Exempelstad bidrar till stärkt samverkan mellan
     besöksnäringens aktörer och en hållbar framtid för
-    besöksdestinationen Stockholm.
+    besöksdestinationen Exempelstad.
 
-Företagen inom besöksnäringen i Stockholms län drabbades hårt av
+Företagen inom besöksnäringen i regionen drabbades hårt av
     effekter efter covid-19-pandemin. Marknaden har varit starkt
     begränsad där företagen tappade stora delar av sin omsättning.
     Merparten av företagen är små med begränsade möjligheter att hantera
@@ -2095,8 +1980,7 @@ Företagen inom besöksnäringen i Stockholms län drabbades hårt av
   {
     id: "digit",
     title: `DigIt`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/digitalisering-och-utveckling-av-stadens-valfardstjanster/digit/`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Digitalisering och utveckling av stadens välfärdstjänster`,
     theme_en: `Digitalisation and development of city welfare services`,
     programId: "esf",
@@ -2119,10 +2003,9 @@ till den digitala utvecklingen.`,
     euFundingSEK: null,
   },
   {
-    id: "stockholm-digital-care",
-    title: `Stockholm Digital Care`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/digitalisering-och-utveckling-av-stadens-valfardstjanster/stockholm-digital-care/`,
-    organisation: "Stockholms stad",
+    id: "exempelstad-digital-care",
+    title: `Exempelstad Digital Care`,
+    organisation: "Exempelstad",
     theme_sv: `Digitalisering och utveckling av stadens välfärdstjänster`,
     theme_en: `Digitalisation and development of city welfare services`,
     programId: "erdf",
@@ -2130,9 +2013,9 @@ till den digitala utvecklingen.`,
     period: "2014-2020",
     periodLabel: `2015-10-01 till 2020-12-31`,
     role: "owner",
-    description_sv: `Stockholm Digital Care är ett digitaliseringsprojekt med sikte på
+    description_sv: `Exempelstad Digital Care är ett digitaliseringsprojekt med sikte på
 framtidens äldreomsorg. Med ett större utbud av välfärdsteknik specifikt
-utformad för äldre stockholmare ska projektet bidra till ett
+utformad för äldre kommuninvånare ska projektet bidra till ett
 självständigt liv och välbefinnande för äldre som bor kvar hemma i den
 egna bostaden.
 
@@ -2150,8 +2033,7 @@ tillväxt i region.`,
   {
     id: "vux-2-0",
     title: `Vux 2.0`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/digitalisering-och-utveckling-av-stadens-valfardstjanster/vux-2.0`,
-    organisation: "Stockholms stad",
+    organisation: "Exempelstad",
     theme_sv: `Digitalisering och utveckling av stadens välfärdstjänster`,
     theme_en: `Digitalisation and development of city welfare services`,
     programId: "esf",
@@ -2161,7 +2043,7 @@ tillväxt i region.`,
     role: "owner",
     description_sv: `Vux 2.0 är ett kompetensutvecklings- och digitaliseringsprojekt.
     Målet är att bidra till en bred användning av digitala verktyg inom
-    Vuxenutbildningen i egen regi inom Stockholms stad.
+    Vuxenutbildningen i egen regi inom Exempelstad.
 
 Projektet arbetar med det genom att höja den digitala kompetensen på
     såväl individnivå som organisatorisk nivå.
@@ -2176,9 +2058,8 @@ För lärarens perspektiv handlar det om förbättrade möjligheter till
   },
   {
     id: "okad-anvandning-av-oppna-data-i-stockhol",
-    title: `Ökad användning av öppna data i Stockholmsregionen - ÖdiS`,
-    url: `https://start.stockholm/om-stockholms-stad/projekt/eu-projekt/programperiod-2014-2020/digitalisering-och-utveckling-av-stadens-valfardstjanster/okad-anvandning-av-oppna-data-i-stockholmsregionen---odis/`,
-    organisation: "Stockholms stad",
+    title: `Ökad användning av öppna data i regionen - ÖdiS`,
+    organisation: "Exempelstad",
     theme_sv: `Digitalisering och utveckling av stadens välfärdstjänster`,
     theme_en: `Digitalisation and development of city welfare services`,
     programId: "erdf",
@@ -2186,7 +2067,7 @@ För lärarens perspektiv handlar det om förbättrade möjligheter till
     period: "2014-2020",
     periodLabel: `2018-01-01 till 2020-12-31`,
     role: "owner",
-    description_sv: `ÖdiS, Ökad användning av öppna data i Stockholmsregionen, utvecklar
+    description_sv: `ÖdiS, Ökad användning av öppna data i regionen, utvecklar
     gemensamma standarder samt tillgängliggör och stimulerar
     användningen av öppna data bland företag i regionen.
 
@@ -2196,7 +2077,7 @@ Målsättningen är att stärka innovations- och
     efter 2021.
 
 Genom nätverk, plattformar och samverkan ska sammanlagt 500 företag
-    dra nytta av den data som produceras i Stockholmsregionen. ÖdiS
+    dra nytta av den data som produceras i regionen. ÖdiS
     identifierar och förvaltar öppna data både systematiskt och
     kontinuerlig vilket bidrar till en ökad transparens för frågorna
     inom de deltagande kommunerna.`,

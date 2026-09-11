@@ -127,17 +127,6 @@ function ReferenceProjectsInner() {
                     ))}
                   </div>
                 )}
-
-                {project.url && (
-                  <a
-                    href={project.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 text-sm font-semibold text-navy-600 hover:text-navy-900"
-                  >
-                    {rp.viewProjectLink} →
-                  </a>
-                )}
               </div>
             );
           })}

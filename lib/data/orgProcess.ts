@@ -1,12 +1,12 @@
 import { OrgProcessPhase } from "@/lib/types";
 
-// REAL DATA: Stockholms stads faktiska process för EU-finansierade projekt,
+// REAL DATA: en verklig kommuns process för EU-finansierade projekt,
 // extraherad från stadens "EU-projekthandbok" (stödmaterial och
 // utbildningsmaterial för interna medarbetare).
 //
 // The four-phase structure and the internal role breakdown per phase
 // (Verksamhet / Stadsledningskontoret / Serviceförvaltningen) are real and
-// specific to Stockholms stad's own organisation. They are attached here as
+// specific to that example organisation's own setup. They are attached here as
 // ONE EXAMPLE of how a municipality can divide internal responsibility for
 // an EU project — not a system default. Another organisation would have its
 // own equivalents (or none at all) for these central support functions; see
@@ -28,7 +28,7 @@ export const orgProcessPhases: OrgProcessPhase[] = [
       { title_sv: "Viktiga begrepp inom EU-finansiering", title_en: "Key terms in EU funding" },
     ],
     roleExample: {
-      organisationName: "Stockholms stad",
+      organisationName: "Exempelstad",
       responsibilities: [
         {
           role_sv: "Verksamhet",
@@ -77,7 +77,7 @@ export const orgProcessPhases: OrgProcessPhase[] = [
       { title_sv: "Om Grant Agreement", title_en: "About the Grant Agreement" },
     ],
     roleExample: {
-      organisationName: "Stockholms stad",
+      organisationName: "Exempelstad",
       responsibilities: [
         {
           role_sv: "Verksamhet",
@@ -138,7 +138,7 @@ export const orgProcessPhases: OrgProcessPhase[] = [
       { title_sv: "Fyra saker att tänka på när du kommunicerar EU-projekt", title_en: "Four things to consider when communicating an EU project" },
     ],
     roleExample: {
-      organisationName: "Stockholms stad",
+      organisationName: "Exempelstad",
       responsibilities: [
         {
           role_sv: "Verksamhet",
@@ -201,7 +201,7 @@ export const orgProcessPhases: OrgProcessPhase[] = [
       { title_sv: "Gallringsbeslut om handlingar vid EU-projekt", title_en: "Retention/disposal decision for EU-project records" },
     ],
     roleExample: {
-      organisationName: "Stockholms stad",
+      organisationName: "Exempelstad",
       responsibilities: [
         {
           role_sv: "Verksamhet",
