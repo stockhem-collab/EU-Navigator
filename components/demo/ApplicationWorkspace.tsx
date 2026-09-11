@@ -6,7 +6,7 @@ import { generateProjectLogic, generateReviewerNotes } from "@/lib/matching/gene
 import { computeGapAnalysis } from "@/lib/matching/gapAnalysis";
 import { computeReadiness } from "@/lib/matching/readiness";
 import { analyzeSection } from "@/lib/matching/sectionCoach";
-import { orgProcessSteps } from "@/lib/data/orgProcess";
+import OrgProcessPanel from "@/components/OrgProcessPanel";
 import { fmtSEK } from "@/lib/format";
 
 interface Props {
@@ -21,14 +21,12 @@ export default function ApplicationWorkspace({ project, match, onBack }: Props) 
   const gapT = t.demo.gapAnalysis;
   const readinessT = t.demo.readiness;
   const coachT = t.demo.coach;
-  const org = t.orgProcess;
 
   const logic = generateProjectLogic(project, match.call, match.program);
   const notes = generateReviewerNotes(project, match.call);
   const gap = computeGapAnalysis(match);
   const readiness = computeReadiness(project, match);
   const coach = analyzeSection(project, match);
-  const allOrgStepsDone = orgProcessSteps.every((s) => s.done);
 
   const estEu = (match.estimatedFundingSEK[0] + match.estimatedFundingSEK[1]) / 2;
   const coFinancing = Math.max(0, project.budgetSEK - estEu);
@@ -207,27 +205,9 @@ export default function ApplicationWorkspace({ project, match, onBack }: Props) 
         </dl>
       </section>
 
-      {/* Organisation's own process */}
-      <section className="mt-10 rounded-xl border border-navy-100 bg-white p-6">
-        <h2 className="text-sm font-semibold uppercase text-navy-400">{org.dualComplianceTitle}</h2>
-        <ul className="mt-3 space-y-2">
-          {orgProcessSteps.map((step) => (
-            <li key={step.title_sv} className="flex items-start gap-2 text-sm">
-              <span className={step.done ? "text-green-600" : "text-amber-600"}>{step.done ? "✓" : "○"}</span>
-              <span className={step.done ? "text-navy-700" : "text-navy-500"}>
-                {lang === "sv" ? step.title_sv : step.title_en}
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p
-          className={`mt-4 rounded-md p-3 text-sm ${
-            allOrgStepsDone ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"
-          }`}
-        >
-          {allOrgStepsDone ? org.dualComplianceReady : org.dualComplianceBlocked}
-        </p>
-      </section>
+      <div className="mt-10">
+        <OrgProcessPanel phaseKey="application" readinessScore={readiness.overall} />
+      </div>
 
       <section className="mb-16 mt-10">
         <h2 className="text-lg font-bold text-navy-800">{ws.nextStepsTitle}</h2>

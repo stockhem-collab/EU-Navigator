@@ -8,20 +8,18 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findAwardedProject } from "@/lib/data/awardedProjects";
 import { findCall } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { orgProcessSteps } from "@/lib/data/orgProcess";
+import OrgProcessPanel from "@/components/OrgProcessPanel";
 import { fmtSEK } from "@/lib/format";
 
 export default function AwardedProjectDetailPage() {
   const params = useParams<{ id: string }>();
   const { t, lang } = useLanguage();
   const ap = t.awardedProjects;
-  const org = t.orgProcess;
 
   const project = findAwardedProject(params.id);
   if (!project) return notFound();
   const call = findCall(project.callId);
   const program = call ? findProgram(call.programId) : undefined;
-  const allDone = orgProcessSteps.every((s) => s.done);
 
   return (
     <>
@@ -96,22 +94,9 @@ export default function AwardedProjectDetailPage() {
           </div>
         </section>
 
-        <section className="mb-16 mt-6 rounded-xl border border-navy-100 bg-white p-6">
-          <h2 className="text-sm font-semibold uppercase text-navy-400">{org.dualComplianceTitle}</h2>
-          <ul className="mt-3 space-y-2">
-            {orgProcessSteps.map((step) => (
-              <li key={step.title_sv} className="flex items-start gap-2 text-sm">
-                <span className={step.done ? "text-green-600" : "text-amber-600"}>{step.done ? "✓" : "○"}</span>
-                <span className={step.done ? "text-navy-700" : "text-navy-500"}>
-                  {lang === "sv" ? step.title_sv : step.title_en}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className={`mt-4 rounded-md p-3 text-sm ${allDone ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}>
-            {allDone ? org.dualComplianceReady : org.dualComplianceBlocked}
-          </p>
-        </section>
+        <div className="mb-16 mt-6">
+          <OrgProcessPanel phaseKey="delivery" />
+        </div>
       </main>
       <Footer />
     </>

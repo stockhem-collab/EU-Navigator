@@ -29,9 +29,10 @@ documentation.
   and suggests concrete additions, plus a dual-compliance check against
   the organisation's own internal process (`Organisationens regelverk`).
 - **Beviljade referensprojekt / "Lär av vinnarna"** (`/referensprojekt`) —
-  a library of previously awarded projects with aggregated success
-  patterns (% with quantified impact, % describing scalability, etc.),
-  reachable standalone or from any call page.
+  **real data**: Stockholms stads actual register of 74 EU-funded projects
+  2014-2027 (fund, budget, EU share, role, theme), with aggregated
+  statistics (share led as project owner, average budget, most common
+  theme), reachable standalone or from any call page.
 - **Projekt & rapportering** (`/projekt`) — awarded projects, where
   commitments made in the application (indicators, targets) are tracked
   against reported outturn, with an AI comment on any deviation.
@@ -45,15 +46,28 @@ on where the user is in the chain: *"Jag har ett projekt"* → `/demo`,
 *"Jag har hittat en utlysning"* → `/eu-databas`, *"Jag har fått
 finansiering"* → `/projekt`.
 
-## Important: illustrative example data
+## What's real data vs. illustrative example data
 
-**The reference-project library, project bank, awarded projects, and
-organisation's internal process are all illustrative example data**,
-built to demonstrate the mechanics — not real records. The intended next
-step is to replace `lib/data/referenceProjects.ts` with a dataset built
-from the organisation's actual ~20-30 awarded projects, and
-`lib/data/orgProcess.ts` from its real internal process/instruction
-material, once those documents are available.
+- **Real**: `lib/data/referenceProjects.ts` (74 of Stockholms stads actual
+  awarded EU projects, 2014-2027, extracted from the city's own "Projekt
+  med beviljade medel" documentation), `lib/data/fundingPrograms.ts` (the
+  real EU funds/programmes the city tracks and has been awarded from), and
+  `lib/data/orgProcess.ts` (the city's real four-phase EU-project process —
+  Idea → Application → Delivery → Closure — including its own document
+  list per phase, from the city's EU-project handbook).
+- **One example, not a system default**: the internal role breakdown
+  attached to each `orgProcess` phase (Verksamhet / Stadsledningskontoret /
+  Serviceförvaltningen) is Stockholm's own specific internal organisation.
+  It's shown labelled as one example of how a municipality *could* divide
+  responsibility — every organisation would configure its own equivalent
+  (or none) in a real deployment. See `OrgProcessPanel`'s disclaimer text.
+- **Still illustrative**: `lib/data/projectBank.ts` (a municipality's own
+  in-progress project ideas — inherently invented for a demo, since real
+  ones are usually confidential), `lib/data/awardedProjects.ts` (the
+  commitments-vs-actuals reporting example), and the specific open
+  `FundingCall` deadlines/criteria in `lib/data/fundingCalls.ts` (real
+  calls change constantly; wiring this to the live EU Funding & Tenders
+  Portal API is the natural next step there).
 
 No login, no backend, no database — everything runs client-side. The
 matching, gap analysis, readiness score and Application Coach are all
@@ -115,10 +129,11 @@ components/                 UI components (landing sections, demo flow,
 lib/i18n/                   Swedish/English translation dictionary + language context
 lib/types.ts                Shared data model (Programme/Call/Document,
                              ProjectBankEntry, ReferenceProject,
-                             AwardedProject, OrgProcessStep, matching types)
-lib/data/                   Seed data — programmes, calls+documents,
-                             project bank, reference projects, awarded
-                             projects, org process (all illustrative)
+                             AwardedProject, OrgProcessPhase, matching types)
+lib/data/                   Seed data — real programmes (22) and awarded
+                             reference projects (74), the real org process,
+                             plus illustrative calls/documents, project
+                             bank and awarded-project reporting example
 lib/matching/                Scoring engine, gap analysis, readiness score,
                              application coach, workspace content generator
 ```

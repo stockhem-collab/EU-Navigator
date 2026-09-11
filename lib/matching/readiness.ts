@@ -3,6 +3,13 @@ import { MatchResult, ProjectInput, ReadinessBreakdown } from "@/lib/types";
 const IMPACT_PATTERN = /\d+\s?(%|procent|percent|mwh|kwh|co2|co2e|ton|kr|sek|mnkr)/i;
 const INDICATOR_PATTERN = /\d+\s?(deltagare|elever|personer|participants|students|people|byggnader|buildings)/i;
 
+// Most EU funds require applicants to address a set of "horizontal
+// principles" (jämställdhet, tillgänglighet, icke-diskriminering, ekologisk
+// hållbarhet) — real evaluation criteria used by e.g. Svenska ESF-rådet and
+// Tillväxtverket, not an invented dimension.
+const HORIZONTAL_PRINCIPLES_PATTERN =
+  /jämställd|jämlik|tillgänglig|icke-diskriminer|mångfald|inklud|hållbar|miljö|gender|equalit|accessib|inclusi|sustainab/i;
+
 function budgetDimensionScore(match: MatchResult): number {
   const budgetLine = match.rationale.find((r) => r.category === "budget");
   if (!budgetLine) return 100;
@@ -29,6 +36,8 @@ export function computeReadiness(project: ProjectInput, match: MatchResult): Rea
     : 30;
 
   const indicatorsScore = INDICATOR_PATTERN.test(project.description) ? 82 : 40;
+
+  const horizontalPrinciplesScore = HORIZONTAL_PRINCIPLES_PATTERN.test(project.description) ? 85 : 35;
 
   const documentationScore = 91;
 
@@ -88,6 +97,20 @@ export function computeReadiness(project: ProjectInput, match: MatchResult): Rea
       action_en: indicatorsScore < 80 ? "Define measurable indicators with a clear baseline and target." : undefined,
     },
     {
+      key: "horizontalPrinciples",
+      label_sv: "Horisontella principer",
+      label_en: "Horizontal principles",
+      score: horizontalPrinciplesScore,
+      action_sv:
+        horizontalPrinciplesScore < 80
+          ? "Beskriv hur projektet arbetar med jämställdhet, tillgänglighet, icke-diskriminering och/eller ekologisk hållbarhet — de flesta fonder kräver detta."
+          : undefined,
+      action_en:
+        horizontalPrinciplesScore < 80
+          ? "Describe how the project addresses gender equality, accessibility, non-discrimination and/or environmental sustainability — most funds require this."
+          : undefined,
+    },
+    {
       key: "documentation",
       label_sv: "Dokumentation",
       label_en: "Documentation",
@@ -97,7 +120,7 @@ export function computeReadiness(project: ProjectInput, match: MatchResult): Rea
 
   const overall = Math.round(
     dims.reduce((sum, d, i) => {
-      const weights = [0.2, 0.15, 0.1, 0.15, 0.1, 0.1, 0.1, 0.1];
+      const weights = [0.18, 0.13, 0.09, 0.13, 0.09, 0.09, 0.09, 0.1, 0.1];
       return sum + d.score * weights[i];
     }, 0)
   );

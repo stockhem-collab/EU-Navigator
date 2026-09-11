@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { findCall } from "@/lib/data/fundingCalls";
-import { referenceProjectsForProgram, computeSuccessPatterns } from "@/lib/data/referenceProjects";
+import { referenceProjectsForProgram, computeProgramStats } from "@/lib/data/referenceProjects";
 import { fmtSEK } from "@/lib/format";
 
 export default function CallDetailPage() {
@@ -20,7 +20,7 @@ export default function CallDetailPage() {
   if (!program || !call || call.programId !== program.id) return notFound();
 
   const refProjects = referenceProjectsForProgram(program.id);
-  const patterns = computeSuccessPatterns(refProjects);
+  const stats = computeProgramStats(refProjects);
 
   return (
     <>
@@ -115,7 +115,7 @@ export default function CallDetailPage() {
         {refProjects.length > 0 && (
           <section className="mt-6 rounded-xl border border-navy-100 bg-navy-800 p-6 text-white">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-bold">{t.referenceProjects.patternsTitle}</h2>
+              <h2 className="font-bold">{t.referenceProjects.statsTitle}</h2>
               <Link
                 href={`/referensprojekt?program=${program.id}`}
                 className="rounded-md bg-white/10 px-3 py-1.5 text-xs font-semibold hover:bg-white/20"
@@ -123,19 +123,21 @@ export default function CallDetailPage() {
                 {db.learnFromWinnersButton}
               </Link>
             </div>
-            <p className="mt-1 text-sm text-navy-300">{t.referenceProjects.patternsIntro(patterns.total)}</p>
+            <p className="mt-1 text-sm text-navy-300">{t.referenceProjects.statsIntro(stats.total)}</p>
             <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
               <div>
-                <p className="text-2xl font-bold text-gold-300">{patterns.quantifiedImpactPct}%</p>
-                <p className="text-navy-300">{t.referenceProjects.patternQuantified}</p>
+                <p className="text-2xl font-bold text-gold-300">{stats.ownerSharePct}%</p>
+                <p className="text-navy-300">{t.referenceProjects.statOwnerShare}</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-gold-300">{patterns.scalabilityPct}%</p>
-                <p className="text-navy-300">{t.referenceProjects.patternScalability}</p>
+                <p className="text-2xl font-bold text-gold-300">
+                  {stats.avgBudgetSEK !== null ? fmtSEK(stats.avgBudgetSEK, lang) : "–"}
+                </p>
+                <p className="text-navy-300">{t.referenceProjects.statAvgBudget}</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-gold-300">{patterns.goalAlignmentPct}%</p>
-                <p className="text-navy-300">{t.referenceProjects.patternGoalAlignment}</p>
+                <p className="text-lg font-bold text-gold-300">{stats.topTheme ?? "–"}</p>
+                <p className="text-navy-300">{t.referenceProjects.statTopTheme}</p>
               </div>
             </div>
           </section>

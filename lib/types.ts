@@ -28,6 +28,9 @@ export interface FundingProgram {
   geographicScope: "sweden" | "eu-wide" | "cross-border-region";
   typicalCoFinancingRate: number; // 0-1
   typicalDurationYears: [number, number];
+  /** "active" = currently open to new applications; "legacy" = closed programme
+   * from the 2014-2020 period, kept for its historical reference projects. */
+  status: "active" | "legacy";
 }
 
 // ---------------------------------------------------------------------------
@@ -117,33 +120,41 @@ export interface ProjectBankEntry {
 
 // ---------------------------------------------------------------------------
 // Reference projects — previously awarded projects used to teach the system
-// patterns of what gets funded. Illustrative example data until the
-// municipality's real 20-30 awarded projects are ingested.
+// patterns of what gets funded ("Lär av vinnarna"). This is REAL data:
+// Stockholms stads faktiska EU-finansierade projekt 2014-2027, extracted
+// from the municipality's own "Projekt med beviljade medel" documentation.
 // ---------------------------------------------------------------------------
+export interface ReferenceProjectIndicator {
+  label_sv: string;
+  label_en: string;
+  target: number;
+  actual: number;
+  unit_sv: string;
+  unit_en: string;
+}
+
 export interface ReferenceProject {
   id: string;
-  programId: string;
+  title: string;
+  url?: string;
   organisation: string;
-  area_sv: string;
-  area_en: string;
-  problem_sv: string;
-  problem_en: string;
-  goal_sv: string;
-  goal_en: string;
-  budgetSEK: number;
-  fundingRate: number; // 0-1
-  partners: string[];
-  indicators_sv: string[];
-  indicators_en: string[];
-  innovationLevel_sv: string;
-  innovationLevel_en: string;
-  successFactors: (
-    | "quantified-impact"
-    | "scalability"
-    | "multi-org"
-    | "pilot-demo"
-    | "strong-goal-alignment"
-  )[];
+  theme_sv: string;
+  theme_en: string;
+  programId: string;
+  fundName: string; // the original, un-normalized name of the fund/programme
+  /** Which of Stockholm's own two published EU programme periods this project
+   * belongs to — a real distinction in the source data, not an invented one. */
+  period: "2021-2027" | "2014-2020";
+  periodLabel: string; // raw project period text, e.g. "2023-01-01 till 2028-01-01"
+  role: "owner" | "partner";
+  description_sv: string;
+  totalBudgetSEK: number | null;
+  euFundingSEK: number | null;
+  contactEmail?: string;
+  /** Only populated for the small number of projects where a detailed final
+   * report was available (e.g. Digitalt kompetenslyft) — most entries rely on
+   * the summary description instead. */
+  indicators?: ReferenceProjectIndicator[];
 }
 
 // ---------------------------------------------------------------------------
@@ -171,13 +182,31 @@ export interface AwardedProject {
 }
 
 // ---------------------------------------------------------------------------
-// Organisation's own internal process — a second, independent rule layer.
+// Organisation's own internal process — a second, independent rule layer
+// alongside the EU's own requirements. This is real (Stockholms stads
+// faktiska 5-fas EU-projektprocess), but the specific internal roles below
+// belong to one example organisation — every municipality structures its own
+// internal support functions differently, so this is not a system default.
 // ---------------------------------------------------------------------------
-export interface OrgProcessStep {
+export interface OrgProcessDocument {
+  title_sv: string;
+  title_en: string;
+}
+
+export interface OrgProcessPhase {
+  key: string;
   title_sv: string;
   title_en: string;
   desc_sv: string;
   desc_en: string;
+  documents: OrgProcessDocument[];
+  /** One example organisation's internal division of responsibility for this
+   * phase — illustrative of how a municipality *could* structure it, not a
+   * prescribed standard. */
+  roleExample?: {
+    organisationName: string;
+    responsibilities: { role_sv: string; role_en: string; tasks_sv: string[]; tasks_en: string[] }[];
+  };
   done: boolean;
 }
 

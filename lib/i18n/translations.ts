@@ -188,21 +188,23 @@ export interface TranslationTree {
     subtitle: string;
     disclaimer: string;
     filterAll: string;
-    patternsTitle: string;
-    patternsIntro: (n: number) => string;
-    patternQuantified: string;
-    patternScalability: string;
-    patternMultiOrg: string;
-    patternGoalAlignment: string;
-    patternPilot: string;
-    whatItMeansTitle: string;
-    whatItMeansBody: string;
+    statsTitle: string;
+    statsIntro: (n: number) => string;
+    statOwnerShare: string;
+    statAvgBudget: string;
+    statTopTheme: string;
+    statCurrentVsLegacy: (current: number, legacy: number) => string;
     fieldOrganisation: string;
+    fieldFund: string;
+    fieldPeriod: string;
+    fieldRole: string;
     fieldBudget: string;
-    fieldFundingRate: string;
-    fieldPartners: string;
-    fieldIndicators: string;
-    fieldInnovation: string;
+    fieldEuFunding: string;
+    roleOwner: string;
+    rolePartner: string;
+    periodLegacyBadge: string;
+    noBudgetDisclosed: string;
+    viewProjectLink: string;
   };
   datacenter: {
     title: string;
@@ -237,6 +239,9 @@ export interface TranslationTree {
     dualComplianceTitle: string;
     dualComplianceReady: string;
     dualComplianceBlocked: string;
+    exampleDisclaimer: (orgName: string) => string;
+    documentsLabel: string;
+    rolesLabel: string;
   };
 }
 
@@ -453,6 +458,7 @@ export const translations: Record<Lang, TranslationTree> = {
           "Åtgärda punkterna som AI-granskningen flaggat",
           "Bekräfta partnerskap/konsortium vid behov",
           "Komplettera indikatorer med mätbara utgångsvärden",
+          "Beskriv hur projektet arbetar med horisontella principer (jämställdhet, tillgänglighet, hållbarhet)",
           "Skicka ansökan för intern attest",
         ],
       },
@@ -529,24 +535,25 @@ export const translations: Record<Lang, TranslationTree> = {
       title: "Beviljade referensprojekt",
       subtitle: "Vad har faktiskt fått finansiering tidigare — och varför?",
       disclaimer:
-        "Illustrativ exempeldata. Den skarpa versionen byggs från organisationens egna beviljade projekt när dessa dokument har lagts in.",
+        "Verklig data: Stockholms stads faktiska register över EU-finansierade projekt 2014–2027, hämtat från stadens egen dokumentation. Inte alla projekt har publicerat en fullständig budgetsiffra.",
       filterAll: "Alla program",
-      patternsTitle: "Gemensamma framgångsmönster",
-      patternsIntro: (n) => `${n} relevanta beviljade projekt analyserade`,
-      patternQuantified: "hade kvantifierade effekter",
-      patternScalability: "beskrev skalbarhet",
-      patternMultiOrg: "hade flera organisationer involverade",
-      patternGoalAlignment: "kopplade projektmålen direkt till programmets mål",
-      patternPilot: "innehöll demonstrations-/pilotmoment",
-      whatItMeansTitle: "Vad betyder detta för ditt projekt?",
-      whatItMeansBody:
-        "Överväg att lägga till kvantifierade mål, en strategi för skalbarhet/spridning och — där relevant — fler samarbetsparter, eftersom detta återkommer i de flesta beviljade projekt inom detta program.",
+      statsTitle: "Statistik för valt program",
+      statsIntro: (n) => `${n} beviljade projekt`,
+      statOwnerShare: "Stockholm var projektägare i",
+      statAvgBudget: "Genomsnittlig projektbudget",
+      statTopTheme: "Vanligaste tema",
+      statCurrentVsLegacy: (current, legacy) => `${current} pågående/aktuella (2021–2027), ${legacy} avslutade (2014–2020)`,
       fieldOrganisation: "Organisation",
-      fieldBudget: "Budget",
-      fieldFundingRate: "Finansieringsgrad",
-      fieldPartners: "Partners",
-      fieldIndicators: "Indikatorer",
-      fieldInnovation: "Innovationshöjd",
+      fieldFund: "Fond/program",
+      fieldPeriod: "Projektperiod",
+      fieldRole: "Stockholms roll",
+      fieldBudget: "Total budget",
+      fieldEuFunding: "Varav EU-finansiering",
+      roleOwner: "Projektägare",
+      rolePartner: "Projektpartner",
+      periodLegacyBadge: "Avslutat 2014–2020",
+      noBudgetDisclosed: "Ej redovisad",
+      viewProjectLink: "Läs mer på start.stockholm",
     },
     datacenter: {
       title: "Datacenter",
@@ -583,6 +590,10 @@ export const translations: Record<Lang, TranslationTree> = {
       dualComplianceReady: "Ansökan är redo ur både EU-utlysningens och kommunens interna processperspektiv.",
       dualComplianceBlocked:
         "Ansökan är redo ur EU-utlysningens perspektiv, men enligt kommunens interna projektprocess saknas ett eller flera steg.",
+      exampleDisclaimer: (orgName) =>
+        `Exempel: så här fördelar ${orgName} internt ansvar i detta steg. Varje organisation konfigurerar sin egen process — det här är inte en standard i systemet.`,
+      documentsLabel: "Stödmaterial för detta steg",
+      rolesLabel: "Roller och ansvar",
     },
   },
   en: {
@@ -797,6 +808,7 @@ export const translations: Record<Lang, TranslationTree> = {
           "Address the points flagged by the AI review",
           "Confirm partnership/consortium if required",
           "Add measurable baselines to indicators",
+          "Describe how the project addresses horizontal principles (gender equality, accessibility, sustainability)",
           "Send the application for internal sign-off",
         ],
       },
@@ -873,24 +885,25 @@ export const translations: Record<Lang, TranslationTree> = {
       title: "Awarded reference projects",
       subtitle: "What has actually been funded before — and why?",
       disclaimer:
-        "Illustrative example data. The production version is built from the organisation's own awarded projects once those documents are added.",
+        "Real data: Stockholms stad's actual register of EU-funded projects 2014-2027, drawn from the city's own documentation. Not every project has published a full budget figure.",
       filterAll: "All programmes",
-      patternsTitle: "Common success patterns",
-      patternsIntro: (n) => `${n} relevant awarded projects analysed`,
-      patternQuantified: "had quantified effects",
-      patternScalability: "described scalability",
-      patternMultiOrg: "involved multiple organisations",
-      patternGoalAlignment: "linked project goals directly to programme goals",
-      patternPilot: "included a demonstration/pilot element",
-      whatItMeansTitle: "What does this mean for your project?",
-      whatItMeansBody:
-        "Consider adding quantified targets, a scalability/replication strategy and — where relevant — more partner organisations, since these recur across most awarded projects in this programme.",
+      statsTitle: "Statistics for the selected programme",
+      statsIntro: (n) => `${n} awarded projects`,
+      statOwnerShare: "Stockholm was project owner in",
+      statAvgBudget: "Average project budget",
+      statTopTheme: "Most common theme",
+      statCurrentVsLegacy: (current, legacy) => `${current} ongoing/current (2021-2027), ${legacy} closed (2014-2020)`,
       fieldOrganisation: "Organisation",
-      fieldBudget: "Budget",
-      fieldFundingRate: "Funding rate",
-      fieldPartners: "Partners",
-      fieldIndicators: "Indicators",
-      fieldInnovation: "Innovation level",
+      fieldFund: "Fund/programme",
+      fieldPeriod: "Project period",
+      fieldRole: "Stockholm's role",
+      fieldBudget: "Total budget",
+      fieldEuFunding: "Of which EU funding",
+      roleOwner: "Project owner",
+      rolePartner: "Project partner",
+      periodLegacyBadge: "Closed 2014-2020",
+      noBudgetDisclosed: "Not disclosed",
+      viewProjectLink: "Read more on start.stockholm",
     },
     datacenter: {
       title: "Datacenter",
@@ -926,6 +939,10 @@ export const translations: Record<Lang, TranslationTree> = {
       dualComplianceReady: "The application is ready from both the EU call's and the municipality's internal process perspective.",
       dualComplianceBlocked:
         "The application is ready from the EU call's perspective, but one or more steps are missing according to the municipality's internal project process.",
+      exampleDisclaimer: (orgName) =>
+        `Example: this is how ${orgName} divides internal responsibility at this step. Every organisation configures its own process — this is not a system default.`,
+      documentsLabel: "Supporting material for this step",
+      rolesLabel: "Roles and responsibilities",
     },
   },
 };

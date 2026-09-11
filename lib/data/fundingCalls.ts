@@ -115,7 +115,7 @@ export const fundingCalls: FundingCall[] = [
   },
   {
     id: "interreg-2027-nordic-climate",
-    programId: "interreg",
+    programId: "interreg-baltic-sea",
     title_sv: "Interreg – Nordiskt klimatsamarbete 2027",
     title_en: "Interreg – Nordic climate cooperation 2027",
     status: "upcoming",
