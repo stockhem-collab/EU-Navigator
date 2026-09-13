@@ -90,13 +90,22 @@ export interface FundingDocument {
 // ---------------------------------------------------------------------------
 // Project bank — the municipality's own project ideas / investments.
 // ---------------------------------------------------------------------------
+/** The customer's own project-pipeline lifecycle, matching
+ * docs/DATA_MODEL.md §2.2's `CustomerProject.status`. The prototype doesn't
+ * yet have a separate persisted `Application` record driving this (see
+ * `useApplication` for what is persisted today), so a project only moves
+ * through these stages when its seed/import data or the Projektbank UI says
+ * so — nothing here auto-advances the status yet. */
 export type ProjectStatus =
   | "idea"
-  | "in-development"
-  | "applying"
-  | "awarded"
-  | "delivering"
-  | "closed";
+  | "assessing"
+  | "funding-search"
+  | "application"
+  | "submitted"
+  | "approved"
+  | "rejected"
+  | "running"
+  | "completed";
 
 export interface ProjectBankEntry {
   id: string;

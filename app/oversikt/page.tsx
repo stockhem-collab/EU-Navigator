@@ -15,7 +15,17 @@ import { ProjectStatus } from "@/lib/types";
 
 type Role = "ledning" | "samordnare" | "verksamhet";
 
-const STATUS_ORDER: ProjectStatus[] = ["idea", "in-development", "applying", "awarded", "delivering", "closed"];
+const STATUS_ORDER: ProjectStatus[] = [
+  "idea",
+  "assessing",
+  "funding-search",
+  "application",
+  "submitted",
+  "approved",
+  "rejected",
+  "running",
+  "completed",
+];
 
 export default function OversiktPage() {
   const { t, lang } = useLanguage();

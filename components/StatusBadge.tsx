@@ -5,11 +5,14 @@ import { ProjectStatus } from "@/lib/types";
 
 const STYLES: Record<ProjectStatus, string> = {
   idea: "bg-navy-100 text-navy-600",
-  "in-development": "bg-gold-100 text-gold-700",
-  applying: "bg-blue-100 text-blue-700",
-  awarded: "bg-green-100 text-green-800",
-  delivering: "bg-green-100 text-green-800",
-  closed: "bg-navy-50 text-navy-400",
+  assessing: "bg-navy-100 text-navy-600",
+  "funding-search": "bg-gold-100 text-gold-700",
+  application: "bg-blue-100 text-blue-700",
+  submitted: "bg-blue-100 text-blue-700",
+  approved: "bg-green-100 text-green-800",
+  rejected: "bg-red-100 text-red-700",
+  running: "bg-green-100 text-green-800",
+  completed: "bg-navy-50 text-navy-400",
 };
 
 export default function StatusBadge({ status }: { status: ProjectStatus }) {

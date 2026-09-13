@@ -27,7 +27,9 @@ export default function DatacenterPage() {
   const docsNeedingUpdate = docs.filter((d) => d.needsUpdate);
   const openCalls = fundingCalls.filter((c) => c.status === "open");
   const upcomingCalls = fundingCalls.filter((c) => c.status === "upcoming");
-  const activeProjects = projectBank.filter((p) => p.status !== "closed" && p.status !== "idea");
+  const activeProjects = projectBank.filter(
+    (p) => p.status !== "idea" && p.status !== "completed" && p.status !== "rejected"
+  );
   const incompleteProjects = projectBank.filter(
     (p) => (lang === "sv" ? p.missingFields_sv : p.missingFields_en).length > 0
   );

@@ -169,7 +169,7 @@ export interface TranslationTree {
     statAvgMatch: string;
     statProceedReady: string;
     statusLabels: Record<
-      "idea" | "in-development" | "applying" | "awarded" | "delivering" | "closed",
+      "idea" | "assessing" | "funding-search" | "application" | "submitted" | "approved" | "rejected" | "running" | "completed",
       string
     >;
     detailOwner: string;
@@ -582,11 +582,14 @@ export const translations: Record<Lang, TranslationTree> = {
       statProceedReady: "Redo att gå vidare",
       statusLabels: {
         idea: "Idé",
-        "in-development": "Under utveckling",
-        applying: "Ansökan pågår",
-        awarded: "Beviljat",
-        delivering: "Genomförs",
-        closed: "Avslutat",
+        assessing: "Under bedömning",
+        "funding-search": "Söker finansiering",
+        application: "Ansökan pågår",
+        submitted: "Inlämnad",
+        approved: "Beviljat",
+        rejected: "Avslag",
+        running: "Genomförs",
+        completed: "Avslutat",
       },
       detailOwner: "Projektägare",
       detailMissingInfoTitle: "Information som saknas för optimal EU-matchning",
@@ -1003,11 +1006,14 @@ export const translations: Record<Lang, TranslationTree> = {
       statProceedReady: "Ready to proceed",
       statusLabels: {
         idea: "Idea",
-        "in-development": "In development",
-        applying: "Applying",
-        awarded: "Awarded",
-        delivering: "Delivering",
-        closed: "Closed",
+        assessing: "Under assessment",
+        "funding-search": "Searching for funding",
+        application: "Applying",
+        submitted: "Submitted",
+        approved: "Awarded",
+        rejected: "Rejected",
+        running: "Delivering",
+        completed: "Closed",
       },
       detailOwner: "Project owner",
       detailMissingInfoTitle: "Information missing for optimal EU matching",
