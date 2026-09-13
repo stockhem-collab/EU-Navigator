@@ -1,331 +1,440 @@
-# EU Navigator — target data model
+# EU Navigator — target data model (v2)
 
-This document specifies the relational data model EU Navigator should move to
-once it gets a real backend/database, replacing the current client-only,
-`localStorage` + static-array prototype (see `lib/types.ts` and `lib/data/*`).
-It is written to be handed directly to whoever builds that backend.
+This supersedes the first draft of this document. It folds in a second,
+more detailed proposal — closer to what a backend engineer would actually
+build — covering the full chain **idea → match → application → award →
+delivery → reporting**, not just the funding-database half. The two designs
+mostly agree; where they didn't, the decision and the reasoning are called
+out explicitly under "Design decisions" (§7) rather than silently picked.
 
-It is informed by the structure of the real external sources we plan to pull
-from (see "External source mapping" at the end):
+## 0. Guiding structure
 
-- **EU Funding & Tenders Portal** (REST API, Project & Results area) —
-  Programme → Call → Topic → Grant/Project → Organisation
-- **CORDIS** (REST/bulk CSV-XML-JSON/SPARQL) — Project → Organisation →
-  Results (deliverables, publications, patents)
-- **Keep.eu** (Interreg open data API) — Programme → Project → Partnership
-  (Organisation + country + role)
-- **Tillväxtverkets Projektbank** / **ESF-rådets Projektbank** (Swedish ERUF/ESF+
-  open project registers)
-- **Kohesio**, **CINEA** dashboards (LIFE/CEF/Innovation Fund/EMFAF), **EU
-  Financial Transparency System**
+```
+EU_PROGRAM
+   │
+   ├── FUND (optional sub-programme level)
+   │        │
+   │        └── CALL
+   │              │
+   │              ├── CALL_REQUIREMENT (eligibility)
+   │              ├── EVALUATION_CRITERION
+   │              ├── APPLICATION_REQUIREMENT_DEFINITION
+   │              └── REPORTING_REQUIREMENT_DEFINITION
+   │
+   └── FUNDED_PROJECT ── PROJECT_PARTNER ── ORGANISATION
+                              │
+                              ▼
+                        FUNDED_PROJECT_RESULT
 
-The guiding idea: everything **we don't control** (programmes, calls, funded
-projects elsewhere, results) is *reference data*, ideally synced from the
-sources above. Everything **the customer controls** (their own project
-pipeline, applications, reporting) is *tenant data*, scoped to one customer
-organisation. The two meet at the matching/AI layer.
-
----
-
-## 1. Entity overview
-
-```mermaid
-erDiagram
-    PROGRAM ||--o{ CALL : "opens"
-    CALL ||--o{ FUNDED_PROJECT : "awards"
-    CALL ||--o{ APPLICATION : "receives"
-    PROGRAM ||--o{ FUNDED_PROJECT : "funds (call sometimes unknown)"
-    ORGANISATION ||--o{ FUNDED_PROJECT : "coordinates"
-    ORGANISATION ||--o{ PARTNERSHIP : "participates as"
-    FUNDED_PROJECT ||--o{ PARTNERSHIP : "has"
-    FUNDED_PROJECT ||--o{ PROJECT_RESULT : "produces"
-    ORGANISATION ||--o{ CUSTOMER_PROJECT : "owns"
-    CUSTOMER_PROJECT ||--o{ APPLICATION : "is submitted as"
-    APPLICATION }o--|| CALL : "targets"
-    APPLICATION |o--o| FUNDED_PROJECT : "becomes, if awarded"
-    APPLICATION ||--o{ REPORTING_REQUIREMENT : "generates, once awarded"
-    FUNDED_PROJECT ||--o{ REPORTING_REQUIREMENT : "or generated on"
+        CUSTOMER ── CUSTOMER_PROJECT ── PROJECT_TAG
+                          │        │
+                          │        ├──► MATCH ◄────────── CALL
+                          │        └──► SIMILAR_PROJECT ◄─ FUNDED_PROJECT
+                          ▼
+                     APPLICATION ── APPLICATION_SECTION
+                          │
+                          ▼ (once awarded)
+              PROJECT_DELIVERABLE · PROJECT_INDICATOR · REPORT
 ```
 
-Two entities are **reference data** (shared, read-mostly, ideally synced from
-external sources): `Program`, `Call`, `FundedProject`, `Organisation` (the
-subset that are third-party award recipients), `ProjectResult`, `Partnership`.
+`Call` is the hub, but the point of the model is that it hangs together end
+to end: a call connects both backward (which past `FundedProject`s were
+awarded under it, or under its programme) and forward (which `Application`s
+are currently targeting it), and a `CustomerProject`'s journey through
+`Match → Application → award → delivery → reporting` is one continuous
+thread, not five disconnected tables.
 
-Three entities are **tenant data** (per-customer, read/write, the actual
-product): `Organisation` (the subset that are the customer's own org/depts),
-`CustomerProject`, `Application`, `ReportingRequirement`.
+Two data classes, as before:
 
-`Organisation` is deliberately one table: a funded project's coordinator in
-Keep.eu and a customer's own department in EU Navigator are the same shape of
-thing (a legal entity or org unit with a NUTS region and a type), just
-populated by different pipelines.
+- **Reference data** (shared, read-mostly, synced from external sources):
+  `Program`, `Fund`, `Call` + its four requirement/criterion children,
+  `FundedProject`, `Organisation`, `ProjectPartner`, `FundedProjectResult`.
+- **Tenant data** (per-customer, read/write, the actual product):
+  `Customer`, `CustomerProject`, `ProjectTag`, `Match`, `SimilarProject`,
+  `Application`, `ApplicationSection`, `ProjectDeliverable`,
+  `ProjectIndicator`, `Report`.
 
----
-
-## 2. `Program`
-
-Supersedes `FundingProgram` in `lib/types.ts`. One row per EU/national fund or
-its 2014-2020 predecessor.
-
-| Field | Type | Notes |
-|---|---|---|
-| `id` | `string` (PK) | Internal slug, e.g. `horizon-europe`. Stable even if `externalId` changes. |
-| `name_sv`, `name_en` | `string` | Display name in both languages. |
-| `shortName` | `string` | e.g. "Horisont Europa". |
-| `description_sv`, `description_en` | `text` | |
-| `legalBasis` | `string \| null` | e.g. "Regulation (EU) 2021/695" — from F&T Portal metadata. |
-| `managingAuthority_sv`, `managingAuthority_en` | `string \| null` | e.g. "Tillväxtverket", "ESF-rådet", "European Commission — DG RTD". |
-| `programmingPeriod` | `"2021-2027" \| "2014-2020"` | Replaces the current `status: active/legacy` boolean with the real EU period concept; `status` becomes derived (`period === current period`). |
-| `sectors` | `Sector[]` | Existing taxonomy, kept. |
-| `keywords` | `string[]` | Existing, kept for matching. |
-| `geographicScope` | `"sweden" \| "eu-wide" \| "cross-border-region"` | Existing, kept. |
-| `nutsScope` | `string[] \| null` | NUTS codes the programme is restricted to (populated for Interreg/regional funds via Keep.eu). |
-| `typicalCoFinancingRate` | `number` | 0–1, existing. |
-| `typicalDurationYears` | `[number, number]` | Existing. |
-| `totalBudgetEUR` | `number \| null` | Whole-programme envelope, from F&T Portal/CORDIS programme metadata. |
-| `sourceSystem` | `"manual" \| "funding-tenders-portal" \| "cordis" \| "keep-eu" \| "tillvaxtverket" \| "esf-radet"` | Which pipeline last wrote this row. |
-| `externalId` | `string \| null` | The source system's own programme code (e.g. CORDIS `frameworkProgramme`). |
-| `sourceUrl` | `string \| null` | Deep link to the programme on its source portal — internal/admin use only, never surfaced next to anonymised customer examples. |
-| `lastSyncedAt` | `timestamp \| null` | `null` for hand-curated rows. |
-| `createdAt`, `updatedAt` | `timestamp` | |
-
-## 3. `Call` (Utlysning)
-
-Supersedes `FundingCall`. One row per call/topic a customer can apply to.
-
-| Field | Type | Notes |
-|---|---|---|
-| `id` | `string` (PK) | |
-| `programId` | `FK -> Program.id` | |
-| `title_sv`, `title_en` | `string` | |
-| `topicId` | `string \| null` | F&T Portal's Topic identifier when the call is a Horizon Europe topic under a broader call. |
-| `typeOfAction` | `string \| null` | e.g. `RIA`, `IA`, `CSA` (Horizon Europe), `null` for funds without this concept. |
-| `status` | `"open" \| "upcoming" \| "closed"` | Adds `"closed"`, needed once we store real historical calls, not just the two current/planned states. |
-| `openingDate`, `deadlineDate` | `date \| null` | **Replaces `deadlineMonthsFromNow`.** The current relative-offset field only works for a demo seeded "now" — a real store needs an absolute date; "months from now" becomes a UI-computed value. |
-| `submissionProcedure` | `"single-stage" \| "two-stage" \| null` | |
-| `budgetTotalSEK`, `minGrantSEK`, `maxGrantSEK` | `number` | Existing; keep SEK as the display currency but see §8 on currency handling. |
-| `requiresPartnership` | `boolean` | Existing. |
-| `eligibleApplicants_sv`, `eligibleApplicants_en` | `text` | Existing. |
-| `priorities_sv`, `priorities_en` | `string[]` | Existing. |
-| `extraKeywords` | `string[]` | Existing. |
-| `evaluationCriteria` | `EvaluationCriterion[]` (own table `call_evaluation_criterion` if normalised) | Existing shape (`name_sv`, `name_en`, `maxPoints`). |
-| `documents` | → own table `call_document` | Existing shape (`FundingDocument`): `id`, `type`, `title_sv/en`, `updatedAt`, `needsUpdate`. Kept as a child table, not embedded JSON, once there's a real DB — `needsUpdate` should become computed (source `updatedAt` vs. our last fetch) rather than hand-set. |
-| `sourceSystem`, `externalId`, `sourceUrl`, `lastSyncedAt` | same shape as `Program` | |
-| `createdAt`, `updatedAt` | `timestamp` | |
-
-## 4. `Organisation`
-
-New entity — does not exist explicitly today (organisation names are inline
-strings on `ReferenceProject`/`ProjectBankEntry`).
-
-| Field | Type | Notes |
-|---|---|---|
-| `id` | `string` (PK) | |
-| `name` | `string` | Real name for reference-data rows synced from external sources; for the demo's own anonymised examples, the fictional name ("Exempelstad") — **never a real customer name mixed with real external orgs in the same field without a `kind` distinction (see below).** |
-| `kind` | `"reference" \| "tenant"` | `reference` = a third party seen only in synced funded-project data (a coordinator, a partner org from CORDIS/Keep.eu); `tenant` = the customer or one of their internal departments/units, i.e. rows that back today's `ProjectBankEntry.department_sv/en` and `owner`. Keeping one table but tagging `kind` is what lets a customer later see "who else in my region got funded" without conflating their own org chart with reference orgs. |
-| `tenantId` | `FK -> Tenant.id \| null` | Only set for `kind = "tenant"` rows, once EU Navigator is multi-tenant (see §9). |
-| `country` | `string \| null` (ISO 3166-1 alpha-2) | |
-| `nutsCode` | `string \| null` | NUTS2/3 region — used for Interreg eligibility checks and "similar projects nearby". |
-| `type` | `"municipality" \| "region" \| "government-agency" \| "university" \| "research-institute" \| "ngo" \| "sme" \| "large-enterprise" \| "other"` | From F&T Portal/CORDIS organisation categorisation. |
-| `pic` | `string \| null` | EU's Participant Identification Code, when known (F&T Portal/CORDIS). |
-| `vatNumber` | `string \| null` | |
-| `website` | `string \| null` | Never populated/surfaced for anonymised demo rows. |
-| `sourceSystem`, `externalId`, `lastSyncedAt` | as above | |
-
-## 5. `FundedProject` (Beviljat projekt)
-
-New entity, **replaces both `ReferenceProject` and `AwardedProject`** — those
-two existed separately only because the prototype built the "learn from
-winners" library and the "post-award reporting" feature at different times;
-structurally they're the same thing (a project that received EU funding) at
-different lifecycle stages.
-
-| Field | Type | Notes |
-|---|---|---|
-| `id` | `string` (PK) | |
-| `externalId` | `string \| null` | Grant Agreement number / CORDIS project ID / Tillväxtverket diarienummer / Keep.eu project code — whatever the source system's own key is. |
-| `programId` | `FK -> Program.id` | |
-| `callId` | `FK -> Call.id \| null` | `null` when the source data doesn't expose which call/topic it was awarded under (true for a lot of older Tillväxtverket/ESF-rådet records) — **this nullability matters**: today's `ReferenceProject.programId`-only design already anticipated this, keep it. |
-| `title` | `string` | |
-| `acronym` | `string \| null` | CORDIS-style short name. |
-| `theme_sv`, `theme_en` | `string` | Existing free-text theme classification, kept — useful until real topic taxonomies are fully mapped. |
-| `description_sv` | `text` | Existing. Add `description_en` as a real field (today only `_sv` exists; `_en` is currently omitted in `ReferenceProject`, a gap to close since the rest of the app is bilingual). |
-| `objective` | `text \| null` | CORDIS's own "objective" abstract field, kept verbatim where available (distinct from our own `description_sv`, which is our editorial summary). |
-| `role` | `"coordinator" \| "partner"` | Renamed from today's `role: "owner" \| "partner"` to match CORDIS/Keep.eu vocabulary; this is the *customer's or anonymised example org's* role, i.e. shorthand for the `Partnership` row that matters most to the viewer. |
-| `coordinatorOrgId` | `FK -> Organisation.id \| null` | |
-| `period` | `"2021-2027" \| "2014-2020"` | Existing. |
-| `startDate`, `endDate` | `date \| null` | Replaces the free-text `periodLabel`; keep `periodLabel` as a display-only derived string for legacy rows where only text was ever extracted. |
-| `status` | `"signed" \| "ongoing" \| "closed" \| "terminated"` | New — needed once `FundedProject` also drives the reporting workflow, not just the reference library. |
-| `totalBudgetSEK`, `euFundingSEK` | `number \| null` | Existing, kept nullable (disclosure is inconsistent across sources — `computeProgramStats`'s `disclosedBudgetCount` logic carries over unchanged). |
-| `fundName` | `string` | Existing raw/un-normalised fund name string, kept for display fidelity where `Program` mapping is uncertain. |
-| `indicators` | → own table `project_indicator` | Existing shape (`ReferenceProjectIndicator`): `label_sv/en`, `target`, `actual`, `unit_sv/en`. Only populated where a real final report exists (today: `digitalt-kompetenslyft`). |
-| `sourceSystem`, `sourceUrl`, `lastSyncedAt` | as above | `sourceUrl` stored but **suppressed from rendering** for any row tagged as an anonymisation subject — see §7. |
-| `createdAt`, `updatedAt` | `timestamp` | |
-
-### 5a. `Partnership`
-
-New child entity of `FundedProject`, modelled directly on Keep.eu's
-Programme→Project→Partnership level, and needed the moment we ingest a real
-multi-partner Interreg/Horizon project instead of only recording the one
-organisation we care about via `FundedProject.role`.
-
-| Field | Type | Notes |
-|---|---|---|
-| `id` | `string` (PK) | |
-| `fundedProjectId` | `FK -> FundedProject.id` | |
-| `organisationId` | `FK -> Organisation.id` | |
-| `role` | `"lead-partner" \| "partner" \| "associated-partner"` | |
-| `country` | `string` (ISO alpha-2) | Denormalised from `Organisation.country` for fast "how many countries" aggregate queries — acceptable, it's reference data. |
-| `contributionEUR` | `number \| null` | Per-partner budget share, when disclosed. |
-
-### 5b. `ProjectResult` (Deliverable/publication/patent)
-
-New, CORDIS-shaped. Powers the future "vad brukar vinna?" / pattern-analysis
-feature (you need concrete outputs, not just budget numbers, to say anything
-about *what* wins).
-
-| Field | Type | Notes |
-|---|---|---|
-| `id` | `string` (PK) | |
-| `fundedProjectId` | `FK -> FundedProject.id` | |
-| `type` | `"deliverable" \| "publication" \| "patent" \| "demonstrator" \| "other"` | |
-| `title` | `string` | |
-| `date` | `date \| null` | |
-| `url` | `string \| null` | Suppressed for anonymisation subjects, same rule as `FundedProject.sourceUrl`. |
-
-## 6. `CustomerProject`
-
-Evolves `ProjectBankEntry` — same concept (the customer's own pipeline of
-project ideas), extended to link into the new relational model instead of
-carrying free-text department names.
-
-| Field | Type | Notes |
-|---|---|---|
-| `id` | `string` (PK) | |
-| `tenantId` | `FK -> Tenant.id` | New — see §9. |
-| `title_sv`, `title_en` | `string` | Existing. |
-| `ownerOrganisationId` | `FK -> Organisation.id` (`kind = "tenant"`) | **Replaces** `department_sv`/`department_en` free text — the department becomes a real `Organisation` row (a unit within the tenant), which is also what makes the "one example organisation's role config" settings in `orgProcess`/`useOrgConfig` attach to something concrete instead of a hardcoded string. |
-| `owner` | `string` | Existing free-text contact person — kept as-is, not worth normalising into its own `Person` entity at this scale. |
-| `status` | `ProjectStatus` (existing enum) | Unchanged. |
-| `estimatedCostSEK` | `number` | Existing. |
-| `periodStart`, `periodEnd` | `number` (year) | Existing. |
-| `sector` | `Sector` | Existing. |
-| `description_sv`, `description_en` | `text` | Existing. |
-| `hasInternationalPartner` | `boolean` | Existing. |
-| `candidateCallIds` | `string[]` (or child table `customer_project_candidate_call`) | New — persists what today is only a client-side computed `computeMatchesForEntry` result, so "why did we shortlist this call three weeks ago" survives a re-score after call data changes. |
-| `aiReadinessPct`, `missingFields_sv`, `missingFields_en` | as existing | Kept as a *cached last computed value*; the source of truth becomes a live call to the readiness engine, this is just for list views/sorting without recomputation. |
-| `createdAt`, `updatedAt` | `timestamp` | |
-
-## 7. `Application` (Ansökan)
-
-New entity. Today's prototype computes a `MatchResult` and lets the user draft
-project-logic text in local component state (`ApplicationWorkspace`'s
-`draftLogic`) that is thrown away on refresh — this is the biggest real gap
-between "demo" and "product": nothing about an actual application in progress
-is persisted anywhere. `Application` is that missing persistence layer.
-
-| Field | Type | Notes |
-|---|---|---|
-| `id` | `string` (PK) | |
-| `tenantId` | `FK -> Tenant.id` | |
-| `customerProjectId` | `FK -> CustomerProject.id` | |
-| `callId` | `FK -> Call.id` | |
-| `status` | `"draft" \| "submitted" \| "under-review" \| "awarded" \| "rejected" \| "withdrawn"` | |
-| `projectLogicRows` | → child table `application_logic_row` | Persists what `generateProjectLogic` proposes *and* what the user has edited — each row: `id`, `applicationId`, `field` (e.g. "mål", "aktiviteter", "resultat" — the existing `ProjectLogicRow` field key), `aiSuggestion_sv/en` (immutable, regenerable), `userDraft` (editable, nullable = "using AI suggestion as-is"), `updatedAt`. This is exactly the "reset to AI suggestion" UX already built client-side, just made durable. |
-| `readinessScoreAtSubmission` | `number \| null` | Snapshot at the moment of submission, distinct from the live-recomputed score shown pre-submission. |
-| `sectionCoachHistory` | → child table `application_coach_run` | Each `SectionCoachResult` run, timestamped, so a user can see their score trend across edits — this is the natural, non-gimmicky version of the "readiness history" feature that was deliberately deferred earlier for lack of persisted state; with `Application` as real storage it stops being gimmicky. |
-| `reviewerNotes` | → child table `application_reviewer_note`, existing `ReviewerNote` shape | |
-| `submittedAt` | `timestamp \| null` | |
-| `resultingFundedProjectId` | `FK -> FundedProject.id \| null` | Set once `status` reaches `awarded` — this is the join back into the reference-data world; the customer's own success stories become future `FundedProject` rows other customers can learn from (with the customer's explicit consent — see §7a). |
-| `createdAt`, `updatedAt` | `timestamp` | |
-
-### 7a. Consent flag
-
-Add `CustomerProject.shareAsReferenceOnAward: boolean` (default `false`).
-Only when a customer opts in does an awarded `Application` get materialised
-into a public/cross-tenant `FundedProject` + `ProjectResult` rows. This is the
-concrete mechanism that keeps the anonymisation guarantee airtight going
-forward: nothing about a specific tenant's real project ever becomes
-reference data by default, only by explicit choice, and even then it's
-governed by the same "who can see raw org identity vs. an anonymised label"
-rule already implemented for the current seeded example organisation.
-
-## 8. `ReportingRequirement`
-
-Evolves `Commitment`/`AwardedProject.nextReportDueMonthsFromNow` into a proper
-recurring-obligation entity, attachable to either a `FundedProject` (for
-reference-data rows we track passively) or an `Application` post-award (for
-the tenant's own live obligations) — hence two nullable FKs rather than one.
-
-| Field | Type | Notes |
-|---|---|---|
-| `id` | `string` (PK) | |
-| `fundedProjectId` | `FK -> FundedProject.id \| null` | |
-| `applicationId` | `FK -> Application.id \| null` | Exactly one of the two FKs is set. |
-| `type` | `"financial-report" \| "progress-report" \| "indicator-update" \| "final-report" \| "audit"` | |
-| `dueDate` | `date` | Replaces `nextReportDueMonthsFromNow`'s relative offset for the same reason `Call.deadlineDate` replaces `deadlineMonthsFromNow`. |
-| `status` | `"upcoming" \| "submitted" \| "overdue" \| "waived"` | |
-| `indicators` | → child table `reporting_requirement_indicator`, existing `Commitment` shape (`indicator_sv/en`, `promisedValue`, `unit_sv/en`, `currentValue`, `comment_sv/en`) | |
-| `submittedAt` | `timestamp \| null` | |
+Plus three cross-cutting layers: `Document` (attachable to almost anything),
+`KnowledgeChunk` (RAG index), and a raw-ingestion layer (§6).
 
 ---
 
-## 9. Cross-cutting notes
+## 1. Reference data
 
-**Currency.** Everything user-facing today is SEK; everything from CORDIS/F&T
-Portal is EUR. Store both where the source gives EUR (`totalBudgetEUR` on
-`Program`, and consider adding `totalCostEUR`/`euContributionEUR` alongside
-the SEK fields on `FundedProject` and `Call`) plus the `fxRate` and
-`fxRateDate` used for any SEK value we computed ourselves, rather than baking
-a silent conversion into a single field.
+### 1.1 `Program`
 
-**Multi-tenancy.** The prototype has no login and one implicit "tenant"
-(whoever has the browser tab open). The model above adds `tenantId` on
-`Organisation` (tenant kind only), `CustomerProject`, and `Application` in
-anticipation of real accounts; `Program`/`Call`/`FundedProject`/reference
-`Organisation` rows stay tenant-free/shared. This can be introduced later
-without reshaping the reference-data half of the schema at all.
+| Field | Type | Notes |
+|---|---|---|
+| `id` | PK | e.g. `life` |
+| `name`, `description` | text | Source language as published (usually EN); see §7.1 on bilingual fields. |
+| `programme_period` | `"2021-2027" \| "2014-2020"` | |
+| `managing_authority` | string | e.g. "CINEA", "Tillväxtverket", "ESF-rådet". |
+| `management_type` | `"direct" \| "shared" \| "indirect"` | New vs. v1 — the application process differs sharply by type, worth branching UI/logic on. |
+| `total_budget_eur` | number, nullable | |
+| `geographic_scope`, `sectors`, `keywords`, `typical_co_financing_rate`, `typical_duration_years` | as v1 | Kept — this is our own matching taxonomy, orthogonal to source metadata. |
+| `target_groups` | string[] | Structured (municipality/region/university/company/NGO/agency), not free text. |
+| `source_system`, `external_id`, `source_url`, `last_synced_at` | as v1 | |
 
-**Sync jobs, not live API calls.** All `sourceSystem`/`externalId`/
-`lastSyncedAt` fields assume a scheduled ETL job per source (F&T Portal REST
-API, CORDIS bulk CSV, Keep.eu API, Tillväxtverket/ESF-rådet exports) writing
-into `Program`/`Call`/`FundedProject`/`Organisation`/`Partnership`/
-`ProjectResult`, not the app calling those APIs on each page load. Matching
-and the "similar projects"/"vad brukar vinna?" features then run entirely
-against our own database.
+### 1.2 `Fund` (sub-programme) — optional level
 
-**"Similar projects" / semantic search.** Not modelled as its own table here
-on purpose — this is an embedding index (e.g. `FundedProject.id` →
-vector) built from `title` + `description_sv` + `objective` + `theme`, kept
-in whatever vector store the backend chooses, and rebuilt on sync rather than
-being part of the relational schema.
+Not every programme has this (Erasmus+ mostly doesn't; LIFE and Interreg do).
+`Call.fund_id` is **nullable** — populate it only where the source data
+actually exposes a sub-programme, don't force a placeholder.
+
+`id`, `program_id`, `name`, `description`, `policy_area`, `objectives`,
+`eligible_geographies`, `eligible_applicants`, `co_financing_default`.
+
+### 1.3 `Call`
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | PK | |
+| `program_id`, `fund_id` (nullable) | FK | |
+| `external_call_id` | string, nullable | The source's own ID. |
+| `title`, `short_description` (AI-generated), `full_description` (verbatim from source) | text | Three separate fields on purpose — our own summary must never silently overwrite the source text. |
+| `status` | `"upcoming" \| "open" \| "closed"` | |
+| `opening_date`, `deadline` | date | **Absolute dates**, not v1's relative `deadlineMonthsFromNow` — that only worked for a seeded demo. |
+| `budget_total`, `currency`, `grant_min`, `grant_max`, `co_financing_rate` | number/enum | |
+| `project_duration_min`, `project_duration_max` | months | |
+| `themes` | string[] (structured taxonomy) | Not free text — reuses the existing `Sector`-style enum plus an extensible tag list. |
+| `target_groups` | string[] | Structured, same taxonomy as `Program.target_groups`. |
+
+### 1.4 `CallRequirement` (eligibility)
+
+| Field | Type | Notes |
+|---|---|---|
+| `id`, `call_id` | | |
+| `requirement_type` | `"applicant" \| "geography" \| "consortium" \| "finance" \| "project_duration" \| "activity" \| "state_aid" \| "organisation_type"` | |
+| `description` | text | Human-readable, shown as-is. |
+| `mandatory` | boolean | |
+| `min_partners`, `min_countries`, `applicant_types[]`, `min_budget`, `max_budget` | typed columns, all nullable | **Hybrid approach** (see §7.2): the common, genuinely structured checks get real columns so the matching engine can query them directly, instead of everything living inside one opaque rule blob. |
+| `machine_rule` | JSON, nullable | Escape hatch for the long tail of requirements that don't fit the typed columns above — e.g. a one-off "at least one partner must be from an outermost region." Kept deliberately rare. |
+| `source_reference` | string | Where in the call text this came from, for audit/trust. |
+
+### 1.5 `EvaluationCriterion`
+
+`id`, `call_id`, `name`, `description`, `weight`, `max_score`, `min_score`,
+`source_reference` — unchanged from the proposal; this already maps 1:1 onto
+today's `EvaluationCriterion` in `lib/types.ts`, just normalised into its own
+table instead of an embedded array once a real DB exists.
+
+### 1.6 `ApplicationRequirementDefinition`
+
+`id`, `call_id`, `section`, `question`, `instructions`, `max_characters`,
+`mandatory`, `attachment_required`, `template_document_id` (FK → `Document`).
+One row per question a real application form asks — this is what lets the
+system reconstruct the actual application structure instead of only
+generating a generic project-logic table.
+
+### 1.7 `ReportingRequirementDefinition`
+
+`id`, `program_id` (nullable), `call_id` (nullable), `requirement_type`,
+`description`, `frequency`, `deadline_rule`, `evidence_required`,
+`template_document_id`. This is the *definition* of an obligation (e.g.
+"progress report every 6 months"); the *instance* of an actual submitted
+report against it is `Report` (§2.6) — keeping these separate was one of the
+sharper points in the newer proposal and is worth preserving: a definition
+belongs to the programme/call (reference data), an instance belongs to one
+customer's `Application` (tenant data).
+
+### 1.8 `FundedProject`
+
+Supersedes v1's merge of `ReferenceProject`+`AwardedProject`; same idea, now
+with the AI-enrichment columns and full field set from the proposal:
+
+`id`, `external_project_id`, `call_id` (nullable — often unknown for older
+records), `program_id`, `title`, `acronym`, `description`, `objectives`,
+`activities`, `expected_results`, `actual_results`, `start_date`, `end_date`,
+`total_budget`, `eu_contribution`, `co_financing_rate`, `status`
+(`signed`/`ongoing`/`closed`/`terminated`), `country`, `source_system`,
+`source_url`, plus AI-enriched columns `ai_summary`, `ai_topics[]`,
+`ai_project_type`, `ai_target_groups[]`, `ai_methods[]`, and an
+`embedding_ref` pointing at the vector store (see §6 on why the vector
+itself doesn't live in this row).
+
+### 1.9 `Organisation`
+
+Pure reference data now — **not** shared with tenant data (see §7.3 for why
+this differs from v1's `kind` flag): `id`, `name`, `organisation_type`
+(`municipality`/`region`/`university`/`sme`/`large-enterprise`/`ngo`/
+`national-authority`/`research-institute`), `country`, `region` (NUTS),
+`city`, `vat_number`, `pic_number`, `website`, `source_system`,
+`external_id`.
+
+### 1.10 `ProjectPartner`
+
+`funded_project_id`, `organisation_id`, `role`
+(`coordinator`/`partner`/`associated-partner`), `eu_contribution`, `country`.
+Answers "which Swedish municipalities got LIFE funding" / "which
+universities co-apply with municipalities on climate adaptation" — and is
+the basis for a future partner-search feature.
+
+### 1.11 `FundedProjectResult`
+
+`id`, `funded_project_id`, `type` (`deliverable`/`publication`/`patent`/
+`demonstrator`/`other`), `title`, `date`, `url`. (Named distinctly from the
+tenant-side `ProjectDeliverable` in §2.7, which is forward-looking/planned
+rather than historical.)
 
 ---
 
-## 10. Migration map (current prototype → this model)
+## 2. Tenant data
+
+### 2.1 `Customer`
+
+`id`, `name`, `organisation_number`, `country`, `municipality`,
+`customer_type`, `created_at`. The actual account/tenant — e.g. "Kalmar
+kommun". This replaces the `tenantId` scattered across v1's tables with one
+real entity.
+
+### 2.2 `CustomerProject`
+
+`id`, `customer_id`, `title`, `description`, `problem`, `purpose`,
+`objectives`, `target_groups`, `planned_activities`, `expected_results`,
+`estimated_budget`, `planned_start`, `planned_end`, `geographic_scope`,
+`project_owner`, `department` (plain string — see §7.3, deliberately **not**
+a full `Organisation` row), `sector`, `has_international_partner`, `status`:
+
+`IDEA → ASSESSING → FUNDING_SEARCH → APPLICATION → SUBMITTED → APPROVED →
+REJECTED → RUNNING → COMPLETED` (supersedes v1's narrower `ProjectStatus`
+enum with the real portfolio lifecycle a coordinator actually thinks in).
+
+`share_as_reference_on_award: boolean` (default `false`) — kept from the
+first draft and worth restating prominently: **this is the mechanism that
+keeps a customer's real project from ever becoming reference data (visible
+to other tenants) without their explicit opt-in.** It's the direct
+continuation of the anonymisation requirement this whole demo was built
+under — as EU Navigator moves from one seeded example municipality to many
+real customers, this flag is what stops that guarantee from quietly eroding.
+
+### 2.3 `ProjectTag`
+
+`id`, `customer_project_id`, `tag`, `confidence`, `source` (`ai`/`manual`).
+AI-derived structured tags (e.g. "Climate", "Public buildings", "Solar
+energy") feeding the matching engine — separate from `sector`, which stays
+a single primary classification.
+
+### 2.4 `Match`
+
+`id`, `customer_project_id`, `call_id`, `overall_score`, `eligibility_score`,
+`semantic_score`, `strategic_score`, `financial_score`, `timing_score`,
+`match_explanation`, `risks[]`, `missing_information[]`, `recommendations[]`,
+`model_version`, `created_at`, plus **`inputs_hash`** — a hash of everything
+the score was computed from (the call's current requirement/criterion rows +
+the customer project's fields). Persisting the match (not recomputing on
+every page view) was a good call in the proposal; `inputs_hash` is the piece
+needed to make that safe — without it, a call's deadline or requirements
+changing after the fact leaves a stale, silently-wrong score on screen. A
+background job re-scores any `Match` whose `inputs_hash` no longer matches.
+
+### 2.5 `SimilarProject`
+
+`id`, `customer_project_id`, `funded_project_id`, `similarity_score`,
+`similarity_reason`, `model_version`, `computed_at`. Materialises the top-N
+"liknande beviljade projekt" results so the UI has something stable and
+explainable to render, rather than querying the vector index live on every
+visit — the vector index (§6) is the *mechanism*, this table is the
+*product surface*, and both are needed.
+
+### 2.6 `Application`
+
+`id`, `customer_project_id`, `call_id`, `status`
+(`draft`/`submitted`/`under-review`/`awarded`/`rejected`/`withdrawn`),
+`deadline` (snapshotted from the call at creation — an application shouldn't
+silently move if the call is later corrected), `responsible_user`,
+`readiness_score_at_submission`, `created_at`, `submitted_at`,
+`resulting_funded_project_id` (nullable — set once awarded and, if
+`share_as_reference_on_award` is true, materialised as a new
+`FundedProject`).
+
+### 2.7 `ApplicationSection`
+
+`id`, `application_id`, `application_requirement_id` (FK → the call's own
+`ApplicationRequirementDefinition`), `title`, `question`, `ai_draft`,
+`user_final` (nullable = "using the AI draft as-is"), `max_characters`,
+`status`, `ai_quality_score`. This is exactly today's editable
+project-logic drafting in `ApplicationWorkspace` (currently thrown away on
+refresh), made durable and broken down per actual application question
+instead of one flat set of rows — the more realistic shape once real call
+data includes real application forms.
+
+### 2.8 `ProjectDeliverable`
+
+`id`, `application_id`, `name`, `description`, `due_date`, `responsible`,
+`status`, `evidence_required`, `evidence_document_id`.
+
+### 2.9 `ProjectIndicator`
+
+`id`, `application_id`, `indicator_name`, `unit`, `baseline`, `target`,
+`actual`, `reporting_frequency`.
+
+### 2.10 `Report`
+
+`id`, `application_id`, `reporting_requirement_id` (FK →
+`ReportingRequirementDefinition`), `report_type`, `period_start`,
+`period_end`, `deadline`, `status`, `submitted_at`, `document_id`.
+
+---
+
+## 3. Cross-cutting
+
+### 3.1 `Document`
+
+`id`, `entity_type` (`program`/`fund`/`call`/`funded_project`/
+`customer_project`/`application`/`report`), `entity_id`, `document_type`,
+`title`, `url`, `file_ref`, `language`, `version`, `published_at`,
+`source_system`. Polymorphic on purpose (§7.4) so a call guide, a Grant
+Agreement template, and a submitted final report all live in one place
+instead of five near-identical per-relation tables.
+
+### 3.2 `KnowledgeChunk` (RAG)
+
+`id`, `document_id` (nullable), `entity_type`, `entity_id`, `text`,
+`embedding_ref`, `metadata`. Chunked EU documents + project descriptions,
+retrieved by the AI layer for grounded answers ("vilka kostnader är
+stödberättigade?", "krävs internationella partners?") instead of relying on
+general model knowledge.
+
+---
+
+## 4. Raw / normalised / enriched layering
+
+Adopted from the newer proposal as a firm architectural rule, not just a
+suggestion:
+
+1. **Raw** — `RawIngestionRecord`: `id`, `source_system`,
+   `source_entity_type`, `external_id`, `raw_payload` (JSON, verbatim),
+   `retrieved_at`, `processed_at`. Every sync job writes here first, before
+   any normalisation. This is what lets you always trace a value in
+   `FundedProject` back to exactly what the source returned on exactly what
+   date — essential once discrepancies or source-side corrections show up.
+2. **Normalised** — the domain tables in §1–§3.
+3. **AI-enriched** — either extra columns on the normalised row (`ai_summary`,
+   `ai_topics`, classification — cheap to read, fine to denormalise) or a
+   separate index (`embedding_ref` → vector store, `KnowledgeChunk` → RAG
+   store) for anything that isn't a small scalar/array.
+
+---
+
+## 5. Admin/observability view (illustrative)
+
+A future admin screen, once this is a real backend:
+
+**Database**
+
+| Object | Count |
+|---|---|
+| EU programmes | 47 |
+| Funds/sub-programmes | 126 |
+| Calls | 8,241 |
+| — open now | 684 |
+| Funded projects | 186,420 |
+| Organisations | 91,340 |
+| Documents | 37,550 |
+
+**Data sources**
+
+| Source | Last synced | Status |
+|---|---|---|
+| Funding & Tenders Portal | today 04:00 | 🟢 |
+| CORDIS | today 03:20 | 🟢 |
+| Keep.eu | yesterday | 🟢 |
+| ESF-rådet | 12 Sep | 🟢 |
+| Tillväxtverket | 12 Sep | 🟢 |
+
+Drilling from there into e.g. "Funded projects → Sweden → Municipality →
+Digitalisation" is a straightforward filtered query once `ProjectPartner` +
+`Organisation` + `FundedProject` + `ProjectTag`-equivalent classification
+exist — no new entity needed for it.
+
+---
+
+## 6. MVP phasing
+
+Matches the product narrative *Hitta pengarna → Bedöm möjligheten → Skriv
+ansökan → Genomför projektet → Rapportera till EU*, and the newer proposal's
+own MVP cut, which is the right one:
+
+| Phase | Ships | Entities |
+|---|---|---|
+| **1 — Hitta pengarna & bedöm möjligheten** | Programme + call browsing, eligibility/requirement display, funded-project reference library, portfolio + matching | `Program`, `Call`, `CallRequirement`, `FundedProject`, `Organisation`, `Customer`, `CustomerProject`, `Match`, `Document`. `EvaluationCriterion` can stay embedded JSON on `Call` a while longer — it already is in the current prototype. `RawIngestionRecord` is infrastructure that exists from day one of Phase 1, the moment any sync job runs, even though it's invisible to users. |
+| **2 — Skriv ansökan** | Real application drafting per question, similar-projects | `ApplicationRequirementDefinition`, `Application`, `ApplicationSection`, `SimilarProject`, `ProjectTag`, `Fund` (only if a Phase-2 programme actually needs the extra level), `ProjectPartner` + `FundedProjectResult` (to power "liknande projekt" with real substance). |
+| **3 — Genomför & rapportera** | Post-award delivery and compliance | `ReportingRequirementDefinition`, `ProjectDeliverable`, `ProjectIndicator`, `Report`, `KnowledgeChunk`/RAG. |
+
+---
+
+## 7. Design decisions (where the two proposals diverged)
+
+**7.1 Bilingual fields.** EU Navigator's UI is bilingual SV/EN, but that
+doesn't mean every column needs a `_sv`/`_en` pair. Reference-data text that
+comes from an EU source (call descriptions, programme text) should be stored
+**as published** — usually English, sometimes already multilingual via the
+Funding & Tenders Portal — in a single field; translating it ourselves would
+both be a lot of work and risk drifting from the authoritative text. Only
+content **we author** — AI-generated short descriptions, our own theme
+labels, UI copy, a customer's own project text — needs a real `_sv`/`_en`
+pair (or a small `translation` table keyed by field+locale, if this grows
+past a handful of authored fields). The tables above only spell out `_sv`/
+`_en` explicitly where that distinction already matters today (e.g.
+`FundedProject.description`, which is our own editorial summary, not source
+text).
+
+**7.2 `machine_rule` as hybrid, not one big blob.** A single free-form rule
+field for every eligibility check risks becoming something only a human can
+read back out. `CallRequirement` gets typed columns for the handful of
+checks that recur constantly (`min_partners`, `min_countries`,
+`applicant_types`, budget bounds) so the matching engine can query them
+directly and cheaply, and `machine_rule` (JSON) stays a genuine escape hatch
+for the rare one-off condition — not the default path.
+
+**7.3 `Customer`/`Organisation` split, not one table with a `kind` flag.**
+The first draft of this document tried to make one `Organisation` table do
+double duty (reference-data orgs and the tenant's own org/departments) with
+a `kind` discriminator. The newer proposal's plain split — `Customer` for
+the tenant, a plain `department` string on `CustomerProject` — is simpler
+and avoids ever mixing a real customer's identity into the same rows queried
+for "which municipalities got LIFE funding." Adopted; `Organisation` in this
+document is reference-only.
+
+**7.4 `Document`'s polymorphic FK.** `entity_type`+`entity_id` instead of a
+real foreign key is a known, deliberate trade-off (no DB-enforced
+referential integrity on that pair) in exchange for one table instead of six
+near-identical `document_program`/`document_call`/… join tables. Worth
+revisiting only if the backend's DB layer makes polymorphic associations
+unusually painful (e.g. some ORMs handle this poorly) — otherwise it's the
+right default here given how many entity types need attachable documents.
+
+**7.5 `Fund` stays optional.** Not forcing every programme through a
+sub-programme level avoids a placeholder row for the many programmes (e.g.
+Erasmus+) that don't have one.
+
+---
+
+## 8. Migration map
 
 | Today (`lib/types.ts` / `lib/data/*`) | Becomes |
 |---|---|
-| `FundingProgram` | `Program` (+ `programmingPeriod`, `sourceSystem` fields) |
-| `FundingCall`, embedded `FundingDocument[]` | `Call` (+ absolute dates), `call_document` child table |
-| `ProjectBankEntry` | `CustomerProject` (department string → `Organisation` FK) |
-| `ReferenceProject` | `FundedProject` (+ `description_en`, `status`) + `Partnership` rows for any co-applicants |
-| `AwardedProject`, `Commitment` | Merged into `FundedProject` + `ReportingRequirement` |
-| `OrgProcessPhase.roleExample` + `useOrgConfig` overrides | Unchanged in shape, but `roleExample.organisationName` becomes a lookup against the tenant's own `Organisation` row instead of a hardcoded string |
-| Client-only `draftLogic` state in `ApplicationWorkspace` | `Application.projectLogicRows` (persisted) |
-| `computeMatchesForEntry`/`computeBestMatchForEntry` (recomputed every render) | Same scoring logic, but `CustomerProject.candidateCallIds` + a `match_result` cache table store the last computed result for list views |
+| `FundingProgram` | `Program` (+ `management_type`, `target_groups`) |
+| `FundingCall`, embedded `FundingDocument[]`, `EvaluationCriterion[]` | `Call` (absolute dates) + `EvaluationCriterion` table + `Document` rows (`entity_type = "call"`) |
+| — (didn't exist) | `CallRequirement`, `ApplicationRequirementDefinition`, `ReportingRequirementDefinition` — currently implicit in `eligibleApplicants_sv/en` free text and nowhere for reporting; this is genuinely new structure, not a rename. |
+| `ProjectBankEntry` | `CustomerProject` (`department_sv/en` free text → single `department` string once bilingual UI does its own lookup of the customer's own locale preference, not a stored translation) |
+| `ReferenceProject` + `AwardedProject` + `Commitment` | `FundedProject` (+ `ProjectPartner`, `FundedProjectResult`); `Commitment` splits into `ProjectIndicator` (ongoing tracking) + `Report` (the periodic submission) |
+| `OrgProcessPhase.roleExample` + `useOrgConfig` overrides | Unchanged in shape — this is internal org-process configuration, not part of the funding/application data model, and stays a `Customer`-scoped settings blob rather than becoming its own set of entities. |
+| Client-only `draftLogic` state in `ApplicationWorkspace` | `Application` + `ApplicationSection` |
+| `computeMatchesForEntry`/`computeBestMatchForEntry` (recomputed every render) | `Match`, persisted, invalidated via `inputs_hash` |
 
-## 11. External source field mapping (for the sync jobs)
+## 9. External source field mapping
 
 | Our field | Funding & Tenders Portal | CORDIS | Keep.eu | Tillväxtverket/ESF-rådet |
 |---|---|---|---|---|
-| `Program.externalId` | `frameworkProgramme` | `programmeId` | `programmeCode` | fund code |
-| `Call.externalId` / `topicId` | `identifier` (Call), `topic` | — | `callId` | diarienummer |
-| `FundedProject.externalId` | Grant Agreement number | `id` (project) | `projectId` | diarienummer |
-| `Organisation.pic` | `organisation.pic` | `organization.legalName`+PIC | `partner.id` | — (rarely has a PIC) |
-| `Partnership.role` | `role` (coordinator/participant) | `activityType` | `partner.role` | — |
-| `ProjectResult` | Results & Deliverables area | `results`, `publications`, `patents` | — | — |
+| `Program.external_id` | `frameworkProgramme` | `programmeId` | `programmeCode` | fund code |
+| `Call.external_call_id` | `identifier` (Call), `topic` | — | `callId` | diarienummer |
+| `CallRequirement` | Eligibility conditions text/structured fields | — | Partnership rules | Stödvillkor |
+| `EvaluationCriterion` | Award criteria | Evaluation section | — | Bedömningskriterier |
+| `FundedProject.external_project_id` | Grant Agreement number | `id` (project) | `projectId` | diarienummer |
+| `Organisation.pic_number` | `organisation.pic` | organisation PIC | `partner.id` | — (rarely has one) |
+| `ProjectPartner.role` | `role` (coordinator/participant) | `activityType` | `partner.role` | — |
+| `FundedProjectResult` | Results & Deliverables area | `results`, `publications`, `patents` | — | — |
 
-This table is the starting checklist for whoever writes the actual ETL
-adapters — each column is effectively "what to read from that source's API/
-export to fill this row."
+This table is the starting checklist for whoever writes the ETL adapters —
+each column is "what to read from that source to fill this field."
