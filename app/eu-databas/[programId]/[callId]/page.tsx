@@ -8,6 +8,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { findCall } from "@/lib/data/fundingCalls";
 import { fundedProjectsForProgram, computeProgramStats } from "@/lib/data/fundedProjects";
+import { topKeywords } from "@/lib/matching/patternAnalysis";
 import { fmtSEK } from "@/lib/format";
 
 export default function CallDetailPage() {
@@ -21,6 +22,7 @@ export default function CallDetailPage() {
 
   const refProjects = fundedProjectsForProgram(program.id);
   const stats = computeProgramStats(refProjects);
+  const patterns = topKeywords(refProjects);
 
   return (
     <>
@@ -142,6 +144,22 @@ export default function CallDetailPage() {
             </div>
           </section>
         )}
+
+        <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+          <h2 className="text-sm font-semibold uppercase text-navy-400">{db.patternTitle}</h2>
+          <p className="mt-1 text-sm text-navy-500">{db.patternIntro}</p>
+          {patterns.length === 0 ? (
+            <p className="mt-3 text-sm text-navy-500">{db.patternNone}</p>
+          ) : (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {patterns.map((k) => (
+                <span key={k.word} className="badge bg-navy-50 text-navy-700">
+                  {k.word} · {k.count}
+                </span>
+              ))}
+            </div>
+          )}
+        </section>
 
         <Link
           href={`/demo?call=${call.id}`}

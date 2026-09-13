@@ -210,6 +210,9 @@ export interface TranslationTree {
     documentNeedsUpdate: string;
     documentUpdated: (date: string) => string;
     learnFromWinnersButton: string;
+    patternTitle: string;
+    patternIntro: string;
+    patternNone: string;
     helpMeApplyButton: string;
     backToProgram: string;
     backToPrograms: string;
@@ -636,6 +639,9 @@ export const translations: Record<Lang, TranslationTree> = {
       documentNeedsUpdate: "Behöver uppdateras",
       documentUpdated: (date) => `Uppdaterad ${date}`,
       learnFromWinnersButton: "Lär av tidigare beviljade projekt",
+      patternTitle: "Vad brukar beviljas inom detta program?",
+      patternIntro: "Återkommande begrepp i tidigare beviljade projekt inom programmet — inte en garanti, men en fingervisning om vad utlysningarna faktiskt brukar finansiera.",
+      patternNone: "För få beviljade projekt inom programmet för att se ett tydligt mönster ännu.",
       helpMeApplyButton: "Hjälp mig söka",
       backToProgram: "Tillbaka till programmet",
       backToPrograms: "Tillbaka till EU-databasen",
@@ -1065,6 +1071,9 @@ export const translations: Record<Lang, TranslationTree> = {
       documentNeedsUpdate: "Needs update",
       documentUpdated: (date) => `Updated ${date}`,
       learnFromWinnersButton: "Learn from previously awarded projects",
+      patternTitle: "What tends to get funded under this programme?",
+      patternIntro: "Recurring terms across previously funded projects in this programme — not a guarantee, but a hint at what its calls actually tend to fund.",
+      patternNone: "Not enough funded projects in this programme yet to see a clear pattern.",
       helpMeApplyButton: "Help me apply",
       backToProgram: "Back to the programme",
       backToPrograms: "Back to the EU database",

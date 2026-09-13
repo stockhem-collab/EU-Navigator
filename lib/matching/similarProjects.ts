@@ -97,9 +97,33 @@ const STOPWORDS = new Set([
   "genomförande",
   "syftar",
   "syfte",
+  "bidrar",
+  "bidra",
+  "bidrog",
+  "idag",
+  "region",
+  "regionen",
+  "regionens",
+  "kring",
+  "behov",
+  "behöver",
+  "finns",
+  "göra",
+  "gör",
+  "sätt",
+  "allt",
+  "alla",
+  "varje",
+  "stort",
+  "stora",
+  "viktigt",
+  "viktiga",
+  "delar",
+  "fler",
+  "många",
 ]);
 
-function significantWords(text: string): Set<string> {
+export function significantWords(text: string): Set<string> {
   return new Set(
     text
       .toLowerCase()
