@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { fundingCalls, allDocuments } from "@/lib/data/fundingCalls";
-import { referenceProjects } from "@/lib/data/referenceProjects";
+import { fundedProjects } from "@/lib/data/fundedProjects";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 
 function StatTile({ label, value }: { label: string; value: string | number }) {
@@ -46,7 +46,7 @@ export default function DatacenterPage() {
           <StatTile label={dc.statCalls} value={fundingCalls.length} />
           <StatTile label={dc.statOpenCalls} value={openCalls.length} />
           <StatTile label={dc.statUpcomingCalls} value={upcomingCalls.length} />
-          <StatTile label={dc.statReferenceProjects} value={referenceProjects.length} />
+          <StatTile label={dc.statReferenceProjects} value={fundedProjects.length} />
           <StatTile label={dc.statDocuments} value={docs.length} />
           <StatTile label={dc.statDocumentsNeedUpdate} value={docsNeedingUpdate.length} />
           <StatTile label={dc.statLastSync} value="2026-09-11 06:02" />

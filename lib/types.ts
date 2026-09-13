@@ -119,13 +119,20 @@ export interface ProjectBankEntry {
 }
 
 // ---------------------------------------------------------------------------
-// Reference projects — previously awarded projects used to teach the system
+// Funded projects — previously awarded projects used to teach the system
 // patterns of what gets funded ("Lär av vinnarna"). This is REAL data: an
 // example municipality's actual EU-funded projects 2014-2027, extracted
 // from that municipality's own "Projekt med beviljade medel" documentation
 // (organisation names anonymised to "Exempelstad").
+//
+// This is the prototype's version of the `FundedProject` reference-data
+// entity in docs/DATA_MODEL.md §1.8 (which also folds in what a real backend
+// would call `AwardedProject`/`Commitment` for the customer's own post-award
+// reporting loop — that half stays a separate, simpler `AwardedProject` type
+// below for now, since building the full `Application`/`Report` chain the
+// doc describes is later-phase work).
 // ---------------------------------------------------------------------------
-export interface ReferenceProjectIndicator {
+export interface ProjectIndicator {
   label_sv: string;
   label_en: string;
   target: number;
@@ -134,7 +141,14 @@ export interface ReferenceProjectIndicator {
   unit_en: string;
 }
 
-export interface ReferenceProject {
+/** Reference-data lifecycle state (docs/DATA_MODEL.md §1.8). Left unset in
+ * today's dataset: the source documentation doesn't disclose a per-project
+ * status, and inferring one from the project period would be a guess
+ * presented as fact — better to leave it absent than fake precision. A real
+ * sync job would populate this from the source system. */
+export type FundedProjectStatus = "signed" | "ongoing" | "closed" | "terminated";
+
+export interface FundedProject {
   id: string;
   title: string;
   organisation: string;
@@ -149,12 +163,19 @@ export interface ReferenceProject {
   periodLabel: string; // raw project period text, e.g. "2023-01-01 till 2028-01-01"
   role: "owner" | "partner";
   description_sv: string;
+  /** Our own editorial summary in English. Per docs/DATA_MODEL.md §7.1,
+   * source-published text can stay single-language, but this field is
+   * content we authored ourselves — optional here only because translating
+   * all 74 extracted Swedish summaries is future content work, not a
+   * modelling gap. UI falls back to `description_sv` when absent. */
+  description_en?: string;
+  status?: FundedProjectStatus;
   totalBudgetSEK: number | null;
   euFundingSEK: number | null;
   /** Only populated for the small number of projects where a detailed final
    * report was available (e.g. Digitalt kompetenslyft) — most entries rely on
    * the summary description instead. */
-  indicators?: ReferenceProjectIndicator[];
+  indicators?: ProjectIndicator[];
 }
 
 // ---------------------------------------------------------------------------

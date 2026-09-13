@@ -7,6 +7,7 @@ import { generateProjectLogic, generateReviewerNotes } from "@/lib/matching/gene
 import { computeGapAnalysis } from "@/lib/matching/gapAnalysis";
 import { computeReadiness } from "@/lib/matching/readiness";
 import { analyzeSection } from "@/lib/matching/sectionCoach";
+import { useApplication } from "@/lib/hooks/useApplication";
 import OrgProcessPanel from "@/components/OrgProcessPanel";
 import { fmtSEK } from "@/lib/format";
 
@@ -14,11 +15,15 @@ interface Props {
   project: ProjectInput;
   match: MatchResult;
   onBack: () => void;
+  /** The saved Projektbank entry this application is for, when there is
+   * one — enables the draft to survive a refresh (see useApplication). Null
+   * for an ad-hoc intake that was never saved anywhere. */
+  customerProjectId?: string | null;
 }
 
 type Tab = "application" | "assessment" | "process";
 
-export default function ApplicationWorkspace({ project, match, onBack }: Props) {
+export default function ApplicationWorkspace({ project, match, onBack, customerProjectId = null }: Props) {
   const { t, lang } = useLanguage();
   const ws = t.demo.workspace;
   const gapT = t.demo.gapAnalysis;
@@ -33,14 +38,9 @@ export default function ApplicationWorkspace({ project, match, onBack }: Props) 
   const readiness = computeReadiness(project, match);
   const coach = analyzeSection(project, match);
 
-  // Editable draft of the AI-generated project logic. Local component state
-  // only (no backend to persist to yet) — but it's genuinely editable now,
-  // rather than a read-only AI suggestion the user could only look at.
-  const [draftLogic, setDraftLogic] = useState<Record<string, string>>(() =>
-    Object.fromEntries(logic.map((row) => [row.label_sv, lang === "sv" ? row.content_sv : row.content_en]))
-  );
-  const resetField = (rowLabelSv: string, content: string) =>
-    setDraftLogic((d) => ({ ...d, [rowLabelSv]: content }));
+  // Editable draft of the AI-generated project logic. Persisted per (project,
+  // call) when the project was saved in the Projektbank — see useApplication.
+  const { sectionDrafts, setSection, resetSection, isPersisted } = useApplication(customerProjectId, match.call.id);
 
   const estEu = (match.estimatedFundingSEK[0] + match.estimatedFundingSEK[1]) / 2;
   const coFinancing = Math.max(0, project.budgetSEK - estEu);
@@ -121,6 +121,7 @@ export default function ApplicationWorkspace({ project, match, onBack }: Props) 
               <section>
                 <h2 className="text-lg font-bold text-navy-800">{ws.logicTitle}</h2>
                 <p className="mt-1 text-sm text-navy-500">{ws.logicHint}</p>
+                <p className="mt-1 text-xs text-navy-400">{isPersisted ? ws.draftSavedNote : ws.draftNotSavedNote}</p>
                 <div className="mt-4 space-y-4">
                   {logic.map((row) => {
                     const content = lang === "sv" ? row.content_sv : row.content_en;
@@ -132,7 +133,7 @@ export default function ApplicationWorkspace({ project, match, onBack }: Props) 
                           </label>
                           <button
                             type="button"
-                            onClick={() => resetField(row.label_sv, content)}
+                            onClick={() => resetSection(row.label_sv)}
                             className="text-xs font-medium text-navy-400 hover:text-navy-700"
                           >
                             {ws.resetField}
@@ -140,8 +141,8 @@ export default function ApplicationWorkspace({ project, match, onBack }: Props) 
                         </div>
                         <textarea
                           rows={3}
-                          value={draftLogic[row.label_sv] ?? content}
-                          onChange={(e) => setDraftLogic((d) => ({ ...d, [row.label_sv]: e.target.value }))}
+                          value={sectionDrafts[row.label_sv] ?? content}
+                          onChange={(e) => setSection(row.label_sv, e.target.value)}
                           className="mt-2 w-full rounded-md border border-navy-200 px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
                         />
                       </div>

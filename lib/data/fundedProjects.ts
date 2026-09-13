@@ -1,4 +1,4 @@
-import { ReferenceProject } from "@/lib/types";
+import { FundedProject } from "@/lib/types";
 
 // Level: real awarded-project register.
 //
@@ -7,7 +7,7 @@ import { ReferenceProject } from "@/lib/types";
 // actual EU-funded projects across both the 2021-2027 and 2014-2020
 // programme periods. Budget/funding figures are as published by the
 // city; a small number of projects did not publish a figure (null).
-export const referenceProjects: ReferenceProject[] = [
+export const fundedProjects: FundedProject[] = [
   {
     id: "ai-driven-atervinning",
     title: `AI-driven återvinning`,
@@ -2086,8 +2086,8 @@ Genom nätverk, plattformar och samverkan ska sammanlagt 500 företag
   },
 ];
 
-export function referenceProjectsForProgram(programId: string): ReferenceProject[] {
-  return referenceProjects.filter((r) => r.programId === programId);
+export function fundedProjectsForProgram(programId: string): FundedProject[] {
+  return fundedProjects.filter((r) => r.programId === programId);
 }
 export interface ProgramStats {
   total: number;
@@ -2099,7 +2099,7 @@ export interface ProgramStats {
   currentCount: number;
 }
 
-export function computeProgramStats(projects: ReferenceProject[]): ProgramStats {
+export function computeProgramStats(projects: FundedProject[]): ProgramStats {
   const total = projects.length;
   if (total === 0) {
     return {
@@ -2114,7 +2114,7 @@ export function computeProgramStats(projects: ReferenceProject[]): ProgramStats 
   }
 
   const ownerCount = projects.filter((p) => p.role === "owner").length;
-  const withBudget = projects.filter((p): p is ReferenceProject & { totalBudgetSEK: number } => p.totalBudgetSEK !== null);
+  const withBudget = projects.filter((p): p is FundedProject & { totalBudgetSEK: number } => p.totalBudgetSEK !== null);
   const avgBudgetSEK = withBudget.length > 0 ? Math.round(withBudget.reduce((s, p) => s + p.totalBudgetSEK, 0) / withBudget.length) : null;
 
   const themeCounts = new Map<string, number>();

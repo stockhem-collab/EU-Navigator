@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
-import { referenceProjects, computeProgramStats } from "@/lib/data/referenceProjects";
+import { fundedProjects, computeProgramStats } from "@/lib/data/fundedProjects";
 import { fmtSEK } from "@/lib/format";
 
 export default function ReferenceProjectsPage() {
@@ -25,7 +25,7 @@ function ReferenceProjectsInner() {
   const rp = t.referenceProjects;
 
   const filtered = useMemo(
-    () => (programFilter === "all" ? referenceProjects : referenceProjects.filter((p) => p.programId === programFilter)),
+    () => (programFilter === "all" ? fundedProjects : fundedProjects.filter((p) => p.programId === programFilter)),
     [programFilter]
   );
   const stats = computeProgramStats(filtered);
@@ -87,7 +87,9 @@ function ReferenceProjectsInner() {
                   )}
                 </div>
                 <h3 className="mt-1 font-bold text-navy-900">{project.title}</h3>
-                <p className="mt-2 whitespace-pre-line text-sm text-navy-600">{project.description_sv}</p>
+                <p className="mt-2 whitespace-pre-line text-sm text-navy-600">
+                  {lang === "sv" ? project.description_sv : project.description_en ?? project.description_sv}
+                </p>
 
                 <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-navy-50 pt-4 text-sm">
                   <div>

@@ -130,6 +130,8 @@ export interface TranslationTree {
       tabProcess: string;
       topPriorityLabel: string;
       topPriorityNone: string;
+      draftSavedNote: string;
+      draftNotSavedNote: string;
     };
     gapAnalysis: {
       title: string;
@@ -532,6 +534,8 @@ export const translations: Record<Lang, TranslationTree> = {
         tabProcess: "Process & granskning",
         topPriorityLabel: "Viktigast att åtgärda",
         topPriorityNone: "Inga akuta åtgärder — ansökan ser stark ut.",
+        draftSavedNote: "Utkastet sparas automatiskt i din webbläsare.",
+        draftNotSavedNote: "Spara projektet i projektbanken för att utkastet ska sparas mellan besök.",
         nextSteps: [
           "Åtgärda punkterna som AI-granskningen flaggat",
           "Bekräfta partnerskap/konsortium vid behov",
@@ -951,6 +955,8 @@ export const translations: Record<Lang, TranslationTree> = {
         tabProcess: "Process & review",
         topPriorityLabel: "Top priority",
         topPriorityNone: "No urgent action items — the application looks strong.",
+        draftSavedNote: "This draft is saved automatically in your browser.",
+        draftNotSavedNote: "Save this project to the project bank so its draft is kept between visits.",
         nextSteps: [
           "Address the points flagged by the AI review",
           "Confirm partnership/consortium if required",

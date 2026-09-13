@@ -78,6 +78,7 @@ function DemoPageInner() {
           <ApplicationWorkspace
             project={step.project}
             match={step.match}
+            customerProjectId={preselectedProjectId}
             onBack={() =>
               setStep({
                 name: "results",

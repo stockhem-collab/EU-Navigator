@@ -48,7 +48,7 @@ finansiering"* → `/projekt`.
 
 ## What's real data vs. illustrative example data
 
-- **Real, source anonymised**: `lib/data/referenceProjects.ts` (74 of a real
+- **Real, source anonymised**: `lib/data/fundedProjects.ts` (74 of a real
   municipality's actual awarded EU projects, 2014-2027, extracted from its
   own "Projekt med beviljade medel" documentation — organisation names,
   contact emails and source links replaced with a fictional "Exempelstad"
@@ -130,7 +130,7 @@ components/                 UI components (landing sections, demo flow,
                              shared header/footer/status badge)
 lib/i18n/                   Swedish/English translation dictionary + language context
 lib/types.ts                Shared data model (Programme/Call/Document,
-                             ProjectBankEntry, ReferenceProject,
+                             ProjectBankEntry, FundedProject,
                              AwardedProject, OrgProcessPhase, matching types)
 lib/data/                   Seed data — real programmes (22) and awarded
                              reference projects (74), the real org process,

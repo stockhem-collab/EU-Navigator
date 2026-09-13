@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { findCall } from "@/lib/data/fundingCalls";
-import { referenceProjectsForProgram, computeProgramStats } from "@/lib/data/referenceProjects";
+import { fundedProjectsForProgram, computeProgramStats } from "@/lib/data/fundedProjects";
 import { fmtSEK } from "@/lib/format";
 
 export default function CallDetailPage() {
@@ -19,7 +19,7 @@ export default function CallDetailPage() {
   const call = findCall(params.callId);
   if (!program || !call || call.programId !== program.id) return notFound();
 
-  const refProjects = referenceProjectsForProgram(program.id);
+  const refProjects = fundedProjectsForProgram(program.id);
   const stats = computeProgramStats(refProjects);
 
   return (
