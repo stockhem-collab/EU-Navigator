@@ -8,8 +8,10 @@ import StatusBadge from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { fundingCalls } from "@/lib/data/fundingCalls";
+import { fundedProjects } from "@/lib/data/fundedProjects";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
-import { computeMatchesForEntry } from "@/lib/matching/portfolio";
+import { computeMatchesForEntry, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
+import { computeSimilarProjects } from "@/lib/matching/similarProjects";
 import { fmtSEK } from "@/lib/format";
 
 export default function ProjectBankDetailPage() {
@@ -46,6 +48,7 @@ export default function ProjectBankDetailPage() {
 
   const missing = lang === "sv" ? entry.missingFields_sv : entry.missingFields_en;
   const matches = computeMatchesForEntry(entry, fundingCalls);
+  const similar = computeSimilarProjects(projectBankEntryToProjectInput(entry), fundedProjects);
 
   const recommendationStyle = (rec: (typeof matches)[number]["recommendation"]) => {
     if (rec === "proceed") return "bg-green-100 text-green-800";
@@ -115,7 +118,7 @@ export default function ProjectBankDetailPage() {
           </div>
         )}
 
-        <div className="mb-16 mt-6">
+        <div className="mt-6">
           <h2 className="text-lg font-bold text-navy-800">{pb.detailMatchesTitle}</h2>
           {matches.length === 0 ? (
             <p className="mt-2 text-sm text-navy-500">{pb.detailNoMatches}</p>
@@ -146,6 +149,35 @@ export default function ProjectBankDetailPage() {
                       {results.startApplication}
                     </Link>
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mb-16 mt-8">
+          <h2 className="text-lg font-bold text-navy-800">{pb.similarProjectsTitle}</h2>
+          <p className="mt-1 text-sm text-navy-500">{pb.similarProjectsIntro}</p>
+          {similar.length === 0 ? (
+            <p className="mt-3 text-sm text-navy-500">{pb.similarProjectsNone}</p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {similar.map(({ project, similarityPct, sharedKeywords }) => (
+                <div key={project.id} className="rounded-xl border border-navy-100 bg-white p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-navy-400">
+                        {lang === "sv" ? project.theme_sv : project.theme_en}
+                      </p>
+                      <p className="font-semibold text-navy-800">{project.title}</p>
+                    </div>
+                    <span className="badge bg-navy-100 text-navy-700">{similarityPct}%</span>
+                  </div>
+                  {sharedKeywords.length > 0 && (
+                    <p className="mt-2 text-xs text-navy-400">
+                      {pb.similarProjectsSharedLabel}: {sharedKeywords.join(", ")}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

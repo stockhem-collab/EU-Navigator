@@ -295,6 +295,19 @@ export interface ReadinessBreakdown {
   }[];
 }
 
+// ---------------------------------------------------------------------------
+// "Similar projects" — the prototype's version of docs/DATA_MODEL.md §2.5's
+// `SimilarProject`. Computed live from deterministic keyword overlap against
+// the real FundedProject library, the same "no live LLM calls" approach used
+// everywhere else in this app — not a real embedding search, but a genuine,
+// explainable signal rather than a fabricated one.
+// ---------------------------------------------------------------------------
+export interface SimilarProjectResult {
+  project: FundedProject;
+  similarityPct: number; // 0-100
+  sharedKeywords: string[];
+}
+
 export interface SectionCoachResult {
   relevance: number; // 0-10
   impact: number;

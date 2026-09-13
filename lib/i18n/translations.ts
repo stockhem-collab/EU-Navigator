@@ -178,6 +178,10 @@ export interface TranslationTree {
     detailFindFunding: string;
     detailMatchesTitle: string;
     detailNoMatches: string;
+    similarProjectsTitle: string;
+    similarProjectsIntro: string;
+    similarProjectsNone: string;
+    similarProjectsSharedLabel: string;
     back: string;
     importButton: string;
     downloadTemplate: string;
@@ -597,6 +601,11 @@ export const translations: Record<Lang, TranslationTree> = {
         "Projektinformationen är inte tillräcklig för optimal EU-matchning. Komplettera enligt nedan innan en specifik utlysning väljs.",
       detailMatchesTitle: "Matchningar mot öppna och kommande utlysningar",
       detailNoMatches: "Inga utlysningar att matcha mot just nu.",
+      similarProjectsTitle: "Liknande beviljade projekt",
+      similarProjectsIntro:
+        "Baserat på projektbeskrivningen — jämfört med tidigare beviljade EU-projekt (se förbehåll under Beviljade projekt).",
+      similarProjectsNone: "Inga tillräckligt lika beviljade projekt hittades än — komplettera beskrivningen för fler träffar.",
+      similarProjectsSharedLabel: "Gemensamma begrepp",
       detailFindFunding: "Hitta finansiering för detta projekt",
       back: "Tillbaka till projektbanken",
       importButton: "Importera projekt (CSV)",
@@ -1021,6 +1030,11 @@ export const translations: Record<Lang, TranslationTree> = {
         "The project information isn't sufficient for optimal EU matching. Complete it as below before selecting a specific call.",
       detailMatchesTitle: "Matches against open and upcoming calls",
       detailNoMatches: "No calls to match against right now.",
+      similarProjectsTitle: "Similar funded projects",
+      similarProjectsIntro:
+        "Based on the project description — compared against previously funded EU projects (see the caveats under Funded projects).",
+      similarProjectsNone: "No sufficiently similar funded projects found yet — add more detail to the description for matches.",
+      similarProjectsSharedLabel: "Shared terms",
       detailFindFunding: "Find funding for this project",
       back: "Back to the project bank",
       importButton: "Import projects (CSV)",
