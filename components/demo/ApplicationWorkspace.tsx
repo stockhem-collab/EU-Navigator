@@ -99,10 +99,31 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
             </div>
           </div>
 
-          <nav className="mt-4 flex gap-2 overflow-x-auto md:mt-6 md:flex-col md:gap-1 md:overflow-visible">
+          <div
+            role="tablist"
+            aria-label={ws.title}
+            className="mt-4 flex gap-2 overflow-x-auto md:mt-6 md:flex-col md:gap-1 md:overflow-visible"
+            onKeyDown={(e) => {
+              if (!["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
+              e.preventDefault();
+              const i = tabs.findIndex((tb) => tb.key === tab);
+              let next = i;
+              if (e.key === "Home") next = 0;
+              else if (e.key === "End") next = tabs.length - 1;
+              else if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (i + 1) % tabs.length;
+              else next = (i - 1 + tabs.length) % tabs.length;
+              setTab(tabs[next].key);
+              document.getElementById(`tab-${tabs[next].key}`)?.focus();
+            }}
+          >
             {tabs.map((tb) => (
               <button
                 key={tb.key}
+                id={`tab-${tb.key}`}
+                role="tab"
+                aria-selected={tab === tb.key}
+                aria-controls={`panel-${tb.key}`}
+                tabIndex={tab === tb.key ? 0 : -1}
                 onClick={() => setTab(tb.key)}
                 className={`shrink-0 rounded-md px-3 py-2 text-left text-sm font-semibold transition ${
                   tab === tb.key ? "bg-navy-800 text-white" : "text-navy-600 hover:bg-navy-50"
@@ -111,13 +132,13 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
                 {tb.label}
               </button>
             ))}
-          </nav>
+          </div>
         </aside>
 
         {/* Active tab content */}
         <div className="min-w-0">
           {tab === "application" && (
-            <div>
+            <div id="panel-application" role="tabpanel" aria-labelledby="tab-application" tabIndex={0}>
               <section>
                 <h2 className="text-lg font-bold text-navy-800">{ws.logicTitle}</h2>
                 <p className="mt-1 text-sm text-navy-500">{ws.logicHint}</p>
@@ -172,7 +193,7 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
           )}
 
           {tab === "assessment" && (
-            <div>
+            <div id="panel-assessment" role="tabpanel" aria-labelledby="tab-assessment" tabIndex={0}>
               <section>
                 <h2 className="text-lg font-bold text-navy-800">{readinessT.title}</h2>
                 <p className="mt-1 text-xs text-navy-400">{readinessT.disclaimer}</p>
@@ -269,7 +290,7 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
           )}
 
           {tab === "process" && (
-            <div>
+            <div id="panel-process" role="tabpanel" aria-labelledby="tab-process" tabIndex={0}>
               <section>
                 <h2 className="text-lg font-bold text-navy-800">{ws.reviewerTitle}</h2>
                 <p className="mt-1 text-sm text-navy-500">{ws.reviewerSubtitle}</p>
