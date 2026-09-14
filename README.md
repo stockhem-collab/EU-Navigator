@@ -22,7 +22,11 @@ documentation.
 - **Matchningsmotor** — scores a project against every call (not just
   every programme), with a transparent rationale, a gap analysis
   (strengths / gaps + "how to raise the match from X% → Y%"), and an
-  Application Readiness Score breakdown.
+  Application Readiness Score breakdown. The score itself is weighted by
+  that call's own real `evaluationCriteria` (e.g. Relevance 30 / Impact 30 /
+  Quality 20 / Implementation 20 points) rather than one fixed formula
+  applied to every call — see the comment on `criteriaWeights` in
+  `lib/matching/scoreMatch.ts`.
 - **Ansökningsstudio** (inside `/demo`) — once a call is chosen, the AI is
   locked to that call's evaluation criteria. Includes an "Application
   Coach" that scores the project description on Relevance/Impact/Evidence
@@ -91,6 +95,22 @@ npm run dev
 
 Then open http://localhost:3000.
 
+## Testing
+
+```bash
+npm run typecheck   # tsc --noEmit
+npm run lint        # next lint
+npm run test:unit   # matching/scoring/CSV-import logic, no browser needed
+npm run test:e2e    # Playwright, drives the real app in Chromium
+npm test            # both test projects together
+```
+
+`npm run test:e2e` needs Chromium installed once via `npx playwright
+install chromium` (or `--with-deps chromium` on a fresh Linux machine/CI
+runner). The GitHub Actions workflow in `.github/workflows/ci.yml` runs all
+of the above — lint, typecheck, build, unit tests, then e2e tests — on every
+push and pull request.
+
 ## Deploy to get a live URL (for embedding in APV App)
 
 The fastest path to a public URL is Vercel (built by the makers of
@@ -138,4 +158,7 @@ lib/data/                   Seed data — real programmes (22) and awarded
                              bank and awarded-project reporting example
 lib/matching/                Scoring engine, gap analysis, readiness score,
                              application coach, workspace content generator
+tests/unit/                  Logic-only tests (no browser) for the matching/
+                             readiness/CSV-import engines
+tests/e2e/                   Playwright tests driving the real app
 ```
