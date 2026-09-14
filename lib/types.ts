@@ -290,6 +290,10 @@ export interface ReadinessBreakdown {
     label_sv: string;
     label_en: string;
     score: number;
+    /** This dimension's share of `overall`, 0-1 — carried on the dimension
+     * itself (not a parallel array indexed by position) so reordering or
+     * adding a dimension can't silently misalign weights and labels. */
+    weight: number;
     action_sv?: string;
     action_en?: string;
   }[];

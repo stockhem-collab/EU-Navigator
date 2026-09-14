@@ -1,7 +1,10 @@
 import { MatchResult, ProjectInput, SectionCoachResult } from "@/lib/types";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 
-const QUANTIFIED_PATTERN = /\d+\s?(%|procent|percent|mwh|kwh|co2|co2e|ton|kr|sek|mnkr|deltagare|participants|personer|people)/i;
+// Deliberately excludes currency units (kr/sek/mnkr) — a budget figure is
+// not a quantified *effect*, and including them let any project that simply
+// stated its cost score as if it had described a measurable outcome.
+const QUANTIFIED_PATTERN = /\d+\s?(%|procent|percent|mwh|kwh|co2e?|ton\b|deltagare|participants|personer|people)/i;
 
 // A demonstrative "Application Coach" analysis of the free-text project
 // description against the specific call it's being matched to. Deterministic

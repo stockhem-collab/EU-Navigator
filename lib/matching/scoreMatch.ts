@@ -1,4 +1,4 @@
-import { FundingCall, FundingProgram, MatchResult, ProjectInput, RationaleLine } from "@/lib/types";
+import { EvaluationCriterion, FundingCall, FundingProgram, MatchResult, ProjectInput, RationaleLine } from "@/lib/types";
 import { findProgram } from "@/lib/data/fundingPrograms";
 
 function normalizeWords(text: string): string[] {
@@ -38,14 +38,57 @@ export function fmtMSEK(n: number): string {
   return (n / 1_000_000).toLocaleString("sv-SE", { maximumFractionDigits: 0 });
 }
 
+// scoreMatch groups its signals into two buckets — "thematic fit" (sector +
+// keyword overlap) and "implementation fit" (budget + partnership +
+// duration) — and blends them 60/40 by default. But calls carry their own
+// real evaluationCriteria (e.g. Relevance 30, Impact 30, Quality 20,
+// Implementation 20, extracted from real call documents), which is shown to
+// the user as if it's how the application gets judged. Ignoring it and
+// always applying the fixed 60/40 split would mean the displayed criteria
+// and the actual score are unrelated to each other. Instead, a call whose
+// own criteria weight "quality"/"implementation" more heavily shifts more of
+// the match score onto the implementation bucket, and vice versa — an
+// honest (if still heuristic) use of real data, not a fabricated per-
+// criterion mapping we have no way to actually measure.
+const RELEVANCE_CRITERION_PATTERN = /relevan|priorit|impact|effekt|alignment|koppling/i;
+const IMPLEMENTATION_CRITERION_PATTERN =
+  /kvalit|quality|genomför|implement|resurs|budget|kapacitet|organisat|efficien|effektivitet/i;
+
+interface CriteriaWeights {
+  thematicPct: number; // 0-1, share of the 100 match points from thematic fit
+  implementationPct: number; // 0-1, share from budget/partnership/duration fit
+}
+
+// Mirrors the previous fixed split (sector 35 + keywords 25 = 60,
+// budget 20 + partnership 15 + duration 5 = 40) — used whenever a call's
+// criteria names don't say anything the classifier recognises, so scoring
+// never silently changes for a call with generic/unlabelled criteria.
+const DEFAULT_WEIGHTS: CriteriaWeights = { thematicPct: 0.6, implementationPct: 0.4 };
+
+function criteriaWeights(criteria: EvaluationCriterion[]): CriteriaWeights {
+  let relevancePoints = 0;
+  let implementationPoints = 0;
+  for (const c of criteria) {
+    if (RELEVANCE_CRITERION_PATTERN.test(c.name_sv) || RELEVANCE_CRITERION_PATTERN.test(c.name_en)) {
+      relevancePoints += c.maxPoints;
+    } else if (IMPLEMENTATION_CRITERION_PATTERN.test(c.name_sv) || IMPLEMENTATION_CRITERION_PATTERN.test(c.name_en)) {
+      implementationPoints += c.maxPoints;
+    }
+  }
+  const total = relevancePoints + implementationPoints;
+  if (total === 0) return DEFAULT_WEIGHTS;
+  return { thematicPct: relevancePoints / total, implementationPct: implementationPoints / total };
+}
+
 export function scoreMatch(project: ProjectInput, call: FundingCall, program: FundingProgram): MatchResult {
   const rationale: RationaleLine[] = [];
-  let score = 0;
+  let thematicScore = 0; // nominal max 60
+  let implementationScore = 0; // nominal max 40 (can go to -10 on a missing required partner)
 
-  // Sector alignment (max 35)
+  // Sector alignment (max 35 of the thematic bucket)
   const sectorMatch = program.sectors.includes(project.sector);
   if (sectorMatch) {
-    score += 35;
+    thematicScore += 35;
     rationale.push({
       type: "positive",
       category: "sector",
@@ -54,10 +97,10 @@ export function scoreMatch(project: ProjectInput, call: FundingCall, program: Fu
     });
   }
 
-  // Keyword overlap (max 25)
+  // Keyword overlap (max 25 of the thematic bucket)
   const matchedKeywords = keywordOverlapCount(project, program, call);
   const keywordScore = Math.min(25, matchedKeywords.length * 6);
-  score += keywordScore;
+  thematicScore += keywordScore;
   if (matchedKeywords.length > 0) {
     rationale.push({
       type: "positive",
@@ -75,10 +118,10 @@ export function scoreMatch(project: ProjectInput, call: FundingCall, program: Fu
     });
   }
 
-  // Budget fit (max 20)
+  // Budget fit (max 20 of the implementation bucket)
   const fit = budgetFit(project, call);
   if (fit === "in-range") {
-    score += 20;
+    implementationScore += 20;
     rationale.push({
       type: "positive",
       category: "budget",
@@ -86,7 +129,7 @@ export function scoreMatch(project: ProjectInput, call: FundingCall, program: Fu
       text_en: `Budget within the call's range (SEK ${fmtMSEK(call.minGrantSEK)}–${fmtMSEK(call.maxGrantSEK)}M)`,
     });
   } else if (fit === "partial") {
-    score += 8;
+    implementationScore += 8;
     rationale.push({
       type: "warning",
       category: "budget",
@@ -104,10 +147,10 @@ export function scoreMatch(project: ProjectInput, call: FundingCall, program: Fu
     });
   }
 
-  // Partnership requirement (max 15, can penalize)
+  // Partnership requirement (max 15 of the implementation bucket, can penalize)
   if (call.requiresPartnership) {
     if (project.hasInternationalPartner) {
-      score += 15;
+      implementationScore += 15;
       rationale.push({
         type: "positive",
         category: "partnership",
@@ -115,7 +158,7 @@ export function scoreMatch(project: ProjectInput, call: FundingCall, program: Fu
         text_en: "The requirement for an international partner/consortium is met",
       });
     } else {
-      score -= 10;
+      implementationScore -= 10;
       rationale.push({
         type: "warning",
         category: "partnership",
@@ -125,12 +168,12 @@ export function scoreMatch(project: ProjectInput, call: FundingCall, program: Fu
       });
     }
   } else {
-    score += 5;
+    implementationScore += 5;
   }
 
-  // Duration fit (max 5)
+  // Duration fit (max 5 of the implementation bucket)
   if (durationFit(project, program)) {
-    score += 5;
+    implementationScore += 5;
   } else {
     rationale.push({
       type: "neutral",
@@ -141,6 +184,27 @@ export function scoreMatch(project: ProjectInput, call: FundingCall, program: Fu
     });
   }
 
+  // Blend the two buckets by the call's own real evaluation-criteria split
+  // instead of a universal fixed ratio (see criteriaWeights above). For a
+  // call whose criteria wording doesn't map to either bucket, this reduces
+  // to exactly the old fixed-60/40 formula.
+  const weights = criteriaWeights(call.evaluationCriteria);
+  const thematicMaxContribution = weights.thematicPct * 100;
+  const implementationMaxContribution = weights.implementationPct * 100;
+  const thematicRatio = thematicMaxContribution / 60;
+  const implementationRatio = implementationMaxContribution / 40;
+
+  // Rescale each gap's point-upside by the same ratio, so a gap in a bucket
+  // this call's own criteria weight more heavily also shows a proportionally
+  // larger "fix this to gain N points" — keeping gapAnalysis's potential-
+  // score consistent with the score it's built from.
+  for (const line of rationale) {
+    if (line.deltaIfFixed === undefined) continue;
+    const ratio = line.category === "keywords" ? thematicRatio : implementationRatio;
+    line.deltaIfFixed = Math.round(line.deltaIfFixed * ratio);
+  }
+
+  let score = thematicScore * thematicRatio + implementationScore * implementationRatio;
   score = Math.max(0, Math.min(100, Math.round(score)));
   const stars = Math.max(1, Math.min(5, Math.round(score / 20)));
 
