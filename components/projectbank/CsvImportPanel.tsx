@@ -7,9 +7,13 @@ import { CSV_TEMPLATE, parseProjectsCsv } from "@/lib/matching/projectIntake";
 
 interface Props {
   onImport: (entries: ProjectBankEntry[]) => void;
+  /** Every id already in the project bank (seeded + previously imported) —
+   * passed through to parseProjectsCsv so re-importing the same file can't
+   * generate colliding ids. */
+  existingIds: string[];
 }
 
-export default function CsvImportPanel({ onImport }: Props) {
+export default function CsvImportPanel({ onImport, existingIds }: Props) {
   const { t, lang } = useLanguage();
   const pb = t.projectBank;
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -31,7 +35,7 @@ export default function CsvImportPanel({ onImport }: Props) {
     const reader = new FileReader();
     reader.onload = () => {
       const text = String(reader.result ?? "");
-      const { entries, errors } = parseProjectsCsv(text);
+      const { entries, errors } = parseProjectsCsv(text, existingIds);
       if (entries.length > 0) onImport(entries);
       setResult({ count: entries.length, errors });
     };

@@ -187,6 +187,7 @@ export interface TranslationTree {
     downloadTemplate: string;
     importHint: string;
     clearImported: string;
+    removeImportedRow: string;
     economicsTitle: string;
     statPortfolioBudget: string;
     statFundingPotential: string;
@@ -616,6 +617,7 @@ export const translations: Record<Lang, TranslationTree> = {
       importHint:
         "Kolumner: Titel, Förvaltning, Ägare, Budget, Startår, Slutår, Sektor, Beskrivning, Internationell partner. Sparas i din webbläsare (ingen delning mellan användare i den här demon).",
       clearImported: "Rensa importerade projekt",
+      removeImportedRow: "Ta bort importerat projekt",
       economicsTitle: "Portföljekonomi",
       statPortfolioBudget: "Total portföljbudget",
       statFundingPotential: "Identifierad EU-finansieringspotential",
@@ -1048,6 +1050,7 @@ export const translations: Record<Lang, TranslationTree> = {
       importHint:
         "Columns: Titel, Förvaltning, Ägare, Budget, Startår, Slutår, Sektor, Beskrivning, Internationell partner. Saved in your browser (not shared between users in this demo).",
       clearImported: "Clear imported projects",
+      removeImportedRow: "Remove imported project",
       economicsTitle: "Portfolio economics",
       statPortfolioBudget: "Total portfolio budget",
       statFundingPotential: "Identified EU funding potential",

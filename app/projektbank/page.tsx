@@ -15,7 +15,8 @@ import { fmtSEK } from "@/lib/format";
 export default function ProjectBankPage() {
   const { t, lang } = useLanguage();
   const pb = t.projectBank;
-  const { all: projectBank, imported, addImported, clearImported } = useProjectBank();
+  const { all: projectBank, imported, addImported, removeImported, clearImported } = useProjectBank();
+  const importedIds = useMemo(() => new Set(imported.map((p) => p.id)), [imported]);
 
   // Run every project bank entry through the matching engine once, so the
   // portfolio can be sorted by "what matches best" instead of requiring a
@@ -42,7 +43,7 @@ export default function ProjectBankPage() {
         <p className="mt-2 text-sm text-navy-600">{pb.subtitle}</p>
 
         <div className="mt-6">
-          <CsvImportPanel onImport={addImported} />
+          <CsvImportPanel onImport={addImported} existingIds={projectBank.map((p) => p.id)} />
           {imported.length > 0 && (
             <button
               type="button"
@@ -97,6 +98,7 @@ export default function ProjectBankPage() {
                 <th className="px-4 py-3">{pb.columnCost}</th>
                 <th className="px-4 py-3">{pb.columnReadiness}</th>
                 <th className="px-4 py-3">{pb.columnBestMatch}</th>
+                <th className="px-4 py-3" aria-hidden="true" />
               </tr>
             </thead>
             <tbody className="divide-y divide-navy-50">
@@ -140,6 +142,19 @@ export default function ProjectBankPage() {
                       </Link>
                     ) : (
                       <span className="text-xs text-navy-400">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {importedIds.has(p.id) && (
+                      <button
+                        type="button"
+                        onClick={() => removeImported(p.id)}
+                        aria-label={pb.removeImportedRow}
+                        title={pb.removeImportedRow}
+                        className="text-navy-300 hover:text-amber-700"
+                      >
+                        ✕
+                      </button>
                     )}
                   </td>
                 </tr>

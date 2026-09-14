@@ -26,7 +26,10 @@ function guessSector(text: string): Sector {
   return "digital";
 }
 
-const QUANTIFIED_PATTERN = /\d+\s?(%|procent|mwh|kwh|kr|sek|mnkr|deltagare|personer)/i;
+// Excludes currency units (kr/sek/mnkr) for the same reason as the
+// readiness/coach engines: a budget figure isn't a quantified effect, and
+// every imported row already has a separate budget field.
+const QUANTIFIED_PATTERN = /\d+\s?(%|procent|mwh|kwh|co2e?|ton\b|deltagare|personer)/i;
 
 function computeImportedReadiness(description: string, hasOwner: boolean, hasBudget: boolean): {
   score: number;
@@ -81,10 +84,35 @@ function slugify(input: string, fallback: string): string {
   return s || fallback;
 }
 
+// Naively stripping every non-digit character (the previous approach) turns
+// "450 000,50 kr" into "45000050" — about 100x too large — by deleting the
+// decimal separator along with the currency text and thousands spaces. This
+// keeps exactly one separator as the decimal point and treats the rest as
+// thousands separators, handling both Swedish ("450 000,50") and plain
+// ("450000.50" / "450.000" / "450000") styles.
 function parseNumber(raw: string | undefined): number {
   if (!raw) return 0;
-  const digits = raw.replace(/[^\d]/g, "");
-  return digits ? parseInt(digits, 10) : 0;
+  let cleaned = raw.trim().replace(/[^\d,.\-]/g, "");
+  if (!cleaned) return 0;
+
+  const lastComma = cleaned.lastIndexOf(",");
+  const lastDot = cleaned.lastIndexOf(".");
+
+  if (lastComma !== -1 && lastDot !== -1) {
+    // Both separators present — whichever comes last is the decimal point.
+    cleaned = lastComma > lastDot ? cleaned.replace(/\./g, "").replace(",", ".") : cleaned.replace(/,/g, "");
+  } else if (lastComma !== -1) {
+    // Only a comma: a Swedish decimal comma has 1-2 digits after it,
+    // otherwise it's a thousands separator (e.g. "1,000").
+    const decimals = cleaned.length - lastComma - 1;
+    cleaned = decimals <= 2 ? cleaned.replace(",", ".") : cleaned.replace(/,/g, "");
+  } else if (lastDot !== -1) {
+    const decimals = cleaned.length - lastDot - 1;
+    if (decimals > 2) cleaned = cleaned.replace(/\./g, ""); // thousands-style dot, e.g. "450.000"
+  }
+
+  const n = parseFloat(cleaned);
+  return Number.isFinite(n) ? Math.round(n) : 0;
 }
 
 function getField(row: Record<string, string>, ...names: string[]): string {
@@ -101,7 +129,14 @@ export interface ImportResult {
   errors: string[];
 }
 
-export function parseProjectsCsv(csvText: string): ImportResult {
+// `existingIds` should be every id already in the project bank (seeded +
+// previously imported) — without it, re-importing the same file twice
+// regenerates the exact same slugified ids both times (this function's own
+// dedup set starts empty on every call), so the second import silently adds
+// entries whose id collides with the first import's. Passing the current
+// ids in makes id generation idempotent across repeated imports, not just
+// within one file.
+export function parseProjectsCsv(csvText: string, existingIds: Iterable<string> = []): ImportResult {
   const parsed = Papa.parse<Record<string, string>>(csvText, {
     header: true,
     skipEmptyLines: true,
@@ -109,7 +144,7 @@ export function parseProjectsCsv(csvText: string): ImportResult {
 
   const errors: string[] = parsed.errors.map((e) => `Rad ${e.row ?? "?"}: ${e.message}`);
   const entries: ProjectBankEntry[] = [];
-  const usedIds = new Set<string>();
+  const usedIds = new Set<string>(existingIds);
   const currentYear = new Date().getFullYear();
 
   parsed.data.forEach((row, i) => {
@@ -136,8 +171,10 @@ export function parseProjectsCsv(csvText: string): ImportResult {
 
     const readiness = computeImportedReadiness(description, Boolean(owner), estimatedCostSEK > 0);
 
-    let id = `import-${slugify(title, `projekt-${i}`)}`;
-    while (usedIds.has(id)) id = `${id}-2`;
+    const baseId = `import-${slugify(title, `projekt-${i}`)}`;
+    let id = baseId;
+    let suffix = 2;
+    while (usedIds.has(id)) id = `${baseId}-${suffix++}`;
     usedIds.add(id);
 
     entries.push({
