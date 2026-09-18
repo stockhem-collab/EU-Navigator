@@ -293,14 +293,147 @@ export interface TranslationTree {
   orgSettings: {
     title: string;
     subtitle: string;
+    back: string;
     orgNameLabel: string;
     orgNamePlaceholder: string;
+    registryTitle: string;
+    orgNumberLabel: string;
+    orgTypeLabel: string;
+    countryLabel: string;
+    websiteLabel: string;
+    picLabel: string;
+    contactNameLabel: string;
+    contactEmailLabel: string;
+    structureTitle: string;
+    structureHint: string;
+    addUnitPlaceholder: string;
+    addUnitButton: string;
+    removeUnitLabel: string;
+    rolesProcessTitle: string;
+    rolesProcessHint: string;
     rolesSectionTitle: string;
     rolesSectionHint: string;
     roleNamePlaceholder: (defaultName: string) => string;
     tasksHint: string;
     resetAll: string;
     savedIndicator: string;
+  };
+  settingsHub: {
+    title: string;
+    subtitle: string;
+    cardProfileTitle: string;
+    cardProfileDesc: string;
+    cardOrgTitle: string;
+    cardOrgDesc: string;
+    cardUsersTitle: string;
+    cardUsersDesc: (count: number, admins: number) => string;
+    cardWatchTitle: string;
+    cardWatchDesc: string;
+    cardFundingProfileTitle: string;
+    cardFundingProfileDesc: string;
+    securityTitle: string;
+    integrationsTitle: string;
+    dataTitle: string;
+    comingSoon: string;
+  };
+  profileSettings: {
+    title: string;
+    subtitle: string;
+    back: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    emailVerified: string;
+    ssoManaged: string;
+    phone: string;
+    jobTitle: string;
+    unit: string;
+    save: string;
+    savedIndicator: string;
+  };
+  usersSettings: {
+    title: string;
+    subtitle: string;
+    back: string;
+    searchPlaceholder: string;
+    roleFilterAll: string;
+    invite: string;
+    columnUser: string;
+    columnUnit: string;
+    columnRole: string;
+    columnStatus: string;
+    statusActive: string;
+    statusInvited: string;
+    inviteTitle: string;
+    inviteFirstName: string;
+    inviteLastName: string;
+    inviteEmail: string;
+    inviteUnit: string;
+    inviteRole: string;
+    inviteSubmit: string;
+    inviteCancel: string;
+    remove: string;
+    confirmRemove: (name: string) => string;
+    detailBack: string;
+    detailOrgRole: string;
+    detailProjectRoles: string;
+    addProjectRole: string;
+    projectRolePlaceholder: string;
+    removeRole: string;
+    noProjectRoles: string;
+    permissionMatrixTitle: string;
+    permView: string;
+    permEdit: string;
+    permSubmit: string;
+    permApprove: string;
+    permManageUsers: string;
+  };
+  watchSettings: {
+    title: string;
+    subtitle: string;
+    back: string;
+    sectorsTitle: string;
+    programsTitle: string;
+    notifyTitle: string;
+    notifyNewCallOrg: string;
+    notifyCallProject: string;
+    notifyHighRelevance: string;
+    notifyDeadline: string;
+    notifyComment: string;
+    notifyReportingDeadline: string;
+    digestTitle: string;
+    digestInstant: string;
+    digestDaily: string;
+    digestWeekly: string;
+    savedIndicator: string;
+    resetAll: string;
+  };
+  fundingProfileSettings: {
+    title: string;
+    subtitle: string;
+    back: string;
+    focusAreasLabel: string;
+    focusAreasPlaceholder: string;
+    addTag: string;
+    projectSizeLabel: string;
+    sizeLt1m: string;
+    size1to10: string;
+    size10to50: string;
+    sizeGt50: string;
+    geoLabel: string;
+    geoSweden: string;
+    geoNordic: string;
+    geoBaltic: string;
+    geoEu: string;
+    partnerLabel: string;
+    leadLabel: string;
+    coFinancingLabel: string;
+    coFinancing10: string;
+    coFinancing30: string;
+    coFinancing50: string;
+    coFinancingOver50: string;
+    savedIndicator: string;
+    resetAll: string;
   };
   oversikt: {
     title: string;
@@ -729,10 +862,27 @@ export const translations: Record<Lang, TranslationTree> = {
       startApplication: "Starta ansökan",
     },
     orgSettings: {
-      title: "Organisationsinställningar",
-      subtitle: "Anpassa processen och rollernas ansvar efter er egen organisation.",
+      title: "Organisation",
+      subtitle: "Organisationens grunduppgifter, enheter och EU-processens roller.",
+      back: "← Tillbaka till Inställningar",
       orgNameLabel: "Organisationens namn",
       orgNamePlaceholder: "T.ex. Exempelstad kommun",
+      registryTitle: "Grunduppgifter",
+      orgNumberLabel: "Organisationsnummer",
+      orgTypeLabel: "Organisationsform",
+      countryLabel: "Land",
+      websiteLabel: "Webbplats",
+      picLabel: "PIC-nummer (EU Funding & Tenders Portal)",
+      contactNameLabel: "Huvudkontakt",
+      contactEmailLabel: "Huvudkontaktens e-post",
+      structureTitle: "Organisationsstruktur",
+      structureHint: "Enheter/förvaltningar. Används för att koppla användare till rätt del av organisationen.",
+      addUnitPlaceholder: "Namn på ny enhet",
+      addUnitButton: "+ Lägg till enhet",
+      removeUnitLabel: "Ta bort",
+      rolesProcessTitle: "Roller och ansvar i EU-processen",
+      rolesProcessHint:
+        "De interna rollerna som delar ansvaret för ett EU-projekt genom dess faser (idé → ansökan → genomförande → avslut).",
       rolesSectionTitle: "Roller",
       rolesSectionHint:
         "Benämningarna nedan är ett exempel. Döp om rollerna till dem som används i er organisation — namnet uppdateras överallt de visas.",
@@ -740,6 +890,123 @@ export const translations: Record<Lang, TranslationTree> = {
       tasksHint: "En uppgift per rad.",
       resetAll: "Återställ allt till exempeldata",
       savedIndicator: "Sparat i din webbläsare",
+    },
+    settingsHub: {
+      title: "Inställningar",
+      subtitle: "Hantera din profil, organisation och systeminställningar.",
+      cardProfileTitle: "Min profil",
+      cardProfileDesc: "Personliga uppgifter och kontaktinformation.",
+      cardOrgTitle: "Organisation",
+      cardOrgDesc: "Organisation, enheter och EU-information.",
+      cardUsersTitle: "Användare & behörigheter",
+      cardUsersDesc: (count, admins) => `${count} användare · ${admins} administratörer`,
+      cardWatchTitle: "Bevakningar & notifieringar",
+      cardWatchDesc: "Utlysningar, matchningar och deadlines.",
+      cardFundingProfileTitle: "Finansieringsprofil",
+      cardFundingProfileDesc: "Vad organisationen söker finansiering för — används av matchningsmotorn.",
+      securityTitle: "🔐 Säkerhet",
+      integrationsTitle: "🔗 Integrationer",
+      dataTitle: "🛡 Data & integritet",
+      comingSoon: "Kommer senare",
+    },
+    profileSettings: {
+      title: "Min profil",
+      subtitle: "Personliga uppgifter och kontaktinformation.",
+      back: "← Tillbaka till Inställningar",
+      firstName: "Förnamn",
+      lastName: "Efternamn",
+      email: "E-post",
+      emailVerified: "✓ Verifierad",
+      ssoManaged: "Hanteras via er inloggningslösning (SSO)",
+      phone: "Telefon",
+      jobTitle: "Befattning",
+      unit: "Avdelning/enhet",
+      save: "Spara ändringar",
+      savedIndicator: "Sparat i din webbläsare",
+    },
+    usersSettings: {
+      title: "Användare & behörigheter",
+      subtitle: "Bjud in användare och hantera roller på organisations- och projektnivå.",
+      back: "← Tillbaka till Inställningar",
+      searchPlaceholder: "🔎 Sök användare...",
+      roleFilterAll: "Alla roller",
+      invite: "+ Bjud in användare",
+      columnUser: "Användare",
+      columnUnit: "Organisation/enhet",
+      columnRole: "Roll",
+      columnStatus: "Status",
+      statusActive: "● Aktiv",
+      statusInvited: "○ Inbjuden",
+      inviteTitle: "Bjud in användare",
+      inviteFirstName: "Förnamn",
+      inviteLastName: "Efternamn",
+      inviteEmail: "E-post",
+      inviteUnit: "Enhet",
+      inviteRole: "Organisationsroll",
+      inviteSubmit: "Skicka inbjudan",
+      inviteCancel: "Avbryt",
+      remove: "Ta bort användare",
+      confirmRemove: (name) => `Ta bort ${name} från organisationen?`,
+      detailBack: "← Tillbaka till användare",
+      detailOrgRole: "Organisationsroll",
+      detailProjectRoles: "Projektbehörigheter",
+      addProjectRole: "+ Lägg till projekt",
+      projectRolePlaceholder: "Välj projekt...",
+      removeRole: "Ta bort",
+      noProjectRoles: "Inga projektbehörigheter tilldelade ännu.",
+      permissionMatrixTitle: "Vad respektive organisationsroll ger rätt till",
+      permView: "Visa",
+      permEdit: "Redigera",
+      permSubmit: "Skicka in",
+      permApprove: "Godkänna",
+      permManageUsers: "Hantera användare",
+    },
+    watchSettings: {
+      title: "Bevakningar & notifieringar",
+      subtitle: "Vad vill du bevaka, och när vill du bli meddelad?",
+      back: "← Tillbaka till Inställningar",
+      sectorsTitle: "Ämnesområden",
+      programsTitle: "EU-program",
+      notifyTitle: "Meddela mig när...",
+      notifyNewCallOrg: "En ny utlysning matchar vår organisation",
+      notifyCallProject: "En utlysning matchar något av mina projekt",
+      notifyHighRelevance: "En projektmatchning får hög relevans",
+      notifyDeadline: "Deadline närmar sig",
+      notifyComment: "Någon kommenterar min ansökan",
+      notifyReportingDeadline: "En rapporteringsdeadline närmar sig",
+      digestTitle: "Sammanställning",
+      digestInstant: "Direkt",
+      digestDaily: "Dagligen",
+      digestWeekly: "Veckovis",
+      savedIndicator: "Sparat i din webbläsare",
+      resetAll: "Återställ till exempeldata",
+    },
+    fundingProfileSettings: {
+      title: "Finansieringsprofil",
+      subtitle: "Hjälp EU Navigator att hitta relevanta finansieringsmöjligheter åt er.",
+      back: "← Tillbaka till Inställningar",
+      focusAreasLabel: "Organisationens fokusområden",
+      focusAreasPlaceholder: "Lägg till fokusområde...",
+      addTag: "Lägg till",
+      projectSizeLabel: "Vanlig projektstorlek",
+      sizeLt1m: "< 1 MSEK",
+      size1to10: "1–10 MSEK",
+      size10to50: "10–50 MSEK",
+      sizeGt50: "> 50 MSEK",
+      geoLabel: "Geografiskt intresse",
+      geoSweden: "Sverige",
+      geoNordic: "Norden",
+      geoBaltic: "Östersjöregionen",
+      geoEu: "EU-samarbeten",
+      partnerLabel: "Projekt där partnerskap är möjligt",
+      leadLabel: "Kan organisationen vara projektledare?",
+      coFinancingLabel: "Medfinansiering organisationen klarar",
+      coFinancing10: "Upp till 10 %",
+      coFinancing30: "Upp till 30 %",
+      coFinancing50: "Upp till 50 %",
+      coFinancingOver50: "Över 50 %",
+      savedIndicator: "Sparat i din webbläsare",
+      resetAll: "Återställ till exempeldata",
     },
     oversikt: {
       title: "Översikt",
@@ -1165,10 +1432,27 @@ export const translations: Record<Lang, TranslationTree> = {
       startApplication: "Start application",
     },
     orgSettings: {
-      title: "Organisation settings",
-      subtitle: "Customise the process and each role's responsibilities for your own organisation.",
+      title: "Organisation",
+      subtitle: "The organisation's registry info, units, and the EU process's roles.",
+      back: "← Back to Settings",
       orgNameLabel: "Organisation name",
       orgNamePlaceholder: "E.g. Example City Municipality",
+      registryTitle: "Registry info",
+      orgNumberLabel: "Organisation number",
+      orgTypeLabel: "Organisation type",
+      countryLabel: "Country",
+      websiteLabel: "Website",
+      picLabel: "PIC number (EU Funding & Tenders Portal)",
+      contactNameLabel: "Main contact",
+      contactEmailLabel: "Main contact's email",
+      structureTitle: "Organisation structure",
+      structureHint: "Units/departments. Used to link users to the right part of the organisation.",
+      addUnitPlaceholder: "New unit name",
+      addUnitButton: "+ Add unit",
+      removeUnitLabel: "Remove",
+      rolesProcessTitle: "Roles and responsibilities in the EU process",
+      rolesProcessHint:
+        "The internal roles that share responsibility for an EU project across its phases (idea → application → delivery → closure).",
       rolesSectionTitle: "Roles",
       rolesSectionHint:
         "The labels below are an example. Rename the roles to match your own organisation — the name updates everywhere it's shown.",
@@ -1176,6 +1460,123 @@ export const translations: Record<Lang, TranslationTree> = {
       tasksHint: "One task per line.",
       resetAll: "Reset everything to the example data",
       savedIndicator: "Saved in your browser",
+    },
+    settingsHub: {
+      title: "Settings",
+      subtitle: "Manage your profile, organisation and system settings.",
+      cardProfileTitle: "My profile",
+      cardProfileDesc: "Personal details and contact information.",
+      cardOrgTitle: "Organisation",
+      cardOrgDesc: "Organisation, units and EU information.",
+      cardUsersTitle: "Users & permissions",
+      cardUsersDesc: (count, admins) => `${count} users · ${admins} administrators`,
+      cardWatchTitle: "Watchlists & notifications",
+      cardWatchDesc: "Calls, matches and deadlines.",
+      cardFundingProfileTitle: "Funding profile",
+      cardFundingProfileDesc: "What the organisation seeks funding for — used by the matching engine.",
+      securityTitle: "🔐 Security",
+      integrationsTitle: "🔗 Integrations",
+      dataTitle: "🛡 Data & privacy",
+      comingSoon: "Coming later",
+    },
+    profileSettings: {
+      title: "My profile",
+      subtitle: "Personal details and contact information.",
+      back: "← Back to Settings",
+      firstName: "First name",
+      lastName: "Last name",
+      email: "Email",
+      emailVerified: "✓ Verified",
+      ssoManaged: "Managed by your organisation's login (SSO)",
+      phone: "Phone",
+      jobTitle: "Job title",
+      unit: "Department/unit",
+      save: "Save changes",
+      savedIndicator: "Saved in your browser",
+    },
+    usersSettings: {
+      title: "Users & permissions",
+      subtitle: "Invite users and manage roles at organisation and project level.",
+      back: "← Back to Settings",
+      searchPlaceholder: "🔎 Search users...",
+      roleFilterAll: "All roles",
+      invite: "+ Invite user",
+      columnUser: "User",
+      columnUnit: "Organisation/unit",
+      columnRole: "Role",
+      columnStatus: "Status",
+      statusActive: "● Active",
+      statusInvited: "○ Invited",
+      inviteTitle: "Invite user",
+      inviteFirstName: "First name",
+      inviteLastName: "Last name",
+      inviteEmail: "Email",
+      inviteUnit: "Unit",
+      inviteRole: "Organisation role",
+      inviteSubmit: "Send invite",
+      inviteCancel: "Cancel",
+      remove: "Remove user",
+      confirmRemove: (name) => `Remove ${name} from the organisation?`,
+      detailBack: "← Back to users",
+      detailOrgRole: "Organisation role",
+      detailProjectRoles: "Project permissions",
+      addProjectRole: "+ Add project",
+      projectRolePlaceholder: "Select project...",
+      removeRole: "Remove",
+      noProjectRoles: "No project permissions assigned yet.",
+      permissionMatrixTitle: "What each organisation role grants",
+      permView: "View",
+      permEdit: "Edit",
+      permSubmit: "Submit",
+      permApprove: "Approve",
+      permManageUsers: "Manage users",
+    },
+    watchSettings: {
+      title: "Watchlists & notifications",
+      subtitle: "What do you want to watch, and when should we notify you?",
+      back: "← Back to Settings",
+      sectorsTitle: "Subject areas",
+      programsTitle: "EU programmes",
+      notifyTitle: "Notify me when...",
+      notifyNewCallOrg: "A new call matches our organisation",
+      notifyCallProject: "A call matches one of my projects",
+      notifyHighRelevance: "A project match reaches high relevance",
+      notifyDeadline: "A deadline is approaching",
+      notifyComment: "Someone comments on my application",
+      notifyReportingDeadline: "A reporting deadline is approaching",
+      digestTitle: "Digest",
+      digestInstant: "Instant",
+      digestDaily: "Daily",
+      digestWeekly: "Weekly",
+      savedIndicator: "Saved in your browser",
+      resetAll: "Reset to the example data",
+    },
+    fundingProfileSettings: {
+      title: "Funding profile",
+      subtitle: "Help EU Navigator find relevant funding opportunities for you.",
+      back: "← Back to Settings",
+      focusAreasLabel: "The organisation's focus areas",
+      focusAreasPlaceholder: "Add focus area...",
+      addTag: "Add",
+      projectSizeLabel: "Typical project size",
+      sizeLt1m: "< 1M SEK",
+      size1to10: "1–10M SEK",
+      size10to50: "10–50M SEK",
+      sizeGt50: "> 50M SEK",
+      geoLabel: "Geographic interest",
+      geoSweden: "Sweden",
+      geoNordic: "Nordics",
+      geoBaltic: "Baltic Sea region",
+      geoEu: "EU-wide collaboration",
+      partnerLabel: "Projects where partnership is possible",
+      leadLabel: "Can the organisation be project lead?",
+      coFinancingLabel: "Co-financing the organisation can cover",
+      coFinancing10: "Up to 10%",
+      coFinancing30: "Up to 30%",
+      coFinancing50: "Up to 50%",
+      coFinancingOver50: "Over 50%",
+      savedIndicator: "Saved in your browser",
+      resetAll: "Reset to the example data",
     },
     oversikt: {
       title: "Overview",

@@ -50,7 +50,7 @@ export default function OrgProcessPanel({ phaseKey, readinessScore }: Props) {
         <div className="mt-5 border-t border-navy-50 pt-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-semibold uppercase text-navy-400">{org.rolesLabel}</p>
-            <Link href="/installningar" className="text-xs font-semibold text-navy-500 hover:text-navy-800">
+            <Link href="/installningar/organisation" className="text-xs font-semibold text-navy-500 hover:text-navy-800">
               ⚙ {isCustomised ? org.customisedLabel : org.customiseLabel}
             </Link>
           </div>
