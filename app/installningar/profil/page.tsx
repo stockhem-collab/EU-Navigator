@@ -5,17 +5,36 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
-import { orgUnits, CURRENT_USER_ID } from "@/lib/data/users";
+import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
+import { orgUnits as seedOrgUnits, CURRENT_USER_ID } from "@/lib/data/users";
 
 export default function ProfileSettingsPage() {
   const { t, lang } = useLanguage();
   const ps = t.profileSettings;
   const { users, hydrated, updateProfile } = useUsersDirectory();
+  const { config, hydrated: orgHydrated } = useOrgConfig();
 
-  if (!hydrated) return null;
+  if (!hydrated || !orgHydrated) return null;
 
+  const units = config.units ?? seedOrgUnits;
   const me = users.find((u) => u.id === CURRENT_USER_ID);
-  if (!me) return null;
+
+  // Defence in depth: the users page hides the option to remove yourself,
+  // but if it ever happens anyway, show a way back instead of a blank page.
+  if (!me) {
+    return (
+      <>
+        <Header />
+        <main className="section max-w-2xl">
+          <p className="text-sm text-navy-600">{ps.notFound}</p>
+          <Link href="/installningar" className="mt-2 inline-block text-sm font-semibold text-navy-600 hover:text-navy-900">
+            {ps.back}
+          </Link>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -94,9 +113,9 @@ export default function ProfileSettingsPage() {
                 onChange={(e) => updateProfile(me.id, { unitId: e.target.value || null })}
                 className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
               >
-                {orgUnits.map((u) => (
+                {units.map((u) => (
                   <option key={u.id} value={u.id}>
-                    {u.name}
+                    {u.parentId === null ? ps.wholeOrgUnitLabel(u.name) : u.name}
                   </option>
                 ))}
               </select>

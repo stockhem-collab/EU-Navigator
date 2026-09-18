@@ -65,11 +65,7 @@ export default function ProjectForm({ onSubmit, initialProject }: Props) {
   return (
     <div className="mx-auto max-w-2xl">
       {initialProject && (
-        <p className="mb-4 rounded-md bg-navy-50 px-3 py-2 text-xs text-navy-600">
-          {lang === "sv"
-            ? "Förifyllt från projektbanken — granska och komplettera innan ni fortsätter."
-            : "Pre-filled from the project bank — review and complete before continuing."}
-        </p>
+        <p className="mb-4 rounded-md bg-navy-50 px-3 py-2 text-xs text-navy-600">{intake.prefilledFromBank}</p>
       )}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -81,7 +77,7 @@ export default function ProjectForm({ onSubmit, initialProject }: Props) {
           onClick={fillExample}
           className="shrink-0 rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-600 hover:bg-navy-50"
         >
-          {lang === "sv" ? "Fyll i exempel" : "Fill example"}
+          {intake.fillExample}
         </button>
       </div>
 

@@ -41,6 +41,40 @@ export const orgRolePermissions: Record<OrgRoleKey, { view: boolean; edit: boole
 /** The demo's "logged in" user. Min profil always edits this person. */
 export const CURRENT_USER_ID = "u-1";
 
+const PROJECT_ROLE_PRIORITY: ProjectRoleKey[] = [
+  "project-owner",
+  "project-lead",
+  "application-owner",
+  "economist",
+  "reporting-owner",
+  "project-member",
+  "read-only",
+];
+
+export interface ProjectAssignmentSummary {
+  user: DemoUser;
+  role: ProjectRoleKey;
+  /** How many other people also have a role on this project, so a card can
+   * show "+2 more" instead of only ever naming one person. */
+  othersCount: number;
+}
+
+/** The most senior person assigned to a project (Användare & behörigheter's
+ * project-role assignments), so Projektbank can surface "who owns this"
+ * instead of that assignment only being visible on the settings page. */
+export function primaryProjectAssignment(users: DemoUser[], projectId: string): ProjectAssignmentSummary | null {
+  const assigned = users
+    .map((u) => {
+      const role = u.projectRoles.find((r) => r.projectId === projectId)?.role;
+      return role ? { user: u, role } : null;
+    })
+    .filter((a): a is { user: DemoUser; role: ProjectRoleKey } => a !== null)
+    .sort((a, b) => PROJECT_ROLE_PRIORITY.indexOf(a.role) - PROJECT_ROLE_PRIORITY.indexOf(b.role));
+  if (assigned.length === 0) return null;
+  const [primary, ...rest] = assigned;
+  return { user: primary.user, role: primary.role, othersCount: rest.length };
+}
+
 export const demoUsers: DemoUser[] = [
   {
     id: "u-1",

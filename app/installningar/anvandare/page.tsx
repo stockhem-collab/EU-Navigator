@@ -6,34 +6,40 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useUsersDirectory, InviteInput } from "@/lib/hooks/useUsersDirectory";
-import { orgUnits, orgRoleLabels, projectRoleLabels, orgRolePermissions } from "@/lib/data/users";
+import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
+import { orgUnits as seedOrgUnits, orgRoleLabels, projectRoleLabels, orgRolePermissions, CURRENT_USER_ID } from "@/lib/data/users";
 import { projectBank } from "@/lib/data/projectBank";
-import { DemoUser, OrgRoleKey, ProjectRoleKey } from "@/lib/types";
+import { DemoUser, OrgRoleKey, OrgUnit, ProjectRoleKey } from "@/lib/types";
 
 const ORG_ROLE_KEYS = Object.keys(orgRoleLabels) as OrgRoleKey[];
 const PROJECT_ROLE_KEYS = Object.keys(projectRoleLabels) as ProjectRoleKey[];
 
-function unitName(unitId: string | null): string {
-  return orgUnits.find((u) => u.id === unitId)?.name ?? "—";
+function unitName(units: OrgUnit[], unitId: string | null): string {
+  return units.find((u) => u.id === unitId)?.name ?? "—";
+}
+
+/** The org's own root unit represents the whole organisation, not a
+ * department — prefer an actual leaf/branch unit as the default for a
+ * newly invited person. */
+function defaultUnitId(units: OrgUnit[]): string | null {
+  return units.find((u) => u.parentId !== null)?.id ?? units[0]?.id ?? null;
 }
 
 export default function UsersSettingsPage() {
   const { t, lang } = useLanguage();
   const us = t.usersSettings;
   const { users, hydrated, inviteUser, removeUser, setOrgRole, setProjectRole } = useUsersDirectory();
+  const { config, hydrated: orgHydrated } = useOrgConfig();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<OrgRoleKey | "all">("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
-  const [inviteForm, setInviteForm] = useState<InviteInput>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    unitId: orgUnits[0]?.id ?? null,
-    orgRole: "read-only",
-  });
+  const [inviteForm, setInviteForm] = useState<InviteInput | null>(null);
 
-  if (!hydrated) return null;
+  if (!hydrated || !orgHydrated) return null;
+
+  const units = config.units ?? seedOrgUnits;
+  const form = inviteForm ?? { firstName: "", lastName: "", email: "", unitId: defaultUnitId(units), orgRole: "read-only" as OrgRoleKey };
 
   const filtered = users.filter((u) => {
     const matchesSearch = `${u.firstName} ${u.lastName} ${u.email}`.toLowerCase().includes(search.toLowerCase());
@@ -102,37 +108,37 @@ export default function UsersSettingsPage() {
             <p className="font-semibold text-navy-900">{us.inviteTitle}</p>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <input
-                value={inviteForm.firstName}
-                onChange={(e) => setInviteForm((f) => ({ ...f, firstName: e.target.value }))}
+                value={form.firstName}
+                onChange={(e) => setInviteForm({ ...form, firstName: e.target.value })}
                 placeholder={us.inviteFirstName}
                 className="rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
               />
               <input
-                value={inviteForm.lastName}
-                onChange={(e) => setInviteForm((f) => ({ ...f, lastName: e.target.value }))}
+                value={form.lastName}
+                onChange={(e) => setInviteForm({ ...form, lastName: e.target.value })}
                 placeholder={us.inviteLastName}
                 className="rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
               />
               <input
-                value={inviteForm.email}
-                onChange={(e) => setInviteForm((f) => ({ ...f, email: e.target.value }))}
+                value={form.email}
+                onChange={(e) => setInviteForm({ ...form, email: e.target.value })}
                 placeholder={us.inviteEmail}
                 className="rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
               />
               <select
-                value={inviteForm.unitId ?? ""}
-                onChange={(e) => setInviteForm((f) => ({ ...f, unitId: e.target.value || null }))}
+                value={form.unitId ?? ""}
+                onChange={(e) => setInviteForm({ ...form, unitId: e.target.value || null })}
                 className="rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
               >
-                {orgUnits.map((u) => (
+                {units.map((u) => (
                   <option key={u.id} value={u.id}>
-                    {u.name}
+                    {u.parentId === null ? us.wholeOrgUnitLabel(u.name) : u.name}
                   </option>
                 ))}
               </select>
               <select
-                value={inviteForm.orgRole}
-                onChange={(e) => setInviteForm((f) => ({ ...f, orgRole: e.target.value as OrgRoleKey }))}
+                value={form.orgRole}
+                onChange={(e) => setInviteForm({ ...form, orgRole: e.target.value as OrgRoleKey })}
                 className="rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
               >
                 {ORG_ROLE_KEYS.map((key) => (
@@ -146,9 +152,9 @@ export default function UsersSettingsPage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!inviteForm.firstName.trim() || !inviteForm.email.trim()) return;
-                  inviteUser(inviteForm);
-                  setInviteForm({ firstName: "", lastName: "", email: "", unitId: orgUnits[0]?.id ?? null, orgRole: "read-only" });
+                  if (!form.firstName.trim() || !form.email.trim()) return;
+                  inviteUser(form);
+                  setInviteForm(null);
                   setInviting(false);
                 }}
                 className="rounded-md bg-gold-500 px-3 py-2 text-xs font-semibold text-navy-900 hover:bg-gold-400"
@@ -189,7 +195,7 @@ export default function UsersSettingsPage() {
                     </p>
                     <p className="text-xs text-navy-400">{u.email}</p>
                   </td>
-                  <td className="px-4 py-3 text-navy-600">{unitName(u.unitId)}</td>
+                  <td className="px-4 py-3 text-navy-600">{unitName(units, u.unitId)}</td>
                   <td className="px-4 py-3 text-navy-600">{orgRoleLabels[u.orgRole][lang]}</td>
                   <td className="px-4 py-3">
                     <span className={u.status === "active" ? "text-green-700" : "text-navy-400"}>
@@ -277,15 +283,19 @@ function UserDetail({
             </h1>
             <p className="text-sm text-navy-500">{user.email}</p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm(us.confirmRemove(`${user.firstName} ${user.lastName}`))) onRemove();
-            }}
-            className="shrink-0 text-xs font-semibold text-navy-400 hover:text-red-600"
-          >
-            {us.remove}
-          </button>
+          {user.id === CURRENT_USER_ID ? (
+            <p className="shrink-0 text-xs italic text-navy-400">{us.thatsYou}</p>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm(us.confirmRemove(`${user.firstName} ${user.lastName}`))) onRemove();
+              }}
+              className="shrink-0 text-xs font-semibold text-navy-400 hover:text-red-600"
+            >
+              {us.remove}
+            </button>
+          )}
         </div>
 
         <div className="mb-16 mt-6 rounded-xl border border-navy-100 bg-white p-6">

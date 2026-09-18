@@ -7,8 +7,10 @@ import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
+import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { fundingCalls } from "@/lib/data/fundingCalls";
 import { fundedProjects } from "@/lib/data/fundedProjects";
+import { projectRoleLabels } from "@/lib/data/users";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import { computeMatchesForEntry, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
 import { computeSimilarProjects } from "@/lib/matching/similarProjects";
@@ -26,7 +28,9 @@ export default function ProjectBankDetailPage() {
   // client. Seeded entries render immediately either way; imported ones
   // appear once `hydrated` flips true.
   const { all, hydrated } = useProjectBank();
+  const { users } = useUsersDirectory();
   const entry = all.find((p) => p.id === params.id);
+  const assignedUsers = entry ? users.filter((u) => u.projectRoles.some((r) => r.projectId === entry.id)) : [];
 
   if (!entry) {
     if (!hydrated) return null;
@@ -37,9 +41,7 @@ export default function ProjectBankDetailPage() {
           <Link href="/projektbank" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
             ← {pb.back}
           </Link>
-          <p className="mt-8 text-sm text-navy-500">
-            {lang === "sv" ? "Hittade inget projekt med det här id:t." : "No project found with that id."}
-          </p>
+          <p className="mt-8 text-sm text-navy-500">{pb.detailNotFound}</p>
         </main>
         <Footer />
       </>
@@ -86,9 +88,7 @@ export default function ProjectBankDetailPage() {
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-semibold uppercase text-navy-400">
-              {lang === "sv" ? "Tema" : "Theme"}
-            </dt>
+            <dt className="text-xs font-semibold uppercase text-navy-400">{pb.detailThemeLabel}</dt>
             <dd className="mt-1 text-lg font-bold text-navy-900">{sectorLabel(entry.sector, lang)}</dd>
           </div>
           <div>
@@ -98,10 +98,35 @@ export default function ProjectBankDetailPage() {
         </dl>
 
         <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
-          <h2 className="text-sm font-semibold uppercase text-navy-400">
-            {lang === "sv" ? "Beskrivning" : "Description"}
-          </h2>
+          <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.detailDescriptionLabel}</h2>
           <p className="mt-2 text-sm text-navy-700">{lang === "sv" ? entry.description_sv : entry.description_en}</p>
+        </div>
+
+        <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.assignedRolesTitle}</h2>
+            <Link href="/installningar/anvandare" className="text-xs font-semibold text-navy-500 hover:text-navy-800">
+              ⚙ {t.usersSettings.title}
+            </Link>
+          </div>
+          {assignedUsers.length === 0 ? (
+            <p className="mt-2 text-sm text-navy-500">{pb.noAssignedRoles}</p>
+          ) : (
+            <ul className="mt-3 space-y-1.5">
+              {assignedUsers.map((u) => {
+                const role = u.projectRoles.find((r) => r.projectId === entry.id)?.role;
+                if (!role) return null;
+                return (
+                  <li key={u.id} className="flex items-center justify-between text-sm">
+                    <span className="text-navy-800">
+                      {u.firstName} {u.lastName}
+                    </span>
+                    <span className="text-navy-500">{projectRoleLabels[role][lang]}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
 
         {missing.length > 0 && (

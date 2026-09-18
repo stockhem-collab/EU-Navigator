@@ -312,7 +312,7 @@ export interface ProjectInput {
 // ---------------------------------------------------------------------------
 export interface RationaleLine {
   type: "positive" | "warning" | "neutral";
-  category: GapCategory | "deadline";
+  category: GapCategory | "deadline" | "fundingProfile";
   text_sv: string;
   text_en: string;
   deltaIfFixed?: number;

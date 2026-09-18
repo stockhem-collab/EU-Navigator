@@ -40,9 +40,7 @@ export default function EuDatabasePage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <h2 className="font-bold text-navy-900">{lang === "sv" ? program.name_sv : program.name}</h2>
                         {program.status === "legacy" && (
-                          <span className="badge bg-navy-100 text-navy-500">
-                            {lang === "sv" ? "Avslutat program" : "Closed programme"}
-                          </span>
+                          <span className="badge bg-navy-100 text-navy-500">{db.closedProgrammeBadge}</span>
                         )}
                       </div>
                       <p className="mt-1 text-sm text-navy-600">

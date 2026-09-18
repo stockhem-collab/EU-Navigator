@@ -24,6 +24,17 @@ function buildTree(units: OrgUnit[]): { unit: OrgUnit; depth: number }[] {
   return result;
 }
 
+/** How many descendants removing this unit would cascade-delete (removeUnit
+ * in useOrgConfig drops a unit's whole subtree), so we can warn before it
+ * happens rather than after. */
+function countDescendants(units: OrgUnit[], id: string): number {
+  let count = 0;
+  for (const u of units) {
+    if (u.parentId === id) count += 1 + countDescendants(units, u.id);
+  }
+  return count;
+}
+
 export default function OrganisationSettingsPage() {
   const { t, lang } = useLanguage();
   const os = t.orgSettings;
@@ -112,7 +123,12 @@ export default function OrganisationSettingsPage() {
                 />
                 <button
                   type="button"
-                  onClick={() => removeUnit(unit.id)}
+                  onClick={() => {
+                    const descendants = countDescendants(units, unit.id);
+                    const message =
+                      descendants > 0 ? os.confirmRemoveUnitCascade(unit.name, descendants) : os.confirmRemoveUnit(unit.name);
+                    if (window.confirm(message)) removeUnit(unit.id);
+                  }}
                   className="shrink-0 text-xs font-semibold text-navy-400 hover:text-red-600"
                 >
                   {os.removeUnitLabel}

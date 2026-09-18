@@ -93,6 +93,8 @@ export interface TranslationTree {
       fieldMunicipalityPlaceholder: string;
       fieldPartnership: string;
       submit: string;
+      fillExample: string;
+      prefilledFromBank: string;
       sectors: Record<
         "energy" | "climate" | "digital" | "social" | "mobility" | "education" | "health" | "research",
         string
@@ -173,6 +175,12 @@ export interface TranslationTree {
       string
     >;
     detailOwner: string;
+    plusOthers: (n: number) => string;
+    assignedRolesTitle: string;
+    noAssignedRoles: string;
+    detailNotFound: string;
+    detailThemeLabel: string;
+    detailDescriptionLabel: string;
     detailMissingInfoTitle: string;
     detailMissingInfoBody: string;
     detailFindFunding: string;
@@ -199,8 +207,10 @@ export interface TranslationTree {
     programsBack: string;
     callsCount: (n: number) => string;
     documentsCount: (n: number) => string;
+    deadlineLabel: string;
     statusOpen: string;
     statusUpcoming: string;
+    closedProgrammeBadge: string;
     deadlineIn: (months: number) => string;
     budgetLabel: string;
     grantRangeLabel: string;
@@ -239,6 +249,7 @@ export interface TranslationTree {
     rolePartner: string;
     periodLegacyBadge: string;
     noBudgetDisclosed: string;
+    indicatorTargetLabel: string;
   };
   datacenter: {
     title: string;
@@ -256,11 +267,15 @@ export interface TranslationTree {
     documentsNeedingUpdateTitle: string;
     incompleteProjectsTitle: string;
     incompleteProjectsBody: string;
+    viewCallLink: string;
+    fieldsMissing: (n: number) => string;
+    openLink: string;
   };
   awardedProjects: {
     title: string;
     subtitle: string;
     nextReportDue: (months: number) => string;
+    nextReportDueLabel: string;
     awardedAmount: string;
     commitmentsTitle: string;
     promised: string;
@@ -285,10 +300,14 @@ export interface TranslationTree {
     disclaimer: string;
     columnCall: string;
     columnDeadline: string;
+    deadlineInMonths: (n: number) => string;
     matchingProjectsLabel: (n: number) => string;
     noMatchingProjects: string;
     viewCall: string;
     startApplication: string;
+    watchedBadge: string;
+    onlyWatchedToggle: string;
+    noWatchedCalls: string;
   };
   orgSettings: {
     title: string;
@@ -309,6 +328,8 @@ export interface TranslationTree {
     addUnitPlaceholder: string;
     addUnitButton: string;
     removeUnitLabel: string;
+    confirmRemoveUnit: (name: string) => string;
+    confirmRemoveUnitCascade: (name: string, count: number) => string;
     rolesProcessTitle: string;
     rolesProcessHint: string;
     rolesSectionTitle: string;
@@ -348,8 +369,10 @@ export interface TranslationTree {
     phone: string;
     jobTitle: string;
     unit: string;
+    wholeOrgUnitLabel: (name: string) => string;
     save: string;
     savedIndicator: string;
+    notFound: string;
   };
   usersSettings: {
     title: string;
@@ -374,6 +397,8 @@ export interface TranslationTree {
     inviteCancel: string;
     remove: string;
     confirmRemove: (name: string) => string;
+    thatsYou: string;
+    wholeOrgUnitLabel: (name: string) => string;
     detailBack: string;
     detailOrgRole: string;
     detailProjectRoles: string;
@@ -452,6 +477,9 @@ export interface TranslationTree {
     sectionYourProjects: string;
     departmentFilterLabel: string;
     allDepartments: string;
+    noDocumentsNeedingUpdate: string;
+    noProjectsInDepartment: string;
+    fieldsMissingForBestMatch: (n: number) => string;
     describeNewProject: string;
     viewAllInPortfolio: string;
     viewAllInBevakning: string;
@@ -636,6 +664,8 @@ export const translations: Record<Lang, TranslationTree> = {
         fieldMunicipalityPlaceholder: "T.ex. Exempelstad kommun",
         fieldPartnership: "Vi har (eller kan skaffa) en internationell partnerorganisation",
         submit: "Hitta finansieringsmöjligheter",
+        fillExample: "Fyll i exempel",
+        prefilledFromBank: "Förifyllt från projektbanken — granska och komplettera innan ni fortsätter.",
         sectors: {
           energy: "Energi",
           climate: "Klimat & miljö",
@@ -736,6 +766,12 @@ export const translations: Record<Lang, TranslationTree> = {
         completed: "Avslutat",
       },
       detailOwner: "Projektägare",
+      plusOthers: (n) => `+${n} till`,
+      assignedRolesTitle: "Tilldelade roller",
+      noAssignedRoles: "Ingen har tilldelats en roll för detta projekt ännu.",
+      detailNotFound: "Hittade inget projekt med det här id:t.",
+      detailThemeLabel: "Tema",
+      detailDescriptionLabel: "Beskrivning",
       detailMissingInfoTitle: "Information som saknas för optimal EU-matchning",
       detailMissingInfoBody:
         "Projektinformationen är inte tillräcklig för optimal EU-matchning. Komplettera enligt nedan innan en specifik utlysning väljs.",
@@ -765,7 +801,9 @@ export const translations: Record<Lang, TranslationTree> = {
       programsBack: "Alla program",
       callsCount: (n) => `${n} utlysningar`,
       documentsCount: (n) => `${n} dokument`,
+      deadlineLabel: "Deadline",
       statusOpen: "Öppen",
+      closedProgrammeBadge: "Avslutat program",
       statusUpcoming: "Kommande",
       deadlineIn: (m) => `Deadline om ${m} månader`,
       budgetLabel: "Utlysningens totala budget",
@@ -806,6 +844,7 @@ export const translations: Record<Lang, TranslationTree> = {
       rolePartner: "Projektpartner",
       periodLegacyBadge: "Avslutat 2014–2020",
       noBudgetDisclosed: "Ej redovisad",
+      indicatorTargetLabel: "mål",
     },
     datacenter: {
       title: "Datacenter",
@@ -824,11 +863,15 @@ export const translations: Record<Lang, TranslationTree> = {
       incompleteProjectsTitle: "Projekt med ofullständig information",
       incompleteProjectsBody:
         "Dessa projekt i projektbanken saknar information som krävs för en tillförlitlig EU-matchning.",
+      viewCallLink: "Visa utlysning →",
+      fieldsMissing: (n) => `${n} fält saknas`,
+      openLink: "Öppna →",
     },
     awardedProjects: {
       title: "Mina projekt",
       subtitle: "Beviljade projekt — genomförande och rapportering.",
       nextReportDue: (m) => `Nästa rapportering om ${m} månader`,
+      nextReportDueLabel: "Nästa rapportering",
       awardedAmount: "Beviljat belopp",
       commitmentsTitle: "Åtaganden från ansökan vs. utfall",
       promised: "Utlovat",
@@ -856,10 +899,14 @@ export const translations: Record<Lang, TranslationTree> = {
         "I en skarp version skulle detta skickas som ett återkommande veckobrev till EU-samordnaren. Här visas samma information direkt i gränssnittet.",
       columnCall: "Utlysning",
       columnDeadline: "Deadline",
+      deadlineInMonths: (n) => `Deadline: ${n} mån`,
       matchingProjectsLabel: (n) => `${n} matchande projekt i portföljen`,
       noMatchingProjects: "Inga projekt i portföljen matchar denna utlysning ännu.",
       viewCall: "Visa utlysning",
       startApplication: "Starta ansökan",
+      watchedBadge: "★ Bevakad",
+      onlyWatchedToggle: "Visa endast mina bevakningar",
+      noWatchedCalls: "Inga bevakade utlysningar. Justera dina bevakningar under Inställningar → Bevakningar.",
     },
     orgSettings: {
       title: "Organisation",
@@ -880,6 +927,9 @@ export const translations: Record<Lang, TranslationTree> = {
       addUnitPlaceholder: "Namn på ny enhet",
       addUnitButton: "+ Lägg till enhet",
       removeUnitLabel: "Ta bort",
+      confirmRemoveUnit: (name) => `Ta bort enheten "${name}"?`,
+      confirmRemoveUnitCascade: (name, count) =>
+        `Ta bort enheten "${name}"? Detta tar även bort ${count} underliggande ${count === 1 ? "enhet" : "enheter"}.`,
       rolesProcessTitle: "Roller och ansvar i EU-processen",
       rolesProcessHint:
         "De interna rollerna som delar ansvaret för ett EU-projekt genom dess faser (idé → ansökan → genomförande → avslut).",
@@ -921,8 +971,10 @@ export const translations: Record<Lang, TranslationTree> = {
       phone: "Telefon",
       jobTitle: "Befattning",
       unit: "Avdelning/enhet",
+      wholeOrgUnitLabel: (name) => `${name} (hela organisationen)`,
       save: "Spara ändringar",
       savedIndicator: "Sparat i din webbläsare",
+      notFound: "Din användare hittades inte längre i katalogen. Den kan ha tagits bort under Användare & behörigheter.",
     },
     usersSettings: {
       title: "Användare & behörigheter",
@@ -947,6 +999,8 @@ export const translations: Record<Lang, TranslationTree> = {
       inviteCancel: "Avbryt",
       remove: "Ta bort användare",
       confirmRemove: (name) => `Ta bort ${name} från organisationen?`,
+      thatsYou: "Det här är du",
+      wholeOrgUnitLabel: (name) => `${name} (hela organisationen)`,
       detailBack: "← Tillbaka till användare",
       detailOrgRole: "Organisationsroll",
       detailProjectRoles: "Projektbehörigheter",
@@ -1025,6 +1079,9 @@ export const translations: Record<Lang, TranslationTree> = {
       sectionYourProjects: "Projekt",
       departmentFilterLabel: "Förvaltning",
       allDepartments: "Alla förvaltningar",
+      noDocumentsNeedingUpdate: "Inga dokument behöver ses över just nu.",
+      noProjectsInDepartment: "Inga projekt i denna förvaltning ännu.",
+      fieldsMissingForBestMatch: (n) => `${n} fält saknas för bästa matchning`,
       describeNewProject: "Beskriv ett nytt projekt",
       viewAllInPortfolio: "Se hela projektbanken →",
       viewAllInBevakning: "Se all bevakning →",
@@ -1207,6 +1264,8 @@ export const translations: Record<Lang, TranslationTree> = {
         fieldMunicipalityPlaceholder: "E.g. Example City Municipality",
         fieldPartnership: "We have (or can secure) an international partner organisation",
         submit: "Find funding opportunities",
+        fillExample: "Fill example",
+        prefilledFromBank: "Pre-filled from the project bank — review and complete before continuing.",
         sectors: {
           energy: "Energy",
           climate: "Climate & environment",
@@ -1307,6 +1366,12 @@ export const translations: Record<Lang, TranslationTree> = {
         completed: "Closed",
       },
       detailOwner: "Project owner",
+      plusOthers: (n) => `+${n} more`,
+      assignedRolesTitle: "Assigned roles",
+      noAssignedRoles: "No one has been assigned a role on this project yet.",
+      detailNotFound: "No project found with that id.",
+      detailThemeLabel: "Theme",
+      detailDescriptionLabel: "Description",
       detailMissingInfoTitle: "Information missing for optimal EU matching",
       detailMissingInfoBody:
         "The project information isn't sufficient for optimal EU matching. Complete it as below before selecting a specific call.",
@@ -1336,7 +1401,9 @@ export const translations: Record<Lang, TranslationTree> = {
       programsBack: "All programmes",
       callsCount: (n) => `${n} calls`,
       documentsCount: (n) => `${n} documents`,
+      deadlineLabel: "Deadline",
       statusOpen: "Open",
+      closedProgrammeBadge: "Closed programme",
       statusUpcoming: "Upcoming",
       deadlineIn: (m) => `Deadline in ${m} months`,
       budgetLabel: "Call's total budget",
@@ -1377,6 +1444,7 @@ export const translations: Record<Lang, TranslationTree> = {
       rolePartner: "Project partner",
       periodLegacyBadge: "Closed 2014-2020",
       noBudgetDisclosed: "Not disclosed",
+      indicatorTargetLabel: "target",
     },
     datacenter: {
       title: "Datacenter",
@@ -1394,11 +1462,15 @@ export const translations: Record<Lang, TranslationTree> = {
       documentsNeedingUpdateTitle: "Documents needing an update",
       incompleteProjectsTitle: "Projects with incomplete information",
       incompleteProjectsBody: "These project-bank entries are missing information required for reliable EU matching.",
+      viewCallLink: "View call →",
+      fieldsMissing: (n) => `${n} fields missing`,
+      openLink: "Open →",
     },
     awardedProjects: {
       title: "My projects",
       subtitle: "Awarded projects — delivery and reporting.",
       nextReportDue: (m) => `Next report due in ${m} months`,
+      nextReportDueLabel: "Next report",
       awardedAmount: "Awarded amount",
       commitmentsTitle: "Application commitments vs. outturn",
       promised: "Promised",
@@ -1426,10 +1498,14 @@ export const translations: Record<Lang, TranslationTree> = {
         "In a production version this would be sent as a recurring weekly digest to the EU coordinator. Here it's shown directly in the interface instead.",
       columnCall: "Call",
       columnDeadline: "Deadline",
+      deadlineInMonths: (n) => `Deadline: ${n} mo`,
       matchingProjectsLabel: (n) => `${n} matching projects in the portfolio`,
       noMatchingProjects: "No projects in the portfolio match this call yet.",
       viewCall: "View call",
       startApplication: "Start application",
+      watchedBadge: "★ Watched",
+      onlyWatchedToggle: "Show only my watchlist",
+      noWatchedCalls: "No watched calls. Adjust your watchlist under Settings → Watchlists & notifications.",
     },
     orgSettings: {
       title: "Organisation",
@@ -1450,6 +1526,9 @@ export const translations: Record<Lang, TranslationTree> = {
       addUnitPlaceholder: "New unit name",
       addUnitButton: "+ Add unit",
       removeUnitLabel: "Remove",
+      confirmRemoveUnit: (name) => `Remove the unit "${name}"?`,
+      confirmRemoveUnitCascade: (name, count) =>
+        `Remove the unit "${name}"? This will also remove its ${count} sub-unit${count === 1 ? "" : "s"}.`,
       rolesProcessTitle: "Roles and responsibilities in the EU process",
       rolesProcessHint:
         "The internal roles that share responsibility for an EU project across its phases (idea → application → delivery → closure).",
@@ -1491,8 +1570,10 @@ export const translations: Record<Lang, TranslationTree> = {
       phone: "Phone",
       jobTitle: "Job title",
       unit: "Department/unit",
+      wholeOrgUnitLabel: (name) => `${name} (whole organisation)`,
       save: "Save changes",
       savedIndicator: "Saved in your browser",
+      notFound: "Your user could not be found in the directory anymore. It may have been removed under Users & permissions.",
     },
     usersSettings: {
       title: "Users & permissions",
@@ -1517,6 +1598,8 @@ export const translations: Record<Lang, TranslationTree> = {
       inviteCancel: "Cancel",
       remove: "Remove user",
       confirmRemove: (name) => `Remove ${name} from the organisation?`,
+      thatsYou: "That's you",
+      wholeOrgUnitLabel: (name) => `${name} (whole organisation)`,
       detailBack: "← Back to users",
       detailOrgRole: "Organisation role",
       detailProjectRoles: "Project permissions",
@@ -1595,6 +1678,9 @@ export const translations: Record<Lang, TranslationTree> = {
       sectionYourProjects: "Projects",
       departmentFilterLabel: "Department",
       allDepartments: "All departments",
+      noDocumentsNeedingUpdate: "No documents need a review right now.",
+      noProjectsInDepartment: "No projects in this department yet.",
+      fieldsMissingForBestMatch: (n) => `${n} fields missing for the best match`,
       describeNewProject: "Describe a new project",
       viewAllInPortfolio: "See the full project bank →",
       viewAllInBevakning: "See all monitoring →",

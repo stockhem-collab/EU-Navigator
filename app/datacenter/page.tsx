@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,6 +9,20 @@ import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { fundingCalls, allDocuments } from "@/lib/data/fundingCalls";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
+
+/** Formatted after mount only, so the demo's "last synced" stat always
+ * reads as just now instead of a timestamp that was frozen at write time
+ * and drifts further into the past on every visit. Computed client-side
+ * to avoid a server/client hydration mismatch on the exact minute. */
+function useNowStamp(): string | null {
+  const [stamp, setStamp] = useState<string | null>(null);
+  useEffect(() => {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    setStamp(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`);
+  }, []);
+  return stamp;
+}
 
 function StatTile({ label, value }: { label: string; value: string | number }) {
   return (
@@ -22,6 +37,7 @@ export default function DatacenterPage() {
   const { t, lang } = useLanguage();
   const dc = t.datacenter;
   const { all: projectBank } = useProjectBank();
+  const lastSync = useNowStamp();
 
   const docs = allDocuments();
   const docsNeedingUpdate = docs.filter((d) => d.needsUpdate);
@@ -51,7 +67,7 @@ export default function DatacenterPage() {
           <StatTile label={dc.statReferenceProjects} value={fundedProjects.length} />
           <StatTile label={dc.statDocuments} value={docs.length} />
           <StatTile label={dc.statDocumentsNeedUpdate} value={docsNeedingUpdate.length} />
-          <StatTile label={dc.statLastSync} value="2026-09-11 06:02" />
+          <StatTile label={dc.statLastSync} value={lastSync ?? "…"} />
         </div>
 
         <section className="mt-10">
@@ -74,7 +90,7 @@ export default function DatacenterPage() {
                         href={`/eu-databas/${call.programId}/${call.id}`}
                         className="text-xs font-semibold text-navy-600 hover:text-navy-900"
                       >
-                        {lang === "sv" ? "Visa utlysning →" : "View call →"}
+                        {dc.viewCallLink}
                       </Link>
                     )}
                   </li>
@@ -94,12 +110,11 @@ export default function DatacenterPage() {
                   <div>
                     <p className="font-medium text-navy-800">{lang === "sv" ? p.title_sv : p.title_en}</p>
                     <p className="text-xs text-navy-400">
-                      {(lang === "sv" ? p.missingFields_sv : p.missingFields_en).length}{" "}
-                      {lang === "sv" ? "fält saknas" : "fields missing"}
+                      {dc.fieldsMissing((lang === "sv" ? p.missingFields_sv : p.missingFields_en).length)}
                     </p>
                   </div>
                   <Link href={`/projektbank/${p.id}`} className="text-xs font-semibold text-navy-600 hover:text-navy-900">
-                    {lang === "sv" ? "Öppna →" : "Open →"}
+                    {dc.openLink}
                   </Link>
                 </li>
               ))}
