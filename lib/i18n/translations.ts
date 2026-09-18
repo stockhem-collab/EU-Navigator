@@ -175,6 +175,12 @@ export interface TranslationTree {
       string
     >;
     detailOwner: string;
+    editButton: string;
+    editCancel: string;
+    editSave: string;
+    editSavedIndicator: string;
+    editFieldTitle: string;
+    editFieldPartnership: string;
     plusOthers: (n: number) => string;
     assignedRolesTitle: string;
     noAssignedRoles: string;
@@ -766,6 +772,12 @@ export const translations: Record<Lang, TranslationTree> = {
         completed: "Avslutat",
       },
       detailOwner: "Projektägare",
+      editButton: "✎ Redigera",
+      editCancel: "Avbryt",
+      editSave: "Spara ändringar",
+      editSavedIndicator: "Sparat i din webbläsare",
+      editFieldTitle: "Projektnamn",
+      editFieldPartnership: "Vi har (eller kan skaffa) en internationell partnerorganisation",
       plusOthers: (n) => `+${n} till`,
       assignedRolesTitle: "Tilldelade roller",
       noAssignedRoles: "Ingen har tilldelats en roll för detta projekt ännu.",
@@ -1366,6 +1378,12 @@ export const translations: Record<Lang, TranslationTree> = {
         completed: "Closed",
       },
       detailOwner: "Project owner",
+      editButton: "✎ Edit",
+      editCancel: "Cancel",
+      editSave: "Save changes",
+      editSavedIndicator: "Saved in your browser",
+      editFieldTitle: "Project name",
+      editFieldPartnership: "We have (or can secure) an international partner organisation",
       plusOthers: (n) => `+${n} more`,
       assignedRolesTitle: "Assigned roles",
       noAssignedRoles: "No one has been assigned a role on this project yet.",
