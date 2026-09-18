@@ -295,6 +295,9 @@ export interface TranslationTree {
     subtitle: string;
     orgNameLabel: string;
     orgNamePlaceholder: string;
+    rolesSectionTitle: string;
+    rolesSectionHint: string;
+    roleNamePlaceholder: (defaultName: string) => string;
     tasksHint: string;
     resetAll: string;
     savedIndicator: string;
@@ -730,6 +733,10 @@ export const translations: Record<Lang, TranslationTree> = {
       subtitle: "Anpassa processen och rollernas ansvar efter er egen organisation.",
       orgNameLabel: "Organisationens namn",
       orgNamePlaceholder: "T.ex. Exempelstad kommun",
+      rolesSectionTitle: "Roller",
+      rolesSectionHint:
+        "Benämningarna nedan är ett exempel. Döp om rollerna till dem som används i er organisation — namnet uppdateras överallt de visas.",
+      roleNamePlaceholder: (defaultName) => `T.ex. ${defaultName}`,
       tasksHint: "En uppgift per rad.",
       resetAll: "Återställ allt till exempeldata",
       savedIndicator: "Sparat i din webbläsare",
@@ -1162,6 +1169,10 @@ export const translations: Record<Lang, TranslationTree> = {
       subtitle: "Customise the process and each role's responsibilities for your own organisation.",
       orgNameLabel: "Organisation name",
       orgNamePlaceholder: "E.g. Example City Municipality",
+      rolesSectionTitle: "Roles",
+      rolesSectionHint:
+        "The labels below are an example. Rename the roles to match your own organisation — the name updates everywhere it's shown.",
+      roleNamePlaceholder: (defaultName) => `E.g. ${defaultName}`,
       tasksHint: "One task per line.",
       resetAll: "Reset everything to the example data",
       savedIndicator: "Saved in your browser",

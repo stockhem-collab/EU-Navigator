@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { orgProcessPhases } from "@/lib/data/orgProcess";
-import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
+import { useOrgConfig, roleLabel } from "@/lib/hooks/useOrgConfig";
 
 interface Props {
   phaseKey: string;
@@ -20,7 +20,10 @@ export default function OrgProcessPanel({ phaseKey, readinessScore }: Props) {
   if (!phase) return null;
 
   const orgName = config.organisationName ?? phase.roleExample?.organisationName ?? "";
-  const isCustomised = config.organisationName !== null || Object.keys(config.phaseTasks).length > 0;
+  const isCustomised =
+    config.organisationName !== null ||
+    Object.keys(config.phaseTasks).length > 0 ||
+    Object.keys(config.roleNames).length > 0;
   const ready = readinessScore !== undefined && readinessScore >= 75;
 
   return (
@@ -58,7 +61,7 @@ export default function OrgProcessPanel({ phaseKey, readinessScore }: Props) {
               const tasks = overrideTasks ?? (lang === "sv" ? r.tasks_sv : r.tasks_en);
               return (
                 <div key={r.role_sv}>
-                  <p className="text-sm font-semibold text-navy-700">{lang === "sv" ? r.role_sv : r.role_en}</p>
+                  <p className="text-sm font-semibold text-navy-700">{roleLabel(config, r.role_sv, r.role_en, lang)}</p>
                   <ul className="mt-1.5 space-y-1">
                     {tasks.map((task) => (
                       <li key={task} className="text-xs text-navy-500">
