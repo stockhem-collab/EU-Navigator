@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
+import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
 import { fundingCalls } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeMatchesForCall } from "@/lib/matching/portfolio";
@@ -16,6 +17,8 @@ export default function BevakningPage() {
   const { t, lang } = useLanguage();
   const bv = t.bevakning;
   const { all: projectBank } = useProjectBank();
+  const { prefs, hydrated: watchHydrated } = useWatchPreferences();
+  const [onlyWatched, setOnlyWatched] = useState(false);
 
   const rows = useMemo(
     () =>
@@ -27,22 +30,38 @@ export default function BevakningPage() {
           const matches = computeMatchesForCall(call, program, projectBank).filter(
             (m) => m.match.score >= MATCH_THRESHOLD
           );
-          return { call, program, matches };
+          const isWatched =
+            prefs.programIds.includes(program.id) || program.sectors.some((s) => prefs.sectors.includes(s));
+          return { call, program, matches, isWatched };
         })
         .filter((r): r is NonNullable<typeof r> => r !== null),
-    [projectBank]
+    [projectBank, prefs]
   );
+
+  const visibleRows = onlyWatched ? rows.filter((r) => r.isWatched) : rows;
+
+  if (!watchHydrated) return null;
 
   return (
     <>
       <Header />
       <main className="section">
-        <h1 className="text-2xl font-bold text-navy-900">{bv.title}</h1>
-        <p className="mt-2 text-sm text-navy-600">{bv.subtitle}</p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-navy-900">{bv.title}</h1>
+            <p className="mt-2 text-sm text-navy-600">{bv.subtitle}</p>
+          </div>
+          <label className="flex shrink-0 items-center gap-2 text-sm font-semibold text-navy-700">
+            <input type="checkbox" checked={onlyWatched} onChange={(e) => setOnlyWatched(e.target.checked)} />
+            {bv.onlyWatchedToggle}
+          </label>
+        </div>
         <p className="mt-3 rounded-md bg-navy-50 px-3 py-2 text-xs text-navy-600">{bv.disclaimer}</p>
 
+        {visibleRows.length === 0 && <p className="mt-8 text-sm text-navy-500">{bv.noWatchedCalls}</p>}
+
         <div className="mt-8 space-y-4">
-          {rows.map(({ call, program, matches }) => (
+          {visibleRows.map(({ call, program, matches, isWatched }) => (
             <div key={call.id} className="rounded-xl border border-navy-100 bg-white p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
@@ -51,7 +70,10 @@ export default function BevakningPage() {
                   </span>
                   <div>
                     <p className="text-xs font-semibold uppercase text-navy-400">{program.shortName}</p>
-                    <h2 className="font-bold text-navy-900">{lang === "sv" ? call.title_sv : call.title_en}</h2>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="font-bold text-navy-900">{lang === "sv" ? call.title_sv : call.title_en}</h2>
+                      {isWatched && <span className="badge bg-gold-100 text-gold-800">{bv.watchedBadge}</span>}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -60,7 +82,7 @@ export default function BevakningPage() {
                       call.status === "open" ? "bg-green-100 text-green-800" : "bg-navy-100 text-navy-600"
                     }`}
                   >
-                    {bv.columnDeadline}: {call.deadlineMonthsFromNow} {lang === "sv" ? "mån" : "mo"}
+                    {bv.deadlineInMonths(call.deadlineMonthsFromNow)}
                   </span>
                   <div className="mt-2">
                     <Link

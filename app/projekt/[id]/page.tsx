@@ -47,9 +47,7 @@ export default function AwardedProjectDetailPage() {
             <dd className="mt-1 text-xl font-bold text-navy-900">{fmtSEK(project.awardedAmountSEK, lang)}</dd>
           </div>
           <div>
-            <dt className="text-xs font-semibold uppercase text-navy-400">
-              {lang === "sv" ? "Nästa rapportering" : "Next report"}
-            </dt>
+            <dt className="text-xs font-semibold uppercase text-navy-400">{ap.nextReportDueLabel}</dt>
             <dd className="mt-1 text-xl font-bold text-navy-900">
               {ap.nextReportDue(project.nextReportDueMonthsFromNow)}
             </dd>
@@ -77,7 +75,7 @@ export default function AwardedProjectDetailPage() {
                   <div className="mt-3 h-2 rounded-full bg-navy-100">
                     <div
                       className={`h-2 rounded-full ${deviates ? "bg-amber-500" : "bg-green-500"}`}
-                      style={{ width: `${Math.min(100, (c.currentValue / c.promisedValue) * 100)}%` }}
+                      style={{ width: `${c.promisedValue > 0 ? Math.min(100, (c.currentValue / c.promisedValue) * 100) : 0}%` }}
                     />
                   </div>
                   <p className="mt-3 text-sm text-navy-600">

@@ -1,5 +1,6 @@
 import { EvaluationCriterion, FundingCall, FundingProgram, MatchResult, ProjectInput, RationaleLine } from "@/lib/types";
 import { findProgram } from "@/lib/data/fundingPrograms";
+import type { FundingProfile } from "@/lib/hooks/useFundingProfile";
 
 function normalizeWords(text: string): string[] {
   return text
@@ -80,7 +81,12 @@ function criteriaWeights(criteria: EvaluationCriterion[]): CriteriaWeights {
   return { thematicPct: relevancePoints / total, implementationPct: implementationPoints / total };
 }
 
-export function scoreMatch(project: ProjectInput, call: FundingCall, program: FundingProgram): MatchResult {
+export function scoreMatch(
+  project: ProjectInput,
+  call: FundingCall,
+  program: FundingProgram,
+  fundingProfile?: FundingProfile
+): MatchResult {
   const rationale: RationaleLine[] = [];
   let thematicScore = 0; // nominal max 60
   let implementationScore = 0; // nominal max 40 (can go to -10 on a missing required partner)
@@ -224,15 +230,36 @@ export function scoreMatch(project: ProjectInput, call: FundingCall, program: Fu
     text_en: `Next deadline in approximately ${call.deadlineMonthsFromNow} months`,
   });
 
+  // Purely informational — the organisation's own funding profile
+  // (Inställningar → Finansieringsprofil) is a statement of intent, not a
+  // criterion any funder judges the application on, so it's surfaced
+  // alongside the score rather than folded into it.
+  if (fundingProfile) {
+    const label_sv = sectorLabel(project.sector, "sv").toLowerCase();
+    const label_en = sectorLabel(project.sector, "en").toLowerCase();
+    const matchesFocusArea = fundingProfile.focusAreas.some((tag) => {
+      const t = tag.toLowerCase();
+      return label_sv.includes(t) || t.includes(label_sv) || label_en.includes(t) || t.includes(label_en);
+    });
+    if (matchesFocusArea) {
+      rationale.push({
+        type: "positive",
+        category: "fundingProfile",
+        text_sv: `"${sectorLabel(project.sector, "sv")}" är ett av organisationens fokusområden i er finansieringsprofil.`,
+        text_en: `"${sectorLabel(project.sector, "en")}" is one of the organisation's focus areas in your funding profile.`,
+      });
+    }
+  }
+
   return { call, program, score, stars, rationale, recommendation, estimatedFundingSEK };
 }
 
-export function computeMatches(project: ProjectInput, calls: FundingCall[]): MatchResult[] {
+export function computeMatches(project: ProjectInput, calls: FundingCall[], fundingProfile?: FundingProfile): MatchResult[] {
   return calls
     .map((call) => {
       const program = findProgram(call.programId);
       if (!program) return null;
-      return scoreMatch(project, call, program);
+      return scoreMatch(project, call, program, fundingProfile);
     })
     .filter((m): m is MatchResult => m !== null)
     .sort((a, b) => b.score - a.score);

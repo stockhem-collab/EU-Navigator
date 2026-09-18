@@ -46,7 +46,7 @@ export default function CallDetailPage() {
 
         <dl className="mt-6 grid gap-4 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-3">
           <div>
-            <dt className="text-xs font-semibold uppercase text-navy-400">{lang === "sv" ? "Deadline" : "Deadline"}</dt>
+            <dt className="text-xs font-semibold uppercase text-navy-400">{db.deadlineLabel}</dt>
             <dd className="mt-1 font-bold text-navy-900">{db.deadlineIn(call.deadlineMonthsFromNow)}</dd>
           </div>
           <div>
@@ -138,7 +138,7 @@ export default function CallDetailPage() {
                 <p className="text-navy-300">{t.referenceProjects.statAvgBudget}</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-gold-300">{stats.topTheme ?? "–"}</p>
+                <p className="text-lg font-bold text-gold-300">{(lang === "sv" ? stats.topTheme_sv : stats.topTheme_en) ?? "–"}</p>
                 <p className="text-navy-300">{t.referenceProjects.statTopTheme}</p>
               </div>
             </div>

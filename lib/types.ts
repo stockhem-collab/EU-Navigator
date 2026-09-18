@@ -242,6 +242,58 @@ export interface OrgProcessPhase {
 }
 
 // ---------------------------------------------------------------------------
+// Organisation structure & people. Still part of the client-only demo (see
+// README) — there is no real backend, authentication or invite delivery.
+// Modelled here so /installningar can show a believable org chart and user
+// directory instead of only a single-person profile form; a real deployment
+// would back this with actual accounts and enforce it server-side.
+// ---------------------------------------------------------------------------
+export interface OrgUnit {
+  id: string;
+  name: string;
+  parentId: string | null;
+}
+
+/** Organisation-level role — coarse access to the organisation's own data,
+ * independent of any one project. */
+export type OrgRoleKey = "org-admin" | "eu-coordinator" | "finance" | "read-only";
+
+/** Project-level role — a person can hold a different one of these per
+ * project (docs/DATA_MODEL.md's ambition: person → organisation → project →
+ * role), mirroring how the EU Funding & Tenders Portal separates
+ * organisation roles from project/contract roles. */
+export type ProjectRoleKey =
+  | "project-owner"
+  | "project-lead"
+  | "application-owner"
+  | "economist"
+  | "reporting-owner"
+  | "project-member"
+  | "read-only";
+
+export interface ProjectRoleAssignment {
+  projectId: string; // ProjectBankEntry.id
+  role: ProjectRoleKey;
+}
+
+export interface DemoUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  title_sv: string;
+  title_en: string;
+  unitId: string | null; // OrgUnit.id
+  orgRole: OrgRoleKey;
+  status: "active" | "invited";
+  /** True when login/profile fields are managed by an SSO provider rather
+   * than editable in-app (illustrative only — no real SSO is wired up). */
+  ssoManaged: boolean;
+  projectRoles: ProjectRoleAssignment[];
+}
+
+// ---------------------------------------------------------------------------
 // Project input from the intake form.
 // ---------------------------------------------------------------------------
 export interface ProjectInput {
@@ -260,7 +312,7 @@ export interface ProjectInput {
 // ---------------------------------------------------------------------------
 export interface RationaleLine {
   type: "positive" | "warning" | "neutral";
-  category: GapCategory | "deadline";
+  category: GapCategory | "deadline" | "fundingProfile";
   text_sv: string;
   text_en: string;
   deltaIfFixed?: number;

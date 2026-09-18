@@ -2094,7 +2094,8 @@ export interface ProgramStats {
   ownerSharePct: number;
   avgBudgetSEK: number | null;
   disclosedBudgetCount: number;
-  topTheme: string | null;
+  topTheme_sv: string | null;
+  topTheme_en: string | null;
   legacyCount: number;
   currentCount: number;
 }
@@ -2107,7 +2108,8 @@ export function computeProgramStats(projects: FundedProject[]): ProgramStats {
       ownerSharePct: 0,
       avgBudgetSEK: null,
       disclosedBudgetCount: 0,
-      topTheme: null,
+      topTheme_sv: null,
+      topTheme_en: null,
       legacyCount: 0,
       currentCount: 0,
     };
@@ -2117,15 +2119,18 @@ export function computeProgramStats(projects: FundedProject[]): ProgramStats {
   const withBudget = projects.filter((p): p is FundedProject & { totalBudgetSEK: number } => p.totalBudgetSEK !== null);
   const avgBudgetSEK = withBudget.length > 0 ? Math.round(withBudget.reduce((s, p) => s + p.totalBudgetSEK, 0) / withBudget.length) : null;
 
-  const themeCounts = new Map<string, number>();
+  const themeCounts = new Map<string, { count: number; theme_en: string }>();
   for (const p of projects) {
-    themeCounts.set(p.theme_sv, (themeCounts.get(p.theme_sv) ?? 0) + 1);
+    const existing = themeCounts.get(p.theme_sv);
+    themeCounts.set(p.theme_sv, { count: (existing?.count ?? 0) + 1, theme_en: p.theme_en });
   }
-  let topTheme: string | null = null;
+  let topTheme_sv: string | null = null;
+  let topTheme_en: string | null = null;
   let topCount = 0;
-  for (const [theme, count] of themeCounts) {
+  for (const [theme_sv, { count, theme_en }] of themeCounts) {
     if (count > topCount) {
-      topTheme = theme;
+      topTheme_sv = theme_sv;
+      topTheme_en = theme_en;
       topCount = count;
     }
   }
@@ -2135,7 +2140,8 @@ export function computeProgramStats(projects: FundedProject[]): ProgramStats {
     ownerSharePct: Math.round((ownerCount / total) * 100),
     avgBudgetSEK,
     disclosedBudgetCount: withBudget.length,
-    topTheme,
+    topTheme_sv,
+    topTheme_en,
     legacyCount: projects.filter((p) => p.period === "2014-2020").length,
     currentCount: projects.filter((p) => p.period === "2021-2027").length,
   };

@@ -68,7 +68,7 @@ function ReferenceProjectsInner() {
               <p className="text-navy-300">{rp.statAvgBudget}</p>
             </div>
             <div className="col-span-2 sm:col-span-2">
-              <p className="text-lg font-bold text-gold-300">{stats.topTheme ?? "–"}</p>
+              <p className="text-lg font-bold text-gold-300">{(lang === "sv" ? stats.topTheme_sv : stats.topTheme_en) ?? "–"}</p>
               <p className="text-navy-300">{rp.statTopTheme}</p>
             </div>
           </div>
@@ -122,7 +122,7 @@ function ReferenceProjectsInner() {
                         <span className="font-semibold text-navy-800">
                           {ind.actual.toLocaleString(lang === "sv" ? "sv-SE" : "en-US")}
                           {" / "}
-                          {lang === "sv" ? "mål" : "target"} {ind.target.toLocaleString(lang === "sv" ? "sv-SE" : "en-US")}{" "}
+                          {rp.indicatorTargetLabel} {ind.target.toLocaleString(lang === "sv" ? "sv-SE" : "en-US")}{" "}
                           {lang === "sv" ? ind.unit_sv : ind.unit_en}
                         </span>
                       </div>

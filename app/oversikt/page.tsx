@@ -32,7 +32,6 @@ export default function OversiktPage() {
   const ov = t.oversikt;
   const pb = t.projectBank;
   const bv = t.bevakning;
-  const dc = t.datacenter;
   const { all: projectBank } = useProjectBank();
   const [role, setRole] = useState<Role>("ledning");
   const [department, setDepartment] = useState<string>("all");
@@ -174,9 +173,7 @@ export default function OversiktPage() {
                         <p className="text-xs font-semibold uppercase text-navy-400">{program?.shortName}</p>
                         <p className="font-semibold text-navy-800">{lang === "sv" ? call.title_sv : call.title_en}</p>
                       </div>
-                      <span className="badge bg-navy-100 text-navy-600">
-                        {bv.columnDeadline}: {call.deadlineMonthsFromNow} {lang === "sv" ? "mån" : "mo"}
-                      </span>
+                      <span className="badge bg-navy-100 text-navy-600">{bv.deadlineInMonths(call.deadlineMonthsFromNow)}</span>
                     </div>
                   );
                 })}
@@ -231,7 +228,7 @@ export default function OversiktPage() {
                     </li>
                   ))}
                   {docsNeedingUpdate.length === 0 && (
-                    <li className="px-4 py-3 text-sm text-navy-500">{dc.documentsNeedingUpdateTitle}: 0</li>
+                    <li className="px-4 py-3 text-sm text-navy-500">{ov.noDocumentsNeedingUpdate}</li>
                   )}
                 </ul>
               </div>
@@ -287,15 +284,13 @@ export default function OversiktPage() {
                       </div>
                       {missing.length > 0 && (
                         <p className="mt-2 text-xs text-amber-700">
-                          ⚠ {missing.length} {lang === "sv" ? "fält saknas för bästa matchning" : "fields missing for the best match"}
+                          ⚠ {ov.fieldsMissingForBestMatch(missing.length)}
                         </p>
                       )}
                     </div>
                   );
                 })}
-                {departmentRows.length === 0 && (
-                  <p className="text-sm text-navy-500">{ov.allDepartments}: 0</p>
-                )}
+                {departmentRows.length === 0 && <p className="text-sm text-navy-500">{ov.noProjectsInDepartment}</p>}
               </div>
             </section>
           </div>

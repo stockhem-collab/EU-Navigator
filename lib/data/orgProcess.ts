@@ -252,3 +252,15 @@ export const orgProcessPhases: OrgProcessPhase[] = [
     done: false,
   },
 ];
+
+// The distinct internal roles across all phases (role_sv is the stable key —
+// it's identical for the same role across phases in the seed data). Used to
+// drive a single "rename this role" control in organisation settings instead
+// of one per phase, since the same role slot recurs in every phase.
+export const masterRoles: { role_sv: string; role_en: string }[] = Array.from(
+  new Map(
+    orgProcessPhases
+      .flatMap((p) => p.roleExample?.responsibilities ?? [])
+      .map((r) => [r.role_sv, { role_sv: r.role_sv, role_en: r.role_en }])
+  ).values()
+);

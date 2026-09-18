@@ -8,7 +8,9 @@ import StatusBadge from "@/components/StatusBadge";
 import CsvImportPanel from "@/components/projectbank/CsvImportPanel";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
+import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { fundingCalls } from "@/lib/data/fundingCalls";
+import { primaryProjectAssignment, projectRoleLabels } from "@/lib/data/users";
 import { computeBestMatchForEntry, computePortfolioEconomics } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
 
@@ -16,6 +18,7 @@ export default function ProjectBankPage() {
   const { t, lang } = useLanguage();
   const pb = t.projectBank;
   const { all: projectBank, imported, addImported, removeImported, clearImported } = useProjectBank();
+  const { users } = useUsersDirectory();
   const importedIds = useMemo(() => new Set(imported.map((p) => p.id)), [imported]);
 
   // Run every project bank entry through the matching engine once, so the
@@ -108,6 +111,16 @@ export default function ProjectBankPage() {
                     <Link href={`/projektbank/${p.id}`} className="font-semibold text-navy-800 hover:underline">
                       {lang === "sv" ? p.title_sv : p.title_en}
                     </Link>
+                    {(() => {
+                      const assignment = primaryProjectAssignment(users, p.id);
+                      if (!assignment) return null;
+                      return (
+                        <p className="mt-0.5 text-xs text-navy-400">
+                          {assignment.user.firstName} {assignment.user.lastName} · {projectRoleLabels[assignment.role][lang]}
+                          {assignment.othersCount > 0 && ` ${pb.plusOthers(assignment.othersCount)}`}
+                        </p>
+                      );
+                    })()}
                   </td>
                   <td className="px-4 py-3 text-navy-600">{lang === "sv" ? p.department_sv : p.department_en}</td>
                   <td className="px-4 py-3">

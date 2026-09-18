@@ -12,6 +12,15 @@ import { projectBank as seededProjectBank } from "@/lib/data/projectBank";
 // bevakning, översikt) sees the same combined portfolio.
 const STORAGE_KEY = "eu-navigator-imported-projects";
 
+// Edits to any entry (seeded or imported) — a project idea starts out
+// rough (e.g. while "Under bedömning") and gets filled in over time. Kept
+// as a separate overlay, same pattern as useOrgConfig, so a seeded entry's
+// edits don't require rewriting the static seed data, and an imported
+// entry's edits survive a re-import of the same CSV.
+const OVERRIDES_KEY = "eu-navigator-project-overrides";
+
+export type ProjectBankEdit = Partial<Omit<ProjectBankEntry, "id">>;
+
 function readImported(): ProjectBankEntry[] {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -32,12 +41,33 @@ function writeImported(entries: ProjectBankEntry[]) {
   }
 }
 
+function readOverrides(): Record<string, ProjectBankEdit> {
+  try {
+    const raw = window.localStorage.getItem(OVERRIDES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeOverrides(overrides: Record<string, ProjectBankEdit>) {
+  try {
+    window.localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
+  } catch {
+    // localStorage unavailable — edits just won't persist.
+  }
+}
+
 export function useProjectBank() {
   const [imported, setImported] = useState<ProjectBankEntry[]>([]);
+  const [overrides, setOverrides] = useState<Record<string, ProjectBankEdit>>({});
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setImported(readImported());
+    setOverrides(readOverrides());
     setHydrated(true);
   }, []);
 
@@ -62,13 +92,27 @@ export function useProjectBank() {
     writeImported([]);
   }, []);
 
-  const all: ProjectBankEntry[] = [...seededProjectBank, ...imported];
+  const updateEntry = useCallback((id: string, patch: ProjectBankEdit) => {
+    setOverrides((prev) => {
+      const next = { ...prev, [id]: { ...prev[id], ...patch } };
+      writeOverrides(next);
+      return next;
+    });
+  }, []);
 
-  return { all, imported, addImported, removeImported, clearImported, hydrated };
+  const withOverrides = useCallback(
+    (entry: ProjectBankEntry): ProjectBankEntry => (overrides[entry.id] ? { ...entry, ...overrides[entry.id] } : entry),
+    [overrides]
+  );
+
+  const all: ProjectBankEntry[] = [...seededProjectBank, ...imported].map(withOverrides);
+
+  return { all, imported, addImported, removeImported, clearImported, updateEntry, hydrated };
 }
 
 export function findAnyProjectBankEntry(id: string): ProjectBankEntry | undefined {
-  const fromSeed = seededProjectBank.find((p) => p.id === id);
-  if (fromSeed) return fromSeed;
-  return readImported().find((p) => p.id === id);
+  const entry = seededProjectBank.find((p) => p.id === id) ?? readImported().find((p) => p.id === id);
+  if (!entry) return undefined;
+  const override = readOverrides()[id];
+  return override ? { ...entry, ...override } : entry;
 }

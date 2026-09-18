@@ -12,6 +12,7 @@ import { findProgram } from "@/lib/data/fundingPrograms";
 import { findProjectBankEntry } from "@/lib/data/projectBank";
 import { computeMatches, scoreMatch } from "@/lib/matching/scoreMatch";
 import { projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
+import { useFundingProfile } from "@/lib/hooks/useFundingProfile";
 import { MatchResult, ProjectInput } from "@/lib/types";
 
 type Step =
@@ -32,6 +33,7 @@ function DemoPageInner() {
   const preselectedCallId = searchParams.get("call");
   const preselectedProjectId = searchParams.get("project");
   const [step, setStep] = useState<Step>({ name: "intake" });
+  const { profile: fundingProfile } = useFundingProfile();
 
   const initialProject = preselectedProjectId
     ? (() => {
@@ -55,12 +57,12 @@ function DemoPageInner() {
               const preselectedProgram = preselectedCall ? findProgram(preselectedCall.programId) : undefined;
 
               if (preselectedCall && preselectedProgram) {
-                const match = scoreMatch(project, preselectedCall, preselectedProgram);
+                const match = scoreMatch(project, preselectedCall, preselectedProgram, fundingProfile);
                 setStep({ name: "workspace", project, match });
                 return;
               }
 
-              const matches = computeMatches(project, fundingCalls);
+              const matches = computeMatches(project, fundingCalls, fundingProfile);
               setStep({ name: "results", project, matches });
             }}
           />
@@ -83,7 +85,7 @@ function DemoPageInner() {
               setStep({
                 name: "results",
                 project: step.project,
-                matches: computeMatches(step.project, fundingCalls),
+                matches: computeMatches(step.project, fundingCalls, fundingProfile),
               })
             }
           />
