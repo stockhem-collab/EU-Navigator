@@ -12,21 +12,9 @@ import { fundingCalls, allDocuments } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeBestMatchForEntry, computePortfolioEconomics } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
-import { ProjectStatus } from "@/lib/types";
+import { PROJECT_STATUS_ORDER, ProjectStatus } from "@/lib/types";
 
 type Role = "ledning" | "samordnare" | "verksamhet";
-
-const STATUS_ORDER: ProjectStatus[] = [
-  "idea",
-  "assessing",
-  "funding-search",
-  "application",
-  "submitted",
-  "approved",
-  "rejected",
-  "running",
-  "completed",
-];
 
 export default function OversiktPage() {
   const { t, lang } = useLanguage();
@@ -167,11 +155,15 @@ export default function OversiktPage() {
             <section>
               <h2 className="text-lg font-bold text-navy-800">{ov.sectionStatusBreakdown}</h2>
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                {STATUS_ORDER.map((status) => (
-                  <div key={status} className="rounded-xl border border-navy-100 bg-white p-4">
+                {PROJECT_STATUS_ORDER.map((status) => (
+                  <Link
+                    key={status}
+                    href={`/projekt?status=${status}`}
+                    className="rounded-xl border border-navy-100 bg-white p-4 transition hover:border-navy-300 hover:shadow-sm"
+                  >
                     <p className="text-2xl font-extrabold text-navy-900">{statusCounts.get(status) ?? 0}</p>
                     <p className="text-xs text-navy-500">{pb.statusLabels[status]}</p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </section>

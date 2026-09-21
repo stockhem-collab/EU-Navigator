@@ -300,6 +300,10 @@ export interface TranslationTree {
     promised: string;
     reported: string;
     back: string;
+    statusFilterAll: string;
+    noProjectsForStatus: string;
+    reportingSectionTitle: string;
+    reportingSectionSubtitle: string;
   };
   orgProcess: {
     title: string;
@@ -521,7 +525,7 @@ export const translations: Record<Lang, TranslationTree> = {
       demo: "Prova demo",
       projectBank: "Projektbank",
       euDatabase: "EU-databas",
-      referenceProjects: "Beviljade projekt",
+      referenceProjects: "Referensprojekt",
       myProjects: "Mina projekt",
       datacenter: "Datacenter",
       overview: "Översikt",
@@ -824,7 +828,7 @@ export const translations: Record<Lang, TranslationTree> = {
       detailNoMatches: "Inga utlysningar att matcha mot just nu.",
       similarProjectsTitle: "Liknande beviljade projekt",
       similarProjectsIntro:
-        "Baserat på projektbeskrivningen — jämfört med tidigare beviljade EU-projekt (se förbehåll under Beviljade projekt).",
+        "Baserat på projektbeskrivningen — jämfört med tidigare beviljade EU-projekt (se förbehåll under Referensprojekt).",
       similarProjectsNone: "Inga tillräckligt lika beviljade projekt hittades än — komplettera beskrivningen för fler träffar.",
       similarProjectsSharedLabel: "Gemensamma begrepp",
       detailFindFunding: "Hitta finansiering för detta projekt",
@@ -914,7 +918,7 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     awardedProjects: {
       title: "Mina projekt",
-      subtitle: "Beviljade projekt — genomförande och rapportering.",
+      subtitle: "Alla dina projekt oavsett status — och rapportering på det som beviljats.",
       nextReportDue: (m) => `Nästa rapportering om ${m} månader`,
       nextReportDueLabel: "Nästa rapportering",
       awardedAmount: "Beviljat belopp",
@@ -922,6 +926,10 @@ export const translations: Record<Lang, TranslationTree> = {
       promised: "Utlovat",
       reported: "Rapporterat",
       back: "Tillbaka till mina projekt",
+      statusFilterAll: "Alla",
+      noProjectsForStatus: "Inga projekt med denna status.",
+      reportingSectionTitle: "Rapportering på beviljade projekt",
+      reportingSectionSubtitle: "Åtaganden från ansökan följs upp mot rapporterat utfall.",
     },
     orgProcess: {
       title: "Organisationens regelverk",
@@ -1147,7 +1155,7 @@ export const translations: Record<Lang, TranslationTree> = {
       demo: "Try the demo",
       projectBank: "Project bank",
       euDatabase: "EU database",
-      referenceProjects: "Awarded projects",
+      referenceProjects: "Reference projects",
       myProjects: "My projects",
       datacenter: "Datacenter",
       overview: "Overview",
@@ -1449,7 +1457,7 @@ export const translations: Record<Lang, TranslationTree> = {
       detailNoMatches: "No calls to match against right now.",
       similarProjectsTitle: "Similar funded projects",
       similarProjectsIntro:
-        "Based on the project description — compared against previously funded EU projects (see the caveats under Funded projects).",
+        "Based on the project description — compared against previously funded EU projects (see the caveats under Reference projects).",
       similarProjectsNone: "No sufficiently similar funded projects found yet — add more detail to the description for matches.",
       similarProjectsSharedLabel: "Shared terms",
       detailFindFunding: "Find funding for this project",
@@ -1538,7 +1546,7 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     awardedProjects: {
       title: "My projects",
-      subtitle: "Awarded projects — delivery and reporting.",
+      subtitle: "All your projects regardless of status — and reporting on what's been awarded.",
       nextReportDue: (m) => `Next report due in ${m} months`,
       nextReportDueLabel: "Next report",
       awardedAmount: "Awarded amount",
@@ -1546,6 +1554,10 @@ export const translations: Record<Lang, TranslationTree> = {
       promised: "Promised",
       reported: "Reported",
       back: "Back to my projects",
+      statusFilterAll: "All",
+      noProjectsForStatus: "No projects with this status.",
+      reportingSectionTitle: "Reporting on awarded projects",
+      reportingSectionSubtitle: "Commitments made in the application are tracked against reported outturn.",
     },
     orgProcess: {
       title: "Organisation's internal process",

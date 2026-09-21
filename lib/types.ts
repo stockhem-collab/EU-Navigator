@@ -130,6 +130,21 @@ export type ProjectStatus =
   | "running"
   | "completed";
 
+/** The lifecycle in its natural, logical order — a single source of truth
+ * so Översikt's "Projekt per status" breakdown and Mina projekt's own copy
+ * of it can't quietly drift apart. */
+export const PROJECT_STATUS_ORDER: ProjectStatus[] = [
+  "idea",
+  "assessing",
+  "funding-search",
+  "application",
+  "submitted",
+  "approved",
+  "rejected",
+  "running",
+  "completed",
+];
+
 export interface ProjectBankEntry {
   id: string;
   title_sv: string;
