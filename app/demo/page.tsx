@@ -9,7 +9,7 @@ import MatchResults from "@/components/demo/MatchResults";
 import ApplicationWorkspace from "@/components/demo/ApplicationWorkspace";
 import { fundingCalls, findCall } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { findProjectBankEntry } from "@/lib/data/projectBank";
+import { findAnyProjectBankEntry } from "@/lib/hooks/useProjectBank";
 import { computeMatches, scoreMatch } from "@/lib/matching/scoreMatch";
 import { projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
 import { useFundingProfile } from "@/lib/hooks/useFundingProfile";
@@ -32,12 +32,31 @@ function DemoPageInner() {
   const searchParams = useSearchParams();
   const preselectedCallId = searchParams.get("call");
   const preselectedProjectId = searchParams.get("project");
-  const [step, setStep] = useState<Step>({ name: "intake" });
   const { profile: fundingProfile } = useFundingProfile();
+
+  // Coming here with both ?project= and ?call= — e.g. "Fortsätt" on a saved
+  // project's match, or the Översikt "Pågående ansökningar" quick-entry
+  // list — means the user already knows exactly which application they
+  // want and is trying to get straight back into it. Skipping the intake
+  // form (which would otherwise re-show pre-filled fields the user must
+  // re-submit) and landing directly in the workspace is what makes that
+  // "quick" rather than one extra click for no reason.
+  const [step, setStep] = useState<Step>(() => {
+    if (preselectedProjectId && preselectedCallId) {
+      const entry = findAnyProjectBankEntry(preselectedProjectId);
+      const call = findCall(preselectedCallId);
+      const program = call ? findProgram(call.programId) : undefined;
+      if (entry && call && program) {
+        const project = projectBankEntryToProjectInput(entry);
+        return { name: "workspace", project, match: scoreMatch(project, call, program, fundingProfile) };
+      }
+    }
+    return { name: "intake" };
+  });
 
   const initialProject = preselectedProjectId
     ? (() => {
-        const entry = findProjectBankEntry(preselectedProjectId);
+        const entry = findAnyProjectBankEntry(preselectedProjectId);
         return entry ? projectBankEntryToProjectInput(entry) : undefined;
       })()
     : undefined;

@@ -502,6 +502,12 @@ export interface TranslationTree {
     describeNewProject: string;
     viewAllInPortfolio: string;
     viewAllInBevakning: string;
+    ongoingApplicationsTitle: string;
+    ongoingApplicationsHint: string;
+    ongoingApplicationsNone: string;
+    ongoingApplicationsResume: string;
+    ongoingApplicationsUpdatedAt: (date: string) => string;
+    ongoingApplicationsVersions: (n: number) => string;
   };
 }
 
@@ -1124,6 +1130,12 @@ export const translations: Record<Lang, TranslationTree> = {
       describeNewProject: "Beskriv ett nytt projekt",
       viewAllInPortfolio: "Se hela projektbanken →",
       viewAllInBevakning: "Se all bevakning →",
+      ongoingApplicationsTitle: "Pågående ansökningar",
+      ongoingApplicationsHint: "Hoppa direkt tillbaka till en ansökan du redan börjat skriva på.",
+      ongoingApplicationsNone: "Inga pågående ansökningar just nu — de dyker upp här så fort du börjar skriva i Ansökningsstudion.",
+      ongoingApplicationsResume: "Fortsätt →",
+      ongoingApplicationsUpdatedAt: (date) => `Senast redigerad ${date}`,
+      ongoingApplicationsVersions: (n) => (n === 1 ? "1 sparad version" : `${n} sparade versioner`),
     },
   },
   en: {
@@ -1742,6 +1754,12 @@ export const translations: Record<Lang, TranslationTree> = {
       describeNewProject: "Describe a new project",
       viewAllInPortfolio: "See the full project bank →",
       viewAllInBevakning: "See all monitoring →",
+      ongoingApplicationsTitle: "Ongoing applications",
+      ongoingApplicationsHint: "Jump straight back into an application you've already started writing.",
+      ongoingApplicationsNone: "No ongoing applications right now — they'll show up here as soon as you start writing in the Application workspace.",
+      ongoingApplicationsResume: "Resume →",
+      ongoingApplicationsUpdatedAt: (date) => `Last edited ${date}`,
+      ongoingApplicationsVersions: (n) => (n === 1 ? "1 saved version" : `${n} saved versions`),
     },
   },
 };

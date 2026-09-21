@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
+import { useOngoingApplications } from "@/lib/hooks/useOngoingApplications";
 import { fundingCalls, allDocuments } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeBestMatchForEntry, computePortfolioEconomics } from "@/lib/matching/portfolio";
@@ -33,6 +34,7 @@ export default function OversiktPage() {
   const pb = t.projectBank;
   const bv = t.bevakning;
   const { all: projectBank } = useProjectBank();
+  const { applications: ongoingApplications, hydrated: ongoingHydrated } = useOngoingApplications();
   const [role, setRole] = useState<Role>("ledning");
   const [department, setDepartment] = useState<string>("all");
 
@@ -97,6 +99,50 @@ export default function OversiktPage() {
           </div>
           <p className="mt-2 text-sm text-navy-500">{roles.find((r) => r.key === role)?.desc}</p>
         </div>
+
+        {/* Quick entry point back into whatever's mid-draft — visible
+            regardless of which role view is selected below, since resuming
+            a started application is relevant no matter who's looking. */}
+        {ongoingHydrated && (
+          <section className="mt-8">
+            <h2 className="text-lg font-bold text-navy-800">{ov.ongoingApplicationsTitle}</h2>
+            <p className="mt-1 text-sm text-navy-500">{ov.ongoingApplicationsHint}</p>
+            {ongoingApplications.length === 0 ? (
+              <p className="mt-3 text-sm text-navy-500">{ov.ongoingApplicationsNone}</p>
+            ) : (
+              <div className="mt-3 space-y-2">
+                {ongoingApplications.map(({ entry, call, program, updatedAt, versionCount }) => (
+                  <div
+                    key={`${entry.id}:${call.id}`}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-xs font-bold text-white">
+                        {program.logoLetter}
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold uppercase text-navy-400">{program.shortName}</p>
+                        <p className="font-semibold text-navy-800">
+                          {lang === "sv" ? entry.title_sv : entry.title_en}
+                        </p>
+                        <p className="text-xs text-navy-400">
+                          {updatedAt && ov.ongoingApplicationsUpdatedAt(new Date(updatedAt).toLocaleString(lang === "sv" ? "sv-SE" : "en-US"))}
+                          {versionCount > 0 && (updatedAt ? " · " : "") + ov.ongoingApplicationsVersions(versionCount)}
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/demo?project=${entry.id}&call=${call.id}`}
+                      className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
+                    >
+                      {ov.ongoingApplicationsResume}
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         {role === "ledning" && (
           <div className="mt-8 space-y-6">

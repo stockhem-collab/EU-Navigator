@@ -2,7 +2,10 @@ import { test, expect } from "@playwright/test";
 
 // A saved Projektbank entry's application draft must survive leaving and
 // re-entering the workspace (persisted via useApplication/localStorage); an
-// ad-hoc, unsaved intake must not pretend to persist.
+// ad-hoc, unsaved intake must not pretend to persist. Navigating straight to
+// /demo?project=&call= (the Projektbank "Starta ansökan" link, and the
+// Översikt "Pågående ansökningar" quick-entry) lands directly in the
+// workspace — no intake-form resubmission needed to resume.
 
 test("a saved project's application draft survives re-entering the workspace", async ({ page }) => {
   await page.goto("/projektbank/pb-4");
@@ -11,7 +14,6 @@ test("a saved project's application draft survives re-entering the workspace", a
   expect(href).toBeTruthy();
 
   await page.goto(href!);
-  await page.locator('button[type="submit"]').click();
 
   await expect(page.getByText(/sparas automatiskt|saved automatically/i)).toBeVisible();
 
@@ -22,9 +24,8 @@ test("a saved project's application draft survives re-entering the workspace", a
   await page.waitForTimeout(200);
 
   // Re-enter the same flow from scratch (the SPA step state, not the
-  // localStorage draft, resets on a fresh navigation+submit).
+  // localStorage draft, resets on a fresh navigation).
   await page.goto(href!);
-  await page.locator('button[type="submit"]').click();
   await expect(page.locator("textarea").first()).toHaveValue(testValue);
 
   // Reset restores the AI suggestion, not the manual draft.
@@ -46,7 +47,6 @@ test("a version can be saved and restored, and the application exports as .docx"
   const startLink = page.locator('a[href*="/demo?project=pb-4"]').first();
   const href = await startLink.getAttribute("href");
   await page.goto(href!);
-  await page.locator('button[type="submit"]').click();
 
   const textarea = page.locator("textarea").first();
   const draftValue = `Version draft ${Date.now()}`;
