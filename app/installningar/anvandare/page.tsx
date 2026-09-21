@@ -7,9 +7,9 @@ import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useUsersDirectory, InviteInput } from "@/lib/hooks/useUsersDirectory";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
+import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { orgUnits as seedOrgUnits, orgRoleLabels, projectRoleLabels, orgRolePermissions, CURRENT_USER_ID } from "@/lib/data/users";
-import { projectBank } from "@/lib/data/projectBank";
-import { DemoUser, OrgRoleKey, OrgUnit, ProjectRoleKey } from "@/lib/types";
+import { DemoUser, OrgRoleKey, OrgUnit, ProjectBankEntry, ProjectRoleKey } from "@/lib/types";
 
 const ORG_ROLE_KEYS = Object.keys(orgRoleLabels) as OrgRoleKey[];
 const PROJECT_ROLE_KEYS = Object.keys(projectRoleLabels) as ProjectRoleKey[];
@@ -30,13 +30,14 @@ export default function UsersSettingsPage() {
   const us = t.usersSettings;
   const { users, hydrated, inviteUser, removeUser, setOrgRole, setProjectRole } = useUsersDirectory();
   const { config, hydrated: orgHydrated } = useOrgConfig();
+  const { all: projectBank, hydrated: projectBankHydrated } = useProjectBank();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<OrgRoleKey | "all">("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
   const [inviteForm, setInviteForm] = useState<InviteInput | null>(null);
 
-  if (!hydrated || !orgHydrated) return null;
+  if (!hydrated || !orgHydrated || !projectBankHydrated) return null;
 
   const units = config.units ?? seedOrgUnits;
   const form = inviteForm ?? { firstName: "", lastName: "", email: "", unitId: defaultUnitId(units), orgRole: "read-only" as OrgRoleKey };
@@ -53,6 +54,7 @@ export default function UsersSettingsPage() {
     return (
       <UserDetail
         user={selected}
+        projectBank={projectBank}
         onBack={() => setSelectedId(null)}
         setOrgRole={setOrgRole}
         setProjectRole={setProjectRole}
@@ -246,12 +248,14 @@ export default function UsersSettingsPage() {
 
 function UserDetail({
   user,
+  projectBank,
   onBack,
   setOrgRole,
   setProjectRole,
   onRemove,
 }: {
   user: DemoUser;
+  projectBank: ProjectBankEntry[];
   onBack: () => void;
   setOrgRole: (id: string, role: OrgRoleKey) => void;
   setProjectRole: (userId: string, projectId: string, role: ProjectRoleKey | null) => void;

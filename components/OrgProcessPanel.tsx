@@ -58,13 +58,18 @@ export default function OrgProcessPanel({ phaseKey, readinessScore }: Props) {
           <div className="mt-3 grid gap-4 sm:grid-cols-3">
             {phase.roleExample.responsibilities.map((r) => {
               const overrideTasks = config.phaseTasks[phase.key]?.[r.role_sv];
-              const tasks = overrideTasks ?? (lang === "sv" ? r.tasks_sv : r.tasks_en);
+              // An override may contain a trailing blank line left over from
+              // editing (Inställningar's textarea keeps it while typing so
+              // pressing Enter isn't instantly undone) — never a real task.
+              const tasks = (overrideTasks ?? (lang === "sv" ? r.tasks_sv : r.tasks_en)).filter(
+                (task) => task.trim().length > 0
+              );
               return (
                 <div key={r.role_sv}>
                   <p className="text-sm font-semibold text-navy-700">{roleLabel(config, r.role_sv, r.role_en, lang)}</p>
                   <ul className="mt-1.5 space-y-1">
-                    {tasks.map((task) => (
-                      <li key={task} className="text-xs text-navy-500">
+                    {tasks.map((task, i) => (
+                      <li key={i} className="text-xs text-navy-500">
                         · {task}
                       </li>
                     ))}

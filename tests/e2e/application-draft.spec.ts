@@ -39,7 +39,7 @@ test("an ad-hoc, unsaved project shows the not-persisted note instead", async ({
   await page.locator('button[type="submit"]').click();
   await page.getByRole("button", { name: /Starta ansökan/i }).first().click();
 
-  await expect(page.getByText(/Spara projektet i projektbanken|Save this project to the project bank/i)).toBeVisible();
+  await expect(page.getByText(/Spara projektet i projektbanken|Save this project to the project bank/i).first()).toBeVisible();
 });
 
 test("a version can be saved and restored, and the application exports as .docx", async ({ page }) => {

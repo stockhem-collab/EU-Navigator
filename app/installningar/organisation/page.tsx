@@ -213,13 +213,7 @@ export default function OrganisationSettingsPage() {
                           <textarea
                             rows={5}
                             value={currentTasks.join("\n")}
-                            onChange={(e) =>
-                              setTasksFor(
-                                phase.key,
-                                r.role_sv,
-                                e.target.value.split("\n").filter((line) => line.trim().length > 0)
-                              )
-                            }
+                            onChange={(e) => setTasksFor(phase.key, r.role_sv, e.target.value.split("\n"))}
                             className="mt-2 w-full rounded-md border border-navy-200 px-3 py-2 text-xs text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
                           />
                         </div>

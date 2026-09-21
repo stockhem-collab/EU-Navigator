@@ -227,7 +227,7 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
 
               <section className="mb-16 mt-8">
                 <h2 className="text-lg font-bold text-navy-800">{ws.versionsTitle}</h2>
-                <p className="mt-1 text-sm text-navy-500">{ws.versionsHint}</p>
+                <p className="mt-1 text-sm text-navy-500">{isPersisted ? ws.versionsHint : ws.draftNotSavedNote}</p>
 
                 <div className="mt-4 rounded-xl border border-navy-100 bg-white p-4">
                   <div className="flex flex-wrap items-center gap-2">
@@ -236,26 +236,29 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
                       value={versionName}
                       onChange={(e) => setVersionName(e.target.value)}
                       placeholder={ws.versionNamePlaceholder}
-                      className="min-w-0 flex-1 rounded-md border border-navy-200 px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                      disabled={!isPersisted}
+                      className="min-w-0 flex-1 rounded-md border border-navy-200 px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500 disabled:cursor-not-allowed disabled:bg-navy-50 disabled:text-navy-400"
                     />
                     <button
                       type="button"
                       onClick={() => setVersionName(ws.versionQuickDraft)}
-                      className="rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-600 hover:bg-navy-50"
+                      disabled={!isPersisted}
+                      className="rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-600 hover:bg-navy-50 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {ws.versionQuickDraft}
                     </button>
                     <button
                       type="button"
                       onClick={() => setVersionName(ws.versionQuickFinal)}
-                      className="rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-600 hover:bg-navy-50"
+                      disabled={!isPersisted}
+                      className="rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-600 hover:bg-navy-50 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {ws.versionQuickFinal}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleSaveVersion(versionName)}
-                      disabled={!versionName.trim()}
+                      disabled={!isPersisted || !versionName.trim()}
                       className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {ws.saveVersionButton}
