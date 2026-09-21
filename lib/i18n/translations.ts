@@ -331,6 +331,8 @@ export interface TranslationTree {
     watchedBadge: string;
     onlyWatchedToggle: string;
     noWatchedCalls: string;
+    watchCallButton: string;
+    watchingCallButton: string;
   };
   orgSettings: {
     title: string;
@@ -455,6 +457,10 @@ export interface TranslationTree {
     digestWeekly: string;
     savedIndicator: string;
     resetAll: string;
+    watchedCallsTitle: string;
+    watchedCallsHint: string;
+    noWatchedCalls: string;
+    removeWatchedCall: string;
   };
   fundingProfileSettings: {
     title: string;
@@ -959,7 +965,9 @@ export const translations: Record<Lang, TranslationTree> = {
       startApplication: "Starta ansökan",
       watchedBadge: "★ Bevakad",
       onlyWatchedToggle: "Visa endast mina bevakningar",
-      noWatchedCalls: "Inga bevakade utlysningar. Justera dina bevakningar under Inställningar → Bevakningar.",
+      noWatchedCalls: "Inga bevakade utlysningar. Klicka \"Bevaka\" på en utlysning, eller justera dina bevakningar under Inställningar → Bevakningar.",
+      watchCallButton: "☆ Bevaka",
+      watchingCallButton: "★ Bevakas",
     },
     orgSettings: {
       title: "Organisation",
@@ -1087,6 +1095,10 @@ export const translations: Record<Lang, TranslationTree> = {
       digestWeekly: "Veckovis",
       savedIndicator: "Sparat i din webbläsare",
       resetAll: "Återställ till exempeldata",
+      watchedCallsTitle: "Bevakade utlysningar",
+      watchedCallsHint: "Utlysningar du flaggat direkt från Bevakning eller EU-databasen.",
+      noWatchedCalls: "Inga enskilda utlysningar bevakas ännu.",
+      removeWatchedCall: "Sluta bevaka",
     },
     fundingProfileSettings: {
       title: "Finansieringsprofil",
@@ -1587,7 +1599,9 @@ export const translations: Record<Lang, TranslationTree> = {
       startApplication: "Start application",
       watchedBadge: "★ Watched",
       onlyWatchedToggle: "Show only my watchlist",
-      noWatchedCalls: "No watched calls. Adjust your watchlist under Settings → Watchlists & notifications.",
+      noWatchedCalls: "No watched calls. Click \"Watch\" on a call, or adjust your watchlist under Settings → Watchlists & notifications.",
+      watchCallButton: "☆ Watch",
+      watchingCallButton: "★ Watching",
     },
     orgSettings: {
       title: "Organisation",
@@ -1715,6 +1729,10 @@ export const translations: Record<Lang, TranslationTree> = {
       digestWeekly: "Weekly",
       savedIndicator: "Saved in your browser",
       resetAll: "Reset to the example data",
+      watchedCallsTitle: "Watched calls",
+      watchedCallsHint: "Calls you've flagged directly from Watchlist or the EU database.",
+      noWatchedCalls: "No individual calls watched yet.",
+      removeWatchedCall: "Stop watching",
     },
     fundingProfileSettings: {
       title: "Funding profile",

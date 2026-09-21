@@ -9,12 +9,15 @@ import { findProgram } from "@/lib/data/fundingPrograms";
 import { findCall } from "@/lib/data/fundingCalls";
 import { fundedProjectsForProgram, computeProgramStats } from "@/lib/data/fundedProjects";
 import { topKeywords } from "@/lib/matching/patternAnalysis";
+import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
 import { fmtSEK } from "@/lib/format";
 
 export default function CallDetailPage() {
   const params = useParams<{ programId: string; callId: string }>();
   const { t, lang } = useLanguage();
   const db = t.euDatabase;
+  const bv = t.bevakning;
+  const { prefs, toggleCall } = useWatchPreferences();
 
   const program = findProgram(params.programId);
   const call = findCall(params.callId);
@@ -37,11 +40,22 @@ export default function CallDetailPage() {
             <p className="text-xs font-semibold uppercase text-navy-400">{program.shortName}</p>
             <h1 className="mt-1 text-2xl font-bold text-navy-900">{lang === "sv" ? call.title_sv : call.title_en}</h1>
           </div>
-          <span
-            className={`badge ${call.status === "open" ? "bg-green-100 text-green-800" : "bg-navy-100 text-navy-600"}`}
-          >
-            {call.status === "open" ? db.statusOpen : db.statusUpcoming}
-          </span>
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <span
+              className={`badge ${call.status === "open" ? "bg-green-100 text-green-800" : "bg-navy-100 text-navy-600"}`}
+            >
+              {call.status === "open" ? db.statusOpen : db.statusUpcoming}
+            </span>
+            <button
+              type="button"
+              onClick={() => toggleCall(call.id)}
+              className={`text-xs font-semibold ${
+                prefs.callIds.includes(call.id) ? "text-gold-700 hover:text-gold-800" : "text-navy-500 hover:text-navy-800"
+              }`}
+            >
+              {prefs.callIds.includes(call.id) ? bv.watchingCallButton : bv.watchCallButton}
+            </button>
+          </div>
         </div>
 
         <dl className="mt-6 grid gap-4 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-3">

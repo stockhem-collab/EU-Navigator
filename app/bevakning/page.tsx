@@ -17,7 +17,7 @@ export default function BevakningPage() {
   const { t, lang } = useLanguage();
   const bv = t.bevakning;
   const { all: projectBank } = useProjectBank();
-  const { prefs, hydrated: watchHydrated } = useWatchPreferences();
+  const { prefs, hydrated: watchHydrated, toggleCall } = useWatchPreferences();
   const [onlyWatched, setOnlyWatched] = useState(false);
 
   const rows = useMemo(
@@ -31,7 +31,9 @@ export default function BevakningPage() {
             (m) => m.match.score >= MATCH_THRESHOLD
           );
           const isWatched =
-            prefs.programIds.includes(program.id) || program.sectors.some((s) => prefs.sectors.includes(s));
+            prefs.callIds.includes(call.id) ||
+            prefs.programIds.includes(program.id) ||
+            program.sectors.some((s) => prefs.sectors.includes(s));
           return { call, program, matches, isWatched };
         })
         .filter((r): r is NonNullable<typeof r> => r !== null),
@@ -84,7 +86,16 @@ export default function BevakningPage() {
                   >
                     {bv.deadlineInMonths(call.deadlineMonthsFromNow)}
                   </span>
-                  <div className="mt-2">
+                  <div className="mt-2 flex items-center justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => toggleCall(call.id)}
+                      className={`text-xs font-semibold ${
+                        prefs.callIds.includes(call.id) ? "text-gold-700 hover:text-gold-800" : "text-navy-500 hover:text-navy-800"
+                      }`}
+                    >
+                      {prefs.callIds.includes(call.id) ? bv.watchingCallButton : bv.watchCallButton}
+                    </button>
                     <Link
                       href={`/eu-databas/${program.id}/${call.id}`}
                       className="text-xs font-semibold text-navy-600 hover:text-navy-900"

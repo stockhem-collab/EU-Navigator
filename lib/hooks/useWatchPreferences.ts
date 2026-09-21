@@ -23,6 +23,11 @@ export interface NotifyPreferences {
 export interface WatchPreferences {
   sectors: Sector[];
   programIds: string[];
+  /** Individually flagged calls — the direct, unambiguous "watch this
+   * specific utlysning" action (from Bevakning or a call's own page), as
+   * opposed to the broader sector/programme preferences above, which watch
+   * entire categories at once. */
+  callIds: string[];
   notify: NotifyPreferences;
   digest: DigestFrequency;
 }
@@ -30,6 +35,7 @@ export interface WatchPreferences {
 const DEFAULT: WatchPreferences = {
   sectors: ["digital", "climate", "social"],
   programIds: [],
+  callIds: [],
   notify: {
     newCallMatchesOrg: true,
     callMatchesProject: true,
@@ -49,6 +55,7 @@ function read(): WatchPreferences {
     return {
       sectors: Array.isArray(parsed.sectors) ? parsed.sectors : DEFAULT.sectors,
       programIds: Array.isArray(parsed.programIds) ? parsed.programIds : DEFAULT.programIds,
+      callIds: Array.isArray(parsed.callIds) ? parsed.callIds : DEFAULT.callIds,
       notify: { ...DEFAULT.notify, ...(parsed.notify && typeof parsed.notify === "object" ? parsed.notify : {}) },
       digest: parsed.digest === "instant" || parsed.digest === "daily" || parsed.digest === "weekly" ? parsed.digest : DEFAULT.digest,
     };
@@ -102,6 +109,15 @@ export function useWatchPreferences() {
     [update]
   );
 
+  const toggleCall = useCallback(
+    (callId: string) =>
+      update((prev) => ({
+        ...prev,
+        callIds: prev.callIds.includes(callId) ? prev.callIds.filter((c) => c !== callId) : [...prev.callIds, callId],
+      })),
+    [update]
+  );
+
   const toggleNotify = useCallback(
     (key: keyof NotifyPreferences) =>
       update((prev) => ({ ...prev, notify: { ...prev.notify, [key]: !prev.notify[key] } })),
@@ -115,5 +131,5 @@ export function useWatchPreferences() {
     write(DEFAULT);
   }, []);
 
-  return { prefs, hydrated, toggleSector, toggleProgram, toggleNotify, setDigest, resetAll };
+  return { prefs, hydrated, toggleSector, toggleProgram, toggleCall, toggleNotify, setDigest, resetAll };
 }

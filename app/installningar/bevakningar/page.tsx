@@ -5,7 +5,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useWatchPreferences, NotifyPreferences, DigestFrequency } from "@/lib/hooks/useWatchPreferences";
-import { fundingPrograms } from "@/lib/data/fundingPrograms";
+import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
+import { findCall } from "@/lib/data/fundingCalls";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import { Sector } from "@/lib/types";
 
@@ -14,9 +15,18 @@ const SECTORS: Sector[] = ["energy", "climate", "digital", "social", "mobility",
 export default function WatchSettingsPage() {
   const { t, lang } = useLanguage();
   const ws = t.watchSettings;
-  const { prefs, hydrated, toggleSector, toggleProgram, toggleNotify, setDigest, resetAll } = useWatchPreferences();
+  const { prefs, hydrated, toggleSector, toggleProgram, toggleCall, toggleNotify, setDigest, resetAll } =
+    useWatchPreferences();
 
   if (!hydrated) return null;
+
+  const watchedCalls = prefs.callIds
+    .map((callId) => {
+      const call = findCall(callId);
+      const program = call ? findProgram(call.programId) : undefined;
+      return call && program ? { call, program } : null;
+    })
+    .filter((row): row is NonNullable<typeof row> => row !== null);
 
   const notifyRows: { key: keyof NotifyPreferences; label: string }[] = [
     { key: "newCallMatchesOrg", label: ws.notifyNewCallOrg },
@@ -80,6 +90,34 @@ export default function WatchSettingsPage() {
                   </label>
                 ))}
             </div>
+          </section>
+
+          <section className="rounded-xl border border-navy-100 bg-white p-6">
+            <p className="text-sm font-semibold text-navy-800">{ws.watchedCallsTitle}</p>
+            <p className="mt-1 text-xs text-navy-500">{ws.watchedCallsHint}</p>
+            {watchedCalls.length === 0 ? (
+              <p className="mt-3 text-sm text-navy-500">{ws.noWatchedCalls}</p>
+            ) : (
+              <ul className="mt-3 divide-y divide-navy-50">
+                {watchedCalls.map(({ call, program }) => (
+                  <li key={call.id} className="flex items-center justify-between gap-3 py-2.5">
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-navy-400">{program.shortName}</p>
+                      <p className="text-sm font-semibold text-navy-800">
+                        {lang === "sv" ? call.title_sv : call.title_en}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleCall(call.id)}
+                      className="shrink-0 text-xs font-semibold text-navy-500 hover:text-amber-700"
+                    >
+                      {ws.removeWatchedCall}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
 
           <section className="rounded-xl border border-navy-100 bg-white p-6">
