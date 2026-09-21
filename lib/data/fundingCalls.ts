@@ -162,6 +162,40 @@ export const fundingCalls: FundingCall[] = [
       { name_sv: "Effekt", name_en: "Impact", maxPoints: 35 },
       { name_sv: "Kvalitet och effektivitet i genomförandet", name_en: "Quality and efficiency of implementation", maxPoints: 30 },
     ],
+    // Real: Horizon Europe's standard application form (Part B, Research &
+    // Innovation Actions) has used exactly this three-part structure since
+    // Horizon 2020 — see the Funding & Tenders Portal's "Standard
+    // application form" template. Mirrors evaluationCriteria above one-to-
+    // one, since each is literally the section that criterion judges.
+    applicationTemplate: [
+      {
+        key: "excellence",
+        label_sv: "Excellens",
+        label_en: "Excellence",
+        instructions_sv:
+          "Beskriv projektets mål, dess ambition i förhållande till nuvarande kunskapsläge (state of the art), och den vetenskapliga eller tekniska metodens vetenskapliga soliditet.",
+        instructions_en:
+          "Describe the project's objectives, its ambition relative to the state of the art, and the soundness of the proposed scientific or technical methodology.",
+      },
+      {
+        key: "impact",
+        label_sv: "Effekt",
+        label_en: "Impact",
+        instructions_sv:
+          "Beskriv de förväntade effekterna kopplade till utlysningens angivna förväntade resultat, samt hur projektets resultat ska spridas, nyttiggöras och kommuniceras.",
+        instructions_en:
+          "Describe the expected outcomes aligned with the call's stated expected results, and how the project's results will be disseminated, exploited and communicated.",
+      },
+      {
+        key: "implementation",
+        label_sv: "Kvalitet och effektivitet i genomförandet",
+        label_en: "Quality and efficiency of implementation",
+        instructions_sv:
+          "Beskriv arbetsplan och arbetspaket, fördelning av resurser, konsortiets samlade kapacitet, samt hantering av risker i genomförandet.",
+        instructions_en:
+          "Describe the work plan and work packages, allocation of resources, the consortium's combined capacity, and risk management in implementation.",
+      },
+    ],
     documents: [
       { id: "d1", type: "call", title_sv: "Utlysningstext", title_en: "Call document", updatedAt: "2026-05-11", needsUpdate: false },
       { id: "d2", type: "guide", title_sv: "Programguide", title_en: "Programme guide", updatedAt: "2026-05-11", needsUpdate: false },

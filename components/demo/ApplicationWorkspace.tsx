@@ -8,6 +8,7 @@ import { computeGapAnalysis } from "@/lib/matching/gapAnalysis";
 import { computeReadiness } from "@/lib/matching/readiness";
 import { analyzeSection } from "@/lib/matching/sectionCoach";
 import { useApplication } from "@/lib/hooks/useApplication";
+import { buildApplicationDocx, downloadBlob } from "@/lib/export/exportApplication";
 import OrgProcessPanel from "@/components/OrgProcessPanel";
 import { fmtSEK } from "@/lib/format";
 
@@ -40,10 +41,33 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
 
   // Editable draft of the AI-generated project logic. Persisted per (project,
   // call) when the project was saved in the Projektbank — see useApplication.
-  const { sectionDrafts, setSection, resetSection, isPersisted } = useApplication(customerProjectId, match.call.id);
+  const { sectionDrafts, setSection, resetSection, versions, saveVersion, restoreVersion, deleteVersion, isPersisted } =
+    useApplication(customerProjectId, match.call.id);
+  const [versionName, setVersionName] = useState("");
 
   const estEu = (match.estimatedFundingSEK[0] + match.estimatedFundingSEK[1]) / 2;
   const coFinancing = Math.max(0, project.budgetSEK - estEu);
+  const callTitle = lang === "sv" ? match.call.title_sv : match.call.title_en;
+  const hasCallTemplate = Boolean(match.call.applicationTemplate && match.call.applicationTemplate.length > 0);
+
+  // Every section's currently *displayed* text (an override, or the AI
+  // suggestion when there isn't one) — what a saved version or an export
+  // should actually contain.
+  const resolveSection = (row: { label_sv: string; content_sv: string; content_en: string }) =>
+    sectionDrafts[row.label_sv] ?? (lang === "sv" ? row.content_sv : row.content_en);
+
+  const handleExport = async () => {
+    const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
+    const blob = await buildApplicationDocx(project, match, logic, resolved, lang);
+    downloadBlob(blob, `ansokan-${match.call.id}.docx`);
+  };
+
+  const handleSaveVersion = (name: string) => {
+    if (!name.trim()) return;
+    const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
+    saveVersion(name.trim(), resolved);
+    setVersionName("");
+  };
 
   // The single most impactful thing to fix right now, surfaced ambiently in
   // the sidebar so it's visible regardless of which tab is open — without
@@ -99,6 +123,14 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
             </div>
           </div>
 
+          <button
+            type="button"
+            onClick={handleExport}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-navy-200 bg-white px-3 py-2 text-sm font-semibold text-navy-700 transition hover:bg-navy-50"
+          >
+            {ws.exportButton}
+          </button>
+
           <div
             role="tablist"
             aria-label={ws.title}
@@ -142,6 +174,9 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
               <section>
                 <h2 className="text-lg font-bold text-navy-800">{ws.logicTitle}</h2>
                 <p className="mt-1 text-sm text-navy-500">{ws.logicHint}</p>
+                <p className="mt-1 text-xs text-navy-400">
+                  {hasCallTemplate ? ws.templateSourceNote(callTitle) : ws.templateGenericNote}
+                </p>
                 <p className="mt-1 text-xs text-navy-400">{isPersisted ? ws.draftSavedNote : ws.draftNotSavedNote}</p>
                 <div className="mt-4 space-y-4">
                   {logic.map((row) => {
@@ -188,6 +223,78 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
                     <dd className="mt-1 text-xl font-bold text-navy-700">{fmtSEK(coFinancing, lang)}</dd>
                   </div>
                 </dl>
+              </section>
+
+              <section className="mb-16 mt-8">
+                <h2 className="text-lg font-bold text-navy-800">{ws.versionsTitle}</h2>
+                <p className="mt-1 text-sm text-navy-500">{ws.versionsHint}</p>
+
+                <div className="mt-4 rounded-xl border border-navy-100 bg-white p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="text"
+                      value={versionName}
+                      onChange={(e) => setVersionName(e.target.value)}
+                      placeholder={ws.versionNamePlaceholder}
+                      className="min-w-0 flex-1 rounded-md border border-navy-200 px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setVersionName(ws.versionQuickDraft)}
+                      className="rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-600 hover:bg-navy-50"
+                    >
+                      {ws.versionQuickDraft}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setVersionName(ws.versionQuickFinal)}
+                      className="rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-600 hover:bg-navy-50"
+                    >
+                      {ws.versionQuickFinal}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveVersion(versionName)}
+                      disabled={!versionName.trim()}
+                      className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {ws.saveVersionButton}
+                    </button>
+                  </div>
+
+                  {versions.length === 0 ? (
+                    <p className="mt-4 text-sm text-navy-500">{ws.noVersions}</p>
+                  ) : (
+                    <ul className="mt-4 divide-y divide-navy-50 border-t border-navy-50">
+                      {[...versions].reverse().map((v) => (
+                        <li key={v.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                          <div>
+                            <p className="text-sm font-semibold text-navy-800">{v.name}</p>
+                            <p className="text-xs text-navy-400">
+                              {ws.versionSavedAt(new Date(v.createdAt).toLocaleString(lang === "sv" ? "sv-SE" : "en-US"))}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <button
+                              type="button"
+                              onClick={() => restoreVersion(v.id)}
+                              className="text-xs font-semibold text-navy-600 hover:text-navy-900"
+                            >
+                              {ws.restoreVersionButton}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteVersion(v.id)}
+                              className="text-xs font-medium text-navy-400 hover:text-amber-700"
+                            >
+                              {ws.deleteVersionButton}
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </section>
             </div>
           )}

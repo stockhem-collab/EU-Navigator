@@ -1,4 +1,4 @@
-import { FundingCall, FundingProgram, ProjectInput } from "@/lib/types";
+import { ApplicationTemplateSection, FundingCall, FundingProgram, ProjectInput } from "@/lib/types";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 
 export interface ProjectLogicRow {
@@ -14,11 +14,69 @@ export interface ReviewerNote {
   text_en: string;
 }
 
+const IMPACT_HINT = /effekt|impact|resultat|nytta|spridning|result|benefit|dissemin/i;
+const IMPLEMENTATION_HINT = /genomför|implement|resurs|kapacitet|organisat|risk|budget|tidplan|resource|capacit|timeline/i;
+const PARTNERSHIP_HINT = /partner|konsortium|samarbet|consorti|collaborat/i;
+
+// Generates content for one of a CALL'S OWN application-form sections
+// (call.applicationTemplate), rather than the generic six-field fallback
+// below. Still a deterministic heuristic, not a live AI call — same
+// principle as the rest of this app — but it reads the section's own
+// instructions to decide what to weave in (an impact-flavoured section talks
+// about expected effect; an implementation-flavoured one talks about
+// budget/timeline/partnership), so two sections with different instructions
+// genuinely produce different draft text instead of one template repeated
+// under different headings.
+function generateTemplatedSection(
+  section: ApplicationTemplateSection,
+  project: ProjectInput,
+  call: FundingCall,
+  program: FundingProgram
+): ProjectLogicRow {
+  const sectorSv = sectorLabel(project.sector, "sv");
+  const sectorEn = sectorLabel(project.sector, "en");
+  const instructions = `${section.instructions_sv} ${section.instructions_en}`;
+
+  const base_sv = project.description ? project.description : `"${project.title}"`;
+  const base_en = project.description ? project.description : `"${project.title}"`;
+
+  let tail_sv: string;
+  let tail_en: string;
+  if (IMPACT_HINT.test(instructions)) {
+    tail_sv = `Projektet förväntas ge en mätbar effekt inom ${sectorSv}, i linje med ${call.title_sv}s prioriteringar.`;
+    tail_en = `The project is expected to deliver a measurable effect in ${sectorEn}, aligned with ${call.title_en}'s priorities.`;
+  } else if (IMPLEMENTATION_HINT.test(instructions)) {
+    tail_sv = `Genomförs ${project.startYear}–${project.endYear} med en total budget om ${(project.budgetSEK / 1_000_000).toLocaleString("sv-SE", { maximumFractionDigits: 1 })} mnkr.`;
+    tail_en = `Delivered ${project.startYear}–${project.endYear} with a total budget of SEK ${(project.budgetSEK / 1_000_000).toLocaleString("en-US", { maximumFractionDigits: 1 })}M.`;
+  } else if (PARTNERSHIP_HINT.test(instructions)) {
+    tail_sv = project.hasInternationalPartner
+      ? "Genomförs tillsammans med en internationell partnerorganisation."
+      : "En internationell partnerorganisation behöver ännu säkras för denna del.";
+    tail_en = project.hasInternationalPartner
+      ? "Delivered together with an international partner organisation."
+      : "An international partner organisation still needs to be secured for this part.";
+  } else {
+    tail_sv = `Kopplat till sektorn ${sectorSv} och ${program.name_sv}s syfte.`;
+    tail_en = `Linked to the ${sectorEn} sector and ${program.shortName}'s purpose.`;
+  }
+
+  return {
+    label_sv: section.label_sv,
+    label_en: section.label_en,
+    content_sv: `${base_sv} ${tail_sv}`,
+    content_en: `${base_en} ${tail_en}`,
+  };
+}
+
 export function generateProjectLogic(
   project: ProjectInput,
   call: FundingCall,
   program: FundingProgram
 ): ProjectLogicRow[] {
+  if (call.applicationTemplate && call.applicationTemplate.length > 0) {
+    return call.applicationTemplate.map((section) => generateTemplatedSection(section, project, call, program));
+  }
+
   const sectorSv = sectorLabel(project.sector, "sv");
   const sectorEn = sectorLabel(project.sector, "en");
   return [

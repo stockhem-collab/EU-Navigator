@@ -13,6 +13,7 @@
     "test:e2e": "playwright test --project=e2e"
   },
   "dependencies": {
+    "docx": "^9.7.1",
     "next": "14.2.35",
     "papaparse": "^5.7.0",
     "react": "^18.3.1",

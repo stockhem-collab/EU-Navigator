@@ -42,6 +42,25 @@ export interface EvaluationCriterion {
   maxPoints: number;
 }
 
+/** One section of a call's own real application form — docs/DATA_MODEL.md
+ * §1.6's `ApplicationRequirementDefinition`, inlined onto the call rather
+ * than normalised into its own table since the prototype has no database.
+ * When a call defines these, the Ansökningsstudio generates and exports the
+ * application around THIS structure instead of the generic six-field
+ * fallback (Problem/Mål/Aktiviteter/Outputs/Effekter/Indikatorer) — so two
+ * different calls can genuinely produce two different-shaped applications,
+ * matching their own real instructions. Left undefined on most calls today:
+ * populating it accurately requires the call's real application-form text,
+ * which isn't available for every illustrative call in this dataset — see
+ * the one seeded example (Horizon Europe) for what a real one looks like. */
+export interface ApplicationTemplateSection {
+  key: string;
+  label_sv: string;
+  label_en: string;
+  instructions_sv: string;
+  instructions_en: string;
+}
+
 export interface FundingCall {
   id: string;
   programId: string;
@@ -60,6 +79,10 @@ export interface FundingCall {
   extraKeywords: string[]; // in addition to the programme's own keywords
   evaluationCriteria: EvaluationCriterion[];
   documents: FundingDocument[];
+  /** This call's own application-form structure, when known — see
+   * ApplicationTemplateSection. Undefined = no call-specific structure on
+   * file; the workspace falls back to the generic project-logic template. */
+  applicationTemplate?: ApplicationTemplateSection[];
 }
 
 // ---------------------------------------------------------------------------
@@ -362,6 +385,22 @@ export interface SimilarProjectResult {
   project: FundedProject;
   similarityPct: number; // 0-100
   sharedKeywords: string[];
+}
+
+// ---------------------------------------------------------------------------
+// A named, immutable snapshot of an application draft — e.g. "Utkast",
+// "Slutgiltig version" — the prototype's version of docs/DATA_MODEL.md
+// §2.7's `ApplicationSection` history. Distinct from the continuously
+// autosaved live draft (see useApplication): a saved version's text doesn't
+// change later even if the underlying AI suggestion or project data does.
+// ---------------------------------------------------------------------------
+export interface ApplicationVersion {
+  id: string;
+  name: string;
+  createdAt: string; // ISO
+  /** Every section's fully resolved text at save time (project-logic row
+   * label -> text), not just the user's overrides. */
+  sectionDrafts: Record<string, string>;
 }
 
 export interface SectionCoachResult {

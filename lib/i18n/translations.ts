@@ -134,6 +134,19 @@ export interface TranslationTree {
       topPriorityNone: string;
       draftSavedNote: string;
       draftNotSavedNote: string;
+      templateSourceNote: (callTitle: string) => string;
+      templateGenericNote: string;
+      exportButton: string;
+      versionsTitle: string;
+      versionsHint: string;
+      versionNamePlaceholder: string;
+      versionQuickDraft: string;
+      versionQuickFinal: string;
+      saveVersionButton: string;
+      noVersions: string;
+      restoreVersionButton: string;
+      deleteVersionButton: string;
+      versionSavedAt: (date: string) => string;
     };
     gapAnalysis: {
       title: string;
@@ -716,6 +729,20 @@ export const translations: Record<Lang, TranslationTree> = {
         topPriorityNone: "Inga akuta åtgärder — ansökan ser stark ut.",
         draftSavedNote: "Utkastet sparas automatiskt i din webbläsare.",
         draftNotSavedNote: "Spara projektet i projektbanken för att utkastet ska sparas mellan besök.",
+        templateSourceNote: (callTitle) => `Strukturerad enligt ${callTitle}s eget ansökningsformulär.`,
+        templateGenericNote:
+          "Generisk projektlogik — den här utlysningen har ingen fördefinierad ansökningsstruktur i systemet ännu.",
+        exportButton: "Exportera ansökan (.docx)",
+        versionsTitle: "Versioner",
+        versionsHint: "Spara namngivna versioner av ansökan, t.ex. ett utkast och en slutgiltig version.",
+        versionNamePlaceholder: "Versionsnamn",
+        versionQuickDraft: "Utkast",
+        versionQuickFinal: "Slutgiltig version",
+        saveVersionButton: "Spara version",
+        noVersions: "Inga sparade versioner än.",
+        restoreVersionButton: "Återställ till denna version",
+        deleteVersionButton: "Ta bort",
+        versionSavedAt: (date) => `Sparad ${date}`,
         nextSteps: [
           "Åtgärda punkterna som AI-granskningen flaggat",
           "Bekräfta partnerskap/konsortium vid behov",
@@ -1322,6 +1349,19 @@ export const translations: Record<Lang, TranslationTree> = {
         topPriorityNone: "No urgent action items — the application looks strong.",
         draftSavedNote: "This draft is saved automatically in your browser.",
         draftNotSavedNote: "Save this project to the project bank so its draft is kept between visits.",
+        templateSourceNote: (callTitle) => `Structured according to ${callTitle}'s own application form.`,
+        templateGenericNote: "Generic project logic — this call has no predefined application structure in the system yet.",
+        exportButton: "Export application (.docx)",
+        versionsTitle: "Versions",
+        versionsHint: "Save named versions of the application, e.g. a draft and a final version.",
+        versionNamePlaceholder: "Version name",
+        versionQuickDraft: "Draft",
+        versionQuickFinal: "Final draft",
+        saveVersionButton: "Save version",
+        noVersions: "No saved versions yet.",
+        restoreVersionButton: "Restore this version",
+        deleteVersionButton: "Delete",
+        versionSavedAt: (date) => `Saved ${date}`,
         nextSteps: [
           "Address the points flagged by the AI review",
           "Confirm partnership/consortium if required",
