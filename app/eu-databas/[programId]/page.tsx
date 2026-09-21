@@ -38,6 +38,8 @@ export default function ProgramCallsPage() {
           </div>
         </div>
 
+        {calls.length === 0 && <p className="mt-8 text-sm text-navy-500">{db.noCallsForProgram}</p>}
+
         <div className="mt-8 space-y-4">
           {calls.map((call) => (
             <Link

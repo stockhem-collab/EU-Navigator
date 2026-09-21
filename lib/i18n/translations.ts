@@ -246,6 +246,7 @@ export interface TranslationTree {
     helpMeApplyButton: string;
     backToProgram: string;
     backToPrograms: string;
+    noCallsForProgram: string;
   };
   referenceProjects: {
     title: string;
@@ -876,6 +877,7 @@ export const translations: Record<Lang, TranslationTree> = {
       helpMeApplyButton: "Hjälp mig söka",
       backToProgram: "Tillbaka till programmet",
       backToPrograms: "Tillbaka till EU-databasen",
+      noCallsForProgram: "Inga aktuella utlysningar inom detta program just nu.",
     },
     referenceProjects: {
       title: "Beviljade referensprojekt",
@@ -1511,6 +1513,7 @@ export const translations: Record<Lang, TranslationTree> = {
       helpMeApplyButton: "Help me apply",
       backToProgram: "Back to the programme",
       backToPrograms: "Back to the EU database",
+      noCallsForProgram: "No active calls under this programme right now.",
     },
     referenceProjects: {
       title: "Awarded reference projects",
