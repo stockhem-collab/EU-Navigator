@@ -8,7 +8,9 @@ import StatusBadge from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useOngoingApplications } from "@/lib/hooks/useOngoingApplications";
-import { fundingCalls, allDocuments } from "@/lib/data/fundingCalls";
+import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
+import { fundingCalls, allDocuments, findCall } from "@/lib/data/fundingCalls";
+import { awardedProjects, nextUpcomingReport } from "@/lib/data/awardedProjects";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeBestMatchForEntry, computePortfolioEconomics } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
@@ -21,8 +23,10 @@ export default function OversiktPage() {
   const ov = t.oversikt;
   const pb = t.projectBank;
   const bv = t.bevakning;
+  const ap = t.awardedProjects;
   const { all: projectBank } = useProjectBank();
   const { applications: ongoingApplications, hydrated: ongoingHydrated } = useOngoingApplications();
+  const { withSubmissions } = useReportingSubmissions();
   const [role, setRole] = useState<Role>("ledning");
   const [department, setDepartment] = useState<string>("all");
 
@@ -45,6 +49,20 @@ export default function OversiktPage() {
   const upcomingDeadlines = useMemo(
     () => [...fundingCalls].sort((a, b) => a.deadlineMonthsFromNow - b.deadlineMonthsFromNow).slice(0, 3),
     []
+  );
+
+  const upcomingReports = useMemo(
+    () =>
+      awardedProjects
+        .map((seedProject) => {
+          const project = withSubmissions(seedProject);
+          const report = nextUpcomingReport(project);
+          return report ? { project, report } : null;
+        })
+        .filter((r): r is NonNullable<typeof r> => r !== null)
+        .sort((a, b) => a.report.deadlineMonthsFromNow - b.report.deadlineMonthsFromNow)
+        .slice(0, 3),
+    [withSubmissions]
   );
 
   const docsNeedingUpdate = useMemo(() => allDocuments().filter((d) => d.needsUpdate), []);
@@ -217,6 +235,36 @@ export default function OversiktPage() {
                 })}
               </div>
             </section>
+
+            {upcomingReports.length > 0 && (
+              <section>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-navy-800">{ov.sectionUpcomingReports}</h2>
+                  <Link href="/projekt" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
+                    {ov.viewAllInMyProjects}
+                  </Link>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {upcomingReports.map(({ project, report }) => {
+                    const call = findCall(project.callId);
+                    const program = call ? findProgram(call.programId) : undefined;
+                    return (
+                      <Link
+                        key={project.id}
+                        href={`/projekt/${project.id}`}
+                        className="flex items-center justify-between rounded-xl border border-navy-100 bg-white p-4 transition hover:border-navy-300 hover:shadow-sm"
+                      >
+                        <div>
+                          <p className="text-xs font-semibold uppercase text-navy-400">{program?.shortName}</p>
+                          <p className="font-semibold text-navy-800">{lang === "sv" ? project.title_sv : project.title_en}</p>
+                        </div>
+                        <span className="badge bg-navy-100 text-navy-600">{ap.nextReportDue(report.deadlineMonthsFromNow)}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
 
             <section>
               <h2 className="text-lg font-bold text-navy-800">{pb.title}</h2>

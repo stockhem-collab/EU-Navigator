@@ -8,7 +8,8 @@ import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
-import { awardedProjects } from "@/lib/data/awardedProjects";
+import { awardedProjects, nextUpcomingReport } from "@/lib/data/awardedProjects";
+import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { fundingCalls, findCall } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeBestMatchForEntry } from "@/lib/matching/portfolio";
@@ -34,6 +35,7 @@ function MyProjectsPageInner() {
   const ov = t.oversikt;
 
   const { all: projectBank } = useProjectBank();
+  const { withSubmissions } = useReportingSubmissions();
 
   // Arriving from Översikt's "Projekt per status" tiles (?status=...) opens
   // this page pre-filtered to that status, so the two views show exactly
@@ -137,9 +139,12 @@ function MyProjectsPageInner() {
           <p className="mt-1 text-sm text-navy-500">{ap.reportingSectionSubtitle}</p>
 
           <div className="mt-4 space-y-5">
-            {awardedProjects.map((project) => {
+            {awardedProjects.map((seedProject) => {
+              const project = withSubmissions(seedProject);
               const call = findCall(project.callId);
               const program = call ? findProgram(call.programId) : undefined;
+              const nextReport = nextUpcomingReport(project);
+              const needsRevision = project.reportingEvents.some((e) => e.status === "revision-requested");
               return (
                 <Link
                   key={project.id}
@@ -157,9 +162,14 @@ function MyProjectsPageInner() {
                         {lang === "sv" ? project.title_sv : project.title_en}
                       </h3>
                     </div>
-                    <span className="badge bg-navy-100 text-navy-600">
-                      {ap.nextReportDue(project.nextReportDueMonthsFromNow)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {needsRevision && (
+                        <span className="badge bg-amber-100 text-amber-800">{ap.reportStatusRevisionRequested}</span>
+                      )}
+                      <span className="badge bg-navy-100 text-navy-600">
+                        {nextReport ? ap.nextReportDue(nextReport.deadlineMonthsFromNow) : ap.reportingCompleteLabel}
+                      </span>
+                    </div>
                   </div>
                   <p className="mt-3 text-sm text-navy-500">
                     {ap.awardedAmount}: <span className="font-semibold text-navy-800">{fmtSEK(project.awardedAmountSEK, lang)}</span>

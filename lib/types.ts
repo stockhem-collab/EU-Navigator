@@ -83,6 +83,10 @@ export interface FundingCall {
    * ApplicationTemplateSection. Undefined = no call-specific structure on
    * file; the workspace falls back to the generic project-logic template. */
   applicationTemplate?: ApplicationTemplateSection[];
+  /** This call's post-award reporting obligation, when known — see
+   * ReportingRequirement (defined further down, alongside AwardedProject).
+   * Undefined = not on file yet. */
+  reportingRequirements?: ReportingRequirement;
 }
 
 // ---------------------------------------------------------------------------
@@ -176,8 +180,10 @@ export interface ProjectBankEntry {
 // entity in docs/DATA_MODEL.md §1.8 (which also folds in what a real backend
 // would call `AwardedProject`/`Commitment` for the customer's own post-award
 // reporting loop — that half stays a separate, simpler `AwardedProject` type
-// below for now, since building the full `Application`/`Report` chain the
-// doc describes is later-phase work).
+// below, modelling the reporting *cycle* (ReportingRequirement +
+// ReportingEvent) rather than the doc's full `Application`/`Report` chain,
+// which would need a real per-application record this prototype doesn't
+// have yet (see useApplication's own note on that).
 // ---------------------------------------------------------------------------
 export interface ProjectIndicator {
   label_sv: string;
@@ -227,16 +233,76 @@ export interface FundedProject {
 
 // ---------------------------------------------------------------------------
 // Awarded projects — the reporting/compliance loop after money is granted.
+// Every fund requires the grantee to report back against what the
+// application promised, on a schedule and with evidence that varies by
+// fund (ESF+'s frequent participant reporting looks nothing like LIFE's
+// half-yearly progress reports) — then a heavier final report closes the
+// project out. Modelled as two halves, mirroring docs/DATA_MODEL.md's
+// future `ReportingRequirementDefinition` (§1.7) / `Report` (§2.10) split:
+// the *obligation* a call imposes (ReportingRequirement, reference data on
+// FundingCall) versus the *instances* of actually reporting against it
+// (ReportingEvent, per AwardedProject).
 // ---------------------------------------------------------------------------
+
+export type ReportingPeriodicity = "quarterly" | "biannual" | "annual";
+
+/** The reporting obligation a call imposes on whoever is awarded funding
+ * under it — reference data that lives on the call, not on any one
+ * project. Undefined on a FundingCall = not on file yet (most calls in
+ * this demo have no awarded project to report against). */
+export interface ReportingRequirement {
+  periodicity: ReportingPeriodicity;
+  interimReportsRequired: number;
+  /** SEK threshold above which an independent auditor's certificate must
+   * accompany the final report — null if this call never requires one. */
+  requiresAuditAboveSEK: number | null;
+  interimDocuments_sv: string[];
+  interimDocuments_en: string[];
+  finalReportDocuments_sv: string[];
+  finalReportDocuments_en: string[];
+}
+
+/** What the application promised to deliver for one indicator — the
+ * baseline definition only. Actual outturn is reported more than once over
+ * a project's life (interim reports, then a final report), so it lives on
+ * ReportingEvent below rather than as a single value here. */
 export interface Commitment {
   indicator_sv: string;
   indicator_en: string;
   promisedValue: number;
   unit_sv: string;
   unit_en: string;
-  currentValue: number;
-  comment_sv: string;
-  comment_en: string;
+}
+
+export type ReportingEventType = "interim" | "final";
+export type ReportingEventStatus = "upcoming" | "submitted" | "approved" | "revision-requested";
+
+/** The outturn reported for one Commitment indicator as of one specific
+ * ReportingEvent, keyed by indicator_sv — the same stable key used on
+ * Commitment (no seeded project has two commitments sharing a Swedish
+ * indicator name). */
+export interface ReportingOutcome {
+  indicator_sv: string;
+  value: number;
+}
+
+/** One point in a call's reporting cycle for an awarded project — an
+ * interim report or the closing final report. The instance of an actual
+ * submission, as opposed to ReportingRequirement above, which is the
+ * definition of the obligation it satisfies. */
+export interface ReportingEvent {
+  id: string;
+  type: ReportingEventType;
+  periodLabel_sv: string;
+  periodLabel_en: string;
+  /** Same "relative to today" convention as FundingCall's own
+   * deadlineMonthsFromNow — negative once the deadline has passed. */
+  deadlineMonthsFromNow: number;
+  status: ReportingEventStatus;
+  /** Populated once status is "submitted" or later; empty for "upcoming". */
+  outcomes: ReportingOutcome[];
+  note_sv?: string;
+  note_en?: string;
 }
 
 export interface AwardedProject {
@@ -245,8 +311,9 @@ export interface AwardedProject {
   title_en: string;
   callId: string;
   awardedAmountSEK: number;
-  nextReportDueMonthsFromNow: number;
   commitments: Commitment[];
+  /** Chronological — interim reports followed by the closing final report. */
+  reportingEvents: ReportingEvent[];
 }
 
 // ---------------------------------------------------------------------------

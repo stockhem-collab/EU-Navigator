@@ -284,6 +284,8 @@ export interface TranslationTree {
     statDocuments: string;
     statDocumentsNeedUpdate: string;
     statLastSync: string;
+    statUpcomingReports: string;
+    statReportsNeedingRevision: string;
     documentsNeedingUpdateTitle: string;
     incompleteProjectsTitle: string;
     incompleteProjectsBody: string;
@@ -300,11 +302,39 @@ export interface TranslationTree {
     commitmentsTitle: string;
     promised: string;
     reported: string;
+    noLatestOutcome: string;
     back: string;
     statusFilterAll: string;
     noProjectsForStatus: string;
     reportingSectionTitle: string;
     reportingSectionSubtitle: string;
+    reportingRequirementsTitle: string;
+    periodicityLabel: string;
+    periodicityQuarterly: string;
+    periodicityBiannual: string;
+    periodicityAnnual: string;
+    interimReportsRequiredLabel: (n: number) => string;
+    auditRequiredAboveLabel: string;
+    interimDocumentsLabel: string;
+    finalReportDocumentsLabel: string;
+    reportingTimelineTitle: string;
+    reportingTimelineHint: string;
+    reportTypeInterim: string;
+    reportTypeFinal: string;
+    reportStatusUpcoming: string;
+    reportStatusSubmitted: string;
+    reportStatusApproved: string;
+    reportStatusRevisionRequested: string;
+    reportDueInMonths: (n: number) => string;
+    reportOverdueBy: (n: number) => string;
+    noOutcomesYet: string;
+    reportNoteLabel: string;
+    reportFormTitle: string;
+    reportFormNoteLabel: string;
+    reportFormNotePlaceholder: string;
+    reportFormSubmitButton: string;
+    reportSubmittedIndicator: string;
+    reportingCompleteLabel: string;
   };
   orgProcess: {
     title: string;
@@ -503,6 +533,8 @@ export interface TranslationTree {
     sectionTopMatches: string;
     sectionStatusBreakdown: string;
     sectionUpcomingDeadlines: string;
+    sectionUpcomingReports: string;
+    viewAllInMyProjects: string;
     sectionDocumentsNeedingUpdate: string;
     sectionYourProjects: string;
     departmentFilterLabel: string;
@@ -916,6 +948,8 @@ export const translations: Record<Lang, TranslationTree> = {
       statDocuments: "Fond-/utlysningsdokument",
       statDocumentsNeedUpdate: "Dokument som behöver uppdateras",
       statLastSync: "Senaste datasynk",
+      statUpcomingReports: "Kommande rapporteringar",
+      statReportsNeedingRevision: "Rapporter som kräver komplettering",
       documentsNeedingUpdateTitle: "Dokument som behöver uppdateras",
       incompleteProjectsTitle: "Projekt med ofullständig information",
       incompleteProjectsBody:
@@ -933,11 +967,39 @@ export const translations: Record<Lang, TranslationTree> = {
       commitmentsTitle: "Åtaganden från ansökan vs. utfall",
       promised: "Utlovat",
       reported: "Rapporterat",
+      noLatestOutcome: "Ej rapporterat än",
       back: "Tillbaka till mina projekt",
       statusFilterAll: "Alla",
       noProjectsForStatus: "Inga projekt med denna status.",
       reportingSectionTitle: "Rapportering på beviljade projekt",
       reportingSectionSubtitle: "Åtaganden från ansökan följs upp mot rapporterat utfall.",
+      reportingRequirementsTitle: "Rapporteringskrav för utlysningen",
+      periodicityLabel: "Rapporteringsfrekvens",
+      periodicityQuarterly: "Kvartalsvis",
+      periodicityBiannual: "Halvårsvis",
+      periodicityAnnual: "Årsvis",
+      interimReportsRequiredLabel: (n) => `${n} delrapporter krävs innan slutrapport`,
+      auditRequiredAboveLabel: "Revisionsintyg krävs för beviljat belopp över",
+      interimDocumentsLabel: "Underlag som krävs vid delrapportering",
+      finalReportDocumentsLabel: "Underlag som krävs vid slutrapportering",
+      reportingTimelineTitle: "Rapporteringstillfällen",
+      reportingTimelineHint: "Delrapporter och slutrapport i kronologisk ordning, med utfall per tillfälle.",
+      reportTypeInterim: "Delrapport",
+      reportTypeFinal: "Slutrapport",
+      reportStatusUpcoming: "Kommande",
+      reportStatusSubmitted: "Inlämnad",
+      reportStatusApproved: "Godkänd",
+      reportStatusRevisionRequested: "Komplettering begärd",
+      reportDueInMonths: (n) => (n === 0 ? "Förfaller denna månad" : `Förfaller om ${n} ${n === 1 ? "månad" : "månader"}`),
+      reportOverdueBy: (n) => (n === 0 ? "Försenad" : `Försenad med ${n} ${n === 1 ? "månad" : "månader"}`),
+      noOutcomesYet: "Inget utfall rapporterat ännu.",
+      reportNoteLabel: "Kommentar",
+      reportFormTitle: "Rapportera utfall",
+      reportFormNoteLabel: "Kommentar till rapporten",
+      reportFormNotePlaceholder: "Kort kommentar till utfallet, t.ex. avvikelser mot plan.",
+      reportFormSubmitButton: "Markera som inlämnad",
+      reportSubmittedIndicator: "Sparat i din webbläsare — ersätter inte en faktisk inlämning till finansiären.",
+      reportingCompleteLabel: "All rapportering avslutad.",
     },
     orgProcess: {
       title: "Organisationens regelverk",
@@ -1142,6 +1204,8 @@ export const translations: Record<Lang, TranslationTree> = {
       sectionTopMatches: "Starkaste matchningarna just nu",
       sectionStatusBreakdown: "Projekt per status",
       sectionUpcomingDeadlines: "Närmaste deadlines",
+      sectionUpcomingReports: "Kommande rapporteringar",
+      viewAllInMyProjects: "Se alla i mina projekt →",
       sectionDocumentsNeedingUpdate: "Dokument som behöver ses över",
       sectionYourProjects: "Projekt",
       departmentFilterLabel: "Förvaltning",
@@ -1552,6 +1616,8 @@ export const translations: Record<Lang, TranslationTree> = {
       statDocuments: "Fund/call documents",
       statDocumentsNeedUpdate: "Documents needing an update",
       statLastSync: "Last data sync",
+      statUpcomingReports: "Upcoming reports",
+      statReportsNeedingRevision: "Reports needing revision",
       documentsNeedingUpdateTitle: "Documents needing an update",
       incompleteProjectsTitle: "Projects with incomplete information",
       incompleteProjectsBody: "These project-bank entries are missing information required for reliable EU matching.",
@@ -1568,11 +1634,39 @@ export const translations: Record<Lang, TranslationTree> = {
       commitmentsTitle: "Application commitments vs. outturn",
       promised: "Promised",
       reported: "Reported",
+      noLatestOutcome: "Not reported yet",
       back: "Back to my projects",
       statusFilterAll: "All",
       noProjectsForStatus: "No projects with this status.",
       reportingSectionTitle: "Reporting on awarded projects",
       reportingSectionSubtitle: "Commitments made in the application are tracked against reported outturn.",
+      reportingRequirementsTitle: "Call reporting requirements",
+      periodicityLabel: "Reporting frequency",
+      periodicityQuarterly: "Quarterly",
+      periodicityBiannual: "Biannual",
+      periodicityAnnual: "Annual",
+      interimReportsRequiredLabel: (n) => `${n} interim report${n === 1 ? "" : "s"} required before the final report`,
+      auditRequiredAboveLabel: "An auditor's certificate is required for awards above",
+      interimDocumentsLabel: "Evidence required for an interim report",
+      finalReportDocumentsLabel: "Evidence required for the final report",
+      reportingTimelineTitle: "Reporting timeline",
+      reportingTimelineHint: "Interim reports and the final report in chronological order, with the outturn reported at each.",
+      reportTypeInterim: "Interim report",
+      reportTypeFinal: "Final report",
+      reportStatusUpcoming: "Upcoming",
+      reportStatusSubmitted: "Submitted",
+      reportStatusApproved: "Approved",
+      reportStatusRevisionRequested: "Revision requested",
+      reportDueInMonths: (n) => (n === 0 ? "Due this month" : `Due in ${n} month${n === 1 ? "" : "s"}`),
+      reportOverdueBy: (n) => (n === 0 ? "Overdue" : `Overdue by ${n} month${n === 1 ? "" : "s"}`),
+      noOutcomesYet: "No outturn reported yet.",
+      reportNoteLabel: "Note",
+      reportFormTitle: "Report outturn",
+      reportFormNoteLabel: "Note on this report",
+      reportFormNotePlaceholder: "A short note on the outturn, e.g. deviations from plan.",
+      reportFormSubmitButton: "Mark as submitted",
+      reportSubmittedIndicator: "Saved in your browser — this does not replace an actual submission to the funder.",
+      reportingCompleteLabel: "All reporting complete.",
     },
     orgProcess: {
       title: "Organisation's internal process",
@@ -1777,6 +1871,8 @@ export const translations: Record<Lang, TranslationTree> = {
       sectionTopMatches: "Strongest matches right now",
       sectionStatusBreakdown: "Projects by status",
       sectionUpcomingDeadlines: "Nearest deadlines",
+      sectionUpcomingReports: "Upcoming reports",
+      viewAllInMyProjects: "See all in my projects →",
       sectionDocumentsNeedingUpdate: "Documents needing a review",
       sectionYourProjects: "Projects",
       departmentFilterLabel: "Department",

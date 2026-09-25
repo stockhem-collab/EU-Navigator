@@ -9,6 +9,8 @@ import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { fundingCalls, allDocuments } from "@/lib/data/fundingCalls";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
+import { awardedProjects } from "@/lib/data/awardedProjects";
+import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 
 /** Formatted after mount only, so the demo's "last synced" stat always
  * reads as just now instead of a timestamp that was frozen at write time
@@ -37,6 +39,7 @@ export default function DatacenterPage() {
   const { t, lang } = useLanguage();
   const dc = t.datacenter;
   const { all: projectBank } = useProjectBank();
+  const { withSubmissions } = useReportingSubmissions();
   const lastSync = useNowStamp();
 
   const docs = allDocuments();
@@ -49,6 +52,10 @@ export default function DatacenterPage() {
   const incompleteProjects = projectBank.filter(
     (p) => (lang === "sv" ? p.missingFields_sv : p.missingFields_en).length > 0
   );
+
+  const reportingEvents = awardedProjects.flatMap((p) => withSubmissions(p).reportingEvents);
+  const upcomingReportsCount = reportingEvents.filter((e) => e.status === "upcoming").length;
+  const reportsNeedingRevisionCount = reportingEvents.filter((e) => e.status === "revision-requested").length;
 
   return (
     <>
@@ -68,6 +75,8 @@ export default function DatacenterPage() {
           <StatTile label={dc.statDocuments} value={docs.length} />
           <StatTile label={dc.statDocumentsNeedUpdate} value={docsNeedingUpdate.length} />
           <StatTile label={dc.statLastSync} value={lastSync ?? "…"} />
+          <StatTile label={dc.statUpcomingReports} value={upcomingReportsCount} />
+          <StatTile label={dc.statReportsNeedingRevision} value={reportsNeedingRevisionCount} />
         </div>
 
         <section className="mt-10">

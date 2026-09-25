@@ -44,6 +44,23 @@ export const fundingCalls: FundingCall[] = [
       { id: "d7", type: "reporting", title_sv: "Rapporteringsanvisningar", title_en: "Reporting instructions", updatedAt: "2025-09-10", needsUpdate: true },
       { id: "d8", type: "template", title_sv: "Mall: projektlogik", title_en: "Template: project logic", updatedAt: "2026-01-15", needsUpdate: false },
     ],
+    reportingRequirements: {
+      periodicity: "annual",
+      interimReportsRequired: 2,
+      requiresAuditAboveSEK: 5_000_000,
+      interimDocuments_sv: ["Lägesrapport (teknisk och ekonomisk)", "Sammanställning av indikatorutfall"],
+      interimDocuments_en: ["Progress report (technical and financial)", "Indicator outturn summary"],
+      finalReportDocuments_sv: [
+        "Slutrapport (teknisk och ekonomisk)",
+        "Revisionsintyg",
+        "Sammanställning av spridningsinsatser",
+      ],
+      finalReportDocuments_en: [
+        "Final report (technical and financial)",
+        "Auditor's certificate",
+        "Dissemination summary",
+      ],
+    },
   },
   {
     id: "erdf-2027-digital-cities",
@@ -112,6 +129,23 @@ export const fundingCalls: FundingCall[] = [
       { id: "d3", type: "criteria", title_sv: "Bedömningskriterier", title_en: "Evaluation criteria", updatedAt: "2026-07-01", needsUpdate: false },
       { id: "d4", type: "reporting", title_sv: "Rapporteringsanvisningar", title_en: "Reporting instructions", updatedAt: "2024-12-01", needsUpdate: true },
     ],
+    reportingRequirements: {
+      periodicity: "quarterly",
+      interimReportsRequired: 6,
+      requiresAuditAboveSEK: 2_000_000,
+      interimDocuments_sv: ["Deltagarrapport (kön, ålder, sysselsättningsstatus)", "Ekonomisk delredovisning"],
+      interimDocuments_en: ["Participant report (gender, age, employment status)", "Partial financial statement"],
+      finalReportDocuments_sv: [
+        "Slutrapport med måluppfyllelse",
+        "Utvärdering av jämställdhetsintegrering",
+        "Revisionsintyg",
+      ],
+      finalReportDocuments_en: [
+        "Final report on target achievement",
+        "Gender mainstreaming evaluation",
+        "Auditor's certificate",
+      ],
+    },
   },
   {
     id: "interreg-2027-nordic-climate",
