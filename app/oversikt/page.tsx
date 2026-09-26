@@ -9,7 +9,8 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useOngoingApplications } from "@/lib/hooks/useOngoingApplications";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
-import { fundingCalls, allDocuments, findCall } from "@/lib/data/fundingCalls";
+import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
+import { findCall } from "@/lib/data/fundingCalls";
 import { awardedProjects, nextUpcomingReport } from "@/lib/data/awardedProjects";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeBestMatchForEntry, computePortfolioEconomics } from "@/lib/matching/portfolio";
@@ -25,6 +26,7 @@ export default function OversiktPage() {
   const bv = t.bevakning;
   const ap = t.awardedProjects;
   const { all: projectBank } = useProjectBank();
+  const { all: fundingCalls } = useFundingCalls();
   const { applications: ongoingApplications, hydrated: ongoingHydrated } = useOngoingApplications();
   const { withSubmissions } = useReportingSubmissions();
   const [role, setRole] = useState<Role>("ledning");
@@ -35,10 +37,10 @@ export default function OversiktPage() {
       projectBank
         .map((entry) => ({ entry, match: computeBestMatchForEntry(entry, fundingCalls) }))
         .sort((a, b) => (b.match?.score ?? -1) - (a.match?.score ?? -1)),
-    [projectBank]
+    [projectBank, fundingCalls]
   );
 
-  const economics = useMemo(() => computePortfolioEconomics(projectBank, fundingCalls), [projectBank]);
+  const economics = useMemo(() => computePortfolioEconomics(projectBank, fundingCalls), [projectBank, fundingCalls]);
 
   const statusCounts = useMemo(() => {
     const counts = new Map<ProjectStatus, number>();
@@ -48,7 +50,7 @@ export default function OversiktPage() {
 
   const upcomingDeadlines = useMemo(
     () => [...fundingCalls].sort((a, b) => a.deadlineMonthsFromNow - b.deadlineMonthsFromNow).slice(0, 3),
-    []
+    [fundingCalls]
   );
 
   const upcomingReports = useMemo(
@@ -65,7 +67,13 @@ export default function OversiktPage() {
     [withSubmissions]
   );
 
-  const docsNeedingUpdate = useMemo(() => allDocuments().filter((d) => d.needsUpdate), []);
+  const docsNeedingUpdate = useMemo(
+    () =>
+      fundingCalls
+        .flatMap((c) => c.documents.map((d) => ({ ...d, callId: c.id })))
+        .filter((d) => d.needsUpdate),
+    [fundingCalls]
+  );
 
   const departments = useMemo(
     () => Array.from(new Set(projectBank.map((p) => (lang === "sv" ? p.department_sv : p.department_en)))),

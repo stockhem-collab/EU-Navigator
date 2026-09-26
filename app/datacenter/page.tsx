@@ -6,9 +6,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
-import { fundingCalls, allDocuments } from "@/lib/data/fundingCalls";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
+import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { awardedProjects } from "@/lib/data/awardedProjects";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 
@@ -39,10 +39,11 @@ export default function DatacenterPage() {
   const { t, lang } = useLanguage();
   const dc = t.datacenter;
   const { all: projectBank } = useProjectBank();
+  const { all: fundingCalls } = useFundingCalls();
   const { withSubmissions } = useReportingSubmissions();
   const lastSync = useNowStamp();
 
-  const docs = allDocuments();
+  const docs = fundingCalls.flatMap((c) => c.documents.map((d) => ({ ...d, callId: c.id })));
   const docsNeedingUpdate = docs.filter((d) => d.needsUpdate);
   const openCalls = fundingCalls.filter((c) => c.status === "open");
   const upcomingCalls = fundingCalls.filter((c) => c.status === "upcoming");
@@ -57,12 +58,24 @@ export default function DatacenterPage() {
   const upcomingReportsCount = reportingEvents.filter((e) => e.status === "upcoming").length;
   const reportsNeedingRevisionCount = reportingEvents.filter((e) => e.status === "revision-requested").length;
 
+  const callsWithStructuredEligibility = fundingCalls.filter((c) => c.applicantTypes && c.applicantTypes.length > 0).length;
+
   return (
     <>
       <Header />
       <main className="section">
-        <h1 className="text-2xl font-bold text-navy-900">{dc.title}</h1>
-        <p className="mt-2 text-sm text-navy-600">{dc.subtitle}</p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-navy-900">{dc.title}</h1>
+            <p className="mt-2 text-sm text-navy-600">{dc.subtitle}</p>
+          </div>
+          <Link
+            href="/datacenter/import-utlysning"
+            className="shrink-0 rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
+          >
+            {dc.importCallButton}
+          </Link>
+        </div>
 
         <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           <StatTile label={dc.statProjectIdeas} value={projectBank.length} />
@@ -77,6 +90,7 @@ export default function DatacenterPage() {
           <StatTile label={dc.statLastSync} value={lastSync ?? "…"} />
           <StatTile label={dc.statUpcomingReports} value={upcomingReportsCount} />
           <StatTile label={dc.statReportsNeedingRevision} value={reportsNeedingRevisionCount} />
+          <StatTile label={dc.statStructuredEligibility} value={`${callsWithStructuredEligibility} / ${fundingCalls.length}`} />
         </div>
 
         <section className="mt-10">

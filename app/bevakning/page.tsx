@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
-import { fundingCalls } from "@/lib/data/fundingCalls";
+import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeMatchesForCall } from "@/lib/matching/portfolio";
 
@@ -17,6 +17,7 @@ export default function BevakningPage() {
   const { t, lang } = useLanguage();
   const bv = t.bevakning;
   const { all: projectBank } = useProjectBank();
+  const { all: fundingCalls } = useFundingCalls();
   const { prefs, hydrated: watchHydrated, toggleCall } = useWatchPreferences();
   const [onlyWatched, setOnlyWatched] = useState(false);
 
@@ -37,7 +38,7 @@ export default function BevakningPage() {
           return { call, program, matches, isWatched };
         })
         .filter((r): r is NonNullable<typeof r> => r !== null),
-    [projectBank, prefs]
+    [projectBank, prefs, fundingCalls]
   );
 
   const visibleRows = onlyWatched ? rows.filter((r) => r.isWatched) : rows;

@@ -6,17 +6,18 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { callsForProgram } from "@/lib/data/fundingCalls";
+import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { fmtSEK } from "@/lib/format";
 
 export default function ProgramCallsPage() {
   const params = useParams<{ programId: string }>();
   const { t, lang } = useLanguage();
   const db = t.euDatabase;
+  const { all: fundingCalls } = useFundingCalls();
 
   const program = findProgram(params.programId);
   if (!program) return notFound();
-  const calls = callsForProgram(program.id);
+  const calls = fundingCalls.filter((c) => c.programId === program.id);
 
   return (
     <>

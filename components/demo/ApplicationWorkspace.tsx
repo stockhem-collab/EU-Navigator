@@ -181,12 +181,20 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
                 <div className="mt-4 space-y-4">
                   {logic.map((row) => {
                     const content = lang === "sv" ? row.content_sv : row.content_en;
+                    const isEdited = sectionDrafts[row.label_sv] !== undefined;
                     return (
                       <div key={row.label_sv} className="rounded-xl border border-navy-100 bg-white p-4">
                         <div className="flex items-center justify-between gap-3">
-                          <label className="text-sm font-semibold text-navy-700">
-                            {lang === "sv" ? row.label_sv : row.label_en}
-                          </label>
+                          <div className="flex items-center gap-2">
+                            <label className="text-sm font-semibold text-navy-700">
+                              {lang === "sv" ? row.label_sv : row.label_en}
+                            </label>
+                            <span
+                              className={`badge ${isEdited ? "bg-gold-100 text-gold-800" : "bg-navy-50 text-navy-400"}`}
+                            >
+                              {isEdited ? ws.fieldSourceEdited : ws.fieldSourceTemplate}
+                            </span>
+                          </div>
                           <button
                             type="button"
                             onClick={() => resetSection(row.label_sv)}
@@ -395,6 +403,20 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
                     {lang === "sv" ? coach.suggestion_sv : coach.suggestion_en}
                   </p>
                 </div>
+
+                {coach.confidence === "low" && (
+                  <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-4">
+                    <p className="text-sm text-amber-800">{coachT.lowConfidenceNote}</p>
+                    <button
+                      type="button"
+                      disabled
+                      title={coachT.requestAiReviewDisabledReason}
+                      className="mt-3 cursor-not-allowed rounded-md border border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-amber-700 opacity-60"
+                    >
+                      {coachT.requestAiReviewButton}
+                    </button>
+                  </div>
+                )}
               </section>
             </div>
           )}

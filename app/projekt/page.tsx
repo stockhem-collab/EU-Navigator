@@ -10,7 +10,8 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { awardedProjects, nextUpcomingReport } from "@/lib/data/awardedProjects";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
-import { fundingCalls, findCall } from "@/lib/data/fundingCalls";
+import { findCall } from "@/lib/data/fundingCalls";
+import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeBestMatchForEntry } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
@@ -35,6 +36,7 @@ function MyProjectsPageInner() {
   const ov = t.oversikt;
 
   const { all: projectBank } = useProjectBank();
+  const { all: fundingCalls } = useFundingCalls();
   const { withSubmissions } = useReportingSubmissions();
 
   // Arriving from Översikt's "Projekt per status" tiles (?status=...) opens
@@ -51,7 +53,7 @@ function MyProjectsPageInner() {
       projectBank
         .map((entry) => ({ entry, match: computeBestMatchForEntry(entry, fundingCalls) }))
         .sort((a, b) => (b.match?.score ?? -1) - (a.match?.score ?? -1)),
-    [projectBank]
+    [projectBank, fundingCalls]
   );
 
   const statusCounts = useMemo(() => {

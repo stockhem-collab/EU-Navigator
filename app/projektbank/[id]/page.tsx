@@ -9,7 +9,7 @@ import StatusBadge from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
-import { fundingCalls } from "@/lib/data/fundingCalls";
+import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { projectRoleLabels } from "@/lib/data/users";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
@@ -56,6 +56,7 @@ export default function ProjectBankDetailPage() {
   // client. Seeded entries render immediately either way; imported ones
   // appear once `hydrated` flips true.
   const { all, hydrated, updateEntry } = useProjectBank();
+  const { all: fundingCalls } = useFundingCalls();
   const { users } = useUsersDirectory();
   const entry = all.find((p) => p.id === params.id);
   const assignedUsers = entry ? users.filter((u) => u.projectRoles.some((r) => r.projectId === entry.id)) : [];

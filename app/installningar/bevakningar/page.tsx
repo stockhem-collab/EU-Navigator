@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useWatchPreferences, NotifyPreferences, DigestFrequency } from "@/lib/hooks/useWatchPreferences";
 import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
-import { findCall } from "@/lib/data/fundingCalls";
+import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import { Sector } from "@/lib/types";
 
@@ -17,12 +17,13 @@ export default function WatchSettingsPage() {
   const ws = t.watchSettings;
   const { prefs, hydrated, toggleSector, toggleProgram, toggleCall, toggleNotify, setDigest, resetAll } =
     useWatchPreferences();
+  const { all: fundingCalls, hydrated: callsHydrated } = useFundingCalls();
 
-  if (!hydrated) return null;
+  if (!hydrated || !callsHydrated) return null;
 
   const watchedCalls = prefs.callIds
     .map((callId) => {
-      const call = findCall(callId);
+      const call = fundingCalls.find((c) => c.id === callId);
       const program = call ? findProgram(call.programId) : undefined;
       return call && program ? { call, program } : null;
     })

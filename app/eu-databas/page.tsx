@@ -5,11 +5,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fundingPrograms } from "@/lib/data/fundingPrograms";
-import { callsForProgram } from "@/lib/data/fundingCalls";
+import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 
 export default function EuDatabasePage() {
   const { t, lang } = useLanguage();
   const db = t.euDatabase;
+  const { all: fundingCalls } = useFundingCalls();
 
   return (
     <>
@@ -22,7 +23,7 @@ export default function EuDatabasePage() {
           {[...fundingPrograms]
             .sort((a, b) => (a.status === b.status ? 0 : a.status === "active" ? -1 : 1))
             .map((program) => {
-              const calls = callsForProgram(program.id);
+              const calls = fundingCalls.filter((c) => c.programId === program.id);
               const docCount = calls.reduce((sum, c) => sum + c.documents.length, 0);
               return (
                 <Link

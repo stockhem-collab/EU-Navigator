@@ -119,6 +119,8 @@ export interface TranslationTree {
       logicTitle: string;
       logicHint: string;
       resetField: string;
+      fieldSourceTemplate: string;
+      fieldSourceEdited: string;
       reviewerTitle: string;
       reviewerSubtitle: string;
       budgetTitle: string;
@@ -168,6 +170,9 @@ export interface TranslationTree {
       impact: string;
       evidence: string;
       suggestionLabel: string;
+      lowConfidenceNote: string;
+      requestAiReviewButton: string;
+      requestAiReviewDisabledReason: string;
     };
   };
   projectBank: {
@@ -286,12 +291,52 @@ export interface TranslationTree {
     statLastSync: string;
     statUpcomingReports: string;
     statReportsNeedingRevision: string;
+    statStructuredEligibility: string;
     documentsNeedingUpdateTitle: string;
     incompleteProjectsTitle: string;
     incompleteProjectsBody: string;
     viewCallLink: string;
     fieldsMissing: (n: number) => string;
     openLink: string;
+    importCallButton: string;
+  };
+  callImport: {
+    title: string;
+    subtitle: string;
+    back: string;
+    pasteLabel: string;
+    pastePlaceholder: string;
+    parseButton: string;
+    parsedNote: string;
+    detectedBadge: string;
+    defaultBadge: string;
+    fieldProgram: string;
+    fieldTitleSv: string;
+    fieldTitleEn: string;
+    fieldStatus: string;
+    statusOpen: string;
+    statusUpcoming: string;
+    fieldBudget: string;
+    fieldMinGrant: string;
+    fieldMaxGrant: string;
+    fieldPartnership: string;
+    fieldEligibleSv: string;
+    fieldEligibleEn: string;
+    fieldApplicantTypes: string;
+    fieldPriorities: string;
+    fieldPrioritiesHint: string;
+    fieldPeriodicity: string;
+    fieldInterimReports: string;
+    fieldAuditThreshold: string;
+    noAuditThreshold: string;
+    saveButton: string;
+    requiredFieldsError: string;
+    importedListTitle: string;
+    noImportedCalls: string;
+    removeButton: string;
+    provenanceAssisted: string;
+    provenanceManual: string;
+    importedAtLabel: (date: string) => string;
   };
   awardedProjects: {
     title: string;
@@ -764,6 +809,8 @@ export const translations: Record<Lang, TranslationTree> = {
         logicTitle: "Projektlogik",
         logicHint: "AI-genererat förslag — redigera direkt i fälten nedan.",
         resetField: "Återställ AI-förslag",
+        fieldSourceTemplate: "Mallförslag",
+        fieldSourceEdited: "Redigerat av dig",
         reviewerTitle: "AI-granskning",
         reviewerSubtitle: "Kontrollpunkter innan ansökan lämnas in",
         budgetTitle: "Budget & medfinansiering",
@@ -821,6 +868,10 @@ export const translations: Record<Lang, TranslationTree> = {
         impact: "Impact",
         evidence: "Evidence",
         suggestionLabel: "Föreslagen komplettering",
+        lowConfidenceNote:
+          "Texten är för kort eller saknar tydliga mönster — regelmotorns bedömning ovan är därför ospecifik. Det här är precis den situation där en riktig AI-granskning (inte aktiverad i denna demo) skulle tillföra mest.",
+        requestAiReviewButton: "Begär AI-bedömning",
+        requestAiReviewDisabledReason: "Kräver en AI-tjänst kopplad till systemet — inte aktiverad i denna demo.",
       },
     },
     projectBank: {
@@ -950,6 +1001,7 @@ export const translations: Record<Lang, TranslationTree> = {
       statLastSync: "Senaste datasynk",
       statUpcomingReports: "Kommande rapporteringar",
       statReportsNeedingRevision: "Rapporter som kräver komplettering",
+      statStructuredEligibility: "Utlysningar med strukturerad behörighet",
       documentsNeedingUpdateTitle: "Dokument som behöver uppdateras",
       incompleteProjectsTitle: "Projekt med ofullständig information",
       incompleteProjectsBody:
@@ -957,6 +1009,46 @@ export const translations: Record<Lang, TranslationTree> = {
       viewCallLink: "Visa utlysning →",
       fieldsMissing: (n) => `${n} fält saknas`,
       openLink: "Öppna →",
+      importCallButton: "Importera ny utlysning",
+    },
+    callImport: {
+      title: "Importera ny utlysning",
+      subtitle:
+        "Klistra in utlysningstexten. Ett regelbaserat förslag (inte en AI-tjänst — se resonemanget om att minska AI-beroendet) föreslår fält att fylla i, men inget sparas förrän du har granskat och godkänt varje fält.",
+      back: "Tillbaka till Datacenter",
+      pasteLabel: "Utlysningstext",
+      pastePlaceholder: "Klistra in hela eller delar av utlysningstexten här…",
+      parseButton: "Tolka texten",
+      parsedNote: "Förslag inläst nedan — kontrollera särskilt de fält som är märkta \"Standardvärde\".",
+      detectedBadge: "Hittat i texten",
+      defaultBadge: "Standardvärde — kontrollera",
+      fieldProgram: "Program/fond",
+      fieldTitleSv: "Titel (svenska)",
+      fieldTitleEn: "Titel (engelska)",
+      fieldStatus: "Status",
+      statusOpen: "Öppen",
+      statusUpcoming: "Kommande",
+      fieldBudget: "Total budget (SEK)",
+      fieldMinGrant: "Lägsta bidrag (SEK)",
+      fieldMaxGrant: "Högsta bidrag (SEK)",
+      fieldPartnership: "Kräver partnerskap/konsortium",
+      fieldEligibleSv: "Behöriga sökande (svenska)",
+      fieldEligibleEn: "Behöriga sökande (engelska)",
+      fieldApplicantTypes: "Sökandekategorier",
+      fieldPriorities: "Prioriteringar",
+      fieldPrioritiesHint: "En prioritering per rad.",
+      fieldPeriodicity: "Rapporteringsfrekvens",
+      fieldInterimReports: "Antal delrapporter som krävs",
+      fieldAuditThreshold: "Revisionsintyg krävs över (SEK, lämna tomt om ej tillämpligt)",
+      noAuditThreshold: "Inget krav på revisionsintyg",
+      saveButton: "Spara utlysning",
+      requiredFieldsError: "Program, titel (båda språk) och en unik utlysnings-id krävs.",
+      importedListTitle: "Tidigare importerade utlysningar",
+      noImportedCalls: "Inga utlysningar har importerats ännu.",
+      removeButton: "Ta bort",
+      provenanceAssisted: "Inläst via granskat importflöde",
+      provenanceManual: "Manuellt inlagd",
+      importedAtLabel: (date) => `Importerad ${date}`,
     },
     awardedProjects: {
       title: "Mina projekt",
@@ -1433,6 +1525,8 @@ export const translations: Record<Lang, TranslationTree> = {
         logicTitle: "Project logic",
         logicHint: "AI-generated draft — edit directly in the fields below.",
         resetField: "Reset to AI suggestion",
+        fieldSourceTemplate: "Template suggestion",
+        fieldSourceEdited: "Edited by you",
         reviewerTitle: "AI review",
         reviewerSubtitle: "Checkpoints before submitting the application",
         budgetTitle: "Budget & co-financing",
@@ -1489,6 +1583,10 @@ export const translations: Record<Lang, TranslationTree> = {
         impact: "Impact",
         evidence: "Evidence",
         suggestionLabel: "Suggested addition",
+        lowConfidenceNote:
+          "The text is too short or lacks clear patterns — the rule engine's assessment above is therefore unspecific. This is exactly the situation where a real AI review (not enabled in this demo) would add the most value.",
+        requestAiReviewButton: "Request AI review",
+        requestAiReviewDisabledReason: "Requires an AI service connected to the system — not enabled in this demo.",
       },
     },
     projectBank: {
@@ -1618,12 +1716,53 @@ export const translations: Record<Lang, TranslationTree> = {
       statLastSync: "Last data sync",
       statUpcomingReports: "Upcoming reports",
       statReportsNeedingRevision: "Reports needing revision",
+      statStructuredEligibility: "Calls with structured eligibility",
       documentsNeedingUpdateTitle: "Documents needing an update",
       incompleteProjectsTitle: "Projects with incomplete information",
       incompleteProjectsBody: "These project-bank entries are missing information required for reliable EU matching.",
       viewCallLink: "View call →",
       fieldsMissing: (n) => `${n} fields missing`,
       openLink: "Open →",
+      importCallButton: "Import a new call",
+    },
+    callImport: {
+      title: "Import a new call",
+      subtitle:
+        "Paste the call text. A rule-based first pass (not an AI service — see the AI-dependency discussion this tool grew out of) suggests fields to fill in, but nothing is saved until every field has been reviewed and approved by you.",
+      back: "Back to Datacenter",
+      pasteLabel: "Call text",
+      pastePlaceholder: "Paste all or part of the call text here…",
+      parseButton: "Parse text",
+      parsedNote: "Suggestions loaded below — check the fields marked \"Default value\" especially closely.",
+      detectedBadge: "Found in the text",
+      defaultBadge: "Default value — check this",
+      fieldProgram: "Programme/fund",
+      fieldTitleSv: "Title (Swedish)",
+      fieldTitleEn: "Title (English)",
+      fieldStatus: "Status",
+      statusOpen: "Open",
+      statusUpcoming: "Upcoming",
+      fieldBudget: "Total budget (SEK)",
+      fieldMinGrant: "Minimum grant (SEK)",
+      fieldMaxGrant: "Maximum grant (SEK)",
+      fieldPartnership: "Requires partnership/consortium",
+      fieldEligibleSv: "Eligible applicants (Swedish)",
+      fieldEligibleEn: "Eligible applicants (English)",
+      fieldApplicantTypes: "Applicant categories",
+      fieldPriorities: "Priorities",
+      fieldPrioritiesHint: "One priority per line.",
+      fieldPeriodicity: "Reporting frequency",
+      fieldInterimReports: "Interim reports required",
+      fieldAuditThreshold: "Auditor's certificate required above (SEK, leave blank if not applicable)",
+      noAuditThreshold: "No auditor's certificate requirement",
+      saveButton: "Save call",
+      requiredFieldsError: "Programme, title (both languages) and a unique call id are required.",
+      importedListTitle: "Previously imported calls",
+      noImportedCalls: "No calls have been imported yet.",
+      removeButton: "Remove",
+      provenanceAssisted: "Added via reviewed import flow",
+      provenanceManual: "Manually entered",
+      importedAtLabel: (date) => `Imported ${date}`,
     },
     awardedProjects: {
       title: "My projects",

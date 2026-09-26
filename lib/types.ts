@@ -61,6 +61,23 @@ export interface ApplicationTemplateSection {
   instructions_en: string;
 }
 
+/** Structured applicant-eligibility categories — the typed alternative to
+ * parsing eligibleApplicants_sv/en free text, per docs/DATA_MODEL.md §1.5's
+ * "hybrid approach" (real, structured columns for the checks that are
+ * genuinely common shapes, free text for the rest). Mirrors
+ * Organisation.organisation_type in that doc's §1.9. */
+export type ApplicantType =
+  | "municipality"
+  | "region"
+  | "municipal-company"
+  | "university"
+  | "training-provider"
+  | "sme"
+  | "large-enterprise"
+  | "ngo"
+  | "national-authority"
+  | "research-institute";
+
 export interface FundingCall {
   id: string;
   programId: string;
@@ -74,6 +91,12 @@ export interface FundingCall {
   requiresPartnership: boolean;
   eligibleApplicants_sv: string;
   eligibleApplicants_en: string;
+  /** The structured reading of eligibleApplicants_sv/en, when the free text
+   * maps cleanly onto one or more ApplicantType categories. Undefined =
+   * not broken out yet — the free text is still the source of truth, this
+   * is additive. Datacenter tracks the split so it's visible how much of
+   * the call catalogue still relies on free text for this check. */
+  applicantTypes?: ApplicantType[];
   priorities_sv: string[];
   priorities_en: string[];
   extraKeywords: string[]; // in addition to the programme's own keywords
@@ -87,6 +110,17 @@ export interface FundingCall {
    * ReportingRequirement (defined further down, alongside AwardedProject).
    * Undefined = not on file yet. */
   reportingRequirements?: ReportingRequirement;
+  /** How this call's structured fields (evaluationCriteria,
+   * applicationTemplate, reportingRequirements, applicantTypes) got into
+   * the system. Every seeded call here is "manual" (hand-authored from the
+   * real call documents). "assisted-import" marks a call added through
+   * Datacenter's utlysningsimport tool: its fields started as a rule-based
+   * reading of pasted call text and were reviewed and edited by a person
+   * before saving — never auto-published from the extraction alone. */
+  extractionSource?: "manual" | "assisted-import";
+  /** ISO date the call was added via the import tool. Undefined for every
+   * hand-authored seed call. */
+  importedAt?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -485,10 +519,18 @@ export interface ApplicationVersion {
   sectionDrafts: Record<string, string>;
 }
 
+/** How much signal the deterministic heuristics actually had to go on —
+ * "low" is the natural hand-off point to a real, human-in-the-loop AI
+ * review, rather than trusting a generic heuristic verdict on a
+ * description too short or unpatterned for regex to say anything specific
+ * about. See ApplicationWorkspace's coach panel. */
+export type CoachConfidence = "low" | "medium" | "high";
+
 export interface SectionCoachResult {
   relevance: number; // 0-10
   impact: number;
   evidence: number;
+  confidence: CoachConfidence;
   feedback_sv: string;
   feedback_en: string;
   suggestion_sv: string;

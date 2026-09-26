@@ -15,6 +15,12 @@ export function analyzeSection(project: ProjectInput, match: MatchResult): Secti
   const impact = hasQuantifiedEffect ? 8 : 3;
   const isDetailed = project.description.length > 180;
   const evidence = hasQuantifiedEffect && isDetailed ? 8 : hasQuantifiedEffect || isDetailed ? 5 : 3;
+  // Neither signal found — the heuristics have nothing concrete to go on,
+  // so the feedback below is necessarily generic. That's the natural
+  // hand-off point to a real, human-reviewed AI reading of the text,
+  // rather than a rule engine guessing at prose it found no pattern in.
+  const confidence: SectionCoachResult["confidence"] =
+    hasQuantifiedEffect && isDetailed ? "high" : hasQuantifiedEffect || isDetailed ? "medium" : "low";
 
   const sectorSv = sectorLabel(project.sector, "sv");
   const sectorEn = sectorLabel(project.sector, "en");
@@ -35,5 +41,5 @@ export function analyzeSection(project: ProjectInput, match: MatchResult): Secti
     ? `"${project.description.trim().slice(0, 140)}${project.description.length > 140 ? "…" : ""}" — add: "The baseline before project start is X, implying an expected improvement of Y."`
     : `Suggested addition: "The project is expected to deliver a measurable effect in ${sectorEn}, equivalent to approximately X units/percent per year compared with the current level."`;
 
-  return { relevance, impact, evidence, feedback_sv, feedback_en, suggestion_sv, suggestion_en };
+  return { relevance, impact, evidence, confidence, feedback_sv, feedback_en, suggestion_sv, suggestion_en };
 }

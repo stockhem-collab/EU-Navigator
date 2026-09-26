@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { findAnyProjectBankEntry } from "@/lib/hooks/useProjectBank";
-import { findCall } from "@/lib/data/fundingCalls";
+import { findAnyCall } from "@/lib/hooks/useFundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { FundingCall, FundingProgram, ProjectBankEntry } from "@/lib/types";
 
@@ -38,7 +38,7 @@ function readAll(): OngoingApplication[] {
       // A stale key from a since-deleted Projektbank entry or a call that no
       // longer exists in the seed data — nothing to resume, skip quietly.
       const entry = findAnyProjectBankEntry(customerProjectId);
-      const call = findCall(callId);
+      const call = findAnyCall(callId);
       if (!entry || !call) continue;
       const program = findProgram(call.programId);
       if (!program) continue;

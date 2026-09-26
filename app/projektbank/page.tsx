@@ -9,7 +9,7 @@ import CsvImportPanel from "@/components/projectbank/CsvImportPanel";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
-import { fundingCalls } from "@/lib/data/fundingCalls";
+import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { primaryProjectAssignment, projectRoleLabels } from "@/lib/data/users";
 import { computeBestMatchForEntry, computePortfolioEconomics } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
@@ -18,6 +18,7 @@ export default function ProjectBankPage() {
   const { t, lang } = useLanguage();
   const pb = t.projectBank;
   const { all: projectBank, imported, addImported, removeImported, clearImported } = useProjectBank();
+  const { all: fundingCalls } = useFundingCalls();
   const { users } = useUsersDirectory();
   const importedIds = useMemo(() => new Set(imported.map((p) => p.id)), [imported]);
 
@@ -29,14 +30,14 @@ export default function ProjectBankPage() {
       projectBank
         .map((entry) => ({ entry, match: computeBestMatchForEntry(entry, fundingCalls) }))
         .sort((a, b) => (b.match?.score ?? -1) - (a.match?.score ?? -1)),
-    [projectBank]
+    [projectBank, fundingCalls]
   );
 
   const proceedCount = rows.filter((r) => r.match && r.match.recommendation === "proceed").length;
   const avgBest =
     rows.length > 0 ? Math.round(rows.reduce((sum, r) => sum + (r.match?.score ?? 0), 0) / rows.length) : 0;
 
-  const economics = useMemo(() => computePortfolioEconomics(projectBank, fundingCalls), [projectBank]);
+  const economics = useMemo(() => computePortfolioEconomics(projectBank, fundingCalls), [projectBank, fundingCalls]);
 
   return (
     <>

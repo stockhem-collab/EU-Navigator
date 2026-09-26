@@ -1,4 +1,23 @@
-import { FundingCall } from "@/lib/types";
+import { ApplicantType, FundingCall, Lang } from "@/lib/types";
+
+const APPLICANT_TYPE_LABELS: Record<ApplicantType, { sv: string; en: string }> = {
+  municipality: { sv: "Kommun", en: "Municipality" },
+  region: { sv: "Region", en: "Region" },
+  "municipal-company": { sv: "Kommunalt bolag", en: "Municipal company" },
+  university: { sv: "Lärosäte", en: "University" },
+  "training-provider": { sv: "Utbildningsanordnare", en: "Training provider" },
+  sme: { sv: "SME", en: "SME" },
+  "large-enterprise": { sv: "Stort företag", en: "Large enterprise" },
+  ngo: { sv: "Civilsamhällesorganisation", en: "NGO" },
+  "national-authority": { sv: "Statlig myndighet", en: "National authority" },
+  "research-institute": { sv: "Forskningsinstitut", en: "Research institute" },
+};
+
+export function applicantTypeLabel(type: ApplicantType, lang: Lang): string {
+  return APPLICANT_TYPE_LABELS[type][lang];
+}
+
+export const ALL_APPLICANT_TYPES = Object.keys(APPLICANT_TYPE_LABELS) as ApplicantType[];
 
 // Level 2 (utlysning) + embedded level 3 (dokument). This is the AI's
 // actual "context package" per call — everything scoring, the application
@@ -17,6 +36,7 @@ export const fundingCalls: FundingCall[] = [
     requiresPartnership: false,
     eligibleApplicants_sv: "Kommuner, regioner, kommunala bolag och offentliga myndigheter inom EU.",
     eligibleApplicants_en: "Municipalities, regions, municipal companies and public authorities within the EU.",
+    applicantTypes: ["municipality", "region", "municipal-company", "national-authority"],
     priorities_sv: [
       "Mätbar minskning av energianvändning och utsläpp",
       "Skalbarhet och spridning till andra offentliga organisationer",
@@ -75,6 +95,7 @@ export const fundingCalls: FundingCall[] = [
     requiresPartnership: false,
     eligibleApplicants_sv: "Svenska kommuner, regioner och kommunala bolag.",
     eligibleApplicants_en: "Swedish municipalities, regions and municipal companies.",
+    applicantTypes: ["municipality", "region", "municipal-company"],
     priorities_sv: [
       "Digitalisering av offentlig service",
       "Hållbar mobilitet och stadsutveckling",
@@ -114,6 +135,7 @@ export const fundingCalls: FundingCall[] = [
     requiresPartnership: false,
     eligibleApplicants_sv: "Kommuner, regioner och utbildningsanordnare i Sverige.",
     eligibleApplicants_en: "Municipalities, regions and training providers in Sweden.",
+    applicantTypes: ["municipality", "region", "training-provider"],
     priorities_sv: ["Kompetensförsörjning inom välfärden", "Social inkludering", "Jämställd arbetsmarknad"],
     priorities_en: ["Skills supply in welfare services", "Social inclusion", "Gender-equal labour market"],
     extraKeywords: ["kompetenslyft", "upskilling"],

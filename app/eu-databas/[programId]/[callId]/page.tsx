@@ -6,7 +6,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { findCall } from "@/lib/data/fundingCalls";
+import { applicantTypeLabel } from "@/lib/data/fundingCalls";
+import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { fundedProjectsForProgram, computeProgramStats } from "@/lib/data/fundedProjects";
 import { topKeywords } from "@/lib/matching/patternAnalysis";
 import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
@@ -18,10 +19,18 @@ export default function CallDetailPage() {
   const db = t.euDatabase;
   const bv = t.bevakning;
   const { prefs, toggleCall } = useWatchPreferences();
+  // A call added via Datacenter's import tool only exists in this browser's
+  // localStorage, which isn't available during the server render — so
+  // "not found" can't be decided until the hook has actually checked the
+  // client (same reasoning as projektbank/[id]'s imported-entry handling).
+  const { all: fundingCalls, hydrated } = useFundingCalls();
 
   const program = findProgram(params.programId);
-  const call = findCall(params.callId);
-  if (!program || !call || call.programId !== program.id) return notFound();
+  const call = fundingCalls.find((c) => c.id === params.callId);
+  if (!program || !call || call.programId !== program.id) {
+    if (!hydrated) return null;
+    return notFound();
+  }
 
   const refProjects = fundedProjectsForProgram(program.id);
   const stats = computeProgramStats(refProjects);
@@ -39,6 +48,9 @@ export default function CallDetailPage() {
           <div>
             <p className="text-xs font-semibold uppercase text-navy-400">{program.shortName}</p>
             <h1 className="mt-1 text-2xl font-bold text-navy-900">{lang === "sv" ? call.title_sv : call.title_en}</h1>
+            {call.extractionSource === "assisted-import" && (
+              <p className="mt-1 text-xs italic text-navy-400">{t.callImport.provenanceAssisted}</p>
+            )}
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
             <span
@@ -80,6 +92,15 @@ export default function CallDetailPage() {
           <p className="mt-2 text-sm text-navy-700">
             {lang === "sv" ? call.eligibleApplicants_sv : call.eligibleApplicants_en}
           </p>
+          {call.applicantTypes && call.applicantTypes.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {call.applicantTypes.map((type) => (
+                <span key={type} className="badge bg-navy-50 text-navy-700">
+                  {applicantTypeLabel(type, lang)}
+                </span>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">

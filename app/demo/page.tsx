@@ -7,7 +7,8 @@ import Footer from "@/components/Footer";
 import ProjectForm from "@/components/demo/ProjectForm";
 import MatchResults from "@/components/demo/MatchResults";
 import ApplicationWorkspace from "@/components/demo/ApplicationWorkspace";
-import { fundingCalls, findCall } from "@/lib/data/fundingCalls";
+import { findCall } from "@/lib/data/fundingCalls";
+import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { findAnyProjectBankEntry } from "@/lib/hooks/useProjectBank";
 import { computeMatches, scoreMatch } from "@/lib/matching/scoreMatch";
@@ -33,6 +34,7 @@ function DemoPageInner() {
   const preselectedCallId = searchParams.get("call");
   const preselectedProjectId = searchParams.get("project");
   const { profile: fundingProfile } = useFundingProfile();
+  const { all: fundingCalls } = useFundingCalls();
 
   // Coming here with both ?project= and ?call= — e.g. "Fortsätt" on a saved
   // project's match, or the Översikt "Pågående ansökningar" quick-entry
@@ -41,6 +43,16 @@ function DemoPageInner() {
   // form (which would otherwise re-show pre-filled fields the user must
   // re-submit) and landing directly in the workspace is what makes that
   // "quick" rather than one extra click for no reason.
+  //
+  // This lazy initializer only ever sees the seed call catalogue (findCall,
+  // not the imported-calls hook): it runs once on the very first render,
+  // before useFundingCalls' own effect has read localStorage, so a call
+  // added via Datacenter's import tool isn't resolvable yet at this point.
+  // The practical effect is narrow — resuming a saved draft against an
+  // imported call via this exact deep link falls back to the intake form
+  // instead of jumping straight to the workspace — and avoids a
+  // server/client hydration mismatch that branching this initial state on
+  // localStorage content would otherwise risk.
   const [step, setStep] = useState<Step>(() => {
     if (preselectedProjectId && preselectedCallId) {
       const entry = findAnyProjectBankEntry(preselectedProjectId);
@@ -72,7 +84,7 @@ function DemoPageInner() {
               // Coming from a specific call in the EU database ("Hjälp mig
               // söka") locks the AI straight into that call's context,
               // skipping the general results list.
-              const preselectedCall = preselectedCallId ? findCall(preselectedCallId) : undefined;
+              const preselectedCall = preselectedCallId ? fundingCalls.find((c) => c.id === preselectedCallId) : undefined;
               const preselectedProgram = preselectedCall ? findProgram(preselectedCall.programId) : undefined;
 
               if (preselectedCall && preselectedProgram) {
