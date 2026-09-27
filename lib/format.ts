@@ -11,3 +11,9 @@ export function fmtSEK(n: number, lang: Lang): string {
 export function fmtPct(n: number): string {
   return `${Math.round(n * 100)}%`;
 }
+
+export function fmtFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}

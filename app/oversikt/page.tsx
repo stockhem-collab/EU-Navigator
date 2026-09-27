@@ -9,6 +9,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useOngoingApplications } from "@/lib/hooks/useOngoingApplications";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
+import { useProjectTasks } from "@/lib/hooks/useProjectTasks";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { findCall } from "@/lib/data/fundingCalls";
 import { awardedProjects, nextActionableReport } from "@/lib/data/awardedProjects";
@@ -29,8 +30,27 @@ export default function OversiktPage() {
   const { all: fundingCalls } = useFundingCalls();
   const { applications: ongoingApplications, hydrated: ongoingHydrated } = useOngoingApplications();
   const { withSubmissions } = useReportingSubmissions();
+  const { tasks, hydrated: tasksHydrated } = useProjectTasks();
   const [role, setRole] = useState<Role>("ledning");
   const [department, setDepartment] = useState<string>("all");
+
+  // Every open (not-done) task across the whole portfolio, soonest due
+  // first and undated ones last — the cross-project "what's actually left
+  // to do, right now" view that a single project's own task list can't
+  // give on its own.
+  const openTasks = useMemo(
+    () =>
+      projectBank
+        .flatMap((entry) => (tasks[entry.id] ?? []).filter((task) => !task.done).map((task) => ({ entry, task })))
+        .sort((a, b) => {
+          if (!a.task.dueDate && !b.task.dueDate) return 0;
+          if (!a.task.dueDate) return 1;
+          if (!b.task.dueDate) return -1;
+          return a.task.dueDate.localeCompare(b.task.dueDate);
+        })
+        .slice(0, 6),
+    [projectBank, tasks]
+  );
 
   const rows = useMemo(
     () =>
@@ -154,6 +174,39 @@ export default function OversiktPage() {
                   </div>
                 ))}
               </div>
+            )}
+          </section>
+        )}
+
+        {/* Same "regardless of role" visibility as ongoing applications
+            above — ad-hoc project tasks (see useProjectTasks) are the
+            concrete, per-project to-dos that OrgProcessPanel's generic
+            phase guidance doesn't track. */}
+        {tasksHydrated && (
+          <section className="mt-8">
+            <h2 className="text-lg font-bold text-navy-800">{ov.currentTasksTitle}</h2>
+            <p className="mt-1 text-sm text-navy-500">{ov.currentTasksHint}</p>
+            {openTasks.length === 0 ? (
+              <p className="mt-3 text-sm text-navy-500">{ov.currentTasksNone}</p>
+            ) : (
+              <ul className="mt-3 divide-y divide-navy-50 rounded-xl border border-navy-100 bg-white">
+                {openTasks.map(({ entry, task }) => (
+                  <li key={task.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-navy-400">
+                        {lang === "sv" ? entry.title_sv : entry.title_en}
+                      </p>
+                      <p className="text-sm font-semibold text-navy-800">
+                        {task.text}
+                        {task.dueDate && <span className="ml-2 text-xs font-normal text-navy-400">{pb.taskDueLabel(task.dueDate)}</span>}
+                      </p>
+                    </div>
+                    <Link href={`/projektbank/${entry.id}`} className="shrink-0 text-xs font-semibold text-navy-600 hover:text-navy-900">
+                      {ov.currentTasksViewAll}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             )}
           </section>
         )}

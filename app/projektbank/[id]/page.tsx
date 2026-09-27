@@ -10,13 +10,15 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
+import { useProjectTasks } from "@/lib/hooks/useProjectTasks";
+import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
 import { awardedProjects } from "@/lib/data/awardedProjects";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { projectRoleLabels } from "@/lib/data/users";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import { computeMatchesForEntry, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
 import { computeSimilarProjects } from "@/lib/matching/similarProjects";
-import { fmtSEK } from "@/lib/format";
+import { fmtSEK, fmtFileSize } from "@/lib/format";
 import { ProjectStatus, Sector } from "@/lib/types";
 
 const SECTORS: Sector[] = ["energy", "climate", "digital", "social", "mobility", "education", "health", "research"];
@@ -59,9 +61,14 @@ export default function ProjectBankDetailPage() {
   const { all, hydrated, updateEntry } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
   const { users } = useUsersDirectory();
+  const { tasksFor, addTask, toggleTask, removeTask } = useProjectTasks();
+  const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
   const entry = all.find((p) => p.id === params.id);
   const assignedUsers = entry ? users.filter((u) => u.projectRoles.some((r) => r.projectId === entry.id)) : [];
   const [draft, setDraft] = useState<EditDraft | null>(null);
+  const [newTaskText, setNewTaskText] = useState("");
+  const [newTaskDue, setNewTaskDue] = useState("");
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
 
   if (!entry) {
     if (!hydrated) return null;
@@ -341,6 +348,115 @@ export default function ProjectBankDetailPage() {
               })}
             </ul>
           )}
+        </div>
+
+        <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+          <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.tasksTitle}</h2>
+          <p className="mt-1 text-xs text-navy-400">{pb.tasksHint}</p>
+
+          {tasksFor(entry.id).length === 0 ? (
+            <p className="mt-3 text-sm text-navy-500">{pb.noTasks}</p>
+          ) : (
+            <ul className="mt-3 space-y-1.5">
+              {tasksFor(entry.id).map((task) => (
+                <li key={task.id} className="flex items-center justify-between gap-3 text-sm">
+                  <label className="flex flex-1 items-center gap-2">
+                    <input type="checkbox" checked={task.done} onChange={() => toggleTask(entry.id, task.id)} />
+                    <span className={task.done ? "text-navy-400 line-through" : "text-navy-800"}>{task.text}</span>
+                    {task.dueDate && <span className="text-xs text-navy-400">{pb.taskDueLabel(task.dueDate)}</span>}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removeTask(entry.id, task.id)}
+                    className="shrink-0 text-xs font-medium text-navy-400 hover:text-amber-700"
+                  >
+                    {pb.taskRemoveLabel}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-navy-50 pt-4">
+            <input
+              type="text"
+              value={newTaskText}
+              onChange={(e) => setNewTaskText(e.target.value)}
+              placeholder={pb.taskAddPlaceholder}
+              className="min-w-0 flex-1 rounded-md border border-navy-200 px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+            />
+            <input
+              type="date"
+              value={newTaskDue}
+              onChange={(e) => setNewTaskDue(e.target.value)}
+              aria-label={pb.taskDueDateLabel}
+              className="rounded-md border border-navy-200 px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                if (!newTaskText.trim()) return;
+                addTask(entry.id, newTaskText, newTaskDue || undefined);
+                setNewTaskText("");
+                setNewTaskDue("");
+              }}
+              disabled={!newTaskText.trim()}
+              className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {pb.taskAddButton}
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+          <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.attachmentsTitle}</h2>
+          <p className="mt-1 text-xs text-navy-400">{pb.attachmentsHint}</p>
+
+          {attachmentsFor(`projectbank:${entry.id}`).length === 0 ? (
+            <p className="mt-3 text-sm text-navy-500">{pb.noAttachments}</p>
+          ) : (
+            <ul className="mt-3 divide-y divide-navy-50">
+              {attachmentsFor(`projectbank:${entry.id}`).map((a) => (
+                <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
+                  <button
+                    type="button"
+                    onClick={() => downloadAttachment(a)}
+                    className="font-semibold text-navy-700 hover:underline"
+                  >
+                    {a.fileName}
+                  </button>
+                  <div className="flex items-center gap-3 text-xs text-navy-400">
+                    <span>{fmtFileSize(a.sizeBytes)}</span>
+                    <span>{pb.attachmentUploadedAt(new Date(a.uploadedAt).toLocaleDateString(lang === "sv" ? "sv-SE" : "en-US"))}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(`projectbank:${entry.id}`, a.id)}
+                      className="font-medium text-navy-400 hover:text-amber-700"
+                    >
+                      {pb.attachmentRemoveLabel}
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <label className="mt-4 inline-block cursor-pointer rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-700 hover:bg-navy-50">
+            {pb.attachmentUploadButton}
+            <input
+              type="file"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (!file) return;
+                setAttachmentError(null);
+                const error = await addAttachment(`projectbank:${entry.id}`, file);
+                if (error === "too-large") setAttachmentError(pb.attachmentTooLarge(MAX_ATTACHMENT_BYTES / (1024 * 1024)));
+              }}
+            />
+          </label>
+          {attachmentError && <p className="mt-2 text-xs text-amber-700">⚠ {attachmentError}</p>}
         </div>
 
         {missing.length > 0 && (

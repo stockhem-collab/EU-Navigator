@@ -544,3 +544,33 @@ export interface SectionCoachResult {
   suggestion_sv: string;
   suggestion_en: string;
 }
+
+// ---------------------------------------------------------------------------
+// Attachments — real supporting documents (budget files, decision letters,
+// partnership agreements, a report's evidence, …) saved against a specific
+// project or reporting event during the process, as distinct from the docx
+// exports the system itself generates. Client-only demo, so a file's bytes
+// live as a data URL in localStorage rather than on a real document server —
+// see useAttachments for the size cap that keeps that workable.
+// ---------------------------------------------------------------------------
+export interface Attachment {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedAt: string; // ISO
+  dataUrl: string;
+}
+
+// ---------------------------------------------------------------------------
+// Ad-hoc tasks attached to a Projektbank entry — "what's actually left to do
+// on this, right now", independent of the generic phase guidance in
+// OrgProcessPanel. See useProjectTasks.
+// ---------------------------------------------------------------------------
+export interface ProjectTask {
+  id: string;
+  text: string;
+  done: boolean;
+  dueDate?: string; // ISO date, optional
+  createdAt: string; // ISO
+}

@@ -69,6 +69,16 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
     setVersionName("");
   };
 
+  // Exports exactly what was saved under this version's name, not whatever
+  // the live draft has since become — falling back to the current display
+  // text only for a row saveVersion wouldn't have seen yet (a call template
+  // that gained a section after this version was saved).
+  const handleExportVersion = async (version: { name: string; sectionDrafts: Record<string, string> }) => {
+    const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, version.sectionDrafts[row.label_sv] ?? resolveSection(row)]));
+    const blob = await buildApplicationDocx(project, match, logic, resolved, lang);
+    downloadBlob(blob, `ansokan-${match.call.id}-${version.name.toLowerCase().replace(/\s+/g, "-")}.docx`);
+  };
+
   // The single most impactful thing to fix right now, surfaced ambiently in
   // the sidebar so it's visible regardless of which tab is open — without
   // requiring the full dimension breakdown to be on screen at all times.
@@ -292,6 +302,13 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
                               className="text-xs font-semibold text-navy-600 hover:text-navy-900"
                             >
                               {ws.restoreVersionButton}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleExportVersion(v)}
+                              className="text-xs font-semibold text-navy-600 hover:text-navy-900"
+                            >
+                              {ws.exportVersionButton}
                             </button>
                             <button
                               type="button"

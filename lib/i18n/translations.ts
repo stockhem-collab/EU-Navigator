@@ -147,6 +147,7 @@ export interface TranslationTree {
       saveVersionButton: string;
       noVersions: string;
       restoreVersionButton: string;
+      exportVersionButton: string;
       deleteVersionButton: string;
       versionSavedAt: (date: string) => string;
     };
@@ -202,6 +203,21 @@ export interface TranslationTree {
     plusOthers: (n: number) => string;
     assignedRolesTitle: string;
     noAssignedRoles: string;
+    tasksTitle: string;
+    tasksHint: string;
+    taskAddPlaceholder: string;
+    taskDueDateLabel: string;
+    taskAddButton: string;
+    noTasks: string;
+    taskRemoveLabel: string;
+    taskDueLabel: (date: string) => string;
+    attachmentsTitle: string;
+    attachmentsHint: string;
+    attachmentUploadButton: string;
+    noAttachments: string;
+    attachmentTooLarge: (maxMB: number) => string;
+    attachmentRemoveLabel: string;
+    attachmentUploadedAt: (date: string) => string;
     detailNotFound: string;
     detailThemeLabel: string;
     detailDescriptionLabel: string;
@@ -392,6 +408,10 @@ export interface TranslationTree {
     watchReportButton: string;
     watchingReportButton: string;
     exportReportButton: string;
+    reportAttachmentsLabel: string;
+    reportAttachmentUploadButton: string;
+    reportAttachmentRemoveLabel: string;
+    reportAttachmentTooLarge: (maxMB: number) => string;
     addSustainabilityButton: string;
     addSustainabilityHint: string;
     healthGoodLabel: string;
@@ -429,6 +449,9 @@ export interface TranslationTree {
     noWatchedCalls: string;
     watchCallButton: string;
     watchingCallButton: string;
+    reportingWatchTitle: string;
+    reportingWatchHint: string;
+    noReportingWatched: string;
   };
   orgSettings: {
     title: string;
@@ -619,6 +642,10 @@ export interface TranslationTree {
     ongoingApplicationsResume: string;
     ongoingApplicationsUpdatedAt: (date: string) => string;
     ongoingApplicationsVersions: (n: number) => string;
+    currentTasksTitle: string;
+    currentTasksHint: string;
+    currentTasksNone: string;
+    currentTasksViewAll: string;
   };
 }
 
@@ -629,7 +656,7 @@ export const translations: Record<Lang, TranslationTree> = {
       workflow: "Så fungerar det",
       personas: "För vem",
       pricing: "Prismodell",
-      demo: "Prova demo",
+      demo: "Starta ansökan",
       projectBank: "Projektbank",
       euDatabase: "EU-databas",
       referenceProjects: "Referensprojekt",
@@ -658,7 +685,7 @@ export const translations: Record<Lang, TranslationTree> = {
       title: "Från kommunens behov till finansierat projekt",
       subtitle:
         "EU Navigator kopplar samman kommunens investeringsplaner med EU:s finansieringsmöjligheter — automatiskt, kontinuerligt och med AI-driven matchning och ansökningsstöd.",
-      ctaPrimary: "Prova demo",
+      ctaPrimary: "Starta ansökan",
       ctaSecondary: "Så fungerar det",
       stat1Label: "Identifierad finansieringspotential",
       stat1Value: "186 mnkr",
@@ -860,6 +887,7 @@ export const translations: Record<Lang, TranslationTree> = {
         saveVersionButton: "Spara version",
         noVersions: "Inga sparade versioner än.",
         restoreVersionButton: "Återställ till denna version",
+        exportVersionButton: "Exportera (.docx)",
         deleteVersionButton: "Ta bort",
         versionSavedAt: (date) => `Sparad ${date}`,
         nextSteps: [
@@ -931,6 +959,21 @@ export const translations: Record<Lang, TranslationTree> = {
       plusOthers: (n) => `+${n} till`,
       assignedRolesTitle: "Tilldelade roller",
       noAssignedRoles: "Ingen har tilldelats en roll för detta projekt ännu.",
+      tasksTitle: "Uppgifter",
+      tasksHint: "Konkreta att-göra-punkter för just detta projekt, oavsett fas.",
+      taskAddPlaceholder: "Ny uppgift, t.ex. \"Boka avstämning med ekonomi\"",
+      taskDueDateLabel: "Förfaller",
+      taskAddButton: "Lägg till uppgift",
+      noTasks: "Inga uppgifter tillagda än.",
+      taskRemoveLabel: "Ta bort",
+      taskDueLabel: (date) => `Förfaller ${date}`,
+      attachmentsTitle: "Bilagor",
+      attachmentsHint: "Spara ned underlag som hör till projektet, t.ex. budget, avsiktsförklaring eller tidigare beslut.",
+      attachmentUploadButton: "Ladda upp bilaga",
+      noAttachments: "Inga bilagor sparade än.",
+      attachmentTooLarge: (maxMB) => `Filen är för stor — max ${maxMB} MB per bilaga i den här demoversionen.`,
+      attachmentRemoveLabel: "Ta bort",
+      attachmentUploadedAt: (date) => `Uppladdad ${date}`,
       detailNotFound: "Hittade inget projekt med det här id:t.",
       detailThemeLabel: "Tema",
       detailDescriptionLabel: "Beskrivning",
@@ -1127,6 +1170,10 @@ export const translations: Record<Lang, TranslationTree> = {
       watchReportButton: "☆ Bevaka",
       watchingReportButton: "★ Bevakas",
       exportReportButton: "Exportera rapport (.docx)",
+      reportAttachmentsLabel: "Bilagor",
+      reportAttachmentUploadButton: "+ Ladda upp bilaga",
+      reportAttachmentRemoveLabel: "Ta bort",
+      reportAttachmentTooLarge: (maxMB) => `Filen är för stor — max ${maxMB} MB per bilaga i den här demoversionen.`,
       addSustainabilityButton: "Lägg till hållbarhetsuppföljning",
       addSustainabilityHint: "För fonder som kräver uppföljning av resultatens hållbarhet flera år efter projektslut.",
       healthGoodLabel: "Enligt plan",
@@ -1168,6 +1215,10 @@ export const translations: Record<Lang, TranslationTree> = {
       noWatchedCalls: "Inga bevakade utlysningar. Klicka \"Bevaka\" på en utlysning, eller justera dina bevakningar under Inställningar → Bevakningar.",
       watchCallButton: "☆ Bevaka",
       watchingCallButton: "★ Bevakas",
+      reportingWatchTitle: "Bevakade rapporteringsdeadlines",
+      reportingWatchHint: "Rapporteringstillfällen du valt att bevaka, oavsett vilket beviljat projekt de hör till.",
+      noReportingWatched:
+        "Inga bevakade rapporteringsdeadlines. Klicka \"☆ Bevaka\" på ett rapporteringstillfälle under ett beviljat projekt.",
     },
     orgSettings: {
       title: "Organisation",
@@ -1361,6 +1412,10 @@ export const translations: Record<Lang, TranslationTree> = {
       ongoingApplicationsResume: "Fortsätt →",
       ongoingApplicationsUpdatedAt: (date) => `Senast redigerad ${date}`,
       ongoingApplicationsVersions: (n) => (n === 1 ? "1 sparad version" : `${n} sparade versioner`),
+      currentTasksTitle: "Aktuella uppgifter",
+      currentTasksHint: "Öppna uppgifter över hela portföljen, snarast förfallande först.",
+      currentTasksNone: "Inga öppna uppgifter just nu. Lägg till uppgifter under ett projekt i Projektbanken.",
+      currentTasksViewAll: "Visa projekt →",
     },
   },
   en: {
@@ -1369,7 +1424,7 @@ export const translations: Record<Lang, TranslationTree> = {
       workflow: "How it works",
       personas: "Who it's for",
       pricing: "Pricing",
-      demo: "Try the demo",
+      demo: "Start an application",
       projectBank: "Project bank",
       euDatabase: "EU database",
       referenceProjects: "Reference projects",
@@ -1398,7 +1453,7 @@ export const translations: Record<Lang, TranslationTree> = {
       title: "From municipal need to funded project",
       subtitle:
         "EU Navigator connects a municipality's investment plans with EU funding opportunities — automatically, continuously, with AI-driven matching and application support.",
-      ctaPrimary: "Try the demo",
+      ctaPrimary: "Start an application",
       ctaSecondary: "How it works",
       stat1Label: "Identified funding potential",
       stat1Value: "SEK 186M",
@@ -1599,6 +1654,7 @@ export const translations: Record<Lang, TranslationTree> = {
         saveVersionButton: "Save version",
         noVersions: "No saved versions yet.",
         restoreVersionButton: "Restore this version",
+        exportVersionButton: "Export (.docx)",
         deleteVersionButton: "Delete",
         versionSavedAt: (date) => `Saved ${date}`,
         nextSteps: [
@@ -1670,6 +1726,21 @@ export const translations: Record<Lang, TranslationTree> = {
       plusOthers: (n) => `+${n} more`,
       assignedRolesTitle: "Assigned roles",
       noAssignedRoles: "No one has been assigned a role on this project yet.",
+      tasksTitle: "Tasks",
+      tasksHint: "Concrete to-dos for this specific project, whatever phase it's in.",
+      taskAddPlaceholder: "New task, e.g. \"Book a check-in with finance\"",
+      taskDueDateLabel: "Due",
+      taskAddButton: "Add task",
+      noTasks: "No tasks added yet.",
+      taskRemoveLabel: "Remove",
+      taskDueLabel: (date) => `Due ${date}`,
+      attachmentsTitle: "Attachments",
+      attachmentsHint: "Save supporting documents for this project, e.g. a budget, letter of intent, or a previous decision.",
+      attachmentUploadButton: "Upload attachment",
+      noAttachments: "No attachments saved yet.",
+      attachmentTooLarge: (maxMB) => `File is too large — max ${maxMB} MB per attachment in this demo version.`,
+      attachmentRemoveLabel: "Remove",
+      attachmentUploadedAt: (date) => `Uploaded ${date}`,
       detailNotFound: "No project found with that id.",
       detailThemeLabel: "Theme",
       detailDescriptionLabel: "Description",
@@ -1865,6 +1936,10 @@ export const translations: Record<Lang, TranslationTree> = {
       watchReportButton: "☆ Watch",
       watchingReportButton: "★ Watching",
       exportReportButton: "Export report (.docx)",
+      reportAttachmentsLabel: "Attachments",
+      reportAttachmentUploadButton: "+ Upload attachment",
+      reportAttachmentRemoveLabel: "Remove",
+      reportAttachmentTooLarge: (maxMB) => `File is too large — max ${maxMB} MB per attachment in this demo version.`,
       addSustainabilityButton: "Add sustainability follow-up",
       addSustainabilityHint: "For funds requiring follow-up on the sustainability of results years after project end.",
       healthGoodLabel: "On track",
@@ -1906,6 +1981,9 @@ export const translations: Record<Lang, TranslationTree> = {
       noWatchedCalls: "No watched calls. Click \"Watch\" on a call, or adjust your watchlist under Settings → Watchlists & notifications.",
       watchCallButton: "☆ Watch",
       watchingCallButton: "★ Watching",
+      reportingWatchTitle: "Watched reporting deadlines",
+      reportingWatchHint: "Reporting events you've chosen to watch, regardless of which awarded project they belong to.",
+      noReportingWatched: "No watched reporting deadlines. Click \"☆ Watch\" on a reporting event under an awarded project.",
     },
     orgSettings: {
       title: "Organisation",
@@ -2099,6 +2177,10 @@ export const translations: Record<Lang, TranslationTree> = {
       ongoingApplicationsResume: "Resume →",
       ongoingApplicationsUpdatedAt: (date) => `Last edited ${date}`,
       ongoingApplicationsVersions: (n) => (n === 1 ? "1 saved version" : `${n} saved versions`),
+      currentTasksTitle: "Current tasks",
+      currentTasksHint: "Open tasks across the whole portfolio, soonest due first.",
+      currentTasksNone: "No open tasks right now. Add tasks under a project in the project bank.",
+      currentTasksViewAll: "View project →",
     },
   },
 };

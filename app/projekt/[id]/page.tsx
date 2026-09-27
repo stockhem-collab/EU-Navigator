@@ -20,10 +20,11 @@ import { findProgram } from "@/lib/data/fundingPrograms";
 import { useReportingSubmissions, ReportingSubmission } from "@/lib/hooks/useReportingSubmissions";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
+import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
 import { buildReportDocx } from "@/lib/export/exportReport";
 import { downloadBlob } from "@/lib/export/exportApplication";
 import OrgProcessPanel from "@/components/OrgProcessPanel";
-import { fmtSEK } from "@/lib/format";
+import { fmtSEK, fmtFileSize } from "@/lib/format";
 import { AwardedProject, Commitment, ReportingEvent, ReportingEventStatus, ReportingPeriodicity } from "@/lib/types";
 
 export default function AwardedProjectDetailPage() {
@@ -320,6 +321,9 @@ function ReportingEventCard({
   const { t, lang } = useLanguage();
   const ap = t.awardedProjects;
   const { prefs, toggleReportingEvent } = useWatchPreferences();
+  const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
+  const attachmentKey = `report:${project.id}:${event.id}`;
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const watchKey = `${project.id}:${event.id}`;
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(
@@ -428,6 +432,44 @@ function ReportingEventCard({
           {ap.exportReportButton}
         </button>
       )}
+
+      <div className="mt-3 border-t border-navy-50 pt-3">
+        <p className="text-xs font-semibold uppercase text-navy-400">{ap.reportAttachmentsLabel}</p>
+        {attachmentsFor(attachmentKey).length > 0 && (
+          <ul className="mt-1.5 space-y-1">
+            {attachmentsFor(attachmentKey).map((a) => (
+              <li key={a.id} className="flex items-center justify-between gap-2 text-xs">
+                <button type="button" onClick={() => downloadAttachment(a)} className="text-navy-700 hover:underline">
+                  {a.fileName}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeAttachment(attachmentKey, a.id)}
+                  className="shrink-0 text-navy-400 hover:text-amber-700"
+                >
+                  {ap.reportAttachmentRemoveLabel}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <label className="mt-1.5 inline-block cursor-pointer text-xs font-semibold text-navy-500 hover:text-navy-800">
+          {ap.reportAttachmentUploadButton}
+          <input
+            type="file"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              setAttachmentError(null);
+              const error = await addAttachment(attachmentKey, file);
+              if (error === "too-large") setAttachmentError(ap.reportAttachmentTooLarge(MAX_ATTACHMENT_BYTES / (1024 * 1024)));
+            }}
+          />
+        </label>
+        {attachmentError && <p className="mt-1 text-xs text-amber-700">⚠ {attachmentError}</p>}
+      </div>
 
       {fullHistory.length > 1 && (
         <div className="mt-3 border-t border-navy-50 pt-3">
