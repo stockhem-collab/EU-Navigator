@@ -34,10 +34,6 @@ test("submitting the next upcoming report updates the commitment summary and mov
   await expect(page.getByText("1 500 / 1 500 personer")).toBeVisible();
   await expect(page.getByText("All rapportering avslutad.")).toBeVisible();
 
-  // The final report event itself flips from "kommande" to "inlämnad" and
-  // the internal-process panel switches from delivery to closure guidance.
-  await expect(page.getByRole("heading", { name: /Projektavslut/ })).toBeVisible();
-
   // The reporting badge on Mina projekt reflects the same local submission.
   await page.goto("/projekt");
   await expect(page.getByText("All rapportering avslutad.")).toBeVisible();

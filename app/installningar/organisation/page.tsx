@@ -5,8 +5,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { orgProcessPhases, masterRoles } from "@/lib/data/orgProcess";
-import { useOrgConfig, roleLabel, OrgTextField } from "@/lib/hooks/useOrgConfig";
+import { useOrgConfig, OrgTextField } from "@/lib/hooks/useOrgConfig";
 import { orgUnits as seedOrgUnits } from "@/lib/data/users";
 import { OrgUnit } from "@/lib/types";
 
@@ -36,16 +35,15 @@ function countDescendants(units: OrgUnit[], id: string): number {
 }
 
 export default function OrganisationSettingsPage() {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const os = t.orgSettings;
-  const { config, hydrated, setOrganisationName, setOrgField, setTasksFor, setRoleName, addUnit, renameUnit, removeUnit, resetAll } =
-    useOrgConfig();
+  const { config, hydrated, setOrganisationName, setOrgField, addUnit, renameUnit, removeUnit, resetAll } = useOrgConfig();
   const [newUnitName, setNewUnitName] = useState("");
   const [newUnitParent, setNewUnitParent] = useState<string>("");
 
   if (!hydrated) return null;
 
-  const orgName = config.organisationName ?? orgProcessPhases[0]?.roleExample?.organisationName ?? "";
+  const orgName = config.organisationName ?? "";
   const units = config.units ?? seedOrgUnits;
   const tree = buildTree(units);
 
@@ -169,64 +167,7 @@ export default function OrganisationSettingsPage() {
           </div>
         </section>
 
-        <section className="mb-16 mt-8">
-          <h2 className="text-lg font-bold text-navy-900">{os.rolesProcessTitle}</h2>
-          <p className="mt-1 text-sm text-navy-500">{os.rolesProcessHint}</p>
-
-          <div className="mt-5 rounded-xl border border-navy-100 bg-white p-6">
-            <label className="block text-sm font-semibold text-navy-800">{os.rolesSectionTitle}</label>
-            <p className="mt-1 text-xs text-navy-400">{os.rolesSectionHint}</p>
-            <div className="mt-3 grid gap-4 sm:grid-cols-3">
-              {masterRoles.map((r) => {
-                const defaultName = lang === "sv" ? r.role_sv : r.role_en;
-                return (
-                  <div key={r.role_sv}>
-                    <input
-                      value={config.roleNames[r.role_sv] ?? defaultName}
-                      onChange={(e) => setRoleName(r.role_sv, e.target.value)}
-                      placeholder={os.roleNamePlaceholder(defaultName)}
-                      className="w-full rounded-md border border-navy-200 px-3 py-2 text-sm font-semibold text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mt-6 space-y-8">
-            {orgProcessPhases.map((phase) => (
-              <section key={phase.key} className="rounded-xl border border-navy-100 bg-white p-6">
-                <h3 className="font-bold text-navy-900">{lang === "sv" ? phase.title_sv : phase.title_en}</h3>
-                <p className="mt-1 text-sm text-navy-500">{lang === "sv" ? phase.desc_sv : phase.desc_en}</p>
-
-                {phase.roleExample && (
-                  <div className="mt-5 grid gap-5 sm:grid-cols-3">
-                    {phase.roleExample.responsibilities.map((r) => {
-                      const overrideTasks = config.phaseTasks[phase.key]?.[r.role_sv];
-                      const currentTasks = overrideTasks ?? (lang === "sv" ? r.tasks_sv : r.tasks_en);
-                      return (
-                        <div key={r.role_sv}>
-                          <label className="block text-sm font-semibold text-navy-700">
-                            {roleLabel(config, r.role_sv, r.role_en, lang)}
-                          </label>
-                          <p className="mt-0.5 text-xs text-navy-400">{os.tasksHint}</p>
-                          <textarea
-                            rows={5}
-                            value={currentTasks.join("\n")}
-                            onChange={(e) => setTasksFor(phase.key, r.role_sv, e.target.value.split("\n"))}
-                            className="mt-2 w-full rounded-md border border-navy-200 px-3 py-2 text-xs text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </section>
-            ))}
-          </div>
-
-          <p className="mt-4 text-xs text-navy-400">{os.savedIndicator}</p>
-        </section>
+        <p className="mb-16 mt-4 text-xs text-navy-400">{os.savedIndicator}</p>
       </main>
       <Footer />
     </>

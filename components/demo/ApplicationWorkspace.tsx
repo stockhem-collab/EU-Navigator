@@ -11,7 +11,6 @@ import { useApplication, seedApplicationDraft } from "@/lib/hooks/useApplication
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { projectInputToProjectBankEntry } from "@/lib/matching/portfolio";
 import { buildApplicationDocx, downloadBlob } from "@/lib/export/exportApplication";
-import OrgProcessPanel from "@/components/OrgProcessPanel";
 import { fmtSEK } from "@/lib/format";
 
 interface Props {
@@ -492,10 +491,6 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
                   ))}
                 </ul>
               </section>
-
-              <div className="mt-6">
-                <OrgProcessPanel phaseKey="application" readinessScore={readiness.overall} />
-              </div>
 
               <section className="mb-16 mt-6">
                 <h2 className="text-lg font-bold text-navy-800">{ws.nextStepsTitle}</h2>

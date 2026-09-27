@@ -359,36 +359,6 @@ export interface AwardedProject {
 }
 
 // ---------------------------------------------------------------------------
-// Organisation's own internal process — a second, independent rule layer
-// alongside the EU's own requirements. This is real (an example
-// municipality's actual 4-phase EU-project process), but the specific
-// internal roles below belong to one example organisation — every
-// municipality structures its own internal support functions differently,
-// so this is not a system default.
-// ---------------------------------------------------------------------------
-export interface OrgProcessDocument {
-  title_sv: string;
-  title_en: string;
-}
-
-export interface OrgProcessPhase {
-  key: string;
-  title_sv: string;
-  title_en: string;
-  desc_sv: string;
-  desc_en: string;
-  documents: OrgProcessDocument[];
-  /** One example organisation's internal division of responsibility for this
-   * phase — illustrative of how a municipality *could* structure it, not a
-   * prescribed standard. */
-  roleExample?: {
-    organisationName: string;
-    responsibilities: { role_sv: string; role_en: string; tasks_sv: string[]; tasks_en: string[] }[];
-  };
-  done: boolean;
-}
-
-// ---------------------------------------------------------------------------
 // Organisation structure & people. Still part of the client-only demo (see
 // README) — there is no real backend, authentication or invite delivery.
 // Modelled here so /installningar can show a believable org chart and user
@@ -564,8 +534,7 @@ export interface Attachment {
 
 // ---------------------------------------------------------------------------
 // Ad-hoc tasks attached to a Projektbank entry — "what's actually left to do
-// on this, right now", independent of the generic phase guidance in
-// OrgProcessPanel. See useProjectTasks.
+// on this, right now". See useProjectTasks.
 // ---------------------------------------------------------------------------
 export interface ProjectTask {
   id: string;

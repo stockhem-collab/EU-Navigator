@@ -24,24 +24,6 @@ test("a CSV-imported project is assignable to a user, not just seeded ones", asy
   await expect(page.locator("tbody tr", { hasText: "Anvandare-testprojekt" })).toHaveCount(0);
 });
 
-test("pressing Enter in an organisation task field starts a new line instead of being silently dropped", async ({
-  page,
-}) => {
-  await page.goto("/installningar/organisation");
-  const textarea = page.locator("textarea").first();
-  await textarea.click();
-  await textarea.evaluate((el: HTMLTextAreaElement) => {
-    el.selectionStart = el.selectionEnd = el.value.length;
-  });
-  const before = await textarea.inputValue();
-  await textarea.press("Enter");
-  await page.keyboard.type("Ny testuppgift för granskning");
-  await expect(textarea).toHaveValue(`${before}\nNy testuppgift för granskning`);
-
-  // Reset so this doesn't leak into other tests sharing storage.
-  await page.getByRole("button", { name: /Återställ allt till exempeldata|Reset everything to the example data/i }).click();
-});
-
 test("saving a named version is disabled with an explanation for an ad-hoc, unsaved project", async ({ page }) => {
   await page.goto("/demo");
   await page.getByRole("button", { name: /Fyll i exempel/i }).click();

@@ -427,18 +427,6 @@ export interface TranslationTree {
     syncStatusNudge: (status: string) => string;
     syncStatusNudgeButton: string;
   };
-  orgProcess: {
-    title: string;
-    subtitle: string;
-    dualComplianceTitle: string;
-    dualComplianceReady: string;
-    dualComplianceBlocked: string;
-    exampleDisclaimer: (orgName: string) => string;
-    documentsLabel: string;
-    rolesLabel: string;
-    customiseLabel: string;
-    customisedLabel: string;
-  };
   bevakning: {
     title: string;
     subtitle: string;
@@ -485,12 +473,6 @@ export interface TranslationTree {
     removeUnitLabel: string;
     confirmRemoveUnit: (name: string) => string;
     confirmRemoveUnitCascade: (name: string, count: number) => string;
-    rolesProcessTitle: string;
-    rolesProcessHint: string;
-    rolesSectionTitle: string;
-    rolesSectionHint: string;
-    roleNamePlaceholder: (defaultName: string) => string;
-    tasksHint: string;
     resetAll: string;
     savedIndicator: string;
   };
@@ -1202,20 +1184,6 @@ export const translations: Record<Lang, TranslationTree> = {
         `Den ursprungliga projektidén har fortfarande status "${status}" i Projektbanken, trots att rapporteringen redan är igång.`,
       syncStatusNudgeButton: "Uppdatera status till Pågående",
     },
-    orgProcess: {
-      title: "Organisationens regelverk",
-      subtitle: "Kommunens interna process löper parallellt med EU:s externa krav.",
-      dualComplianceTitle: "Dubbel kravbild",
-      dualComplianceReady: "Ansökan är redo ur både EU-utlysningens och kommunens interna processperspektiv.",
-      dualComplianceBlocked:
-        "Ansökan är redo ur EU-utlysningens perspektiv, men enligt kommunens interna projektprocess saknas ett eller flera steg.",
-      exampleDisclaimer: (orgName) =>
-        `Exempel: så här fördelar ${orgName} internt ansvar i detta steg. Varje organisation konfigurerar sin egen process — det här är inte en standard i systemet.`,
-      documentsLabel: "Stödmaterial för detta steg",
-      rolesLabel: "Roller och ansvar",
-      customiseLabel: "Anpassa för er organisation",
-      customisedLabel: "Anpassat för er organisation",
-    },
     bevakning: {
       title: "Bevakning",
       subtitle: "Kommande deadlines, och vilka projekt i portföljen som passar bäst.",
@@ -1246,7 +1214,7 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     orgSettings: {
       title: "Organisation",
-      subtitle: "Organisationens grunduppgifter, enheter och EU-processens roller.",
+      subtitle: "Organisationens grunduppgifter och enheter.",
       back: "← Tillbaka till Inställningar",
       orgNameLabel: "Organisationens namn",
       orgNamePlaceholder: "T.ex. Exempelstad kommun",
@@ -1266,14 +1234,6 @@ export const translations: Record<Lang, TranslationTree> = {
       confirmRemoveUnit: (name) => `Ta bort enheten "${name}"?`,
       confirmRemoveUnitCascade: (name, count) =>
         `Ta bort enheten "${name}"? Detta tar även bort ${count} underliggande ${count === 1 ? "enhet" : "enheter"}.`,
-      rolesProcessTitle: "Roller och ansvar i EU-processen",
-      rolesProcessHint:
-        "De interna rollerna som delar ansvaret för ett EU-projekt genom dess faser (idé → ansökan → genomförande → avslut).",
-      rolesSectionTitle: "Roller",
-      rolesSectionHint:
-        "Benämningarna nedan är ett exempel. Döp om rollerna till dem som används i er organisation — namnet uppdateras överallt de visas.",
-      roleNamePlaceholder: (defaultName) => `T.ex. ${defaultName}`,
-      tasksHint: "En uppgift per rad.",
       resetAll: "Återställ allt till exempeldata",
       savedIndicator: "Sparat i din webbläsare",
     },
@@ -1980,20 +1940,6 @@ export const translations: Record<Lang, TranslationTree> = {
         `The original project idea is still marked "${status}" in the project bank, even though reporting is already under way.`,
       syncStatusNudgeButton: "Update status to Running",
     },
-    orgProcess: {
-      title: "Organisation's internal process",
-      subtitle: "The municipality's internal process runs alongside the EU's external requirements.",
-      dualComplianceTitle: "Dual compliance",
-      dualComplianceReady: "The application is ready from both the EU call's and the municipality's internal process perspective.",
-      dualComplianceBlocked:
-        "The application is ready from the EU call's perspective, but one or more steps are missing according to the municipality's internal project process.",
-      exampleDisclaimer: (orgName) =>
-        `Example: this is how ${orgName} divides internal responsibility at this step. Every organisation configures its own process — this is not a system default.`,
-      documentsLabel: "Supporting material for this step",
-      rolesLabel: "Roles and responsibilities",
-      customiseLabel: "Customise for your organisation",
-      customisedLabel: "Customised for your organisation",
-    },
     bevakning: {
       title: "Monitoring",
       subtitle: "Upcoming deadlines, and which portfolio projects fit them best.",
@@ -2022,7 +1968,7 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     orgSettings: {
       title: "Organisation",
-      subtitle: "The organisation's registry info, units, and the EU process's roles.",
+      subtitle: "The organisation's registry info and units.",
       back: "← Back to Settings",
       orgNameLabel: "Organisation name",
       orgNamePlaceholder: "E.g. Example City Municipality",
@@ -2042,14 +1988,6 @@ export const translations: Record<Lang, TranslationTree> = {
       confirmRemoveUnit: (name) => `Remove the unit "${name}"?`,
       confirmRemoveUnitCascade: (name, count) =>
         `Remove the unit "${name}"? This will also remove its ${count} sub-unit${count === 1 ? "" : "s"}.`,
-      rolesProcessTitle: "Roles and responsibilities in the EU process",
-      rolesProcessHint:
-        "The internal roles that share responsibility for an EU project across its phases (idea → application → delivery → closure).",
-      rolesSectionTitle: "Roles",
-      rolesSectionHint:
-        "The labels below are an example. Rename the roles to match your own organisation — the name updates everywhere it's shown.",
-      roleNamePlaceholder: (defaultName) => `E.g. ${defaultName}`,
-      tasksHint: "One task per line.",
       resetAll: "Reset everything to the example data",
       savedIndicator: "Saved in your browser",
     },

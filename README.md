@@ -56,17 +56,9 @@ finansiering"* → `/projekt`.
   municipality's actual awarded EU projects, 2014-2027, extracted from its
   own "Projekt med beviljade medel" documentation — organisation names,
   contact emails and source links replaced with a fictional "Exempelstad"
-  so the source municipality isn't identifiable), `lib/data/fundingPrograms.ts`
+  so the source municipality isn't identifiable), and `lib/data/fundingPrograms.ts`
   (the real EU funds/programmes that municipality tracks and has been
-  awarded from), and `lib/data/orgProcess.ts` (that municipality's real
-  four-phase EU-project process — Idea → Application → Delivery → Closure —
-  including its own document list per phase, from its EU-project handbook).
-- **One example, not a system default**: the internal role breakdown
-  attached to each `orgProcess` phase (Verksamhet / Stadsledningskontoret /
-  Serviceförvaltningen) is that example organisation's specific internal
-  setup. It's shown labelled as one example of how a municipality *could* divide
-  responsibility — every organisation would configure its own equivalent
-  (or none) in a real deployment. See `OrgProcessPanel`'s disclaimer text.
+  awarded from).
 - **Still illustrative**: `lib/data/projectBank.ts` (a municipality's own
   in-progress project ideas — inherently invented for a demo, since real
   ones are usually confidential), `lib/data/awardedProjects.ts` (the
@@ -151,11 +143,11 @@ components/                 UI components (landing sections, demo flow,
 lib/i18n/                   Swedish/English translation dictionary + language context
 lib/types.ts                Shared data model (Programme/Call/Document,
                              ProjectBankEntry, FundedProject,
-                             AwardedProject, OrgProcessPhase, matching types)
+                             AwardedProject, matching types)
 lib/data/                   Seed data — real programmes (22) and awarded
-                             reference projects (74), the real org process,
-                             plus illustrative calls/documents, project
-                             bank and awarded-project reporting example
+                             reference projects (74), plus illustrative
+                             calls/documents, project bank and
+                             awarded-project reporting example
 lib/matching/                Scoring engine, gap analysis, readiness score,
                              application coach, workspace content generator
 tests/unit/                  Logic-only tests (no browser) for the matching/

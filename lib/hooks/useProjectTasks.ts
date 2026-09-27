@@ -4,11 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { ProjectTask } from "@/lib/types";
 
 // Ad-hoc, per-project to-dos — "what's actually left to do on this, right
-// now" — distinct from OrgProcessPanel's generic phase guidance, which
-// describes a role's responsibilities in general rather than tracking a
-// concrete, completable item for one specific project. Keyed by
-// ProjectBankEntry.id, same localStorage-overlay convention as every other
-// hook here.
+// now". Keyed by ProjectBankEntry.id, same localStorage-overlay convention
+// as every other hook here.
 const STORAGE_KEY = "eu-navigator-project-tasks";
 
 type TasksState = Record<string, ProjectTask[]>;

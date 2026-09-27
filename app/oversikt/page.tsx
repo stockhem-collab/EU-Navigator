@@ -179,9 +179,8 @@ export default function OversiktPage() {
         )}
 
         {/* Same "regardless of role" visibility as ongoing applications
-            above — ad-hoc project tasks (see useProjectTasks) are the
-            concrete, per-project to-dos that OrgProcessPanel's generic
-            phase guidance doesn't track. */}
+            above — ad-hoc project tasks (see useProjectTasks) track
+            concrete, per-project to-dos. */}
         {tasksHydrated && (
           <section className="mt-8">
             <h2 className="text-lg font-bold text-navy-800">{ov.currentTasksTitle}</h2>

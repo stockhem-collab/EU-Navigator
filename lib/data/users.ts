@@ -1,8 +1,8 @@
 import { DemoUser, OrgRoleKey, OrgUnit, ProjectRoleKey } from "@/lib/types";
 
-// Illustrative example organisation structure and people — same status as
-// orgProcess.ts's role example: one plausible setup a municipality could
-// have, editable in Organisationsinställningar, not a system default.
+// Illustrative example organisation structure and people — one plausible
+// setup a municipality could have, editable in Organisationsinställningar,
+// not a system default.
 export const orgUnits: OrgUnit[] = [
   { id: "u-root", name: "Exempelstad", parentId: null },
   { id: "u-slk", name: "Stadsledningskontoret", parentId: "u-root" },

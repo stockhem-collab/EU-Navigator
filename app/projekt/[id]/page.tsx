@@ -23,7 +23,6 @@ import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
 import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
 import { buildReportDocx } from "@/lib/export/exportReport";
 import { downloadBlob } from "@/lib/export/exportApplication";
-import OrgProcessPanel from "@/components/OrgProcessPanel";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
 import { AwardedProject, Commitment, ReportingEvent, ReportingEventStatus, ReportingPeriodicity } from "@/lib/types";
 
@@ -183,7 +182,7 @@ export default function AwardedProjectDetailPage() {
           </div>
         </section>
 
-        <section className="mt-6">
+        <section className="mb-16 mt-6">
           <h2 className="text-lg font-bold text-navy-800">{ap.reportingTimelineTitle}</h2>
           <p className="mt-1 text-sm text-navy-500">{ap.reportingTimelineHint}</p>
           <div className="mt-4 space-y-3">
@@ -216,10 +215,6 @@ export default function AwardedProjectDetailPage() {
             </div>
           )}
         </section>
-
-        <div className="mb-16 mt-6">
-          <OrgProcessPanel phaseKey={isReportingComplete(project) ? "closure" : "delivery"} />
-        </div>
       </main>
       <Footer />
     </>
