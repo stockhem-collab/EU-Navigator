@@ -51,6 +51,42 @@ test("a task can be added and completed on a Projektbank entry, and shows up on 
   await expect(page.getByText(taskText)).toHaveCount(0);
 });
 
+test("an existing task's text and due date can be edited in place", async ({ page }) => {
+  await page.goto("/projektbank/pb-1");
+
+  const originalText = `Original text ${Date.now()}`;
+  await page.getByPlaceholder(/Ny uppgift/).fill(originalText);
+  await page.getByRole("button", { name: "Lägg till uppgift" }).click();
+  await expect(page.getByText(originalText)).toBeVisible();
+
+  await page.getByRole("button", { name: "Redigera", exact: true }).click();
+  const editRow = page.locator("li", { has: page.getByRole("button", { name: "Spara" }) });
+  await expect(editRow.locator('input[type="text"]')).toHaveValue(originalText);
+
+  const editedText = `Edited text ${Date.now()}`;
+  await editRow.locator('input[type="text"]').fill(editedText);
+  await editRow.locator('input[type="date"]').fill("2027-06-15");
+  await editRow.getByRole("button", { name: "Spara" }).click();
+
+  await expect(page.getByText(originalText)).toHaveCount(0);
+  await expect(page.getByText(editedText)).toBeVisible();
+  await expect(page.getByText("Förfaller 2027-06-15")).toBeVisible();
+
+  // Persists across a reload, not just in local component state.
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(page.getByText(editedText)).toBeVisible();
+
+  // Cancelling an edit discards the in-progress change.
+  await page.getByRole("button", { name: "Redigera", exact: true }).click();
+  await page.locator("li", { has: page.getByRole("button", { name: "Avbryt" }) }).locator('input[type="text"]').fill("Should not be saved");
+  await page.getByRole("button", { name: "Avbryt" }).click();
+  await expect(page.getByText("Should not be saved")).toHaveCount(0);
+  await expect(page.getByText(editedText)).toBeVisible();
+
+  // Clean up so this doesn't leak into other tests sharing storage.
+  await page.getByRole("button", { name: "Ta bort" }).click();
+});
+
 test("a watched reporting deadline shows up on the main Bevakning page, not only in Inställningar", async ({ page }) => {
   await page.goto("/projekt/ap-2");
   const q3Card = page.locator("div.rounded-xl", { hasText: "Delrapport Q3 2027" });

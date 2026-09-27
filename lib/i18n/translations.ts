@@ -215,6 +215,9 @@ export interface TranslationTree {
     taskDueDateLabel: string;
     taskAddButton: string;
     noTasks: string;
+    taskEditLabel: string;
+    taskSaveButton: string;
+    taskCancelButton: string;
     taskRemoveLabel: string;
     taskDueLabel: (date: string) => string;
     attachmentsTitle: string;
@@ -965,6 +968,9 @@ export const translations: Record<Lang, TranslationTree> = {
       taskDueDateLabel: "Förfaller",
       taskAddButton: "Lägg till uppgift",
       noTasks: "Inga uppgifter tillagda än.",
+      taskEditLabel: "Redigera",
+      taskSaveButton: "Spara",
+      taskCancelButton: "Avbryt",
       taskRemoveLabel: "Ta bort",
       taskDueLabel: (date) => `Förfaller ${date}`,
       attachmentsTitle: "Bilagor",
@@ -1722,6 +1728,9 @@ export const translations: Record<Lang, TranslationTree> = {
       taskDueDateLabel: "Due",
       taskAddButton: "Add task",
       noTasks: "No tasks added yet.",
+      taskEditLabel: "Edit",
+      taskSaveButton: "Save",
+      taskCancelButton: "Cancel",
       taskRemoveLabel: "Remove",
       taskDueLabel: (date) => `Due ${date}`,
       attachmentsTitle: "Attachments",

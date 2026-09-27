@@ -61,13 +61,16 @@ export default function ProjectBankDetailPage() {
   const { all, hydrated, updateEntry } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
   const { users } = useUsersDirectory();
-  const { tasksFor, addTask, toggleTask, removeTask } = useProjectTasks();
+  const { tasksFor, addTask, toggleTask, editTask, removeTask } = useProjectTasks();
   const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
   const entry = all.find((p) => p.id === params.id);
   const assignedUsers = entry ? users.filter((u) => u.projectRoles.some((r) => r.projectId === entry.id)) : [];
   const [draft, setDraft] = useState<EditDraft | null>(null);
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskDue, setNewTaskDue] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [editTaskText, setEditTaskText] = useState("");
+  const [editTaskDue, setEditTaskDue] = useState("");
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
 
   if (!entry) {
@@ -358,22 +361,71 @@ export default function ProjectBankDetailPage() {
             <p className="mt-3 text-sm text-navy-500">{pb.noTasks}</p>
           ) : (
             <ul className="mt-3 space-y-1.5">
-              {tasksFor(entry.id).map((task) => (
-                <li key={task.id} className="flex items-center justify-between gap-3 text-sm">
-                  <label className="flex flex-1 items-center gap-2">
-                    <input type="checkbox" checked={task.done} onChange={() => toggleTask(entry.id, task.id)} />
-                    <span className={task.done ? "text-navy-400 line-through" : "text-navy-800"}>{task.text}</span>
-                    {task.dueDate && <span className="text-xs text-navy-400">{pb.taskDueLabel(task.dueDate)}</span>}
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => removeTask(entry.id, task.id)}
-                    className="shrink-0 text-xs font-medium text-navy-400 hover:text-amber-700"
-                  >
-                    {pb.taskRemoveLabel}
-                  </button>
-                </li>
-              ))}
+              {tasksFor(entry.id).map((task) =>
+                editingTaskId === task.id ? (
+                  <li key={task.id} className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="text"
+                      value={editTaskText}
+                      onChange={(e) => setEditTaskText(e.target.value)}
+                      className="min-w-0 flex-1 rounded-md border border-navy-200 px-2 py-1 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                    />
+                    <input
+                      type="date"
+                      value={editTaskDue}
+                      onChange={(e) => setEditTaskDue(e.target.value)}
+                      aria-label={pb.taskDueDateLabel}
+                      className="rounded-md border border-navy-200 px-2 py-1 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        editTask(entry.id, task.id, editTaskText, editTaskDue || undefined);
+                        setEditingTaskId(null);
+                      }}
+                      disabled={!editTaskText.trim()}
+                      className="shrink-0 text-xs font-semibold text-navy-700 hover:text-navy-900 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {pb.taskSaveButton}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingTaskId(null)}
+                      className="shrink-0 text-xs font-medium text-navy-400 hover:text-navy-700"
+                    >
+                      {pb.taskCancelButton}
+                    </button>
+                  </li>
+                ) : (
+                  <li key={task.id} className="flex items-center justify-between gap-3 text-sm">
+                    <label className="flex flex-1 items-center gap-2">
+                      <input type="checkbox" checked={task.done} onChange={() => toggleTask(entry.id, task.id)} />
+                      <span className={task.done ? "text-navy-400 line-through" : "text-navy-800"}>{task.text}</span>
+                      {task.dueDate && <span className="text-xs text-navy-400">{pb.taskDueLabel(task.dueDate)}</span>}
+                    </label>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingTaskId(task.id);
+                          setEditTaskText(task.text);
+                          setEditTaskDue(task.dueDate ?? "");
+                        }}
+                        className="text-xs font-medium text-navy-400 hover:text-navy-700"
+                      >
+                        {pb.taskEditLabel}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeTask(entry.id, task.id)}
+                        className="text-xs font-medium text-navy-400 hover:text-amber-700"
+                      >
+                        {pb.taskRemoveLabel}
+                      </button>
+                    </div>
+                  </li>
+                )
+              )}
             </ul>
           )}
 

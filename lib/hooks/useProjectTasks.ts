@@ -75,5 +75,20 @@ export function useProjectTasks() {
     });
   }, []);
 
-  return { hydrated, tasks: state, tasksFor, addTask, toggleTask, removeTask };
+  // Edits an existing task's text/due date in place — distinct from
+  // toggleTask (done state) and addTask (a new task entirely). Ignores an
+  // edit that would leave the task with no text, same guard as addTask.
+  const editTask = useCallback((projectId: string, taskId: string, text: string, dueDate?: string) => {
+    if (!text.trim()) return;
+    setState((prev) => {
+      const next = {
+        ...prev,
+        [projectId]: (prev[projectId] ?? []).map((t) => (t.id === taskId ? { ...t, text: text.trim(), dueDate } : t)),
+      };
+      write(next);
+      return next;
+    });
+  }, []);
+
+  return { hydrated, tasks: state, tasksFor, addTask, toggleTask, editTask, removeTask };
 }
