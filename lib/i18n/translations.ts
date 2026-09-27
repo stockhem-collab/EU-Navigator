@@ -251,6 +251,8 @@ export interface TranslationTree {
     statCoFinancingNeed: string;
     linkedAwardedProjectLabel: string;
     linkedAwardedProjectLink: string;
+    markAsAwardedButton: string;
+    markAsAwardedHint: string;
   };
   euDatabase: {
     title: string;
@@ -427,8 +429,7 @@ export interface TranslationTree {
     healthAttentionLabel: string;
     healthBlockedLabel: string;
     linkedProjectBankLabel: string;
-    syncStatusNudge: (status: string) => string;
-    syncStatusNudgeButton: string;
+    linkedProjectStatusAutoSyncNote: string;
   };
   bevakning: {
     title: string;
@@ -1007,6 +1008,8 @@ export const translations: Record<Lang, TranslationTree> = {
       statCoFinancingNeed: "Uppskattat medfinansieringsbehov",
       linkedAwardedProjectLabel: "Beviljad och under rapportering",
       linkedAwardedProjectLink: "Visa rapportering →",
+      markAsAwardedButton: "Markera som beviljad",
+      markAsAwardedHint: "Skapar rapporteringsspårning för projektet baserat på bäst matchande utlysning.",
     },
     euDatabase: {
       title: "EU-databas",
@@ -1186,9 +1189,7 @@ export const translations: Record<Lang, TranslationTree> = {
       healthAttentionLabel: "Kräver uppmärksamhet",
       healthBlockedLabel: "Komplettering begärd",
       linkedProjectBankLabel: "Ursprunglig projektidé i Projektbanken",
-      syncStatusNudge: (status) =>
-        `Den ursprungliga projektidén har fortfarande status "${status}" i Projektbanken, trots att rapporteringen redan är igång.`,
-      syncStatusNudgeButton: "Uppdatera status till Pågående",
+      linkedProjectStatusAutoSyncNote: "Statusen i Projektbanken hålls automatiskt i synk med rapporteringen här.",
     },
     bevakning: {
       title: "Bevakning",
@@ -1767,6 +1768,8 @@ export const translations: Record<Lang, TranslationTree> = {
       statCoFinancingNeed: "Estimated co-financing need",
       linkedAwardedProjectLabel: "Awarded and under reporting",
       linkedAwardedProjectLink: "View reporting →",
+      markAsAwardedButton: "Mark as awarded",
+      markAsAwardedHint: "Creates reporting tracking for the project based on its best-matching call.",
     },
     euDatabase: {
       title: "EU database",
@@ -1945,9 +1948,7 @@ export const translations: Record<Lang, TranslationTree> = {
       healthAttentionLabel: "Needs attention",
       healthBlockedLabel: "Revision requested",
       linkedProjectBankLabel: "Original project idea in the project bank",
-      syncStatusNudge: (status) =>
-        `The original project idea is still marked "${status}" in the project bank, even though reporting is already under way.`,
-      syncStatusNudgeButton: "Update status to Running",
+      linkedProjectStatusAutoSyncNote: "The project bank status is kept automatically in sync with this reporting.",
     },
     bevakning: {
       title: "Monitoring",

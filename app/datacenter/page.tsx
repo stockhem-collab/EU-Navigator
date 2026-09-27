@@ -9,7 +9,7 @@ import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
-import { awardedProjects } from "@/lib/data/awardedProjects";
+import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 
 /** Formatted after mount only, so the demo's "last synced" stat always
@@ -40,6 +40,7 @@ export default function DatacenterPage() {
   const dc = t.datacenter;
   const { all: projectBank } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
+  const { all: awardedProjects } = useAwardedProjects();
   const { withSubmissions } = useReportingSubmissions();
   const lastSync = useNowStamp();
 

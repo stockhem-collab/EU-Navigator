@@ -7,7 +7,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useWatchPreferences, NotifyPreferences, DigestFrequency } from "@/lib/hooks/useWatchPreferences";
 import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
-import { findAwardedProject } from "@/lib/data/awardedProjects";
+import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import { Sector } from "@/lib/types";
@@ -20,9 +20,10 @@ export default function WatchSettingsPage() {
   const { prefs, hydrated, toggleSector, toggleProgram, toggleCall, toggleReportingEvent, toggleNotify, setDigest, resetAll } =
     useWatchPreferences();
   const { all: fundingCalls, hydrated: callsHydrated } = useFundingCalls();
+  const { all: awardedProjects, hydrated: awardedProjectsHydrated } = useAwardedProjects();
   const { withSubmissions, hydrated: reportingHydrated } = useReportingSubmissions();
 
-  if (!hydrated || !callsHydrated || !reportingHydrated) return null;
+  if (!hydrated || !callsHydrated || !reportingHydrated || !awardedProjectsHydrated) return null;
 
   const watchedCalls = prefs.callIds
     .map((callId) => {
@@ -35,7 +36,7 @@ export default function WatchSettingsPage() {
   const watchedReporting = prefs.reportingEventKeys
     .map((key) => {
       const [projectId, eventId] = key.split(":");
-      const seedProject = findAwardedProject(projectId);
+      const seedProject = awardedProjects.find((a) => a.id === projectId);
       if (!seedProject) return null;
       const project = withSubmissions(seedProject);
       const event = project.reportingEvents.find((e) => e.id === eventId);

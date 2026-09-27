@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
@@ -12,11 +12,11 @@ import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { useProjectTasks } from "@/lib/hooks/useProjectTasks";
 import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
-import { awardedProjects } from "@/lib/data/awardedProjects";
+import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { projectRoleLabels } from "@/lib/data/users";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
-import { computeMatchesForEntry, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
+import { computeMatchesForEntry, projectBankEntryToAwardedProject, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
 import { computeSimilarProjects } from "@/lib/matching/similarProjects";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
 import { ProjectStatus, Sector } from "@/lib/types";
@@ -58,8 +58,10 @@ export default function ProjectBankDetailPage() {
   // found" until the project-bank hook has actually finished checking the
   // client. Seeded entries render immediately either way; imported ones
   // appear once `hydrated` flips true.
+  const router = useRouter();
   const { all, hydrated, updateEntry } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
+  const { all: awardedProjectsAll, addAwardedProject } = useAwardedProjects();
   const { users } = useUsersDirectory();
   const { tasksFor, addTask, toggleTask, editTask, removeTask } = useProjectTasks();
   const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
@@ -92,12 +94,26 @@ export default function ProjectBankDetailPage() {
   const missing = lang === "sv" ? entry.missingFields_sv : entry.missingFields_en;
   const matches = computeMatchesForEntry(entry, fundingCalls);
   const similar = computeSimilarProjects(projectBankEntryToProjectInput(entry), fundedProjects);
-  const linkedAwardedProject = awardedProjects.find((a) => a.projectBankEntryId === entry.id);
+  const linkedAwardedProject = awardedProjectsAll.find((a) => a.projectBankEntryId === entry.id);
 
   const recommendationStyle = (rec: (typeof matches)[number]["recommendation"]) => {
     if (rec === "proceed") return "bg-green-100 text-green-800";
     if (rec === "consider") return "bg-gold-100 text-gold-800";
     return "bg-navy-100 text-navy-600";
+  };
+
+  // Turns this idea into a real awarded project once it's actually won
+  // funding — before this there was no path forward except hand-editing
+  // seed data, so a real project bank status went stale in "approved"
+  // forever. Uses the entry's own best match, since a Projektbank entry
+  // doesn't itself track which call an application was made under.
+  const handleMarkAsAwarded = () => {
+    const bestMatch = matches[0];
+    if (!bestMatch) return;
+    const awarded = projectBankEntryToAwardedProject(entry, bestMatch);
+    addAwardedProject(awarded);
+    updateEntry(entry.id, { status: "running" });
+    router.push(`/projekt/${awarded.id}`);
   };
 
   const startEditing = () =>
@@ -295,6 +311,19 @@ export default function ProjectBankDetailPage() {
                 >
                   {pb.linkedAwardedProjectLink}
                 </Link>
+              </div>
+            )}
+
+            {!linkedAwardedProject && entry.status === "approved" && matches.length > 0 && (
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed border-navy-200 px-4 py-3">
+                <p className="text-xs text-navy-600">{pb.markAsAwardedHint}</p>
+                <button
+                  type="button"
+                  onClick={handleMarkAsAwarded}
+                  className="shrink-0 rounded-md bg-navy-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-700"
+                >
+                  {pb.markAsAwardedButton}
+                </button>
               </div>
             )}
 

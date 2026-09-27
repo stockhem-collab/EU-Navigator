@@ -1,4 +1,12 @@
-import { FundingCall, FundingProgram, MatchResult, ProjectBankEntry, ProjectInput, ReadinessBreakdown } from "@/lib/types";
+import {
+  AwardedProject,
+  FundingCall,
+  FundingProgram,
+  MatchResult,
+  ProjectBankEntry,
+  ProjectInput,
+  ReadinessBreakdown,
+} from "@/lib/types";
 import { computeMatches, scoreMatch } from "@/lib/matching/scoreMatch";
 
 // Bridges the project bank (the municipality's own portfolio) to the
@@ -44,6 +52,48 @@ export function projectInputToProjectBankEntry(project: ProjectInput, readiness:
     aiReadinessPct: readiness.overall,
     missingFields_sv: readiness.dimensions.flatMap((d) => (d.action_sv ? [d.action_sv] : [])),
     missingFields_en: readiness.dimensions.flatMap((d) => (d.action_en ? [d.action_en] : [])),
+  };
+}
+
+// Turns a Projektbank idea that has actually won funding into a real
+// AwardedProject — the conversion the review flagged as missing entirely:
+// before this, the only way for one to exist was hand-editing seed data.
+// Carries over the entry's own title (kept in sync rather than duplicated
+// and drifting, as the two seed awarded projects do today) and uses the
+// call it best matches for the funding estimate, since a ProjectBankEntry
+// doesn't itself track which call an application was actually made under.
+// Commitments and the reporting timeline start empty/minimal — there's no
+// real commitment-capture step in the application flow yet to seed them
+// from honestly, so a single upcoming report is the honest starting point
+// rather than fabricating figures.
+export function projectBankEntryToAwardedProject(entry: ProjectBankEntry, match: MatchResult): AwardedProject {
+  const requirement = match.call.reportingRequirements;
+  const firstDeadlineMonths = requirement
+    ? requirement.periodicity === "quarterly"
+      ? 3
+      : requirement.periodicity === "biannual"
+      ? 6
+      : 12
+    : 6;
+  return {
+    id: `ap-${entry.id}`,
+    title_sv: entry.title_sv,
+    title_en: entry.title_en,
+    callId: match.call.id,
+    projectBankEntryId: entry.id,
+    awardedAmountSEK: Math.round((match.estimatedFundingSEK[0] + match.estimatedFundingSEK[1]) / 2),
+    commitments: [],
+    reportingEvents: [
+      {
+        id: `ap-${entry.id}-report-1`,
+        type: "interim",
+        periodLabel_sv: "Lägesrapport 1",
+        periodLabel_en: "Progress report 1",
+        deadlineMonthsFromNow: firstDeadlineMonths,
+        status: "upcoming",
+        outcomes: [],
+      },
+    ],
   };
 }
 

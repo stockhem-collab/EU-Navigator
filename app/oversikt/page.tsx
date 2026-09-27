@@ -5,14 +5,16 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
+import LinkedReportingBadge from "@/components/LinkedReportingBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useOngoingApplications } from "@/lib/hooks/useOngoingApplications";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { useProjectTasks } from "@/lib/hooks/useProjectTasks";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
+import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
 import { findCall } from "@/lib/data/fundingCalls";
-import { awardedProjects, nextActionableReport } from "@/lib/data/awardedProjects";
+import { nextActionableReport } from "@/lib/data/awardedProjects";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeBestMatchForEntry, computePortfolioEconomics } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
@@ -28,6 +30,7 @@ export default function OversiktPage() {
   const ap = t.awardedProjects;
   const { all: projectBank } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
+  const { all: awardedProjects } = useAwardedProjects();
   const { applications: ongoingApplications, hydrated: ongoingHydrated } = useOngoingApplications();
   const { withSubmissions } = useReportingSubmissions();
   const { tasks, hydrated: tasksHydrated } = useProjectTasks();
@@ -84,7 +87,7 @@ export default function OversiktPage() {
         .filter((r): r is NonNullable<typeof r> => r !== null)
         .sort((a, b) => a.report.deadlineMonthsFromNow - b.report.deadlineMonthsFromNow)
         .slice(0, 3),
-    [withSubmissions]
+    [awardedProjects, withSubmissions]
   );
 
   const docsNeedingUpdate = useMemo(
@@ -415,6 +418,7 @@ export default function OversiktPage() {
               <div className="mt-3 space-y-3">
                 {departmentRows.map(({ entry, match }) => {
                   const missing = lang === "sv" ? entry.missingFields_sv : entry.missingFields_en;
+                  const linkedAwarded = awardedProjects.find((a) => a.projectBankEntryId === entry.id);
                   return (
                     <div key={entry.id} className="rounded-xl border border-navy-100 bg-white p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -423,6 +427,7 @@ export default function OversiktPage() {
                         </Link>
                         <div className="flex items-center gap-2">
                           <StatusBadge status={entry.status} />
+                          {linkedAwarded && <LinkedReportingBadge project={withSubmissions(linkedAwarded)} />}
                           {match && (
                             <span className="badge bg-navy-100 text-navy-700">
                               {match.score}% · {match.program.shortName}

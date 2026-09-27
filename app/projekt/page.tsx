@@ -6,9 +6,11 @@ import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
+import LinkedReportingBadge from "@/components/LinkedReportingBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
-import { awardedProjects, nextActionableReport, reportingHealth } from "@/lib/data/awardedProjects";
+import { nextActionableReport, reportingHealth } from "@/lib/data/awardedProjects";
+import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { findCall } from "@/lib/data/fundingCalls";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
@@ -37,6 +39,7 @@ function MyProjectsPageInner() {
 
   const { all: projectBank } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
+  const { all: awardedProjects } = useAwardedProjects();
   const { withSubmissions } = useReportingSubmissions();
 
   // Arriving from Översikt's "Projekt per status" tiles (?status=...) opens
@@ -111,6 +114,7 @@ function MyProjectsPageInner() {
           <div className="mt-4 space-y-2">
             {filteredRows.map(({ entry, match }) => {
               const missing = lang === "sv" ? entry.missingFields_sv : entry.missingFields_en;
+              const linkedAwarded = awardedProjects.find((a) => a.projectBankEntryId === entry.id);
               return (
                 <div key={entry.id} className="rounded-xl border border-navy-100 bg-white p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
@@ -119,6 +123,7 @@ function MyProjectsPageInner() {
                     </Link>
                     <div className="flex items-center gap-2">
                       <StatusBadge status={entry.status} />
+                      {linkedAwarded && <LinkedReportingBadge project={withSubmissions(linkedAwarded)} />}
                       {match && (
                         <span className="badge bg-navy-100 text-navy-700">
                           {match.score}% · {match.program.shortName}

@@ -5,11 +5,14 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
+import LinkedReportingBadge from "@/components/LinkedReportingBadge";
 import CsvImportPanel from "@/components/projectbank/CsvImportPanel";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
+import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
+import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { primaryProjectAssignment, projectRoleLabels } from "@/lib/data/users";
 import { computeBestMatchForEntry, computePortfolioEconomics } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
@@ -19,6 +22,8 @@ export default function ProjectBankPage() {
   const pb = t.projectBank;
   const { all: projectBank, imported, addImported, removeImported, clearImported } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
+  const { all: awardedProjects } = useAwardedProjects();
+  const { withSubmissions } = useReportingSubmissions();
   const { users } = useUsersDirectory();
   const importedIds = useMemo(() => new Set(imported.map((p) => p.id)), [imported]);
 
@@ -125,7 +130,13 @@ export default function ProjectBankPage() {
                   </td>
                   <td className="px-4 py-3 text-navy-600">{lang === "sv" ? p.department_sv : p.department_en}</td>
                   <td className="px-4 py-3">
-                    <StatusBadge status={p.status} />
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <StatusBadge status={p.status} />
+                      {(() => {
+                        const linkedAwarded = awardedProjects.find((a) => a.projectBankEntryId === p.id);
+                        return linkedAwarded ? <LinkedReportingBadge project={withSubmissions(linkedAwarded)} /> : null;
+                      })()}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-navy-600">{fmtSEK(p.estimatedCostSEK, lang)}</td>
                   <td className="px-4 py-3">

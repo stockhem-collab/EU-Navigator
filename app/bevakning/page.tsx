@@ -9,7 +9,7 @@ import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
-import { findAwardedProject } from "@/lib/data/awardedProjects";
+import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeMatchesForCall } from "@/lib/matching/portfolio";
 import { FundingCall, FundingProgram } from "@/lib/types";
@@ -29,6 +29,7 @@ export default function BevakningPage() {
   const ap = t.awardedProjects;
   const { all: projectBank } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
+  const { all: awardedProjects } = useAwardedProjects();
   const { prefs, hydrated: watchHydrated, toggleCall, toggleReportingEvent } = useWatchPreferences();
   const { withSubmissions, hydrated: reportingHydrated } = useReportingSubmissions();
   const [onlyWatched, setOnlyWatched] = useState(false);
@@ -37,7 +38,7 @@ export default function BevakningPage() {
   const watchedReporting = prefs.reportingEventKeys
     .map((key) => {
       const [projectId, eventId] = key.split(":");
-      const seedProject = findAwardedProject(projectId);
+      const seedProject = awardedProjects.find((a) => a.id === projectId);
       if (!seedProject) return null;
       const project = withSubmissions(seedProject);
       const event = project.reportingEvents.find((e) => e.id === eventId);

@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import {
-  findAwardedProject,
   nextActionableReport,
   latestOutcomeFor,
   outcomeHistoryFor,
@@ -19,6 +18,7 @@ import { findCall } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { useReportingSubmissions, ReportingSubmission } from "@/lib/hooks/useReportingSubmissions";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
+import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
 import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
 import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
 import { buildReportDocx } from "@/lib/export/exportReport";
@@ -30,18 +30,56 @@ export default function AwardedProjectDetailPage() {
   const params = useParams<{ id: string }>();
   const { t, lang } = useLanguage();
   const ap = t.awardedProjects;
+  const pb = t.projectBank;
   const { withSubmissions, submitReport, submissionHistory, addSustainabilityEvent } = useReportingSubmissions();
   const { all: projectBank, updateEntry, hydrated: projectBankHydrated } = useProjectBank();
+  const { all: awardedProjects, hydrated: awardedProjectsHydrated } = useAwardedProjects();
 
-  const seedProject = findAwardedProject(params.id);
-  if (!seedProject) return notFound();
-  const project = withSubmissions(seedProject);
+  // A project added via "Markera som beviljad" only exists in this
+  // browser's localStorage, unavailable during the server render — same
+  // "wait for hydrated before deciding not-found" pattern as the
+  // Projektbank detail page uses for CSV-imported entries.
+  const seedProject = awardedProjects.find((a) => a.id === params.id);
+
+  const project = seedProject ? withSubmissions(seedProject) : undefined;
+  const linkedEntry = project?.projectBankEntryId ? projectBank.find((p) => p.id === project.projectBankEntryId) : undefined;
+  const reportingComplete = project ? isReportingComplete(project) : false;
+
+  // Keeps the originating Projektbank entry's status in sync with reality
+  // instead of requiring a manual "update status" click: an entry linked to
+  // an awarded project is, by definition, no longer just an "idea" — and
+  // once reporting is fully done, it's "completed" rather than left
+  // "running" forever.
+  useEffect(() => {
+    if (!projectBankHydrated || !linkedEntry) return;
+    if (reportingComplete && linkedEntry.status !== "completed") {
+      updateEntry(linkedEntry.id, { status: "completed" });
+    } else if (!reportingComplete && linkedEntry.status !== "running") {
+      updateEntry(linkedEntry.id, { status: "running" });
+    }
+  }, [projectBankHydrated, linkedEntry, reportingComplete, updateEntry]);
+
+  if (!project) {
+    if (!awardedProjectsHydrated) return null;
+    return (
+      <>
+        <Header />
+        <main className="section max-w-3xl">
+          <Link href="/projekt" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
+            ← {ap.back}
+          </Link>
+          <p className="mt-8 text-sm text-navy-500">{pb.detailNotFound}</p>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
   const call = findCall(project.callId);
   const program = call ? findProgram(call.programId) : undefined;
   const reportingReq = call?.reportingRequirements;
   const nextActionable = nextActionableReport(project);
   const health = reportingHealth(project);
-  const linkedEntry = project.projectBankEntryId ? projectBank.find((p) => p.id === project.projectBankEntryId) : undefined;
   const hasSustainabilityEvent = project.reportingEvents.some((e) => e.type === "sustainability");
 
   const periodicityLabel = (p: ReportingPeriodicity) =>
@@ -101,20 +139,7 @@ export default function AwardedProjectDetailPage() {
                 {lang === "sv" ? linkedEntry.title_sv : linkedEntry.title_en}
               </Link>
             </p>
-            {linkedEntry.status !== "running" && (
-              <div className="mt-2 flex flex-wrap items-center gap-3">
-                <p className="text-xs text-amber-700">
-                  ⚠ {ap.syncStatusNudge(t.projectBank.statusLabels[linkedEntry.status])}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => updateEntry(linkedEntry.id, { status: "running" })}
-                  className="shrink-0 rounded-md border border-navy-200 bg-white px-3 py-1.5 text-xs font-semibold text-navy-700 hover:bg-navy-50"
-                >
-                  {ap.syncStatusNudgeButton}
-                </button>
-              </div>
-            )}
+            <p className="mt-1 text-xs text-navy-400">{ap.linkedProjectStatusAutoSyncNote}</p>
           </div>
         )}
 
@@ -173,14 +198,16 @@ export default function AwardedProjectDetailPage() {
           </section>
         )}
 
-        <section className="mt-6">
-          <h2 className="text-lg font-bold text-navy-800">{ap.commitmentsTitle}</h2>
-          <div className="mt-4 space-y-3">
-            {project.commitments.map((c) => (
-              <CommitmentCard key={c.indicator_sv} commitment={c} project={project} />
-            ))}
-          </div>
-        </section>
+        {project.commitments.length > 0 && (
+          <section className="mt-6">
+            <h2 className="text-lg font-bold text-navy-800">{ap.commitmentsTitle}</h2>
+            <div className="mt-4 space-y-3">
+              {project.commitments.map((c) => (
+                <CommitmentCard key={c.indicator_sv} commitment={c} project={project} />
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="mb-16 mt-6">
           <h2 className="text-lg font-bold text-navy-800">{ap.reportingTimelineTitle}</h2>
@@ -190,7 +217,7 @@ export default function AwardedProjectDetailPage() {
               <ReportingEventCard
                 key={event.id}
                 event={event}
-                seedEvent={seedProject.reportingEvents.find((e) => e.id === event.id)}
+                seedEvent={seedProject?.reportingEvents.find((e) => e.id === event.id)}
                 project={project}
                 call={call}
                 program={program}
