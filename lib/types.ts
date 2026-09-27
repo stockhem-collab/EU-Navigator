@@ -201,6 +201,12 @@ export interface ProjectBankEntry {
   aiReadinessPct: number;
   missingFields_sv: string[];
   missingFields_en: string[];
+  /** OrgUnit ids this project has been explicitly shared with, in addition
+   * to whoever already has a ProjectRoleAssignment on it — lets it surface
+   * under "Mina projekt" for people outside its own role assignments,
+   * scoped to their organisation (the root unit) or a specific department.
+   * Undefined/empty = not shared beyond its own assignees. */
+  sharedWithUnitIds?: string[];
 }
 
 // ---------------------------------------------------------------------------

@@ -209,6 +209,8 @@ export interface TranslationTree {
     plusOthers: (n: number) => string;
     assignedRolesTitle: string;
     noAssignedRoles: string;
+    shareTitle: string;
+    shareHint: string;
     tasksTitle: string;
     tasksHint: string;
     taskAddPlaceholder: string;
@@ -380,6 +382,7 @@ export interface TranslationTree {
     back: string;
     statusFilterAll: string;
     noProjectsForStatus: string;
+    onlyMineAndSharedToggle: string;
     reportingSectionTitle: string;
     reportingSectionSubtitle: string;
     reportingRequirementsTitle: string;
@@ -963,6 +966,8 @@ export const translations: Record<Lang, TranslationTree> = {
       plusOthers: (n) => `+${n} till`,
       assignedRolesTitle: "Tilldelade roller",
       noAssignedRoles: "Ingen har tilldelats en roll för detta projekt ännu.",
+      shareTitle: "Dela projekt",
+      shareHint: "Gör projektet synligt i Mina projekt för fler än de som har en tilldelad roll — för hela organisationen eller en specifik förvaltning.",
       tasksTitle: "Uppgifter",
       tasksHint: "Konkreta att-göra-punkter för just detta projekt, oavsett fas.",
       taskAddPlaceholder: "Ny uppgift, t.ex. \"Boka avstämning med ekonomi\"",
@@ -1140,6 +1145,7 @@ export const translations: Record<Lang, TranslationTree> = {
       back: "Tillbaka till mina projekt",
       statusFilterAll: "Alla",
       noProjectsForStatus: "Inga projekt med denna status.",
+      onlyMineAndSharedToggle: "Visa endast mina och delade projekt",
       reportingSectionTitle: "Rapportering på beviljade projekt",
       reportingSectionSubtitle: "Åtaganden från ansökan följs upp mot rapporterat utfall.",
       reportingRequirementsTitle: "Rapporteringskrav för utlysningen",
@@ -1723,6 +1729,8 @@ export const translations: Record<Lang, TranslationTree> = {
       plusOthers: (n) => `+${n} more`,
       assignedRolesTitle: "Assigned roles",
       noAssignedRoles: "No one has been assigned a role on this project yet.",
+      shareTitle: "Share project",
+      shareHint: "Makes the project visible in My projects to more than just its assigned roles — for the whole organisation or a specific department.",
       tasksTitle: "Tasks",
       tasksHint: "Concrete to-dos for this specific project, whatever phase it's in.",
       taskAddPlaceholder: "New task, e.g. \"Book a check-in with finance\"",
@@ -1899,6 +1907,7 @@ export const translations: Record<Lang, TranslationTree> = {
       back: "Back to my projects",
       statusFilterAll: "All",
       noProjectsForStatus: "No projects with this status.",
+      onlyMineAndSharedToggle: "Show only my and shared projects",
       reportingSectionTitle: "Reporting on awarded projects",
       reportingSectionSubtitle: "Commitments made in the application are tracked against reported outturn.",
       reportingRequirementsTitle: "Call reporting requirements",

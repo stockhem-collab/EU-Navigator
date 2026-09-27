@@ -12,12 +12,15 @@ import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { nextActionableReport, reportingHealth } from "@/lib/data/awardedProjects";
 import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
+import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
+import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { findCall } from "@/lib/data/fundingCalls";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
+import { CURRENT_USER_ID, orgUnits as seedOrgUnits, unitIncludesUnit } from "@/lib/data/users";
 import { computeBestMatchForEntry } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
-import { PROJECT_STATUS_ORDER, ProjectStatus } from "@/lib/types";
+import { PROJECT_STATUS_ORDER, ProjectBankEntry, ProjectStatus } from "@/lib/types";
 
 export default function MyProjectsPage() {
   return (
@@ -41,6 +44,23 @@ function MyProjectsPageInner() {
   const { all: fundingCalls } = useFundingCalls();
   const { all: awardedProjects } = useAwardedProjects();
   const { withSubmissions } = useReportingSubmissions();
+  const { users } = useUsersDirectory();
+  const { config: orgConfig } = useOrgConfig();
+
+  const orgUnitsAll = orgConfig.units ?? seedOrgUnits;
+  const currentUser = users.find((u) => u.id === CURRENT_USER_ID);
+
+  // A project counts as "mine" once it has a role assignment for the
+  // current user, or has been explicitly shared with an org unit that
+  // reaches the current user's own unit (sharing with the whole
+  // organisation reaches everyone; sharing with a department reaches only
+  // that department) — see the Projektbank entry's own "Dela projekt".
+  const isRelevantToMe = (entry: ProjectBankEntry) => {
+    if (!currentUser) return true;
+    if (currentUser.projectRoles.some((r) => r.projectId === entry.id)) return true;
+    if (!currentUser.unitId) return false;
+    return (entry.sharedWithUnitIds ?? []).some((unitId) => unitIncludesUnit(orgUnitsAll, unitId, currentUser.unitId!));
+  };
 
   // Arriving from Översikt's "Projekt per status" tiles (?status=...) opens
   // this page pre-filtered to that status, so the two views show exactly
@@ -50,6 +70,7 @@ function MyProjectsPageInner() {
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">(
     isProjectStatus(initialStatus) ? initialStatus : "all"
   );
+  const [onlyMineAndShared, setOnlyMineAndShared] = useState(false);
 
   const rows = useMemo(
     () =>
@@ -59,20 +80,39 @@ function MyProjectsPageInner() {
     [projectBank, fundingCalls]
   );
 
+  // Scoped by the same "mina och delade" filter as the list below, so the
+  // tiles' counts always add up to what's actually shown rather than
+  // advertising projects the filtered list then hides.
+  const scopedProjectBank = onlyMineAndShared ? projectBank.filter(isRelevantToMe) : projectBank;
+
   const statusCounts = useMemo(() => {
     const counts = new Map<ProjectStatus, number>();
-    for (const p of projectBank) counts.set(p.status, (counts.get(p.status) ?? 0) + 1);
+    for (const p of scopedProjectBank) counts.set(p.status, (counts.get(p.status) ?? 0) + 1);
     return counts;
-  }, [projectBank]);
+  }, [scopedProjectBank]);
 
-  const filteredRows = statusFilter === "all" ? rows : rows.filter((r) => r.entry.status === statusFilter);
+  const filteredRows = rows
+    .filter((r) => statusFilter === "all" || r.entry.status === statusFilter)
+    .filter((r) => !onlyMineAndShared || isRelevantToMe(r.entry));
 
   return (
     <>
       <Header />
       <main className="section">
-        <h1 className="text-2xl font-bold text-navy-900">{ap.title}</h1>
-        <p className="mt-2 text-sm text-navy-600">{ap.subtitle}</p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-navy-900">{ap.title}</h1>
+            <p className="mt-2 text-sm text-navy-600">{ap.subtitle}</p>
+          </div>
+          <label className="flex shrink-0 items-center gap-2 text-sm font-semibold text-navy-700">
+            <input
+              type="checkbox"
+              checked={onlyMineAndShared}
+              onChange={(e) => setOnlyMineAndShared(e.target.checked)}
+            />
+            {ap.onlyMineAndSharedToggle}
+          </label>
+        </div>
 
         {/* Same breakdown as Översikt's "Projekt per status" — each tile
             doubles as the filter for the project list right below it. */}
@@ -87,7 +127,7 @@ function MyProjectsPageInner() {
               }`}
             >
               <p className={`text-2xl font-extrabold ${statusFilter === "all" ? "text-white" : "text-navy-900"}`}>
-                {projectBank.length}
+                {scopedProjectBank.length}
               </p>
               <p className={`text-xs ${statusFilter === "all" ? "text-navy-200" : "text-navy-500"}`}>{ap.statusFilterAll}</p>
             </button>

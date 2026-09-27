@@ -13,8 +13,9 @@ import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { useProjectTasks } from "@/lib/hooks/useProjectTasks";
 import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
 import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
+import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { fundedProjects } from "@/lib/data/fundedProjects";
-import { projectRoleLabels } from "@/lib/data/users";
+import { orgUnits as seedOrgUnits, projectRoleLabels, shareableUnits, unitDepth } from "@/lib/data/users";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import { computeMatchesForEntry, projectBankEntryToAwardedProject, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
 import { computeSimilarProjects } from "@/lib/matching/similarProjects";
@@ -63,6 +64,9 @@ export default function ProjectBankDetailPage() {
   const { all: fundingCalls } = useFundingCalls();
   const { all: awardedProjectsAll, addAwardedProject } = useAwardedProjects();
   const { users } = useUsersDirectory();
+  const { config: orgConfig } = useOrgConfig();
+  const orgUnits = orgConfig.units ?? seedOrgUnits;
+  const shareTargets = shareableUnits(orgUnits);
   const { tasksFor, addTask, toggleTask, editTask, removeTask } = useProjectTasks();
   const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
   const entry = all.find((p) => p.id === params.id);
@@ -114,6 +118,12 @@ export default function ProjectBankDetailPage() {
     addAwardedProject(awarded);
     updateEntry(entry.id, { status: "running" });
     router.push(`/projekt/${awarded.id}`);
+  };
+
+  const toggleShareUnit = (unitId: string) => {
+    const current = entry.sharedWithUnitIds ?? [];
+    const next = current.includes(unitId) ? current.filter((id) => id !== unitId) : [...current, unitId];
+    updateEntry(entry.id, { sharedWithUnitIds: next });
   };
 
   const startEditing = () =>
@@ -380,6 +390,25 @@ export default function ProjectBankDetailPage() {
               })}
             </ul>
           )}
+        </div>
+
+        <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+          <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.shareTitle}</h2>
+          <p className="mt-1 text-xs text-navy-400">{pb.shareHint}</p>
+          <ul className="mt-3 space-y-1.5">
+            {shareTargets.map((unit) => (
+              <li key={unit.id} className="flex items-center gap-2" style={{ paddingLeft: unitDepth(orgUnits, unit.id) * 20 }}>
+                <label className="flex items-center gap-2 text-sm text-navy-700">
+                  <input
+                    type="checkbox"
+                    checked={(entry.sharedWithUnitIds ?? []).includes(unit.id)}
+                    onChange={() => toggleShareUnit(unit.id)}
+                  />
+                  {unit.name}
+                </label>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">

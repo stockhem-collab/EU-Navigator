@@ -38,8 +38,42 @@ export const orgRolePermissions: Record<OrgRoleKey, { view: boolean; edit: boole
   "read-only": { view: true, edit: false, submit: false, approve: false, manageUsers: false },
 };
 
-/** The demo's "logged in" user. Min profil always edits this person. */
+/** The demo's "logged in" user. Min profil always edits this person, and
+ * Mina projekt's "mina och delade" filter uses it as the viewer. */
 export const CURRENT_USER_ID = "u-1";
+
+/** How many parentId hops `id` is from a root unit (depth 0). */
+export function unitDepth(units: OrgUnit[], id: string): number {
+  let depth = 0;
+  let current = units.find((u) => u.id === id);
+  while (current && current.parentId) {
+    depth += 1;
+    current = units.find((u) => u.id === current!.parentId);
+  }
+  return depth;
+}
+
+/** The two organisation levels project sharing is scoped to — the whole
+ * organisation (root) and its immediate departments — matching "kommunen
+ * totalt eller specifik förvaltning" rather than exposing every level a
+ * customised org tree might grow beneath that. */
+export function shareableUnits(units: OrgUnit[]): OrgUnit[] {
+  return units.filter((u) => unitDepth(units, u.id) <= 1);
+}
+
+/** True when someone in `viewerUnitId` should see a project shared with
+ * `sharedUnitId` — sharing with a unit reaches that unit and everyone
+ * below it, so this walks up from the viewer's own unit rather than down
+ * from the shared one. Sharing with the root unit therefore reaches every
+ * viewer, regardless of which department they belong to. */
+export function unitIncludesUnit(units: OrgUnit[], sharedUnitId: string, viewerUnitId: string): boolean {
+  let current = units.find((u) => u.id === viewerUnitId);
+  while (current) {
+    if (current.id === sharedUnitId) return true;
+    current = current.parentId ? units.find((u) => u.id === current!.parentId) : undefined;
+  }
+  return false;
+}
 
 const PROJECT_ROLE_PRIORITY: ProjectRoleKey[] = [
   "project-owner",
