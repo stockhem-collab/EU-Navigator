@@ -8,22 +8,30 @@ import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import {
   findAwardedProject,
-  nextUpcomingReport,
+  nextActionableReport,
   latestOutcomeFor,
+  outcomeHistoryFor,
   isReportingComplete,
+  reportingHealth,
+  ReportingHealth,
 } from "@/lib/data/awardedProjects";
 import { findCall } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
+import { useReportingSubmissions, ReportingSubmission } from "@/lib/hooks/useReportingSubmissions";
+import { useProjectBank } from "@/lib/hooks/useProjectBank";
+import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
+import { buildReportDocx } from "@/lib/export/exportReport";
+import { downloadBlob } from "@/lib/export/exportApplication";
 import OrgProcessPanel from "@/components/OrgProcessPanel";
 import { fmtSEK } from "@/lib/format";
-import { AwardedProject, ReportingEvent, ReportingEventStatus, ReportingPeriodicity } from "@/lib/types";
+import { AwardedProject, Commitment, ReportingEvent, ReportingEventStatus, ReportingPeriodicity } from "@/lib/types";
 
 export default function AwardedProjectDetailPage() {
   const params = useParams<{ id: string }>();
   const { t, lang } = useLanguage();
   const ap = t.awardedProjects;
-  const { withSubmissions, submitReport } = useReportingSubmissions();
+  const { withSubmissions, submitReport, submissionHistory, addSustainabilityEvent } = useReportingSubmissions();
+  const { all: projectBank, updateEntry, hydrated: projectBankHydrated } = useProjectBank();
 
   const seedProject = findAwardedProject(params.id);
   if (!seedProject) return notFound();
@@ -31,7 +39,10 @@ export default function AwardedProjectDetailPage() {
   const call = findCall(project.callId);
   const program = call ? findProgram(call.programId) : undefined;
   const reportingReq = call?.reportingRequirements;
-  const nextReport = nextUpcomingReport(project);
+  const nextActionable = nextActionableReport(project);
+  const health = reportingHealth(project);
+  const linkedEntry = project.projectBankEntryId ? projectBank.find((p) => p.id === project.projectBankEntryId) : undefined;
+  const hasSustainabilityEvent = project.reportingEvents.some((e) => e.type === "sustainability");
 
   const periodicityLabel = (p: ReportingPeriodicity) =>
     p === "quarterly" ? ap.periodicityQuarterly : p === "biannual" ? ap.periodicityBiannual : ap.periodicityAnnual;
@@ -48,6 +59,16 @@ export default function AwardedProjectDetailPage() {
     if (status === "revision-requested") return ap.reportStatusRevisionRequested;
     return ap.reportStatusUpcoming;
   };
+  const healthStyle = (h: ReportingHealth) => {
+    if (h === "blocked") return "bg-amber-100 text-amber-800";
+    if (h === "attention") return "bg-gold-100 text-gold-800";
+    return "bg-green-100 text-green-800";
+  };
+  const healthLabel = (h: ReportingHealth) => {
+    if (h === "blocked") return ap.healthBlockedLabel;
+    if (h === "attention") return ap.healthAttentionLabel;
+    return ap.healthGoodLabel;
+  };
 
   return (
     <>
@@ -63,11 +84,39 @@ export default function AwardedProjectDetailPage() {
               {program.logoLetter}
             </span>
           )}
-          <div>
-            <h1 className="text-2xl font-bold text-navy-900">{lang === "sv" ? project.title_sv : project.title_en}</h1>
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-2xl font-bold text-navy-900">{lang === "sv" ? project.title_sv : project.title_en}</h1>
+              <span className={`badge ${healthStyle(health)}`}>{healthLabel(health)}</span>
+            </div>
             {call && <p className="text-sm text-navy-600">{lang === "sv" ? call.title_sv : call.title_en}</p>}
           </div>
         </div>
+
+        {projectBankHydrated && linkedEntry && (
+          <div className="mt-4 rounded-md bg-navy-50 px-4 py-3">
+            <p className="text-xs text-navy-600">
+              {ap.linkedProjectBankLabel}:{" "}
+              <Link href={`/projektbank/${linkedEntry.id}`} className="font-semibold text-navy-800 hover:underline">
+                {lang === "sv" ? linkedEntry.title_sv : linkedEntry.title_en}
+              </Link>
+            </p>
+            {linkedEntry.status !== "running" && (
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <p className="text-xs text-amber-700">
+                  ⚠ {ap.syncStatusNudge(t.projectBank.statusLabels[linkedEntry.status])}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => updateEntry(linkedEntry.id, { status: "running" })}
+                  className="shrink-0 rounded-md border border-navy-200 bg-white px-3 py-1.5 text-xs font-semibold text-navy-700 hover:bg-navy-50"
+                >
+                  {ap.syncStatusNudgeButton}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         <dl className="mt-6 grid gap-4 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-2">
           <div>
@@ -77,7 +126,11 @@ export default function AwardedProjectDetailPage() {
           <div>
             <dt className="text-xs font-semibold uppercase text-navy-400">{ap.nextReportDueLabel}</dt>
             <dd className="mt-1 text-xl font-bold text-navy-900">
-              {nextReport ? ap.nextReportDue(nextReport.deadlineMonthsFromNow) : ap.reportingCompleteLabel}
+              {nextActionable
+                ? nextActionable.status === "revision-requested"
+                  ? ap.reportStatusRevisionRequested
+                  : ap.nextReportDue(nextActionable.deadlineMonthsFromNow)
+                : ap.reportingCompleteLabel}
             </dd>
           </div>
         </dl>
@@ -123,39 +176,9 @@ export default function AwardedProjectDetailPage() {
         <section className="mt-6">
           <h2 className="text-lg font-bold text-navy-800">{ap.commitmentsTitle}</h2>
           <div className="mt-4 space-y-3">
-            {project.commitments.map((c) => {
-              const latest = latestOutcomeFor(project, c.indicator_sv);
-              const deviates = latest !== undefined && latest < c.promisedValue * 0.9;
-              const unit = lang === "sv" ? c.unit_sv : c.unit_en;
-              const fmt = (v: number) => v.toLocaleString(lang === "sv" ? "sv-SE" : "en-US");
-              return (
-                <div key={c.indicator_sv} className="rounded-xl border border-navy-100 bg-white p-5">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <h3 className="font-semibold text-navy-800">{lang === "sv" ? c.indicator_sv : c.indicator_en}</h3>
-                    <span
-                      className={`badge ${
-                        latest === undefined ? "bg-navy-50 text-navy-400" : deviates ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {latest !== undefined ? `${fmt(latest)} / ${fmt(c.promisedValue)} ${unit}` : ap.noLatestOutcome}
-                    </span>
-                  </div>
-                  <div className="mt-3 h-2 rounded-full bg-navy-100">
-                    <div
-                      className={`h-2 rounded-full ${latest === undefined ? "bg-navy-200" : deviates ? "bg-amber-500" : "bg-green-500"}`}
-                      style={{ width: `${c.promisedValue > 0 ? Math.min(100, ((latest ?? 0) / c.promisedValue) * 100) : 0}%` }}
-                    />
-                  </div>
-                  <p className="mt-3 text-sm text-navy-600">
-                    <span className="font-semibold">{ap.promised}: </span>
-                    {fmt(c.promisedValue)} {unit}
-                    {" · "}
-                    <span className="font-semibold">{ap.reported}: </span>
-                    {latest !== undefined ? `${fmt(latest)} ${unit}` : ap.noLatestOutcome}
-                  </p>
-                </div>
-              );
-            })}
+            {project.commitments.map((c) => (
+              <CommitmentCard key={c.indicator_sv} commitment={c} project={project} />
+            ))}
           </div>
         </section>
 
@@ -167,14 +190,30 @@ export default function AwardedProjectDetailPage() {
               <ReportingEventCard
                 key={event.id}
                 event={event}
+                seedEvent={seedProject.reportingEvents.find((e) => e.id === event.id)}
                 project={project}
-                isNext={nextReport?.id === event.id}
+                call={call}
+                program={program}
+                isNext={nextActionable?.id === event.id}
+                history={submissionHistory(project.id, event.id)}
                 statusStyle={statusStyle}
                 statusLabel={statusLabel}
                 onSubmit={(outcomes, note) => submitReport(project.id, event.id, outcomes, note)}
               />
             ))}
           </div>
+          {isReportingComplete(project) && !hasSustainabilityEvent && (
+            <div className="mt-4 rounded-xl border border-dashed border-navy-200 p-4">
+              <p className="text-sm text-navy-600">{ap.addSustainabilityHint}</p>
+              <button
+                type="button"
+                onClick={() => addSustainabilityEvent(project.id, 36)}
+                className="mt-2 rounded-md border border-navy-200 bg-white px-3 py-2 text-xs font-semibold text-navy-700 hover:bg-navy-50"
+              >
+                {ap.addSustainabilityButton}
+              </button>
+            </div>
+          )}
         </section>
 
         <div className="mb-16 mt-6">
@@ -186,39 +225,147 @@ export default function AwardedProjectDetailPage() {
   );
 }
 
+function CommitmentCard({ commitment: c, project }: { commitment: Commitment; project: AwardedProject }) {
+  const { t, lang } = useLanguage();
+  const ap = t.awardedProjects;
+  const latest = latestOutcomeFor(project, c.indicator_sv);
+  const deviates = latest !== undefined && latest < c.promisedValue * 0.9;
+  const unit = lang === "sv" ? c.unit_sv : c.unit_en;
+  const fmt = (v: number) => v.toLocaleString(lang === "sv" ? "sv-SE" : "en-US");
+  const history = outcomeHistoryFor(project, c.indicator_sv);
+  const maxValue = Math.max(c.promisedValue, ...history.map((h) => h.value), 1);
+  const targetPct = Math.min(100, (c.promisedValue / maxValue) * 100);
+
+  return (
+    <div className="rounded-xl border border-navy-100 bg-white p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="font-semibold text-navy-800">{lang === "sv" ? c.indicator_sv : c.indicator_en}</h3>
+        <span
+          className={`badge ${
+            latest === undefined ? "bg-navy-50 text-navy-400" : deviates ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"
+          }`}
+        >
+          {latest !== undefined ? `${fmt(latest)} / ${fmt(c.promisedValue)} ${unit}` : ap.noLatestOutcome}
+        </span>
+      </div>
+      <div className="mt-3 h-2 rounded-full bg-navy-100">
+        <div
+          className={`h-2 rounded-full ${latest === undefined ? "bg-navy-200" : deviates ? "bg-amber-500" : "bg-green-500"}`}
+          style={{ width: `${c.promisedValue > 0 ? Math.min(100, ((latest ?? 0) / c.promisedValue) * 100) : 0}%` }}
+        />
+      </div>
+      <p className="mt-3 text-sm text-navy-600">
+        <span className="font-semibold">{ap.promised}: </span>
+        {fmt(c.promisedValue)} {unit}
+        {" · "}
+        <span className="font-semibold">{ap.reported}: </span>
+        {latest !== undefined ? `${fmt(latest)} ${unit}` : ap.noLatestOutcome}
+      </p>
+
+      {history.length > 1 && (
+        <div className="mt-4 border-t border-navy-50 pt-3">
+          <p className="text-xs font-semibold uppercase text-navy-400">{ap.trendChartTitle}</p>
+          <div className="relative mt-2" style={{ height: 56 }}>
+            <div
+              className="absolute inset-x-0 border-t border-dashed border-gold-500"
+              style={{ bottom: `${targetPct}%` }}
+              title={`${ap.trendChartTarget}: ${fmt(c.promisedValue)} ${unit}`}
+            />
+            <div className="flex h-full items-end gap-2">
+              {history.map((h, i) => (
+                <div key={i} className="flex flex-1 flex-col items-center justify-end gap-1" title={`${fmt(h.value)} ${unit}`}>
+                  <div
+                    className="w-full rounded-t bg-navy-600"
+                    style={{ height: `${Math.min(100, (h.value / maxValue) * 100)}%` }}
+                  />
+                  <span className="text-[10px] text-navy-400">{lang === "sv" ? h.periodLabel_sv : h.periodLabel_en}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ReportingEventCard({
   event,
+  seedEvent,
   project,
+  call,
+  program,
   isNext,
+  history,
   statusStyle,
   statusLabel,
   onSubmit,
 }: {
   event: ReportingEvent;
+  /** The same event as originally seeded, before any local correction is
+   * overlaid — the "before" state a resubmission needs to show as history,
+   * since it lives in static seed data rather than as a dated submission
+   * the app itself ever recorded. Undefined for an event with no seed
+   * counterpart (e.g. a locally-added sustainability follow-up). */
+  seedEvent: ReportingEvent | undefined;
   project: AwardedProject;
+  call: ReturnType<typeof findCall>;
+  program: ReturnType<typeof findProgram>;
   isNext: boolean;
+  history: ReportingSubmission[];
   statusStyle: (s: ReportingEventStatus) => string;
   statusLabel: (s: ReportingEventStatus) => string;
   onSubmit: (outcomes: Record<string, number>, note: string) => void;
 }) {
   const { t, lang } = useLanguage();
   const ap = t.awardedProjects;
+  const { prefs, toggleReportingEvent } = useWatchPreferences();
+  const watchKey = `${project.id}:${event.id}`;
   const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(project.commitments.map((c) => [c.indicator_sv, ""]))
+    Object.fromEntries(
+      project.commitments.map((c) => {
+        const existing = event.outcomes.find((o) => o.indicator_sv === c.indicator_sv);
+        return [c.indicator_sv, existing ? String(existing.value) : ""];
+      })
+    )
   );
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(event.note_sv ?? event.note_en ?? "");
   const [justSubmitted, setJustSubmitted] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
-  const showForm = isNext && event.status === "upcoming";
+  const showForm = isNext && (event.status === "upcoming" || event.status === "revision-requested");
   const fmt = (v: number) => v.toLocaleString(lang === "sv" ? "sv-SE" : "en-US");
+
+  // The seed data's own original outcome is never itself recorded as a
+  // dated submission — it's baked into the event, not written through
+  // submitReport. So the very first correction of a seeded event has no
+  // "before" entry in `history` to show as previous submissions unless we
+  // synthesize one here, with no real timestamp to mark it as such.
+  const fullHistory: ReportingSubmission[] =
+    history.length > 0 && seedEvent && seedEvent.outcomes.length > 0
+      ? [
+          {
+            outcomes: Object.fromEntries(seedEvent.outcomes.map((o) => [o.indicator_sv, o.value])),
+            note: seedEvent.note_sv ?? seedEvent.note_en ?? "",
+            submittedAt: "",
+          },
+          ...history,
+        ]
+      : history;
+
+  const reportTypeLabel =
+    event.type === "final" ? ap.reportTypeFinal : event.type === "sustainability" ? ap.reportTypeSustainability : ap.reportTypeInterim;
+
+  const handleExport = async () => {
+    const blob = await buildReportDocx(project, event, call, program, lang);
+    downloadBlob(blob, `rapport-${project.id}-${event.id}.docx`);
+  };
 
   return (
     <div className="rounded-xl border border-navy-100 bg-white p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase text-navy-400">
-            {event.type === "final" ? ap.reportTypeFinal : ap.reportTypeInterim}
-          </p>
+          <p className="text-xs font-semibold uppercase text-navy-400">{reportTypeLabel}</p>
           <h3 className="font-semibold text-navy-800">{lang === "sv" ? event.periodLabel_sv : event.periodLabel_en}</h3>
         </div>
         <div className="text-right">
@@ -232,6 +379,18 @@ function ReportingEventCard({
           )}
         </div>
       </div>
+
+      {(event.status === "upcoming" || event.status === "revision-requested") && (
+        <button
+          type="button"
+          onClick={() => toggleReportingEvent(watchKey)}
+          className={`mt-2 text-xs font-semibold ${
+            prefs.reportingEventKeys.includes(watchKey) ? "text-gold-700 hover:text-gold-800" : "text-navy-500 hover:text-navy-800"
+          }`}
+        >
+          {prefs.reportingEventKeys.includes(watchKey) ? ap.watchingReportButton : ap.watchReportButton}
+        </button>
+      )}
 
       {event.outcomes.length > 0 && (
         <ul className="mt-3 space-y-1 border-t border-navy-50 pt-3">
@@ -258,6 +417,47 @@ function ReportingEventCard({
           <span className="font-semibold">{ap.reportNoteLabel}: </span>
           {lang === "sv" ? event.note_sv : event.note_en}
         </p>
+      )}
+
+      {event.outcomes.length > 0 && (
+        <button
+          type="button"
+          onClick={handleExport}
+          className="mt-3 text-xs font-semibold text-navy-500 hover:text-navy-800"
+        >
+          {ap.exportReportButton}
+        </button>
+      )}
+
+      {fullHistory.length > 1 && (
+        <div className="mt-3 border-t border-navy-50 pt-3">
+          <button
+            type="button"
+            onClick={() => setShowHistory((v) => !v)}
+            className="text-xs font-semibold text-navy-500 hover:text-navy-800"
+          >
+            {ap.reportHistoryToggle(fullHistory.length - 1)}
+          </button>
+          {showHistory && (
+            <ul className="mt-2 space-y-2">
+              {fullHistory.slice(0, -1).map((s, i) => (
+                <li key={i} className="rounded-md bg-navy-50 p-2 text-xs text-navy-600">
+                  <p className="font-semibold text-navy-700">
+                    {s.submittedAt
+                      ? ap.reportHistoryEntryLabel(new Date(s.submittedAt).toLocaleString(lang === "sv" ? "sv-SE" : "en-US"))
+                      : ap.reportHistoryOriginalLabel}
+                  </p>
+                  {Object.entries(s.outcomes).map(([indicator, value]) => (
+                    <p key={indicator}>
+                      {indicator}: {value}
+                    </p>
+                  ))}
+                  {s.note && <p className="mt-1 italic">{s.note}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
       {showForm && (
@@ -295,7 +495,7 @@ function ReportingEventCard({
             }}
             className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
           >
-            {ap.reportFormSubmitButton}
+            {event.status === "revision-requested" ? ap.reportFormCorrectButton : ap.reportFormSubmitButton}
           </button>
         </div>
       )}

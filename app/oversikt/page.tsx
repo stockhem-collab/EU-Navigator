@@ -11,7 +11,7 @@ import { useOngoingApplications } from "@/lib/hooks/useOngoingApplications";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { findCall } from "@/lib/data/fundingCalls";
-import { awardedProjects, nextUpcomingReport } from "@/lib/data/awardedProjects";
+import { awardedProjects, nextActionableReport } from "@/lib/data/awardedProjects";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeBestMatchForEntry, computePortfolioEconomics } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
@@ -58,7 +58,7 @@ export default function OversiktPage() {
       awardedProjects
         .map((seedProject) => {
           const project = withSubmissions(seedProject);
-          const report = nextUpcomingReport(project);
+          const report = nextActionableReport(project);
           return report ? { project, report } : null;
         })
         .filter((r): r is NonNullable<typeof r> => r !== null)
@@ -266,7 +266,9 @@ export default function OversiktPage() {
                           <p className="text-xs font-semibold uppercase text-navy-400">{program?.shortName}</p>
                           <p className="font-semibold text-navy-800">{lang === "sv" ? project.title_sv : project.title_en}</p>
                         </div>
-                        <span className="badge bg-navy-100 text-navy-600">{ap.nextReportDue(report.deadlineMonthsFromNow)}</span>
+                        <span className={`badge ${report.status === "revision-requested" ? "bg-amber-100 text-amber-800" : "bg-navy-100 text-navy-600"}`}>
+                          {report.status === "revision-requested" ? ap.reportStatusRevisionRequested : ap.nextReportDue(report.deadlineMonthsFromNow)}
+                        </span>
                       </Link>
                     );
                   })}

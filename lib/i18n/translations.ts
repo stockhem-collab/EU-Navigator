@@ -224,6 +224,8 @@ export interface TranslationTree {
     statPortfolioBudget: string;
     statFundingPotential: string;
     statCoFinancingNeed: string;
+    linkedAwardedProjectLabel: string;
+    linkedAwardedProjectLink: string;
   };
   euDatabase: {
     title: string;
@@ -378,8 +380,26 @@ export interface TranslationTree {
     reportFormNoteLabel: string;
     reportFormNotePlaceholder: string;
     reportFormSubmitButton: string;
+    reportFormCorrectButton: string;
     reportSubmittedIndicator: string;
     reportingCompleteLabel: string;
+    reportTypeSustainability: string;
+    reportHistoryToggle: (n: number) => string;
+    reportHistoryEntryLabel: (date: string) => string;
+    reportHistoryOriginalLabel: string;
+    trendChartTitle: string;
+    trendChartTarget: string;
+    watchReportButton: string;
+    watchingReportButton: string;
+    exportReportButton: string;
+    addSustainabilityButton: string;
+    addSustainabilityHint: string;
+    healthGoodLabel: string;
+    healthAttentionLabel: string;
+    healthBlockedLabel: string;
+    linkedProjectBankLabel: string;
+    syncStatusNudge: (status: string) => string;
+    syncStatusNudgeButton: string;
   };
   orgProcess: {
     title: string;
@@ -537,6 +557,9 @@ export interface TranslationTree {
     watchedCallsHint: string;
     noWatchedCalls: string;
     removeWatchedCall: string;
+    watchedReportingTitle: string;
+    watchedReportingHint: string;
+    noWatchedReporting: string;
   };
   fundingProfileSettings: {
     title: string;
@@ -933,6 +956,8 @@ export const translations: Record<Lang, TranslationTree> = {
       statPortfolioBudget: "Total portföljbudget",
       statFundingPotential: "Identifierad EU-finansieringspotential",
       statCoFinancingNeed: "Uppskattat medfinansieringsbehov",
+      linkedAwardedProjectLabel: "Beviljad och under rapportering",
+      linkedAwardedProjectLink: "Visa rapportering →",
     },
     euDatabase: {
       title: "EU-databas",
@@ -1090,8 +1115,27 @@ export const translations: Record<Lang, TranslationTree> = {
       reportFormNoteLabel: "Kommentar till rapporten",
       reportFormNotePlaceholder: "Kort kommentar till utfallet, t.ex. avvikelser mot plan.",
       reportFormSubmitButton: "Markera som inlämnad",
+      reportFormCorrectButton: "Skicka in korrigering",
       reportSubmittedIndicator: "Sparat i din webbläsare — ersätter inte en faktisk inlämning till finansiären.",
       reportingCompleteLabel: "All rapportering avslutad.",
+      reportTypeSustainability: "Hållbarhetsuppföljning",
+      reportHistoryToggle: (n) => `Tidigare inlämningar (${n})`,
+      reportHistoryEntryLabel: (date) => `Inlämnad ${date}`,
+      reportHistoryOriginalLabel: "Ursprunglig rapport",
+      trendChartTitle: "Utveckling över tid",
+      trendChartTarget: "Mål",
+      watchReportButton: "☆ Bevaka",
+      watchingReportButton: "★ Bevakas",
+      exportReportButton: "Exportera rapport (.docx)",
+      addSustainabilityButton: "Lägg till hållbarhetsuppföljning",
+      addSustainabilityHint: "För fonder som kräver uppföljning av resultatens hållbarhet flera år efter projektslut.",
+      healthGoodLabel: "Enligt plan",
+      healthAttentionLabel: "Kräver uppmärksamhet",
+      healthBlockedLabel: "Komplettering begärd",
+      linkedProjectBankLabel: "Ursprunglig projektidé i Projektbanken",
+      syncStatusNudge: (status) =>
+        `Den ursprungliga projektidén har fortfarande status "${status}" i Projektbanken, trots att rapporteringen redan är igång.`,
+      syncStatusNudgeButton: "Uppdatera status till Pågående",
     },
     orgProcess: {
       title: "Organisationens regelverk",
@@ -1255,6 +1299,9 @@ export const translations: Record<Lang, TranslationTree> = {
       watchedCallsHint: "Utlysningar du flaggat direkt från Bevakning eller EU-databasen.",
       noWatchedCalls: "Inga enskilda utlysningar bevakas ännu.",
       removeWatchedCall: "Sluta bevaka",
+      watchedReportingTitle: "Bevakade rapporteringar",
+      watchedReportingHint: "Rapporteringstillfällen du flaggat direkt på ett beviljat projekts sida.",
+      noWatchedReporting: "Inga rapporteringstillfällen bevakas ännu.",
     },
     fundingProfileSettings: {
       title: "Finansieringsprofil",
@@ -1648,6 +1695,8 @@ export const translations: Record<Lang, TranslationTree> = {
       statPortfolioBudget: "Total portfolio budget",
       statFundingPotential: "Identified EU funding potential",
       statCoFinancingNeed: "Estimated co-financing need",
+      linkedAwardedProjectLabel: "Awarded and under reporting",
+      linkedAwardedProjectLink: "View reporting →",
     },
     euDatabase: {
       title: "EU database",
@@ -1804,8 +1853,27 @@ export const translations: Record<Lang, TranslationTree> = {
       reportFormNoteLabel: "Note on this report",
       reportFormNotePlaceholder: "A short note on the outturn, e.g. deviations from plan.",
       reportFormSubmitButton: "Mark as submitted",
+      reportFormCorrectButton: "Submit correction",
       reportSubmittedIndicator: "Saved in your browser — this does not replace an actual submission to the funder.",
       reportingCompleteLabel: "All reporting complete.",
+      reportTypeSustainability: "Sustainability follow-up",
+      reportHistoryToggle: (n) => `Previous submissions (${n})`,
+      reportHistoryEntryLabel: (date) => `Submitted ${date}`,
+      reportHistoryOriginalLabel: "Original report",
+      trendChartTitle: "Trend over time",
+      trendChartTarget: "Target",
+      watchReportButton: "☆ Watch",
+      watchingReportButton: "★ Watching",
+      exportReportButton: "Export report (.docx)",
+      addSustainabilityButton: "Add sustainability follow-up",
+      addSustainabilityHint: "For funds requiring follow-up on the sustainability of results years after project end.",
+      healthGoodLabel: "On track",
+      healthAttentionLabel: "Needs attention",
+      healthBlockedLabel: "Revision requested",
+      linkedProjectBankLabel: "Original project idea in the project bank",
+      syncStatusNudge: (status) =>
+        `The original project idea is still marked "${status}" in the project bank, even though reporting is already under way.`,
+      syncStatusNudgeButton: "Update status to Running",
     },
     orgProcess: {
       title: "Organisation's internal process",
@@ -1969,6 +2037,9 @@ export const translations: Record<Lang, TranslationTree> = {
       watchedCallsHint: "Calls you've flagged directly from Watchlist or the EU database.",
       noWatchedCalls: "No individual calls watched yet.",
       removeWatchedCall: "Stop watching",
+      watchedReportingTitle: "Watched reports",
+      watchedReportingHint: "Reporting events you've flagged directly on an awarded project's page.",
+      noWatchedReporting: "No reporting events watched yet.",
     },
     fundingProfileSettings: {
       title: "Funding profile",

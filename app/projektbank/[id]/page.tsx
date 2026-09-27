@@ -10,6 +10,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
+import { awardedProjects } from "@/lib/data/awardedProjects";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { projectRoleLabels } from "@/lib/data/users";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
@@ -81,6 +82,7 @@ export default function ProjectBankDetailPage() {
   const missing = lang === "sv" ? entry.missingFields_sv : entry.missingFields_en;
   const matches = computeMatchesForEntry(entry, fundingCalls);
   const similar = computeSimilarProjects(projectBankEntryToProjectInput(entry), fundedProjects);
+  const linkedAwardedProject = awardedProjects.find((a) => a.projectBankEntryId === entry.id);
 
   const recommendationStyle = (rec: (typeof matches)[number]["recommendation"]) => {
     if (rec === "proceed") return "bg-green-100 text-green-800";
@@ -273,6 +275,18 @@ export default function ProjectBankDetailPage() {
                 </button>
               </div>
             </div>
+
+            {linkedAwardedProject && (
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md bg-navy-50 px-4 py-3">
+                <p className="text-xs text-navy-600">{pb.linkedAwardedProjectLabel}</p>
+                <Link
+                  href={`/projekt/${linkedAwardedProject.id}`}
+                  className="text-xs font-semibold text-navy-700 hover:underline"
+                >
+                  {pb.linkedAwardedProjectLink}
+                </Link>
+              </div>
+            )}
 
             <dl className="mt-8 grid gap-6 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-2">
               <div>

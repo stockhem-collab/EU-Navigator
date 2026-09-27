@@ -11,9 +11,9 @@ test("an awarded project's reporting timeline and requirements are visible", asy
   await expect(page.getByText("Rapporteringskrav för utlysningen")).toBeVisible();
   await expect(page.getByText("Årsvis")).toBeVisible();
 
-  await expect(page.getByText("Lägesrapport 2027")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lägesrapport 2027" })).toBeVisible();
   await expect(page.getByText("GODKÄND")).toBeVisible();
-  await expect(page.getByText("Lägesrapport 2028")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lägesrapport 2028" })).toBeVisible();
   await expect(page.getByText("Inlämnad", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Slutrapport" })).toBeVisible();
 });

@@ -308,7 +308,7 @@ export interface Commitment {
   unit_en: string;
 }
 
-export type ReportingEventType = "interim" | "final";
+export type ReportingEventType = "interim" | "final" | "sustainability";
 export type ReportingEventStatus = "upcoming" | "submitted" | "approved" | "revision-requested";
 
 /** The outturn reported for one Commitment indicator as of one specific
@@ -344,9 +344,17 @@ export interface AwardedProject {
   title_sv: string;
   title_en: string;
   callId: string;
+  /** The Projektbank idea that became this awarded project, when known —
+   * lets the portfolio-pipeline entry and its post-award reporting, today
+   * two otherwise-unconnected records, link back to each other. Undefined
+   * where the link was never captured. */
+  projectBankEntryId?: string;
   awardedAmountSEK: number;
   commitments: Commitment[];
-  /** Chronological — interim reports followed by the closing final report. */
+  /** Chronological — interim reports followed by the closing final report.
+   * A "sustainability" event, added on demand once the final report is in,
+   * is a later, separate long-tail follow-up rather than part of this
+   * core cycle. */
   reportingEvents: ReportingEvent[];
 }
 

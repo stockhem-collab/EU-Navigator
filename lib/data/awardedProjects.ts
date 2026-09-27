@@ -13,6 +13,10 @@ export const awardedProjects: AwardedProject[] = [
     title_sv: "LIFE – Green Schools",
     title_en: "LIFE – Green Schools",
     callId: "life-2027-climate-schools",
+    // The Projektbank idea this award actually came from — same theme
+    // (school energy efficiency), still sitting at status "idea" there
+    // even though it's this far into its own reporting cycle.
+    projectBankEntryId: "pb-1",
     awardedAmountSEK: 42_400_000,
     commitments: [
       {
@@ -86,6 +90,9 @@ export const awardedProjects: AwardedProject[] = [
     title_sv: "ESF+ – Kompetenslyft äldreomsorg",
     title_en: "ESF+ – Elderly care skills upgrade",
     callId: "esf-2027-care-skills",
+    // Same underlying idea as Projektbank's "pb-3" (identical title),
+    // still marked "idea" there despite already being mid-reporting here.
+    projectBankEntryId: "pb-3",
     awardedAmountSEK: 12_800_000,
     commitments: [
       {
@@ -154,9 +161,20 @@ export function findAwardedProject(id: string): AwardedProject | undefined {
 
 /** The next reporting event still awaiting submission, in chronological
  * order — what "nästa rapportering" should point at. Undefined once every
- * known event has been submitted (nothing scheduled yet). */
+ * known event has been submitted (nothing scheduled yet). Does not surface
+ * a "revision-requested" event — see nextActionableReport for the version
+ * that also does. */
 export function nextUpcomingReport(project: AwardedProject): ReportingEvent | undefined {
   return project.reportingEvents.find((r) => r.status === "upcoming");
+}
+
+/** The reporting event that actually needs someone to do something right
+ * now: a report sent back for correction takes priority — it's blocking —
+ * over the next scheduled-but-not-yet-due report. This is what the
+ * submission form should open on, so a "revision-requested" report is
+ * actually fixable rather than just visibly stuck. */
+export function nextActionableReport(project: AwardedProject): ReportingEvent | undefined {
+  return project.reportingEvents.find((r) => r.status === "revision-requested") ?? nextUpcomingReport(project);
 }
 
 /** The most recently reported outturn for one Commitment indicator (by
@@ -171,11 +189,47 @@ export function latestOutcomeFor(project: AwardedProject, indicatorSv: string): 
   return undefined;
 }
 
-/** True once every known reporting event is done (submitted, approved, or
- * flagged for revision) and the most recent one was the final report —
- * i.e. there's nothing left to report and the project is winding down into
- * closure/archiving rather than still mid-delivery. */
+/** Every reported outturn for one indicator across the project's history,
+ * in chronological order, each paired with the period label of the report
+ * it came from — the series a trend chart needs, rather than just the
+ * latest point latestOutcomeFor gives. */
+export function outcomeHistoryFor(
+  project: AwardedProject,
+  indicatorSv: string
+): { periodLabel_sv: string; periodLabel_en: string; value: number }[] {
+  return project.reportingEvents
+    .map((event) => {
+      const outcome = event.outcomes.find((o) => o.indicator_sv === indicatorSv);
+      return outcome ? { periodLabel_sv: event.periodLabel_sv, periodLabel_en: event.periodLabel_en, value: outcome.value } : null;
+    })
+    .filter((row): row is NonNullable<typeof row> => row !== null);
+}
+
+/** True once the final report specifically has been submitted (or
+ * approved) — found by type rather than assumed to be the last array
+ * entry, since a later sustainability follow-up event can be appended
+ * after it. A final report still sitting at "revision-requested" does NOT
+ * count as complete: there's a correction outstanding, so the project
+ * isn't actually done winding down into closure/archiving yet. */
 export function isReportingComplete(project: AwardedProject): boolean {
-  const last = project.reportingEvents[project.reportingEvents.length - 1];
-  return last !== undefined && last.type === "final" && last.status !== "upcoming";
+  const final = project.reportingEvents.find((e) => e.type === "final");
+  return final !== undefined && (final.status === "submitted" || final.status === "approved");
+}
+
+export type ReportingHealth = "good" | "attention" | "blocked";
+
+/** A single, portfolio-scannable status per awarded project: "blocked" if
+ * any report is stuck awaiting a correction (the most urgent state —
+ * takes priority regardless of how the numbers look), "attention" if the
+ * latest known outturn for any commitment is meaningfully behind plan,
+ * "good" otherwise. Same 90%-of-promised threshold already used for the
+ * per-indicator deviation flag, just rolled up to one project-level
+ * verdict for list views. */
+export function reportingHealth(project: AwardedProject): ReportingHealth {
+  if (project.reportingEvents.some((e) => e.status === "revision-requested")) return "blocked";
+  const anyDeviates = project.commitments.some((c) => {
+    const latest = latestOutcomeFor(project, c.indicator_sv);
+    return latest !== undefined && latest < c.promisedValue * 0.9;
+  });
+  return anyDeviates ? "attention" : "good";
 }

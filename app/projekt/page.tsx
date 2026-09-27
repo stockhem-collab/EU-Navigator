@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
-import { awardedProjects, nextUpcomingReport } from "@/lib/data/awardedProjects";
+import { awardedProjects, nextActionableReport, reportingHealth } from "@/lib/data/awardedProjects";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { findCall } from "@/lib/data/fundingCalls";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
@@ -145,8 +145,8 @@ function MyProjectsPageInner() {
               const project = withSubmissions(seedProject);
               const call = findCall(project.callId);
               const program = call ? findProgram(call.programId) : undefined;
-              const nextReport = nextUpcomingReport(project);
-              const needsRevision = project.reportingEvents.some((e) => e.status === "revision-requested");
+              const nextReport = nextActionableReport(project);
+              const health = reportingHealth(project);
               return (
                 <Link
                   key={project.id}
@@ -165,11 +165,13 @@ function MyProjectsPageInner() {
                       </h3>
                     </div>
                     <div className="flex items-center gap-2">
-                      {needsRevision && (
-                        <span className="badge bg-amber-100 text-amber-800">{ap.reportStatusRevisionRequested}</span>
-                      )}
-                      <span className="badge bg-navy-100 text-navy-600">
-                        {nextReport ? ap.nextReportDue(nextReport.deadlineMonthsFromNow) : ap.reportingCompleteLabel}
+                      {health === "attention" && <span className="badge bg-gold-100 text-gold-800">{ap.healthAttentionLabel}</span>}
+                      <span className={`badge ${health === "blocked" ? "bg-amber-100 text-amber-800" : "bg-navy-100 text-navy-600"}`}>
+                        {nextReport
+                          ? nextReport.status === "revision-requested"
+                            ? ap.reportStatusRevisionRequested
+                            : ap.nextReportDue(nextReport.deadlineMonthsFromNow)
+                          : ap.reportingCompleteLabel}
                       </span>
                     </div>
                   </div>
