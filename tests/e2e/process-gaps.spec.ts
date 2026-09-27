@@ -104,8 +104,12 @@ test("a document can be attached to a specific reporting event", async ({ page }
   await expect(reportCard.getByText("evidence.txt")).toHaveCount(0);
 });
 
-test("the header's call-to-action reflects real function, not just a demo", async ({ page }) => {
+test("the homepage's calls-to-action reflect real function, not just a demo", async ({ page }) => {
   await page.goto("/");
+  // Header CTA.
   await expect(page.getByRole("link", { name: "Starta ansökan" }).first()).toBeVisible();
-  await expect(page.getByRole("link", { name: /Prova demo/i })).toHaveCount(0);
+  // Bottom-of-page CTA banner — a separate translation block from the
+  // header's, easy to miss when auditing "demo" wording by exact string.
+  await expect(page.getByRole("link", { name: "Starta ansökan" }).last()).toBeVisible();
+  await expect(page.getByRole("link", { name: /Prova demo|Starta demo/i })).toHaveCount(0);
 });

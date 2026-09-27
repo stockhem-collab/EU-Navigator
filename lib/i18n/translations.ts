@@ -795,8 +795,8 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     cta: {
       title: "Se hur er nästa investering kan bli EU-finansierad",
-      subtitle: "Prova demot med ett eget exempelprojekt — ingen inloggning krävs.",
-      button: "Starta demo",
+      subtitle: "Beskriv ett eget projekt och se matchande utlysningar — ingen inloggning krävs.",
+      button: "Starta ansökan",
     },
     footer: {
       disclaimer:
@@ -1554,8 +1554,8 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     cta: {
       title: "See how your next investment could become EU-funded",
-      subtitle: "Try the demo with your own example project — no login required.",
-      button: "Start the demo",
+      subtitle: "Describe your own project and see matching calls — no login required.",
+      button: "Start an application",
     },
     footer: {
       disclaimer:
