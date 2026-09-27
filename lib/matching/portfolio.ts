@@ -1,4 +1,4 @@
-import { FundingCall, FundingProgram, MatchResult, ProjectBankEntry, ProjectInput } from "@/lib/types";
+import { FundingCall, FundingProgram, MatchResult, ProjectBankEntry, ProjectInput, ReadinessBreakdown } from "@/lib/types";
 import { computeMatches, scoreMatch } from "@/lib/matching/scoreMatch";
 
 // Bridges the project bank (the municipality's own portfolio) to the
@@ -15,6 +15,35 @@ export function projectBankEntryToProjectInput(entry: ProjectBankEntry): Project
     endYear: entry.periodEnd,
     municipality: "Exempelstad",
     hasInternationalPartner: entry.hasInternationalPartner,
+  };
+}
+
+// The inverse of projectBankEntryToProjectInput above: turns an ad-hoc
+// intake — one that was never started from a saved Projektbank entry, so
+// its draft can't survive a refresh (see useApplication) — into a new
+// entry the user can actually save. Reuses the readiness breakdown already
+// computed for this exact project in the workspace, rather than a second,
+// cruder heuristic like the CSV importer's (projectIntake.ts's
+// computeImportedReadiness), since a real one is already on hand here.
+export function projectInputToProjectBankEntry(project: ProjectInput, readiness: ReadinessBreakdown): ProjectBankEntry {
+  return {
+    id: `manual-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+    title_sv: project.title,
+    title_en: project.title,
+    department_sv: "Ej angiven",
+    department_en: "Not specified",
+    owner: "—",
+    status: "idea",
+    estimatedCostSEK: project.budgetSEK,
+    periodStart: project.startYear,
+    periodEnd: project.endYear,
+    sector: project.sector,
+    description_sv: project.description,
+    description_en: project.description,
+    hasInternationalPartner: project.hasInternationalPartner,
+    aiReadinessPct: readiness.overall,
+    missingFields_sv: readiness.dimensions.flatMap((d) => (d.action_sv ? [d.action_sv] : [])),
+    missingFields_en: readiness.dimensions.flatMap((d) => (d.action_en ? [d.action_en] : [])),
   };
 }
 

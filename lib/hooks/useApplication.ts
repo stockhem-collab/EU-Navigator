@@ -48,6 +48,17 @@ function writeDraft(customerProjectId: string, callId: string, draft: Applicatio
   }
 }
 
+/** One-time transplant for an ad-hoc intake that just got saved as a new
+ * Projektbank entry: writes its already-resolved section text straight to
+ * the new (customerProjectId, callId) pair's storage key, outside of the
+ * normal useApplication instance, so the very next render — once the
+ * caller adopts this customerProjectId — reads it back via readDraft as if
+ * it had been there all along. Without this, the switch from unpersisted
+ * to persisted would silently drop everything the user had already typed. */
+export function seedApplicationDraft(customerProjectId: string, callId: string, sectionDrafts: Record<string, string>) {
+  writeDraft(customerProjectId, callId, { sectionDrafts, updatedAt: new Date().toISOString(), versions: [] });
+}
+
 /**
  * Persists the editable project-logic draft — and named saved versions of
  * it — for one (customer project, call) pair. The client-only stand-in for

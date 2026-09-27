@@ -7,7 +7,9 @@ import { generateProjectLogic, generateReviewerNotes } from "@/lib/matching/gene
 import { computeGapAnalysis } from "@/lib/matching/gapAnalysis";
 import { computeReadiness } from "@/lib/matching/readiness";
 import { analyzeSection } from "@/lib/matching/sectionCoach";
-import { useApplication } from "@/lib/hooks/useApplication";
+import { useApplication, seedApplicationDraft } from "@/lib/hooks/useApplication";
+import { useProjectBank } from "@/lib/hooks/useProjectBank";
+import { projectInputToProjectBankEntry } from "@/lib/matching/portfolio";
 import { buildApplicationDocx, downloadBlob } from "@/lib/export/exportApplication";
 import OrgProcessPanel from "@/components/OrgProcessPanel";
 import { fmtSEK } from "@/lib/format";
@@ -20,11 +22,18 @@ interface Props {
    * one — enables the draft to survive a refresh (see useApplication). Null
    * for an ad-hoc intake that was never saved anywhere. */
   customerProjectId?: string | null;
+  /** Called once an ad-hoc intake is saved as a brand-new Projektbank entry
+   * (see handleSaveAsNewProject below), with that entry's new id — lets the
+   * parent adopt it as customerProjectId so this same workspace instance
+   * becomes persisted without a page navigation or losing the draft.
+   * Undefined when the workspace was reached from an already-saved entry,
+   * where saving-as-new doesn't apply. */
+  onSavedAsProject?: (newProjectId: string) => void;
 }
 
 type Tab = "application" | "assessment" | "process";
 
-export default function ApplicationWorkspace({ project, match, onBack, customerProjectId = null }: Props) {
+export default function ApplicationWorkspace({ project, match, onBack, customerProjectId = null, onSavedAsProject }: Props) {
   const { t, lang } = useLanguage();
   const ws = t.demo.workspace;
   const gapT = t.demo.gapAnalysis;
@@ -43,6 +52,7 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
   // call) when the project was saved in the Projektbank — see useApplication.
   const { sectionDrafts, setSection, resetSection, versions, saveVersion, restoreVersion, deleteVersion, isPersisted } =
     useApplication(customerProjectId, match.call.id);
+  const { addImported } = useProjectBank();
   const [versionName, setVersionName] = useState("");
 
   const estEu = (match.estimatedFundingSEK[0] + match.estimatedFundingSEK[1]) / 2;
@@ -60,6 +70,20 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
     const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
     const blob = await buildApplicationDocx(project, match, logic, resolved, lang);
     downloadBlob(blob, `ansokan-${match.call.id}.docx`);
+  };
+
+  // Turns this ad-hoc, never-saved intake into a real Projektbank entry —
+  // carrying over everything already typed into the draft, not just the
+  // original intake fields — so "save it to the project bank" (the note
+  // shown below while unpersisted) is something the user can actually do
+  // right here, not an instruction with no matching control anywhere in
+  // the app.
+  const handleSaveAsNewProject = () => {
+    const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
+    const entry = projectInputToProjectBankEntry(project, readiness);
+    addImported([entry]);
+    seedApplicationDraft(entry.id, match.call.id, resolved);
+    onSavedAsProject?.(entry.id);
   };
 
   const handleSaveVersion = (name: string) => {
@@ -246,6 +270,15 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
               <section className="mb-16 mt-8">
                 <h2 className="text-lg font-bold text-navy-800">{ws.versionsTitle}</h2>
                 <p className="mt-1 text-sm text-navy-500">{isPersisted ? ws.versionsHint : ws.draftNotSavedNote}</p>
+                {!isPersisted && (
+                  <button
+                    type="button"
+                    onClick={handleSaveAsNewProject}
+                    className="mt-3 rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
+                  >
+                    {ws.saveAsNewProjectButton}
+                  </button>
+                )}
 
                 <div className="mt-4 rounded-xl border border-navy-100 bg-white p-4">
                   <div className="flex flex-wrap items-center gap-2">

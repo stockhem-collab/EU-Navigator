@@ -136,6 +136,7 @@ export interface TranslationTree {
       topPriorityNone: string;
       draftSavedNote: string;
       draftNotSavedNote: string;
+      saveAsNewProjectButton: string;
       templateSourceNote: (callTitle: string) => string;
       templateGenericNote: string;
       exportButton: string;
@@ -875,6 +876,7 @@ export const translations: Record<Lang, TranslationTree> = {
         topPriorityNone: "Inga akuta åtgärder — ansökan ser stark ut.",
         draftSavedNote: "Utkastet sparas automatiskt i din webbläsare.",
         draftNotSavedNote: "Spara projektet i projektbanken för att utkastet ska sparas mellan besök.",
+        saveAsNewProjectButton: "Spara som nytt projekt i Projektbanken",
         templateSourceNote: (callTitle) => `Strukturerad enligt ${callTitle}s eget ansökningsformulär.`,
         templateGenericNote:
           "Generisk projektlogik — den här utlysningen har ingen fördefinierad ansökningsstruktur i systemet ännu.",
@@ -1643,6 +1645,7 @@ export const translations: Record<Lang, TranslationTree> = {
         topPriorityNone: "No urgent action items — the application looks strong.",
         draftSavedNote: "This draft is saved automatically in your browser.",
         draftNotSavedNote: "Save this project to the project bank so its draft is kept between visits.",
+        saveAsNewProjectButton: "Save as a new project in the project bank",
         templateSourceNote: (callTitle) => `Structured according to ${callTitle}'s own application form.`,
         templateGenericNote: "Generic project logic — this call has no predefined application structure in the system yet.",
         exportButton: "Export application (.docx)",
