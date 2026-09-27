@@ -112,6 +112,11 @@ export interface TranslationTree {
       startApplication: string;
       back: string;
       monthsSuffix: string;
+      recommendedSectionTitle: string;
+      lowRelevanceSectionTitle: (n: number) => string;
+      showLowRelevanceButton: (n: number) => string;
+      hideLowRelevanceButton: string;
+      noRecommendedMatches: string;
     };
     workspace: {
       back: string;
@@ -853,6 +858,12 @@ export const translations: Record<Lang, TranslationTree> = {
         startApplication: "Starta ansökan",
         back: "Ändra projekt",
         monthsSuffix: "månader",
+        recommendedSectionTitle: "Rekommenderade matchningar",
+        lowRelevanceSectionTitle: (n) => `Lägre matchning (${n})`,
+        showLowRelevanceButton: (n) => `Visa fler / lägre matchning (${n})`,
+        hideLowRelevanceButton: "Dölj lägre matchning",
+        noRecommendedMatches:
+          "Inga starka matchningar hittades. Här är samtliga utlysningar ändå, sorterade efter relevans.",
       },
       workspace: {
         back: "Tillbaka till matchningar",
@@ -1622,6 +1633,11 @@ export const translations: Record<Lang, TranslationTree> = {
         startApplication: "Start application",
         back: "Edit project",
         monthsSuffix: "months",
+        recommendedSectionTitle: "Recommended matches",
+        lowRelevanceSectionTitle: (n) => `Lower relevance (${n})`,
+        showLowRelevanceButton: (n) => `Show more / lower relevance (${n})`,
+        hideLowRelevanceButton: "Hide lower relevance",
+        noRecommendedMatches: "No strong matches were found. Here are all the calls anyway, sorted by relevance.",
       },
       workspace: {
         back: "Back to matches",
