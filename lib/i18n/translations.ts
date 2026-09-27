@@ -458,6 +458,11 @@ export interface TranslationTree {
     reportingWatchTitle: string;
     reportingWatchHint: string;
     noReportingWatched: string;
+    portfolioMatchSectionTitle: string;
+    otherCallsSectionTitle: (n: number) => string;
+    showOtherCallsButton: (n: number) => string;
+    hideOtherCallsButton: string;
+    noPortfolioMatches: string;
   };
   orgSettings: {
     title: string;
@@ -1232,6 +1237,12 @@ export const translations: Record<Lang, TranslationTree> = {
       reportingWatchHint: "Rapporteringstillfällen du valt att bevaka, oavsett vilket beviljat projekt de hör till.",
       noReportingWatched:
         "Inga bevakade rapporteringsdeadlines. Klicka \"☆ Bevaka\" på ett rapporteringstillfälle under ett beviljat projekt.",
+      portfolioMatchSectionTitle: "Utlysningar som matchar din portfölj",
+      otherCallsSectionTitle: (n) => `Övriga utlysningar (${n})`,
+      showOtherCallsButton: (n) => `Visa fler / övriga utlysningar (${n})`,
+      hideOtherCallsButton: "Dölj övriga utlysningar",
+      noPortfolioMatches:
+        "Inga utlysningar matchar din portfölj ännu. Här är samtliga utlysningar ändå, sorterade efter deadline.",
     },
     orgSettings: {
       title: "Organisation",
@@ -2003,6 +2014,11 @@ export const translations: Record<Lang, TranslationTree> = {
       reportingWatchTitle: "Watched reporting deadlines",
       reportingWatchHint: "Reporting events you've chosen to watch, regardless of which awarded project they belong to.",
       noReportingWatched: "No watched reporting deadlines. Click \"☆ Watch\" on a reporting event under an awarded project.",
+      portfolioMatchSectionTitle: "Calls that match your portfolio",
+      otherCallsSectionTitle: (n) => `Other calls (${n})`,
+      showOtherCallsButton: (n) => `Show more / other calls (${n})`,
+      hideOtherCallsButton: "Hide other calls",
+      noPortfolioMatches: "No calls match your portfolio yet. Here are all the calls anyway, sorted by deadline.",
     },
     orgSettings: {
       title: "Organisation",
