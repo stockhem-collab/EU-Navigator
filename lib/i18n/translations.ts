@@ -207,6 +207,7 @@ export interface TranslationTree {
     editFieldTitle: string;
     editFieldPartnership: string;
     plusOthers: (n: number) => string;
+    peopleAndSharingTitle: string;
     assignedRolesTitle: string;
     noAssignedRoles: string;
     shareTitle: string;
@@ -964,6 +965,7 @@ export const translations: Record<Lang, TranslationTree> = {
       editFieldTitle: "Projektnamn",
       editFieldPartnership: "Vi har (eller kan skaffa) en internationell partnerorganisation",
       plusOthers: (n) => `+${n} till`,
+      peopleAndSharingTitle: "Vem ser och äger projektet",
       assignedRolesTitle: "Tilldelade roller",
       noAssignedRoles: "Ingen har tilldelats en roll för detta projekt ännu.",
       shareTitle: "Dela projekt",
@@ -1727,6 +1729,7 @@ export const translations: Record<Lang, TranslationTree> = {
       editFieldTitle: "Project name",
       editFieldPartnership: "We have (or can secure) an international partner organisation",
       plusOthers: (n) => `+${n} more`,
+      peopleAndSharingTitle: "Who sees and owns the project",
       assignedRolesTitle: "Assigned roles",
       noAssignedRoles: "No one has been assigned a role on this project yet.",
       shareTitle: "Share project",

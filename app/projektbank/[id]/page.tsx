@@ -367,48 +367,52 @@ export default function ProjectBankDetailPage() {
 
         <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.assignedRolesTitle}</h2>
+            <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.peopleAndSharingTitle}</h2>
             <Link href="/installningar/anvandare" className="text-xs font-semibold text-navy-500 hover:text-navy-800">
               ⚙ {t.usersSettings.title}
             </Link>
           </div>
-          {assignedUsers.length === 0 ? (
-            <p className="mt-2 text-sm text-navy-500">{pb.noAssignedRoles}</p>
-          ) : (
-            <ul className="mt-3 space-y-1.5">
-              {assignedUsers.map((u) => {
-                const role = u.projectRoles.find((r) => r.projectId === entry.id)?.role;
-                if (!role) return null;
-                return (
-                  <li key={u.id} className="flex items-center justify-between text-sm">
-                    <span className="text-navy-800">
-                      {u.firstName} {u.lastName}
-                    </span>
-                    <span className="text-navy-500">{projectRoleLabels[role][lang]}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
 
-        <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
-          <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.shareTitle}</h2>
-          <p className="mt-1 text-xs text-navy-400">{pb.shareHint}</p>
-          <ul className="mt-3 space-y-1.5">
-            {shareTargets.map((unit) => (
-              <li key={unit.id} className="flex items-center gap-2" style={{ paddingLeft: unitDepth(orgUnits, unit.id) * 20 }}>
-                <label className="flex items-center gap-2 text-sm text-navy-700">
-                  <input
-                    type="checkbox"
-                    checked={(entry.sharedWithUnitIds ?? []).includes(unit.id)}
-                    onChange={() => toggleShareUnit(unit.id)}
-                  />
-                  {unit.name}
-                </label>
-              </li>
-            ))}
-          </ul>
+          <div className="mt-3">
+            <h3 className="text-xs font-semibold uppercase text-navy-400">{pb.assignedRolesTitle}</h3>
+            {assignedUsers.length === 0 ? (
+              <p className="mt-1 text-sm text-navy-500">{pb.noAssignedRoles}</p>
+            ) : (
+              <ul className="mt-1.5 space-y-1.5">
+                {assignedUsers.map((u) => {
+                  const role = u.projectRoles.find((r) => r.projectId === entry.id)?.role;
+                  if (!role) return null;
+                  return (
+                    <li key={u.id} className="flex items-center justify-between text-sm">
+                      <span className="text-navy-800">
+                        {u.firstName} {u.lastName}
+                      </span>
+                      <span className="text-navy-500">{projectRoleLabels[role][lang]}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          <div className="mt-5 border-t border-navy-50 pt-4">
+            <h3 className="text-xs font-semibold uppercase text-navy-400">{pb.shareTitle}</h3>
+            <p className="mt-1 text-xs text-navy-400">{pb.shareHint}</p>
+            <ul className="mt-2 space-y-1.5">
+              {shareTargets.map((unit) => (
+                <li key={unit.id} className="flex items-center gap-2" style={{ paddingLeft: unitDepth(orgUnits, unit.id) * 20 }}>
+                  <label className="flex items-center gap-2 text-sm text-navy-700">
+                    <input
+                      type="checkbox"
+                      checked={(entry.sharedWithUnitIds ?? []).includes(unit.id)}
+                      onChange={() => toggleShareUnit(unit.id)}
+                    />
+                    {unit.name}
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
