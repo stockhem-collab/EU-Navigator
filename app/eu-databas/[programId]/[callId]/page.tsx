@@ -37,12 +37,23 @@ export default function CallDetailPage() {
   const stats = computeProgramStats(refProjects);
   const patterns = topKeywords(refProjects);
 
+  // The root EU-databas listing links straight here, skipping the
+  // programme page, whenever this programme has only one call (see
+  // app/eu-databas/page.tsx) — so "back" needs to return there too,
+  // not to a programme page the person never actually visited. A
+  // programme with several calls still routes through its own page,
+  // where "back" correctly means "back to that list of calls".
+  const otherCallsInProgram = fundingCalls.some((c) => c.programId === program.id && c.id !== call.id);
+
   return (
     <>
       <Header />
       <main className="section max-w-3xl">
-        <Link href={`/eu-databas/${program.id}`} className="text-sm font-semibold text-navy-600 hover:text-navy-900">
-          ← {db.backToProgram}
+        <Link
+          href={otherCallsInProgram ? `/eu-databas/${program.id}` : "/eu-databas"}
+          className="text-sm font-semibold text-navy-600 hover:text-navy-900"
+        >
+          ← {otherCallsInProgram ? db.backToProgram : db.backToPrograms}
         </Link>
 
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
