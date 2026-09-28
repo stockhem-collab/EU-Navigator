@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AwardedProject, ReportingEvent } from "@/lib/types";
+import { AwardedProject, ReportingEvent, ReportingEventStatus } from "@/lib/types";
 
 // Marking a reporting event as submitted from the UI — same no-backend,
 // localStorage-overlay pattern as useProjectBank's edits: the seed data
@@ -15,6 +15,14 @@ const STORAGE_KEY = "eu-navigator-reporting-submissions";
 // different kind of write: adding a whole new event, not filling in an
 // existing one.
 const EXTRA_EVENTS_KEY = "eu-navigator-reporting-extra-events";
+// A manual status override — there's no reviewer/case-officer role or
+// approval workflow in this demo (see the awarded-project reporting
+// review), so this lets someone set a report to "Godkänd" or
+// "Komplettering begärd" directly instead of only ever landing on
+// "Inlämnad" via submitReport. Kept separate from the submissions above:
+// it overrides the *displayed* status without touching the submitted
+// outcomes/note themselves.
+const STATUS_OVERRIDES_KEY = "eu-navigator-reporting-status-overrides";
 
 export interface ReportingSubmission {
   outcomes: Record<string, number>; // indicator_sv -> reported value
@@ -28,6 +36,9 @@ export interface ReportingSubmission {
 // values that got corrected, not just the latest one.
 type SubmissionsState = Record<string, ReportingSubmission[]>;
 type ExtraEventsState = Record<string, ReportingEvent[]>; // awardedProjectId -> extra events
+type StatusOverridesState = Record<string, ReportingEventStatus>; // "<projectId>:<eventId>" -> status
+
+const VALID_STATUSES: ReportingEventStatus[] = ["upcoming", "submitted", "approved", "revision-requested"];
 
 function storageKey(projectId: string, eventId: string) {
   return `${projectId}:${eventId}`;
@@ -71,14 +82,40 @@ function writeExtra(state: ExtraEventsState) {
   }
 }
 
+function readStatusOverrides(): StatusOverridesState {
+  try {
+    const raw = window.localStorage.getItem(STATUS_OVERRIDES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return {};
+    const result: StatusOverridesState = {};
+    for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
+      if (VALID_STATUSES.includes(value as ReportingEventStatus)) result[key] = value as ReportingEventStatus;
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+function writeStatusOverrides(state: StatusOverridesState) {
+  try {
+    window.localStorage.setItem(STATUS_OVERRIDES_KEY, JSON.stringify(state));
+  } catch {
+    // localStorage unavailable — the status change just won't persist.
+  }
+}
+
 export function useReportingSubmissions() {
   const [submissions, setSubmissions] = useState<SubmissionsState>({});
   const [extraEvents, setExtraEvents] = useState<ExtraEventsState>({});
+  const [statusOverrides, setStatusOverrides] = useState<StatusOverridesState>({});
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setSubmissions(read());
     setExtraEvents(readExtra());
+    setStatusOverrides(readStatusOverrides());
     setHydrated(true);
   }, []);
 
@@ -125,32 +162,48 @@ export function useReportingSubmissions() {
     });
   }, []);
 
+  // Manually sets an event's status — there's no reviewer role or
+  // approval workflow to do this automatically (see the awarded-project
+  // reporting review), so this is a direct override that always wins over
+  // whatever submitReport would otherwise derive. Starts out unset (the
+  // event's seed/submission-derived status shows until someone changes it).
+  const setEventStatus = useCallback((projectId: string, eventId: string, status: ReportingEventStatus) => {
+    setStatusOverrides((prev) => {
+      const next = { ...prev, [storageKey(projectId, eventId)]: status };
+      writeStatusOverrides(next);
+      return next;
+    });
+  }, []);
+
   // Overlays any locally-submitted reports onto the seed AwardedProject,
   // and appends any locally-added extra events (e.g. a sustainability
   // follow-up) — same shape-preserving overlay as useProjectBank's
   // withOverrides. An "upcoming" or "revision-requested" event with a
   // submission becomes "submitted" (a correction is re-submitted for
   // approval, not left stuck), carrying the latest reported outcomes/note.
+  // A manual status override, if set, applies last and wins over both.
   const withSubmissions = useCallback(
     (project: AwardedProject): AwardedProject => {
       const extra = extraEvents[project.id] ?? [];
       const seedWithOverlay = project.reportingEvents.map((event) => {
         const history = submissions[storageKey(project.id, event.id)];
-        if (!history || history.length === 0) return event;
-        const latest = history[history.length - 1];
-        return {
-          ...event,
-          status:
-            event.status === "upcoming" || event.status === "revision-requested" ? ("submitted" as const) : event.status,
-          outcomes: Object.entries(latest.outcomes).map(([indicator_sv, value]) => ({ indicator_sv, value })),
-          note_sv: latest.note,
-          note_en: latest.note,
-        };
+        const statusOverride = statusOverrides[storageKey(project.id, event.id)];
+        const withHistory = !history || history.length === 0
+          ? event
+          : {
+              ...event,
+              status:
+                event.status === "upcoming" || event.status === "revision-requested" ? ("submitted" as const) : event.status,
+              outcomes: Object.entries(history[history.length - 1].outcomes).map(([indicator_sv, value]) => ({ indicator_sv, value })),
+              note_sv: history[history.length - 1].note,
+              note_en: history[history.length - 1].note,
+            };
+        return statusOverride ? { ...withHistory, status: statusOverride } : withHistory;
       });
       return { ...project, reportingEvents: [...seedWithOverlay, ...extra] };
     },
-    [submissions, extraEvents]
+    [submissions, extraEvents, statusOverrides]
   );
 
-  return { hydrated, submitReport, submissionHistory, addSustainabilityEvent, withSubmissions };
+  return { hydrated, submitReport, submissionHistory, addSustainabilityEvent, setEventStatus, withSubmissions };
 }

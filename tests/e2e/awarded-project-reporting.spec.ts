@@ -11,10 +11,16 @@ test("an awarded project's reporting timeline and requirements are visible", asy
   await expect(page.getByText("Rapporteringskrav för utlysningen")).toBeVisible();
   await expect(page.getByText("Årsvis")).toBeVisible();
 
+  // The status badge is an editable <select> (see the reporting-status
+  // review), so its current value is checked directly rather than via
+  // getByText — every card's select renders all four option labels in the
+  // DOM, which would otherwise match ambiguously.
   await expect(page.getByRole("heading", { name: "Lägesrapport 2027" })).toBeVisible();
-  await expect(page.getByText("GODKÄND")).toBeVisible();
+  const report2027 = page.locator("div.rounded-xl", { hasText: "Lägesrapport 2027" });
+  await expect(report2027.locator("select").first()).toHaveValue("approved");
   await expect(page.getByRole("heading", { name: "Lägesrapport 2028" })).toBeVisible();
-  await expect(page.getByText("Inlämnad", { exact: true })).toBeVisible();
+  const report2028 = page.locator("div.rounded-xl", { hasText: "Lägesrapport 2028" });
+  await expect(report2028.locator("select").first()).toHaveValue("submitted");
   await expect(page.getByRole("heading", { name: "Slutrapport" })).toBeVisible();
 });
 

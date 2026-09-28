@@ -30,7 +30,7 @@ export default function AwardedProjectDetailPage() {
   const { t, lang } = useLanguage();
   const ap = t.awardedProjects;
   const pb = t.projectBank;
-  const { withSubmissions, submitReport, submissionHistory, addSustainabilityEvent } = useReportingSubmissions();
+  const { withSubmissions, submitReport, submissionHistory, addSustainabilityEvent, setEventStatus } = useReportingSubmissions();
   const { all: projectBank, updateEntry, hydrated: projectBankHydrated } = useProjectBank();
   const { all: awardedProjects, hydrated: awardedProjectsHydrated } = useAwardedProjects();
 
@@ -225,6 +225,7 @@ export default function AwardedProjectDetailPage() {
                 statusStyle={statusStyle}
                 statusLabel={statusLabel}
                 onSubmit={(outcomes, note) => submitReport(project.id, event.id, outcomes, note)}
+                onSetStatus={(status) => setEventStatus(project.id, event.id, status)}
               />
             ))}
           </div>
@@ -322,6 +323,7 @@ function ReportingEventCard({
   statusStyle,
   statusLabel,
   onSubmit,
+  onSetStatus,
 }: {
   event: ReportingEvent;
   /** The same event as originally seeded, before any local correction is
@@ -338,6 +340,7 @@ function ReportingEventCard({
   statusStyle: (s: ReportingEventStatus) => string;
   statusLabel: (s: ReportingEventStatus) => string;
   onSubmit: (outcomes: Record<string, number>, note: string) => void;
+  onSetStatus: (status: ReportingEventStatus) => void;
 }) {
   const { t, lang } = useLanguage();
   const ap = t.awardedProjects;
@@ -392,7 +395,21 @@ function ReportingEventCard({
           <h3 className="font-semibold text-navy-800">{lang === "sv" ? event.periodLabel_sv : event.periodLabel_en}</h3>
         </div>
         <div className="text-right">
-          <span className={`badge ${statusStyle(event.status)}`}>{statusLabel(event.status)}</span>
+          {/* Editable rather than a plain badge — there's no reviewer role
+              in this demo to set "Godkänd"/"Komplettering begärd"
+              automatically, so it starts at whatever the seed data or a
+              submission gives it, and can be changed by hand from here. */}
+          <select
+            value={event.status}
+            onChange={(e) => onSetStatus(e.target.value as ReportingEventStatus)}
+            aria-label={ap.reportStatusEditLabel}
+            className={`badge cursor-pointer border-none focus:outline-none focus:ring-1 focus:ring-navy-500 ${statusStyle(event.status)}`}
+          >
+            <option value="upcoming">{ap.reportStatusUpcoming}</option>
+            <option value="submitted">{ap.reportStatusSubmitted}</option>
+            <option value="revision-requested">{ap.reportStatusRevisionRequested}</option>
+            <option value="approved">{ap.reportStatusApproved}</option>
+          </select>
           {event.status === "upcoming" && (
             <p className="mt-1 text-xs text-navy-500">
               {event.deadlineMonthsFromNow >= 0

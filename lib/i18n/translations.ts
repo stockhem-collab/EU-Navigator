@@ -426,6 +426,7 @@ export interface TranslationTree {
     reportStatusSubmitted: string;
     reportStatusApproved: string;
     reportStatusRevisionRequested: string;
+    reportStatusEditLabel: string;
     reportDueInMonths: (n: number) => string;
     reportOverdueBy: (n: number) => string;
     noOutcomesYet: string;
@@ -1210,6 +1211,7 @@ export const translations: Record<Lang, TranslationTree> = {
       reportStatusSubmitted: "Inlämnad",
       reportStatusApproved: "Godkänd",
       reportStatusRevisionRequested: "Komplettering begärd",
+      reportStatusEditLabel: "Ändra status för rapporteringstillfället",
       reportDueInMonths: (n) => (n === 0 ? "Förfaller denna månad" : `Förfaller om ${n} ${n === 1 ? "månad" : "månader"}`),
       reportOverdueBy: (n) => (n === 0 ? "Försenad" : `Försenad med ${n} ${n === 1 ? "månad" : "månader"}`),
       noOutcomesYet: "Inget utfall rapporterat ännu.",
@@ -1993,6 +1995,7 @@ export const translations: Record<Lang, TranslationTree> = {
       reportStatusSubmitted: "Submitted",
       reportStatusApproved: "Approved",
       reportStatusRevisionRequested: "Revision requested",
+      reportStatusEditLabel: "Change the reporting event's status",
       reportDueInMonths: (n) => (n === 0 ? "Due this month" : `Due in ${n} month${n === 1 ? "" : "s"}`),
       reportOverdueBy: (n) => (n === 0 ? "Overdue" : `Overdue by ${n} month${n === 1 ? "" : "s"}`),
       noOutcomesYet: "No outturn reported yet.",
