@@ -90,14 +90,6 @@ export default function OversiktPage() {
     [awardedProjects, withSubmissions]
   );
 
-  const docsNeedingUpdate = useMemo(
-    () =>
-      fundingCalls
-        .flatMap((c) => c.documents.map((d) => ({ ...d, callId: c.id })))
-        .filter((d) => d.needsUpdate),
-    [fundingCalls]
-  );
-
   const departments = useMemo(
     () => Array.from(new Set(projectBank.map((p) => (lang === "sv" ? p.department_sv : p.department_en)))),
     [projectBank, lang]
@@ -248,29 +240,6 @@ export default function OversiktPage() {
                 ))}
               </div>
             </section>
-
-            <section>
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-navy-800">{ov.sectionTopMatches}</h2>
-                <Link href="/projektbank" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
-                  {ov.viewAllInPortfolio}
-                </Link>
-              </div>
-              <div className="mt-3 space-y-2">
-                {rows.slice(0, 5).map(({ entry, match }) => (
-                  <div key={entry.id} className="flex items-center justify-between rounded-xl border border-navy-100 bg-white p-4">
-                    <Link href={`/projektbank/${entry.id}`} className="font-semibold text-navy-800 hover:underline">
-                      {lang === "sv" ? entry.title_sv : entry.title_en}
-                    </Link>
-                    {match && (
-                      <span className="badge bg-navy-100 text-navy-700">
-                        {match.score}% · {match.program.shortName}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
           </div>
         )}
 
@@ -366,22 +335,6 @@ export default function OversiktPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold text-navy-800">{ov.sectionDocumentsNeedingUpdate}</h2>
-              <div className="mt-3 overflow-hidden rounded-xl border border-navy-100 bg-white">
-                <ul className="divide-y divide-navy-50">
-                  {docsNeedingUpdate.map((d) => (
-                    <li key={`${d.callId}-${d.id}`} className="px-4 py-3 text-sm text-navy-700">
-                      {lang === "sv" ? d.title_sv : d.title_en}
-                    </li>
-                  ))}
-                  {docsNeedingUpdate.length === 0 && (
-                    <li className="px-4 py-3 text-sm text-navy-500">{ov.noDocumentsNeedingUpdate}</li>
-                  )}
-                </ul>
               </div>
             </section>
           </div>

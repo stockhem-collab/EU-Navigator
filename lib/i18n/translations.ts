@@ -645,20 +645,16 @@ export interface TranslationTree {
     roleSamordnareDesc: string;
     roleVerksamhet: string;
     roleVerksamhetDesc: string;
-    sectionTopMatches: string;
     sectionStatusBreakdown: string;
     sectionUpcomingDeadlines: string;
     sectionUpcomingReports: string;
     viewAllInMyProjects: string;
-    sectionDocumentsNeedingUpdate: string;
     sectionYourProjects: string;
     departmentFilterLabel: string;
     allDepartments: string;
-    noDocumentsNeedingUpdate: string;
     noProjectsInDepartment: string;
     fieldsMissingForBestMatch: (n: number) => string;
     describeNewProject: string;
-    viewAllInPortfolio: string;
     viewAllInBevakning: string;
     ongoingApplicationsTitle: string;
     ongoingApplicationsHint: string;
@@ -1434,23 +1430,19 @@ export const translations: Record<Lang, TranslationTree> = {
       roleLedning: "Kommunledning / ekonomi",
       roleLedningDesc: "Portföljekonomi och status över hela investeringsplanen.",
       roleSamordnare: "EU-/finansieringssamordnare",
-      roleSamordnareDesc: "Alla projekt rankade efter matchning, kommande deadlines och dokument som behöver ses över.",
+      roleSamordnareDesc: "Alla projekt rankade efter matchning, kommande deadlines och rapporteringar.",
       roleVerksamhet: "Verksamhetsutvecklare",
       roleVerksamhetDesc: "Dina förvaltningens projekt och vad som saknas för bästa matchning.",
-      sectionTopMatches: "Starkaste matchningarna just nu",
       sectionStatusBreakdown: "Projekt per status",
       sectionUpcomingDeadlines: "Närmaste deadlines",
       sectionUpcomingReports: "Kommande rapporteringar",
       viewAllInMyProjects: "Se alla i mina projekt →",
-      sectionDocumentsNeedingUpdate: "Dokument som behöver ses över",
       sectionYourProjects: "Projekt",
       departmentFilterLabel: "Förvaltning",
       allDepartments: "Alla förvaltningar",
-      noDocumentsNeedingUpdate: "Inga dokument behöver ses över just nu.",
       noProjectsInDepartment: "Inga projekt i denna förvaltning ännu.",
       fieldsMissingForBestMatch: (n) => `${n} fält saknas för bästa matchning`,
       describeNewProject: "Beskriv ett nytt projekt",
-      viewAllInPortfolio: "Se hela projektbanken →",
       viewAllInBevakning: "Se all bevakning →",
       ongoingApplicationsTitle: "Pågående ansökningar",
       ongoingApplicationsHint: "Hoppa direkt tillbaka till en ansökan du redan börjat skriva på.",
@@ -2219,23 +2211,19 @@ export const translations: Record<Lang, TranslationTree> = {
       roleLedning: "Municipal leadership / finance",
       roleLedningDesc: "Portfolio economics and status across the whole investment plan.",
       roleSamordnare: "EU / funding coordinator",
-      roleSamordnareDesc: "Every project ranked by match, upcoming deadlines, and documents needing a review.",
+      roleSamordnareDesc: "Every project ranked by match, upcoming deadlines, and reporting.",
       roleVerksamhet: "Service developer",
       roleVerksamhetDesc: "Your department's projects and what's missing for the best possible match.",
-      sectionTopMatches: "Strongest matches right now",
       sectionStatusBreakdown: "Projects by status",
       sectionUpcomingDeadlines: "Nearest deadlines",
       sectionUpcomingReports: "Upcoming reports",
       viewAllInMyProjects: "See all in my projects →",
-      sectionDocumentsNeedingUpdate: "Documents needing a review",
       sectionYourProjects: "Projects",
       departmentFilterLabel: "Department",
       allDepartments: "All departments",
-      noDocumentsNeedingUpdate: "No documents need a review right now.",
       noProjectsInDepartment: "No projects in this department yet.",
       fieldsMissingForBestMatch: (n) => `${n} fields missing for the best match`,
       describeNewProject: "Describe a new project",
-      viewAllInPortfolio: "See the full project bank →",
       viewAllInBevakning: "See all monitoring →",
       ongoingApplicationsTitle: "Ongoing applications",
       ongoingApplicationsHint: "Jump straight back into an application you've already started writing.",
