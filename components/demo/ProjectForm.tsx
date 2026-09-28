@@ -53,11 +53,17 @@ const EXAMPLE_EN: ProjectInput = {
 interface Props {
   onSubmit: (project: ProjectInput) => void;
   initialProject?: ProjectInput;
+  /** What was already typed here before navigating forward and then back
+   * (e.g. "← Tillbaka" from the match results) — restores it so going back
+   * to tweak something doesn't mean starting the form over from scratch.
+   * Unlike initialProject, this never shows the "prefilled from Projektbanken"
+   * banner, since it isn't from a saved project. */
+  draftProject?: ProjectInput;
 }
 
-export default function ProjectForm({ onSubmit, initialProject }: Props) {
+export default function ProjectForm({ onSubmit, initialProject, draftProject }: Props) {
   const { t, lang } = useLanguage();
-  const [project, setProject] = useState<ProjectInput>(initialProject ?? DEFAULT_PROJECT);
+  const [project, setProject] = useState<ProjectInput>(initialProject ?? draftProject ?? DEFAULT_PROJECT);
   const intake = t.demo.intake;
 
   const fillExample = () => setProject(lang === "sv" ? EXAMPLE_SV : EXAMPLE_EN);

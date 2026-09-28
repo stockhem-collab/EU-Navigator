@@ -18,7 +18,10 @@ import { useFundingProfile } from "@/lib/hooks/useFundingProfile";
 import { MatchResult, ProjectInput } from "@/lib/types";
 
 type Step =
-  | { name: "intake" }
+  // `project` here is only ever a restored in-progress draft (from going
+  // "← Tillbaka" on the match results below) — never a saved/prefilled one,
+  // which stays separate as ProjectForm's own initialProject prop.
+  | { name: "intake"; project?: ProjectInput }
   | { name: "results"; project: ProjectInput; matches: MatchResult[] }
   | { name: "workspace"; project: ProjectInput; match: MatchResult };
 
@@ -108,6 +111,7 @@ function DemoPageInner() {
         {step.name === "intake" && (
           <ProjectForm
             initialProject={initialProject}
+            draftProject={step.project}
             onSubmit={(project) => {
               // Coming from a specific call in the EU database ("Hjälp mig
               // söka") locks the AI straight into that call's context,
@@ -130,7 +134,7 @@ function DemoPageInner() {
         {step.name === "results" && (
           <MatchResults
             matches={step.matches}
-            onBack={() => setStep({ name: "intake" })}
+            onBack={() => setStep({ name: "intake", project: step.project })}
             onSelect={(match) => setStep({ name: "workspace", project: step.project, match })}
           />
         )}
