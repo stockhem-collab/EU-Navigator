@@ -1258,11 +1258,10 @@ export const translations: Record<Lang, TranslationTree> = {
       noWatchedCalls: "Inga bevakade utlysningar. Klicka \"Bevaka\" på en utlysning, eller justera dina bevakningar under Inställningar → Bevakningar.",
       watchCallButton: "☆ Bevaka",
       watchingCallButton: "★ Bevakas",
-      reportingWatchTitle: "Bevakade rapporteringsdeadlines (beviljade projekt)",
+      reportingWatchTitle: "Rapporteringsdeadlines (beviljade projekt)",
       reportingWatchHint:
-        "Detta är skilt från utlysningarna nedan — det är rapporteringstillfällen för redan beviljade projekt, och bevakas från projektets egen sida, inte med stjärnan här på sidan.",
-      noReportingWatched:
-        "Inga bevakade rapporteringsdeadlines. Klicka \"☆ Bevaka\" på ett rapporteringstillfälle under ett beviljat projekt (inte samma sak som att bevaka en utlysning nedan).",
+        "Alla utestående rapporteringstillfällen för redan beviljade projekt, visas automatiskt — inget behöver bevakas för att synas här. Detta är skilt från utlysningarna nedan.",
+      noReportingWatched: "Inga utestående rapporteringsdeadlines just nu — alla beviljade projekts rapporter är inskickade.",
       portfolioMatchSectionTitle: "Utlysningar som matchar din portfölj",
       otherCallsSectionTitle: (n) => `Övriga utlysningar (${n})`,
       showOtherCallsButton: (n) => `Visa fler / övriga utlysningar (${n})`,
@@ -2044,11 +2043,10 @@ export const translations: Record<Lang, TranslationTree> = {
       noWatchedCalls: "No watched calls. Click \"Watch\" on a call, or adjust your watchlist under Settings → Watchlists & notifications.",
       watchCallButton: "☆ Watch",
       watchingCallButton: "★ Watching",
-      reportingWatchTitle: "Watched reporting deadlines (awarded projects)",
+      reportingWatchTitle: "Reporting deadlines (awarded projects)",
       reportingWatchHint:
-        "Separate from the calls below — these are reporting events on already-awarded projects, watched from the project's own page, not the star on this page.",
-      noReportingWatched:
-        "No watched reporting deadlines. Click \"☆ Watch\" on a reporting event under an awarded project (not the same as watching a call below).",
+        "Every outstanding reporting event for already-awarded projects, shown automatically — nothing needs to be watched to appear here. Separate from the calls below.",
+      noReportingWatched: "No outstanding reporting deadlines right now — every awarded project's reports are submitted.",
       portfolioMatchSectionTitle: "Calls that match your portfolio",
       otherCallsSectionTitle: (n) => `Other calls (${n})`,
       showOtherCallsButton: (n) => `Show more / other calls (${n})`,

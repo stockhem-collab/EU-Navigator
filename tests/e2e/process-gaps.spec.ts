@@ -3,10 +3,12 @@ import { test, expect } from "@playwright/test";
 // Coverage for the gaps found in a full-system review: real document
 // attachments (as opposed to the docx files the system itself generates),
 // per-project ad-hoc tasks visible both on the project and across the whole
-// portfolio, watched reporting deadlines surfacing on the same page as
-// watched calls (not only under Inställningar), exporting a specific saved
-// application version rather than always the live draft, and the header's
-// call-to-action reflecting what it actually opens.
+// portfolio, every awarded project's outstanding reporting deadlines
+// surfacing on the Bevakning page by default (not only under
+// Inställningar, and not gated behind an explicit watch action),
+// exporting a specific saved application version rather than always the
+// live draft, and the header's call-to-action reflecting what it actually
+// opens.
 
 test("a document can be attached to, downloaded from, and removed from a Projektbank entry", async ({ page }) => {
   await page.goto("/projektbank/pb-1");
@@ -87,13 +89,15 @@ test("an existing task's text and due date can be edited in place", async ({ pag
   await page.getByRole("button", { name: "Ta bort" }).click();
 });
 
-test("a watched reporting deadline shows up on the main Bevakning page, not only in Inställningar", async ({ page }) => {
-  await page.goto("/projekt/ap-2");
-  const q3Card = page.locator("div.rounded-xl", { hasText: "Delrapport Q3 2027" });
-  await q3Card.getByRole("button", { name: "☆ Bevaka" }).click();
-
+test("every awarded project's outstanding reporting deadlines show on Bevakning by default, with no watch action needed", async ({ page }) => {
+  // ap-2 has both a revision-requested report (Q1 2027) and an upcoming one
+  // (Q3 2027), neither of which has ever been starred/watched — starring a
+  // reporting deadline adds no value here (unlike a funding call, where the
+  // catalogue is large enough that opting in is genuinely useful), so both
+  // must be visible purely because they're outstanding.
   await page.goto("/bevakning");
-  await expect(page.getByText("Bevakade rapporteringsdeadlines")).toBeVisible();
+  await expect(page.getByText("Rapporteringsdeadlines (beviljade projekt)")).toBeVisible();
+  await expect(page.getByText("Delrapport Q1 2027")).toBeVisible();
   await expect(page.getByText("Delrapport Q3 2027")).toBeVisible();
 });
 
