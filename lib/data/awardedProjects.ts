@@ -54,6 +54,7 @@ export const awardedProjects: AwardedProject[] = [
           { indicator_sv: "Minskad energianvändning", value: 5 },
           { indicator_sv: "Pilotanläggningar i drift", value: 2 },
         ],
+        financials: { spentThisPeriodSEK: 9_500_000 },
         note_sv: "Tidig fas — ungefär hälften av skolorna har påbörjat renovering.",
         note_en: "Early phase — roughly half the schools have started renovation.",
       },
@@ -69,6 +70,7 @@ export const awardedProjects: AwardedProject[] = [
           { indicator_sv: "Minskad energianvändning", value: 12 },
           { indicator_sv: "Pilotanläggningar i drift", value: 5 },
         ],
+        financials: { spentThisPeriodSEK: 8_900_000 },
         note_sv:
           "Deltagarutfallet ligger under plan — två informationsträffar återstår innan årsslut. Energiminskningen förklaras delvis av att endast 6 av 14 skolor hittills färdigställts. Pilotanläggningarna är levererade enligt plan.",
         note_en:
@@ -122,6 +124,7 @@ export const awardedProjects: AwardedProject[] = [
           { indicator_sv: "Antal utbildade medarbetare", value: 140 },
           { indicator_sv: "Minskad personalomsättning", value: 1 },
         ],
+        financials: { spentThisPeriodSEK: 2_100_000 },
         note_sv:
           "Handläggande myndighet har begärt komplettering av underlaget för deltagarstatistik innan rapporten kan godkännas.",
         note_en: "The managing authority has requested supplementary participant-statistics documentation before the report can be approved.",
@@ -137,6 +140,7 @@ export const awardedProjects: AwardedProject[] = [
           { indicator_sv: "Antal utbildade medarbetare", value: 410 },
           { indicator_sv: "Minskad personalomsättning", value: 4 },
         ],
+        financials: { spentThisPeriodSEK: 3_400_000 },
         note_sv:
           "Utbildningsmålet nått något tidigare än planerat. Effekten på personalomsättningen uppstår sannolikt med viss eftersläpning — följs upp i nästa rapport.",
         note_en:
@@ -214,6 +218,35 @@ export function outcomeHistoryFor(
 export function isReportingComplete(project: AwardedProject): boolean {
   const final = project.reportingEvents.find((e) => e.type === "final");
   return final !== undefined && (final.status === "submitted" || final.status === "approved");
+}
+
+/** Every reported "spent this period" figure across the project's
+ * reporting history, in chronological order — the series a spend view
+ * needs, mirroring outcomeHistoryFor's shape for indicators. */
+export function financialHistory(
+  project: AwardedProject
+): { periodLabel_sv: string; periodLabel_en: string; spentThisPeriodSEK: number }[] {
+  return project.reportingEvents
+    .filter((e) => e.financials !== undefined)
+    .map((e) => ({
+      periodLabel_sv: e.periodLabel_sv,
+      periodLabel_en: e.periodLabel_en,
+      spentThisPeriodSEK: e.financials!.spentThisPeriodSEK,
+    }));
+}
+
+/** Total spent to date, as of and including one specific reporting event
+ * — the running sum of every period's spend up to that point in the
+ * project's chronological reporting history. Computed from the per-period
+ * figures rather than stored as its own running total, so it can't drift
+ * from them. */
+export function cumulativeSpentThrough(project: AwardedProject, eventId: string): number {
+  let total = 0;
+  for (const event of project.reportingEvents) {
+    if (event.financials) total += event.financials.spentThisPeriodSEK;
+    if (event.id === eventId) break;
+  }
+  return total;
 }
 
 export type ReportingHealth = "good" | "attention" | "blocked";

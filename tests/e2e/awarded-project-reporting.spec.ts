@@ -47,6 +47,29 @@ test("submitting the next upcoming report updates the commitment summary and mov
   await expect(page.getByText("All rapportering avslutad.")).toBeVisible();
 });
 
+test("a financial summary is shown once spend has been reported, and updates when a new report is submitted", async ({
+  page,
+}) => {
+  await page.goto("/projekt/ap-1");
+
+  // ap-1's seed data already has spend figures on its two past reports
+  // (9.5M + 8.9M of a 42.4M award).
+  await expect(page.getByText("Ekonomisk uppföljning")).toBeVisible();
+  await expect(page.getByText("18,4 mnkr / 42,4 mnkr")).toBeVisible();
+
+  // Submitting the next report (Slutrapport) with a spend figure rolls it
+  // into the cumulative total shown in the summary card.
+  const inputs = page.locator('input[type="number"]');
+  await inputs.nth(0).fill("1500");
+  await inputs.nth(1).fill("20");
+  await inputs.nth(2).fill("5");
+  await inputs.nth(3).fill("13000000");
+  await page.getByRole("button", { name: "Markera som inlämnad" }).click();
+
+  await expect(page.getByText("Förbrukat denna period: 13 mnkr")).toBeVisible();
+  await expect(page.getByText("31,4 mnkr / 42,4 mnkr")).toBeVisible();
+});
+
 test("a report needing revision surfaces on Mina projekt and Översikt", async ({ page }) => {
   await page.goto("/projekt");
   await expect(page.getByText("Komplettering begärd")).toBeVisible();

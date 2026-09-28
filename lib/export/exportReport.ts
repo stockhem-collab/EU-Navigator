@@ -1,6 +1,7 @@
 import type { Paragraph as ParagraphType } from "docx";
 import { AwardedProject, FundingCall, FundingProgram, Lang, ReportingEvent } from "@/lib/types";
 import { fmtSEK } from "@/lib/format";
+import { cumulativeSpentThrough } from "@/lib/data/awardedProjects";
 
 // Exports one reporting event as a real .docx draft — the same
 // dynamically-imported docx pattern as exportApplication.ts, for the same
@@ -47,8 +48,26 @@ export async function buildReportDocx(
     }),
     new Paragraph({ text: fmtSEK(project.awardedAmountSEK, lang) }),
     new Paragraph({ text: "" }),
-    new Paragraph({ text: lang === "sv" ? "Utfall per indikator" : "Outturn per indicator", heading: HeadingLevel.HEADING_1 }),
   ];
+
+  if (event.financials) {
+    const cumulative = cumulativeSpentThrough(project, event.id);
+    children.push(
+      new Paragraph({ text: lang === "sv" ? "Ekonomisk redovisning" : "Financial summary", heading: HeadingLevel.HEADING_2 }),
+      new Paragraph({
+        text:
+          (lang === "sv" ? "Förbrukat denna period" : "Spent this period") +
+          `: ${fmtSEK(event.financials.spentThisPeriodSEK, lang)} — ` +
+          (lang === "sv" ? "Totalt förbrukat hittills" : "Total spent to date") +
+          `: ${fmtSEK(cumulative, lang)}`,
+      }),
+      new Paragraph({ text: "" })
+    );
+  }
+
+  children.push(
+    new Paragraph({ text: lang === "sv" ? "Utfall per indikator" : "Outturn per indicator", heading: HeadingLevel.HEADING_1 })
+  );
 
   for (const commitment of project.commitments) {
     const outcome = event.outcomes.find((o) => o.indicator_sv === commitment.indicator_sv);

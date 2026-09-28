@@ -13,6 +13,8 @@ import {
   isReportingComplete,
   reportingHealth,
   ReportingHealth,
+  financialHistory,
+  cumulativeSpentThrough,
 } from "@/lib/data/awardedProjects";
 import { findCall } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
@@ -159,6 +161,8 @@ export default function AwardedProjectDetailPage() {
           </div>
         </dl>
 
+        <FinancialSummaryCard project={project} />
+
         {reportingReq && (
           <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
             <h2 className="text-sm font-semibold uppercase text-navy-400">{ap.reportingRequirementsTitle}</h2>
@@ -224,7 +228,9 @@ export default function AwardedProjectDetailPage() {
                 history={submissionHistory(project.id, event.id)}
                 statusStyle={statusStyle}
                 statusLabel={statusLabel}
-                onSubmit={(outcomes, note) => submitReport(project.id, event.id, outcomes, note)}
+                onSubmit={(outcomes, note, spentThisPeriodSEK) =>
+                  submitReport(project.id, event.id, outcomes, note, spentThisPeriodSEK)
+                }
                 onSetStatus={(status) => setEventStatus(project.id, event.id, status)}
               />
             ))}
@@ -312,6 +318,60 @@ function CommitmentCard({ commitment: c, project }: { commitment: Commitment; pr
   );
 }
 
+function FinancialSummaryCard({ project }: { project: AwardedProject }) {
+  const { t, lang } = useLanguage();
+  const ap = t.awardedProjects;
+  const history = financialHistory(project);
+
+  // Nothing reported yet — nothing to show, same as the commitments
+  // section only rendering when there's actually something to render.
+  if (history.length === 0) return null;
+
+  const totalSpent = history.reduce((sum, h) => sum + h.spentThisPeriodSEK, 0);
+  const remaining = project.awardedAmountSEK - totalSpent;
+  const pct = project.awardedAmountSEK > 0 ? Math.min(100, (totalSpent / project.awardedAmountSEK) * 100) : 0;
+  const maxSpend = Math.max(...history.map((h) => h.spentThisPeriodSEK), 1);
+
+  return (
+    <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+      <h2 className="text-sm font-semibold uppercase text-navy-400">{ap.financialSummaryTitle}</h2>
+      <div className="mt-3 flex items-center justify-between">
+        <span className="text-sm text-navy-600">{ap.financialSpentLabel}</span>
+        <span className="font-semibold text-navy-800">
+          {fmtSEK(totalSpent, lang)} / {fmtSEK(project.awardedAmountSEK, lang)}
+        </span>
+      </div>
+      <div className="mt-2 h-2 rounded-full bg-navy-100">
+        <div className="h-2 rounded-full bg-navy-600" style={{ width: `${pct}%` }} />
+      </div>
+      <p className="mt-2 text-xs text-navy-500">
+        {ap.financialRemainingLabel}: {fmtSEK(remaining, lang)}
+      </p>
+
+      {history.length > 1 && (
+        <div className="mt-4 border-t border-navy-50 pt-3">
+          <p className="text-xs font-semibold uppercase text-navy-400">{ap.financialHistoryTitle}</p>
+          <div className="mt-2 flex h-14 items-end gap-2">
+            {history.map((h, i) => (
+              <div
+                key={i}
+                className="flex h-full flex-1 flex-col items-center justify-end gap-1"
+                title={fmtSEK(h.spentThisPeriodSEK, lang)}
+              >
+                <div
+                  className="w-full rounded-t bg-navy-600"
+                  style={{ height: `${Math.min(100, (h.spentThisPeriodSEK / maxSpend) * 100)}%` }}
+                />
+                <span className="text-[10px] text-navy-400">{lang === "sv" ? h.periodLabel_sv : h.periodLabel_en}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function ReportingEventCard({
   event,
   seedEvent,
@@ -339,7 +399,7 @@ function ReportingEventCard({
   history: ReportingSubmission[];
   statusStyle: (s: ReportingEventStatus) => string;
   statusLabel: (s: ReportingEventStatus) => string;
-  onSubmit: (outcomes: Record<string, number>, note: string) => void;
+  onSubmit: (outcomes: Record<string, number>, note: string, spentThisPeriodSEK?: number) => void;
   onSetStatus: (status: ReportingEventStatus) => void;
 }) {
   const { t, lang } = useLanguage();
@@ -356,6 +416,9 @@ function ReportingEventCard({
     )
   );
   const [note, setNote] = useState(event.note_sv ?? event.note_en ?? "");
+  const [spentThisPeriod, setSpentThisPeriod] = useState(
+    event.financials ? String(event.financials.spentThisPeriodSEK) : ""
+  );
   const [justSubmitted, setJustSubmitted] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -373,6 +436,7 @@ function ReportingEventCard({
           {
             outcomes: Object.fromEntries(seedEvent.outcomes.map((o) => [o.indicator_sv, o.value])),
             note: seedEvent.note_sv ?? seedEvent.note_en ?? "",
+            spentThisPeriodSEK: seedEvent.financials?.spentThisPeriodSEK,
             submittedAt: "",
           },
           ...history,
@@ -479,6 +543,12 @@ function ReportingEventCard({
         <p className="mt-3 text-sm text-navy-500">{ap.noOutcomesYet}</p>
       )}
 
+      {event.financials && (
+        <p className="mt-3 text-sm text-navy-600">
+          {ap.reportFinancialLine(fmtSEK(event.financials.spentThisPeriodSEK, lang))}
+        </p>
+      )}
+
       {(event.note_sv || event.note_en) && (
         <p className="mt-3 text-sm text-navy-500">
           <span className="font-semibold">{ap.reportNoteLabel}: </span>
@@ -559,6 +629,9 @@ function ReportingEventCard({
                       {indicator}: {value}
                     </p>
                   ))}
+                  {s.spentThisPeriodSEK !== undefined && (
+                    <p>{ap.reportFinancialLine(fmtSEK(s.spentThisPeriodSEK, lang))}</p>
+                  )}
                   {s.note && <p className="mt-1 italic">{s.note}</p>}
                 </li>
               ))}
@@ -583,6 +656,16 @@ function ReportingEventCard({
               <span className="w-16 shrink-0 text-xs text-navy-400">{lang === "sv" ? c.unit_sv : c.unit_en}</span>
             </div>
           ))}
+          <div className="flex items-center gap-3">
+            <label className="flex-1 text-sm text-navy-700">{ap.reportFormFinancialLabel}</label>
+            <input
+              type="number"
+              value={spentThisPeriod}
+              onChange={(e) => setSpentThisPeriod(e.target.value)}
+              placeholder="0"
+              className="w-32 rounded-md border border-navy-200 px-2 py-1.5 text-right text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+            />
+          </div>
           <div>
             <label className="block text-sm font-semibold text-navy-700">{ap.reportFormNoteLabel}</label>
             <textarea
@@ -597,7 +680,8 @@ function ReportingEventCard({
             type="button"
             onClick={() => {
               const outcomes = Object.fromEntries(Object.entries(values).map(([k, v]) => [k, Number(v) || 0]));
-              onSubmit(outcomes, note);
+              const spentValue = spentThisPeriod.trim() ? Number(spentThisPeriod) : undefined;
+              onSubmit(outcomes, note, spentValue);
               setJustSubmitted(true);
             }}
             className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"

@@ -344,6 +344,15 @@ export interface Commitment {
 export type ReportingEventType = "interim" | "final" | "sustainability";
 export type ReportingEventStatus = "upcoming" | "submitted" | "approved" | "revision-requested";
 
+/** A reporting event's economic summary — deliberately narrow (spend for
+ * this period, compared against the project's total awarded amount)
+ * rather than a fund-specific cost-category breakdown (personnel,
+ * overhead, travel, …) that varies by fund and that this app has no real
+ * source to populate honestly. */
+export interface FinancialOutcome {
+  spentThisPeriodSEK: number;
+}
+
 /** The outturn reported for one Commitment indicator as of one specific
  * ReportingEvent, keyed by indicator_sv — the same stable key used on
  * Commitment (no seeded project has two commitments sharing a Swedish
@@ -370,6 +379,10 @@ export interface ReportingEvent {
   outcomes: ReportingOutcome[];
   note_sv?: string;
   note_en?: string;
+  /** This event's economic summary, when reported — undefined for an
+   * "upcoming" event, or for an already-submitted seed event whose real
+   * figures aren't on file. */
+  financials?: FinancialOutcome;
 }
 
 export interface AwardedProject {

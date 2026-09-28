@@ -6,6 +6,8 @@ import {
   outcomeHistoryFor,
   isReportingComplete,
   reportingHealth,
+  financialHistory,
+  cumulativeSpentThrough,
 } from "../../lib/data/awardedProjects";
 import { AwardedProject } from "../../lib/types";
 
@@ -224,4 +226,72 @@ test("reportingHealth is good when nothing is blocked or behind plan", () => {
     ],
   });
   expect(reportingHealth(project)).toBe("good");
+});
+
+// Coverage for the financial-reporting helpers: each event's own "spent
+// this period" figure (lib/types.ts's FinancialOutcome), rolled up into a
+// history series and a running cumulative total, without storing a
+// redundant total that could drift from the underlying per-period figures.
+
+function makeFinancialProject(): AwardedProject {
+  return makeProject({
+    awardedAmountSEK: 1_000_000,
+    reportingEvents: [
+      {
+        id: "r1",
+        type: "interim",
+        periodLabel_sv: "R1",
+        periodLabel_en: "R1",
+        deadlineMonthsFromNow: -6,
+        status: "approved",
+        outcomes: [],
+        financials: { spentThisPeriodSEK: 200_000 },
+      },
+      {
+        id: "r2",
+        type: "interim",
+        periodLabel_sv: "R2",
+        periodLabel_en: "R2",
+        deadlineMonthsFromNow: -3,
+        status: "submitted",
+        outcomes: [],
+        financials: { spentThisPeriodSEK: 150_000 },
+      },
+      {
+        id: "r3",
+        type: "final",
+        periodLabel_sv: "R3",
+        periodLabel_en: "R3",
+        deadlineMonthsFromNow: 3,
+        status: "upcoming",
+        outcomes: [],
+      },
+    ],
+  });
+}
+
+test("financialHistory returns only the events that actually reported a spend figure, in order", () => {
+  const project = makeFinancialProject();
+  expect(financialHistory(project)).toEqual([
+    { periodLabel_sv: "R1", periodLabel_en: "R1", spentThisPeriodSEK: 200_000 },
+    { periodLabel_sv: "R2", periodLabel_en: "R2", spentThisPeriodSEK: 150_000 },
+  ]);
+});
+
+test("cumulativeSpentThrough sums every period's spend up to and including the given event", () => {
+  const project = makeFinancialProject();
+  expect(cumulativeSpentThrough(project, "r1")).toBe(200_000);
+  expect(cumulativeSpentThrough(project, "r2")).toBe(350_000);
+  // r3 (the upcoming final report) has no financials of its own yet, but
+  // the running total through it still includes everything reported so far.
+  expect(cumulativeSpentThrough(project, "r3")).toBe(350_000);
+});
+
+test("a project with no reported spend figures has an empty financial history", () => {
+  const project = makeProject({
+    reportingEvents: [
+      { id: "r1", type: "interim", periodLabel_sv: "R1", periodLabel_en: "R1", deadlineMonthsFromNow: -3, status: "approved", outcomes: [] },
+    ],
+  });
+  expect(financialHistory(project)).toEqual([]);
 });

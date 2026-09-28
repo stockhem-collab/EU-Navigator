@@ -28,6 +28,10 @@ export interface ReportingSubmission {
   outcomes: Record<string, number>; // indicator_sv -> reported value
   note: string;
   submittedAt: string; // ISO
+  /** How much was spent this reporting period, when the form's financial
+   * field was filled in. Undefined if left blank — same as with any other
+   * optional field on a submission, not defaulted to 0. */
+  spentThisPeriodSEK?: number;
 }
 
 // Every submission for a given event, oldest first — a report that was
@@ -123,11 +127,14 @@ export function useReportingSubmissions() {
   // "upcoming"; a later one (after "revision-requested") is a correction,
   // appended rather than overwriting the earlier attempt.
   const submitReport = useCallback(
-    (projectId: string, eventId: string, outcomes: Record<string, number>, note: string) => {
+    (projectId: string, eventId: string, outcomes: Record<string, number>, note: string, spentThisPeriodSEK?: number) => {
       setSubmissions((prev) => {
         const key = storageKey(projectId, eventId);
         const history = prev[key] ?? [];
-        const next = { ...prev, [key]: [...history, { outcomes, note, submittedAt: new Date().toISOString() }] };
+        const next = {
+          ...prev,
+          [key]: [...history, { outcomes, note, spentThisPeriodSEK, submittedAt: new Date().toISOString() }],
+        };
         write(next);
         return next;
       });
@@ -197,6 +204,10 @@ export function useReportingSubmissions() {
               outcomes: Object.entries(history[history.length - 1].outcomes).map(([indicator_sv, value]) => ({ indicator_sv, value })),
               note_sv: history[history.length - 1].note,
               note_en: history[history.length - 1].note,
+              financials:
+                history[history.length - 1].spentThisPeriodSEK !== undefined
+                  ? { spentThisPeriodSEK: history[history.length - 1].spentThisPeriodSEK! }
+                  : undefined,
             };
         return statusOverride ? { ...withHistory, status: statusOverride } : withHistory;
       });

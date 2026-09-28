@@ -469,6 +469,12 @@ export interface TranslationTree {
     healthBlockedLabel: string;
     linkedProjectBankLabel: string;
     linkedProjectStatusAutoSyncNote: string;
+    financialSummaryTitle: string;
+    financialSpentLabel: string;
+    financialRemainingLabel: string;
+    financialHistoryTitle: string;
+    reportFormFinancialLabel: string;
+    reportFinancialLine: (amount: string) => string;
   };
   bevakning: {
     title: string;
@@ -1269,6 +1275,12 @@ export const translations: Record<Lang, TranslationTree> = {
       healthBlockedLabel: "Komplettering begärd",
       linkedProjectBankLabel: "Ursprunglig projektidé i Projektbanken",
       linkedProjectStatusAutoSyncNote: "Statusen i Projektbanken hålls automatiskt i synk med rapporteringen här.",
+      financialSummaryTitle: "Ekonomisk uppföljning",
+      financialSpentLabel: "Förbrukat / beviljat",
+      financialRemainingLabel: "Kvarstående budget",
+      financialHistoryTitle: "Förbrukning per rapport",
+      reportFormFinancialLabel: "Förbrukat denna period (kr, valfritt)",
+      reportFinancialLine: (amount) => `Förbrukat denna period: ${amount}`,
     },
     bevakning: {
       title: "Bevakning",
@@ -2068,6 +2080,12 @@ export const translations: Record<Lang, TranslationTree> = {
       healthBlockedLabel: "Revision requested",
       linkedProjectBankLabel: "Original project idea in the project bank",
       linkedProjectStatusAutoSyncNote: "The project bank status is kept automatically in sync with this reporting.",
+      financialSummaryTitle: "Financial tracking",
+      financialSpentLabel: "Spent / awarded",
+      financialRemainingLabel: "Remaining budget",
+      financialHistoryTitle: "Spend per report",
+      reportFormFinancialLabel: "Spent this period (SEK, optional)",
+      reportFinancialLine: (amount) => `Spent this period: ${amount}`,
     },
     bevakning: {
       title: "Monitoring",
