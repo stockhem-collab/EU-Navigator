@@ -20,7 +20,7 @@ import { fmtSEK } from "@/lib/format";
 export default function ProjectBankPage() {
   const { t, lang } = useLanguage();
   const pb = t.projectBank;
-  const { all: projectBank, imported, addImported, removeImported, clearImported } = useProjectBank();
+  const { all: projectBank, imported, deletedEntries, addImported, deleteEntry, restoreEntry, clearImported } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
   const { all: awardedProjects } = useAwardedProjects();
   const { withSubmissions } = useReportingSubmissions();
@@ -52,17 +52,49 @@ export default function ProjectBankPage() {
         <p className="mt-2 text-sm text-navy-600">{pb.subtitle}</p>
 
         <div className="mt-6">
-          <CsvImportPanel onImport={addImported} existingIds={projectBank.map((p) => p.id)} />
+          {/* Includes soft-deleted ids too (not just the visible
+              `projectBank`) — otherwise re-importing the same CSV after
+              deleting its row would regenerate the exact same slugified id
+              and collide with the still-stored, just-hidden entry. */}
+          <CsvImportPanel
+            onImport={addImported}
+            existingIds={[...projectBank, ...deletedEntries].map((p) => p.id)}
+          />
           {imported.length > 0 && (
             <button
               type="button"
-              onClick={clearImported}
+              onClick={() => {
+                if (window.confirm(pb.confirmClearImported)) clearImported();
+              }}
               className="mt-2 text-xs font-semibold text-navy-400 hover:text-amber-700"
             >
               {pb.clearImported} ({imported.length})
             </button>
           )}
         </div>
+
+        {deletedEntries.length > 0 && (
+          <section className="mt-6 rounded-xl border border-navy-100 bg-navy-50/50 p-4">
+            <h2 className="text-sm font-semibold text-navy-800">
+              {pb.deletedProjectsTitle} ({deletedEntries.length})
+            </h2>
+            <p className="mt-1 text-xs text-navy-500">{pb.deletedProjectsHint}</p>
+            <ul className="mt-3 divide-y divide-navy-100">
+              {deletedEntries.map((entry) => (
+                <li key={entry.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                  <span className="text-navy-700">{lang === "sv" ? entry.title_sv : entry.title_en}</span>
+                  <button
+                    type="button"
+                    onClick={() => restoreEntry(entry.id)}
+                    className="shrink-0 text-xs font-semibold text-navy-600 hover:text-navy-900"
+                  >
+                    {pb.restoreProjectButton}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <div className="mt-6 grid grid-cols-3 gap-4 sm:max-w-lg">
           <div className="rounded-xl border border-navy-100 bg-white p-4">
@@ -173,7 +205,10 @@ export default function ProjectBankPage() {
                     {importedIds.has(p.id) && (
                       <button
                         type="button"
-                        onClick={() => removeImported(p.id)}
+                        onClick={() => {
+                          const title = lang === "sv" ? p.title_sv : p.title_en;
+                          if (window.confirm(pb.confirmRemoveProject(title))) deleteEntry(p.id);
+                        }}
                         aria-label={pb.removeImportedRow}
                         title={pb.removeImportedRow}
                         className="text-navy-300 hover:text-amber-700"

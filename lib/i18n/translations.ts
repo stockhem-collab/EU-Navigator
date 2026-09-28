@@ -252,6 +252,11 @@ export interface TranslationTree {
     importHint: string;
     clearImported: string;
     removeImportedRow: string;
+    confirmRemoveProject: (title: string) => string;
+    confirmClearImported: string;
+    deletedProjectsTitle: string;
+    deletedProjectsHint: string;
+    restoreProjectButton: string;
     economicsTitle: string;
     statPortfolioBudget: string;
     statFundingPotential: string;
@@ -1033,6 +1038,11 @@ export const translations: Record<Lang, TranslationTree> = {
         "Kolumner: Titel, Förvaltning, Ägare, Budget, Startår, Slutår, Sektor, Beskrivning, Internationell partner. Sparas i din webbläsare (ingen delning mellan användare i den här demon).",
       clearImported: "Rensa importerade projekt",
       removeImportedRow: "Ta bort importerat projekt",
+      confirmRemoveProject: (title) => `Ta bort projektet "${title}"? Det kan återställas senare under "Borttagna projekt".`,
+      confirmClearImported: "Ta bort alla importerade projekt? De kan återställas senare under \"Borttagna projekt\".",
+      deletedProjectsTitle: "Borttagna projekt",
+      deletedProjectsHint: "Sparas här tills du återställer dem.",
+      restoreProjectButton: "Återställ",
       economicsTitle: "Portföljekonomi",
       statPortfolioBudget: "Total portföljbudget",
       statFundingPotential: "Identifierad EU-finansieringspotential",
@@ -1817,6 +1827,11 @@ export const translations: Record<Lang, TranslationTree> = {
         "Columns: Titel, Förvaltning, Ägare, Budget, Startår, Slutår, Sektor, Beskrivning, Internationell partner. Saved in your browser (not shared between users in this demo).",
       clearImported: "Clear imported projects",
       removeImportedRow: "Remove imported project",
+      confirmRemoveProject: (title) => `Remove the project "${title}"? It can be restored later under "Deleted projects".`,
+      confirmClearImported: "Remove all imported projects? They can be restored later under \"Deleted projects\".",
+      deletedProjectsTitle: "Deleted projects",
+      deletedProjectsHint: "Kept here until you restore them.",
+      restoreProjectButton: "Restore",
       economicsTitle: "Portfolio economics",
       statPortfolioBudget: "Total portfolio budget",
       statFundingPotential: "Identified EU funding potential",

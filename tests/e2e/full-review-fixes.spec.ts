@@ -20,6 +20,7 @@ test("a CSV-imported project is assignable to a user, not just seeded ones", asy
 
   // Clean up so this doesn't leak into other tests sharing storage.
   await page.goto("/projektbank");
+  page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: /Rensa importerade projekt|Clear imported projects/i }).click();
   await expect(page.locator("tbody tr", { hasText: "Anvandare-testprojekt" })).toHaveCount(0);
 });

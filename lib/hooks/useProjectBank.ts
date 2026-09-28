@@ -12,6 +12,12 @@ import { projectBank as seededProjectBank } from "@/lib/data/projectBank";
 // bevakning, översikt) sees the same combined portfolio.
 const STORAGE_KEY = "eu-navigator-imported-projects";
 
+// Deleting a project (seeded or imported) is a soft delete — its id just
+// gets listed here and filtered out of `all` — so a mistaken or
+// since-regretted delete can be undone from Projektbank's "Borttagna
+// projekt" panel, instead of the entry being gone for good.
+const DELETED_KEY = "eu-navigator-deleted-project-ids";
+
 // Edits to any entry (seeded or imported) — a project idea starts out
 // rough (e.g. while "Under bedömning") and gets filled in over time. Kept
 // as a separate overlay, same pattern as useOrgConfig, so a seeded entry's
@@ -41,6 +47,25 @@ function writeImported(entries: ProjectBankEntry[]) {
   }
 }
 
+function readDeletedIds(): string[] {
+  try {
+    const raw = window.localStorage.getItem(DELETED_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeDeletedIds(ids: string[]) {
+  try {
+    window.localStorage.setItem(DELETED_KEY, JSON.stringify(ids));
+  } catch {
+    // localStorage unavailable — deletions just won't persist.
+  }
+}
+
 function readOverrides(): Record<string, ProjectBankEdit> {
   try {
     const raw = window.localStorage.getItem(OVERRIDES_KEY);
@@ -63,11 +88,13 @@ function writeOverrides(overrides: Record<string, ProjectBankEdit>) {
 export function useProjectBank() {
   const [imported, setImported] = useState<ProjectBankEntry[]>([]);
   const [overrides, setOverrides] = useState<Record<string, ProjectBankEdit>>({});
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setImported(readImported());
     setOverrides(readOverrides());
+    setDeletedIds(readDeletedIds());
     setHydrated(true);
   }, []);
 
@@ -79,18 +106,34 @@ export function useProjectBank() {
     });
   }, []);
 
-  const removeImported = useCallback((id: string) => {
-    setImported((prev) => {
-      const next = prev.filter((e) => e.id !== id);
-      writeImported(next);
+  const deleteEntry = useCallback((id: string) => {
+    setDeletedIds((prev) => {
+      if (prev.includes(id)) return prev;
+      const next = [...prev, id];
+      writeDeletedIds(next);
       return next;
     });
   }, []);
 
-  const clearImported = useCallback(() => {
-    setImported([]);
-    writeImported([]);
+  const restoreEntry = useCallback((id: string) => {
+    setDeletedIds((prev) => {
+      const next = prev.filter((existing) => existing !== id);
+      writeDeletedIds(next);
+      return next;
+    });
   }, []);
+
+  // Soft-deletes every currently-imported entry at once, the same
+  // recoverable way as deleteEntry — the underlying rows stay in
+  // `imported` (so a re-import of the same CSV still dedupes against
+  // them) and only their ids move into the deleted list.
+  const clearImported = useCallback(() => {
+    setDeletedIds((prev) => {
+      const next = Array.from(new Set([...prev, ...imported.map((e) => e.id)]));
+      writeDeletedIds(next);
+      return next;
+    });
+  }, [imported]);
 
   const updateEntry = useCallback((id: string, patch: ProjectBankEdit) => {
     setOverrides((prev) => {
@@ -105,12 +148,15 @@ export function useProjectBank() {
     [overrides]
   );
 
-  const all: ProjectBankEntry[] = [...seededProjectBank, ...imported].map(withOverrides);
+  const everyEntry: ProjectBankEntry[] = [...seededProjectBank, ...imported].map(withOverrides);
+  const all = everyEntry.filter((entry) => !deletedIds.includes(entry.id));
+  const deletedEntries = everyEntry.filter((entry) => deletedIds.includes(entry.id));
 
-  return { all, imported, addImported, removeImported, clearImported, updateEntry, hydrated };
+  return { all, imported, deletedEntries, addImported, deleteEntry, restoreEntry, clearImported, updateEntry, hydrated };
 }
 
 export function findAnyProjectBankEntry(id: string): ProjectBankEntry | undefined {
+  if (readDeletedIds().includes(id)) return undefined;
   const entry = seededProjectBank.find((p) => p.id === id) ?? readImported().find((p) => p.id === id);
   if (!entry) return undefined;
   const override = readOverrides()[id];

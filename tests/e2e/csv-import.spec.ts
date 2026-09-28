@@ -33,12 +33,16 @@ test("importing the same CSV twice does not create colliding ids, and a row can 
 
   expect(consoleWarnings).toEqual([]);
 
-  // Remove one imported row via the per-row delete control.
+  // Remove one imported row via the per-row delete control — now a soft
+  // delete behind a confirmation dialog, not an immediate hard removal.
+  page.once("dialog", (d) => d.accept());
   await rowsAfterSecond.first().getByRole("button", { name: /Ta bort importerat projekt|Remove imported project/i }).click();
   await expect(page.locator("tbody tr", { hasText: "E2E-testprojekt" })).toHaveCount(1);
+  await expect(page.getByText(/Borttagna projekt|Deleted projects/)).toBeVisible();
 
   // Clean up the rest via "clear imported" so this test doesn't leave state
   // behind for other tests sharing the same browser storage.
+  page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: /Rensa importerade projekt|Clear imported projects/i }).click();
   await expect(page.locator("tbody tr", { hasText: "E2E-testprojekt" })).toHaveCount(0);
 });
