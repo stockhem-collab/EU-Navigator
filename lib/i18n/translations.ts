@@ -403,8 +403,6 @@ export interface TranslationTree {
     statusFilterAll: string;
     noProjectsForStatus: string;
     onlyMineAndSharedToggle: string;
-    reportingSectionTitle: string;
-    reportingSectionSubtitle: string;
     reportingRequirementsTitle: string;
     periodicityLabel: string;
     periodicityQuarterly: string;
@@ -1189,8 +1187,6 @@ export const translations: Record<Lang, TranslationTree> = {
       statusFilterAll: "Alla",
       noProjectsForStatus: "Inga projekt med denna status.",
       onlyMineAndSharedToggle: "Visa endast mina och delade projekt",
-      reportingSectionTitle: "Rapportering på beviljade projekt",
-      reportingSectionSubtitle: "Åtaganden från ansökan följs upp mot rapporterat utfall.",
       reportingRequirementsTitle: "Rapporteringskrav för utlysningen",
       periodicityLabel: "Rapporteringsfrekvens",
       periodicityQuarterly: "Kvartalsvis",
@@ -1974,8 +1970,6 @@ export const translations: Record<Lang, TranslationTree> = {
       statusFilterAll: "All",
       noProjectsForStatus: "No projects with this status.",
       onlyMineAndSharedToggle: "Show only my and shared projects",
-      reportingSectionTitle: "Reporting on awarded projects",
-      reportingSectionSubtitle: "Commitments made in the application are tracked against reported outturn.",
       reportingRequirementsTitle: "Call reporting requirements",
       periodicityLabel: "Reporting frequency",
       periodicityQuarterly: "Quarterly",

@@ -9,17 +9,13 @@ import StatusBadge from "@/components/StatusBadge";
 import LinkedReportingBadge from "@/components/LinkedReportingBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
-import { nextActionableReport, reportingHealth } from "@/lib/data/awardedProjects";
 import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
-import { findCall } from "@/lib/data/fundingCalls";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
-import { findProgram } from "@/lib/data/fundingPrograms";
 import { CURRENT_USER_ID, isProjectRelevantToUser, orgUnits as seedOrgUnits } from "@/lib/data/users";
 import { computeBestMatchForEntry } from "@/lib/matching/portfolio";
-import { fmtSEK } from "@/lib/format";
 import { PROJECT_STATUS_ORDER, ProjectBankEntry, ProjectStatus } from "@/lib/types";
 
 export default function MyProjectsPage() {
@@ -173,54 +169,6 @@ function MyProjectsPageInner() {
               );
             })}
             {filteredRows.length === 0 && <p className="text-sm text-navy-500">{ap.noProjectsForStatus}</p>}
-          </div>
-        </section>
-
-        <section className="mb-16 mt-10 border-t border-navy-100 pt-8">
-          <h2 className="text-lg font-bold text-navy-800">{ap.reportingSectionTitle}</h2>
-          <p className="mt-1 text-sm text-navy-500">{ap.reportingSectionSubtitle}</p>
-
-          <div className="mt-4 space-y-5">
-            {awardedProjects.map((seedProject) => {
-              const project = withSubmissions(seedProject);
-              const call = findCall(project.callId);
-              const program = call ? findProgram(call.programId) : undefined;
-              const nextReport = nextActionableReport(project);
-              const health = reportingHealth(project);
-              return (
-                <Link
-                  key={project.id}
-                  href={`/projekt/${project.id}`}
-                  className="block rounded-xl border border-navy-100 bg-white p-6 transition hover:border-navy-300 hover:shadow-sm"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      {program && (
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-xs font-bold text-white">
-                          {program.logoLetter}
-                        </span>
-                      )}
-                      <h3 className="font-bold text-navy-900">
-                        {lang === "sv" ? project.title_sv : project.title_en}
-                      </h3>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {health === "attention" && <span className="badge bg-gold-100 text-gold-800">{ap.healthAttentionLabel}</span>}
-                      <span className={`badge ${health === "blocked" ? "bg-amber-100 text-amber-800" : "bg-navy-100 text-navy-600"}`}>
-                        {nextReport
-                          ? nextReport.status === "revision-requested"
-                            ? ap.reportStatusRevisionRequested
-                            : ap.nextReportDue(nextReport.deadlineMonthsFromNow)
-                          : ap.reportingCompleteLabel}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="mt-3 text-sm text-navy-500">
-                    {ap.awardedAmount}: <span className="font-semibold text-navy-800">{fmtSEK(project.awardedAmountSEK, lang)}</span>
-                  </p>
-                </Link>
-              );
-            })}
           </div>
         </section>
       </main>

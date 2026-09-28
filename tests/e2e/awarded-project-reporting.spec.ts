@@ -35,16 +35,15 @@ test("submitting the next upcoming report updates the commitment summary and mov
   await expect(page.getByText("All rapportering avslutad.")).toBeVisible();
 
   // The reporting badge on Mina projekt reflects the same local submission
-  // — now shown twice on this page (once folded into the project's own
-  // status row, once in the dedicated reporting section further down), so
-  // .first() rather than a bare getByText avoids a strict-mode ambiguity.
+  // — folded into the project's own status row (see LinkedReportingBadge),
+  // not a separate section further down.
   await page.goto("/projekt");
-  await expect(page.getByText("All rapportering avslutad.").first()).toBeVisible();
+  await expect(page.getByText("All rapportering avslutad.")).toBeVisible();
 });
 
 test("a report needing revision surfaces on Mina projekt and Översikt", async ({ page }) => {
   await page.goto("/projekt");
-  await expect(page.getByText("Komplettering begärd").first()).toBeVisible();
+  await expect(page.getByText("Komplettering begärd")).toBeVisible();
 
   await page.goto("/oversikt");
   await page.getByRole("button", { name: "EU-/finansieringssamordnare" }).click();
