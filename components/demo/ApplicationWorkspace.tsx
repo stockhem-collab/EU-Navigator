@@ -238,7 +238,9 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
                           </div>
                           <button
                             type="button"
-                            onClick={() => resetSection(row.label_sv)}
+                            onClick={() => {
+                              if (!isEdited || window.confirm(ws.confirmResetField)) resetSection(row.label_sv);
+                            }}
                             className="text-xs font-medium text-navy-400 hover:text-navy-700"
                           >
                             {ws.resetField}
@@ -338,7 +340,9 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
                           <div className="flex items-center gap-4">
                             <button
                               type="button"
-                              onClick={() => restoreVersion(v.id)}
+                              onClick={() => {
+                                if (window.confirm(ws.confirmRestoreVersion(v.name))) restoreVersion(v.id);
+                              }}
                               className="text-xs font-semibold text-navy-600 hover:text-navy-900"
                             >
                               {ws.restoreVersionButton}

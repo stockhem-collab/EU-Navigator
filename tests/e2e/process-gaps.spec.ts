@@ -28,6 +28,7 @@ test("a document can be attached to, downloaded from, and removed from a Projekt
   const [download] = await Promise.all([page.waitForEvent("download"), fileButton.click()]);
   expect(download.suggestedFilename()).toBe("budget.txt");
 
+  page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Ta bort" }).last().click();
   await expect(page.getByText("Inga bilagor sparade än.")).toBeVisible();
 });
@@ -140,6 +141,7 @@ test("a document can be attached to a specific reporting event", async ({ page }
   });
 
   await expect(reportCard.getByText("evidence.txt")).toBeVisible();
+  page.once("dialog", (d) => d.accept());
   await reportCard.getByRole("button", { name: "Ta bort" }).click();
   await expect(reportCard.getByText("evidence.txt")).toHaveCount(0);
 });

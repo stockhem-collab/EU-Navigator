@@ -28,7 +28,9 @@ test("a saved project's application draft survives re-entering the workspace", a
   await page.goto(href!);
   await expect(page.locator("textarea").first()).toHaveValue(testValue);
 
-  // Reset restores the AI suggestion, not the manual draft.
+  // Reset restores the AI suggestion, not the manual draft — asks for
+  // confirmation first since it discards the edited text.
+  page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: /Återställ AI-förslag|Reset to AI suggestion/i }).first().click();
   await expect(page.locator("textarea").first()).not.toHaveValue(testValue);
 });
@@ -57,9 +59,11 @@ test("a version can be saved and restored, and the application exports as .docx"
   await page.getByRole("button", { name: /Spara version|Save version/i }).click();
   await expect(page.getByText(/^Utkast$|^Draft$/).first()).toBeVisible();
 
-  // Change the draft further, then restore the saved version.
+  // Change the draft further, then restore the saved version — asks for
+  // confirmation first since it overwrites the current draft.
   await textarea.fill("Något helt annat");
   await page.waitForTimeout(200);
+  page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: /Återställ till denna version|Restore this version/i }).click();
   await expect(textarea).toHaveValue(draftValue);
 

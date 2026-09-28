@@ -20,6 +20,7 @@ test("marking an approved Projektbank entry as awarded creates real reporting tr
 
   const markButton = page.getByRole("button", { name: "Markera som beviljad" });
   await expect(markButton).toBeVisible();
+  page.once("dialog", (d) => d.accept());
   await markButton.click();
 
   await expect(page).toHaveURL(/\/projekt\/ap-pb-2/);

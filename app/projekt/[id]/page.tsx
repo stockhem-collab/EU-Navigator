@@ -507,7 +507,9 @@ function ReportingEventCard({
                 </button>
                 <button
                   type="button"
-                  onClick={() => removeAttachment(attachmentKey, a.id)}
+                  onClick={() => {
+                    if (window.confirm(ap.confirmRemoveReportAttachment(a.fileName))) removeAttachment(attachmentKey, a.id);
+                  }}
                   className="shrink-0 text-navy-400 hover:text-amber-700"
                 >
                   {ap.reportAttachmentRemoveLabel}

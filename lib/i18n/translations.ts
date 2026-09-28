@@ -125,6 +125,7 @@ export interface TranslationTree {
       logicTitle: string;
       logicHint: string;
       resetField: string;
+      confirmResetField: string;
       fieldSourceTemplate: string;
       fieldSourceEdited: string;
       reviewerTitle: string;
@@ -155,6 +156,7 @@ export interface TranslationTree {
       saveVersionButton: string;
       noVersions: string;
       restoreVersionButton: string;
+      confirmRestoreVersion: (name: string) => string;
       exportVersionButton: string;
       deleteVersionButton: string;
       confirmDeleteVersion: (name: string) => string;
@@ -233,6 +235,7 @@ export interface TranslationTree {
     noAttachments: string;
     attachmentTooLarge: (maxMB: number) => string;
     attachmentRemoveLabel: string;
+    confirmRemoveAttachment: (fileName: string) => string;
     attachmentUploadedAt: (date: string) => string;
     detailNotFound: string;
     detailThemeLabel: string;
@@ -265,6 +268,7 @@ export interface TranslationTree {
     linkedAwardedProjectLink: string;
     markAsAwardedButton: string;
     markAsAwardedHint: string;
+    confirmMarkAsAwarded: string;
   };
   euDatabase: {
     title: string;
@@ -448,6 +452,7 @@ export interface TranslationTree {
     reportAttachmentsLabel: string;
     reportAttachmentUploadButton: string;
     reportAttachmentRemoveLabel: string;
+    confirmRemoveReportAttachment: (fileName: string) => string;
     reportAttachmentTooLarge: (maxMB: number) => string;
     addSustainabilityButton: string;
     addSustainabilityHint: string;
@@ -887,6 +892,7 @@ export const translations: Record<Lang, TranslationTree> = {
         logicTitle: "Projektlogik",
         logicHint: "AI-genererat förslag — redigera direkt i fälten nedan.",
         resetField: "Återställ AI-förslag",
+        confirmResetField: "Återställa till AI-förslaget? Din redigerade text i det här fältet går förlorad.",
         fieldSourceTemplate: "Mallförslag",
         fieldSourceEdited: "Redigerat av dig",
         reviewerTitle: "AI-granskning",
@@ -918,6 +924,8 @@ export const translations: Record<Lang, TranslationTree> = {
         saveVersionButton: "Spara version",
         noVersions: "Inga sparade versioner än.",
         restoreVersionButton: "Återställ till denna version",
+        confirmRestoreVersion: (name) =>
+          `Återställa till versionen "${name}"? Alla ändringar i det nuvarande utkastet som inte sparats som en version går förlorade.`,
         exportVersionButton: "Exportera (.docx)",
         deleteVersionButton: "Ta bort",
         confirmDeleteVersion: (name) => `Ta bort versionen "${name}"? Det går inte att ångra.`,
@@ -1012,6 +1020,7 @@ export const translations: Record<Lang, TranslationTree> = {
       noAttachments: "Inga bilagor sparade än.",
       attachmentTooLarge: (maxMB) => `Filen är för stor — max ${maxMB} MB per bilaga i den här demoversionen.`,
       attachmentRemoveLabel: "Ta bort",
+      confirmRemoveAttachment: (fileName) => `Ta bort bilagan "${fileName}"? Filen försvinner ur systemet.`,
       attachmentUploadedAt: (date) => `Uppladdad ${date}`,
       detailNotFound: "Hittade inget projekt med det här id:t.",
       detailThemeLabel: "Tema",
@@ -1047,6 +1056,8 @@ export const translations: Record<Lang, TranslationTree> = {
       linkedAwardedProjectLink: "Visa rapportering →",
       markAsAwardedButton: "Markera som beviljad",
       markAsAwardedHint: "Skapar rapporteringsspårning för projektet baserat på bäst matchande utlysning.",
+      confirmMarkAsAwarded:
+        "Markera som beviljad? Detta skapar ett nytt beviljat projekt med egen rapporteringsspårning. Det går inte att ångra.",
     },
     euDatabase: {
       title: "EU-databas",
@@ -1233,6 +1244,7 @@ export const translations: Record<Lang, TranslationTree> = {
       reportAttachmentsLabel: "Bilagor",
       reportAttachmentUploadButton: "+ Ladda upp bilaga",
       reportAttachmentRemoveLabel: "Ta bort",
+      confirmRemoveReportAttachment: (fileName) => `Ta bort bilagan "${fileName}"? Filen försvinner ur systemet.`,
       reportAttachmentTooLarge: (maxMB) => `Filen är för stor — max ${maxMB} MB per bilaga i den här demoversionen.`,
       addSustainabilityButton: "Lägg till hållbarhetsuppföljning",
       addSustainabilityHint: "För fonder som kräver uppföljning av resultatens hållbarhet flera år efter projektslut.",
@@ -1673,6 +1685,7 @@ export const translations: Record<Lang, TranslationTree> = {
         logicTitle: "Project logic",
         logicHint: "AI-generated draft — edit directly in the fields below.",
         resetField: "Reset to AI suggestion",
+        confirmResetField: "Reset to the AI suggestion? Your edited text in this field will be lost.",
         fieldSourceTemplate: "Template suggestion",
         fieldSourceEdited: "Edited by you",
         reviewerTitle: "AI review",
@@ -1703,6 +1716,8 @@ export const translations: Record<Lang, TranslationTree> = {
         saveVersionButton: "Save version",
         noVersions: "No saved versions yet.",
         restoreVersionButton: "Restore this version",
+        confirmRestoreVersion: (name) =>
+          `Restore the version "${name}"? Any changes in the current draft that aren't saved as a version will be lost.`,
         exportVersionButton: "Export (.docx)",
         deleteVersionButton: "Delete",
         confirmDeleteVersion: (name) => `Delete the version "${name}"? This can't be undone.`,
@@ -1797,6 +1812,7 @@ export const translations: Record<Lang, TranslationTree> = {
       noAttachments: "No attachments saved yet.",
       attachmentTooLarge: (maxMB) => `File is too large — max ${maxMB} MB per attachment in this demo version.`,
       attachmentRemoveLabel: "Remove",
+      confirmRemoveAttachment: (fileName) => `Remove the attachment "${fileName}"? The file will be gone from the system.`,
       attachmentUploadedAt: (date) => `Uploaded ${date}`,
       detailNotFound: "No project found with that id.",
       detailThemeLabel: "Theme",
@@ -1832,6 +1848,8 @@ export const translations: Record<Lang, TranslationTree> = {
       linkedAwardedProjectLink: "View reporting →",
       markAsAwardedButton: "Mark as awarded",
       markAsAwardedHint: "Creates reporting tracking for the project based on its best-matching call.",
+      confirmMarkAsAwarded:
+        "Mark as awarded? This creates a new awarded project with its own reporting tracking. This can't be undone.",
     },
     euDatabase: {
       title: "EU database",
@@ -2017,6 +2035,7 @@ export const translations: Record<Lang, TranslationTree> = {
       reportAttachmentsLabel: "Attachments",
       reportAttachmentUploadButton: "+ Upload attachment",
       reportAttachmentRemoveLabel: "Remove",
+      confirmRemoveReportAttachment: (fileName) => `Remove the attachment "${fileName}"? The file will be gone from the system.`,
       reportAttachmentTooLarge: (maxMB) => `File is too large — max ${maxMB} MB per attachment in this demo version.`,
       addSustainabilityButton: "Add sustainability follow-up",
       addSustainabilityHint: "For funds requiring follow-up on the sustainability of results years after project end.",

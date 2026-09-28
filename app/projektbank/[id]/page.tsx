@@ -114,6 +114,7 @@ export default function ProjectBankDetailPage() {
   const handleMarkAsAwarded = () => {
     const bestMatch = matches[0];
     if (!bestMatch) return;
+    if (!window.confirm(pb.confirmMarkAsAwarded)) return;
     const awarded = projectBankEntryToAwardedProject(entry, bestMatch);
     addAwardedProject(awarded);
     updateEntry(entry.id, { status: "running" });
@@ -544,7 +545,9 @@ export default function ProjectBankDetailPage() {
                     <span>{pb.attachmentUploadedAt(new Date(a.uploadedAt).toLocaleDateString(lang === "sv" ? "sv-SE" : "en-US"))}</span>
                     <button
                       type="button"
-                      onClick={() => removeAttachment(`projectbank:${entry.id}`, a.id)}
+                      onClick={() => {
+                        if (window.confirm(pb.confirmRemoveAttachment(a.fileName))) removeAttachment(`projectbank:${entry.id}`, a.id);
+                      }}
                       className="font-medium text-navy-400 hover:text-amber-700"
                     >
                       {pb.attachmentRemoveLabel}
