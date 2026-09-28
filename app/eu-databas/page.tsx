@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fundingPrograms } from "@/lib/data/fundingPrograms";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
+import { fmtSEK } from "@/lib/format";
 
 export default function EuDatabasePage() {
   const { t, lang } = useLanguage();
@@ -41,10 +42,17 @@ export default function EuDatabasePage() {
             .map((program) => {
               const calls = fundingCalls.filter((c) => c.programId === program.id);
               const docCount = calls.reduce((sum, c) => sum + c.documents.length, 0);
+              // A programme with exactly one call has nothing to choose
+              // between, so the programme-level page is a pointless extra
+              // click — link straight to that call and show its deadline
+              // and grant size right here instead of making someone click
+              // through just to see them. A programme with several calls
+              // still needs that page as a real selection step.
+              const singleCall = calls.length === 1 ? calls[0] : null;
               return (
                 <Link
                   key={program.id}
-                  href={`/eu-databas/${program.id}`}
+                  href={singleCall ? `/eu-databas/${program.id}/${singleCall.id}` : `/eu-databas/${program.id}`}
                   className={`rounded-xl border bg-white p-6 transition hover:border-navy-300 hover:shadow-sm ${
                     program.status === "legacy" ? "border-navy-100 opacity-70" : "border-navy-100"
                   }`}
@@ -59,16 +67,35 @@ export default function EuDatabasePage() {
                         {program.status === "legacy" && (
                           <span className="badge bg-navy-100 text-navy-500">{db.closedProgrammeBadge}</span>
                         )}
+                        {singleCall && (
+                          <span
+                            className={`badge ${
+                              singleCall.status === "open" ? "bg-green-100 text-green-800" : "bg-navy-100 text-navy-600"
+                            }`}
+                          >
+                            {singleCall.status === "open" ? db.statusOpen : db.statusUpcoming}
+                          </span>
+                        )}
                       </div>
                       <p className="mt-1 text-sm text-navy-600">
                         {lang === "sv" ? program.description_sv : program.description_en}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-4 flex gap-4 text-xs font-semibold text-navy-400">
-                    <span>{db.callsCount(calls.length)}</span>
-                    <span>{db.documentsCount(docCount)}</span>
-                  </div>
+                  {singleCall ? (
+                    <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-xs font-semibold text-navy-400">
+                      <span>{db.deadlineIn(singleCall.deadlineMonthsFromNow)}</span>
+                      <span>
+                        {db.grantRangeLabel}: {fmtSEK(singleCall.minGrantSEK, lang)}–{fmtSEK(singleCall.maxGrantSEK, lang)}
+                      </span>
+                      <span>{db.documentsCount(docCount)}</span>
+                    </div>
+                  ) : (
+                    <div className="mt-4 flex gap-4 text-xs font-semibold text-navy-400">
+                      <span>{db.callsCount(calls.length)}</span>
+                      <span>{db.documentsCount(docCount)}</span>
+                    </div>
+                  )}
                 </Link>
               );
             })}
