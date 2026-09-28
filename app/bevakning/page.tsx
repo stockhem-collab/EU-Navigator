@@ -57,10 +57,14 @@ export default function BevakningPage() {
           const matches = computeMatchesForCall(call, program, projectBank).filter(
             (m) => m.match.score >= MATCH_THRESHOLD
           );
-          const isWatched =
-            prefs.callIds.includes(call.id) ||
-            prefs.programIds.includes(program.id) ||
-            program.sectors.some((s) => prefs.sectors.includes(s));
+          // Only the two explicit, deliberate watch actions count as "mina
+          // bevakningar" here — an individually starred call, or a whole
+          // programme opted into under Inställningar → Bevakningar. Sector
+          // interests (prefs.sectors) are a *broad* notification preference
+          // that starts pre-populated with several sectors, so folding it in
+          // here made "Visa endast mina bevakningar" show almost the whole
+          // list regardless of what anyone had actually starred.
+          const isWatched = prefs.callIds.includes(call.id) || prefs.programIds.includes(program.id);
           return { call, program, matches, isWatched };
         })
         .filter((r): r is NonNullable<typeof r> => r !== null),
