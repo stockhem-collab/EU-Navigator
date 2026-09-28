@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { ProjectInput, Sector } from "@/lib/types";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
+import { useTags } from "@/lib/hooks/useTags";
 import TagPicker from "@/components/TagPicker";
 
 const SECTORS: Sector[] = [
@@ -67,6 +68,7 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject }: 
   const { t, lang } = useLanguage();
   const [project, setProject] = useState<ProjectInput>(initialProject ?? draftProject ?? DEFAULT_PROJECT);
   const intake = t.demo.intake;
+  const { all: allTags, addCustomTag } = useTags();
 
   const fillExample = () => setProject(lang === "sv" ? EXAMPLE_SV : EXAMPLE_EN);
 
@@ -180,6 +182,7 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject }: 
           <label className="block text-sm font-semibold text-navy-800">{intake.fieldTags}</label>
           <div className="mt-1">
             <TagPicker
+              tags={allTags}
               selected={project.tags ?? []}
               onChange={(tags) => setProject({ ...project, tags })}
               suggested={suggestedTags}
@@ -188,7 +191,10 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject }: 
                 hint: intake.tagsHint,
                 suggestedLabel: intake.tagsSuggestedLabel,
                 addAllLabel: intake.tagsAddAllLabel,
+                addNewPlaceholder: intake.tagsAddNewPlaceholder,
+                addNewButton: intake.tagsAddNewButton,
               }}
+              onAddTag={addCustomTag}
             />
           </div>
         </div>

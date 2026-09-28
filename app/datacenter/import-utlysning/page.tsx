@@ -10,6 +10,7 @@ import { fundingCalls, applicantTypeLabel, ALL_APPLICANT_TYPES } from "@/lib/dat
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { extractCallDraft, slugifyCallId, ExtractionConfidence } from "@/lib/matching/callExtraction";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
+import { useTags } from "@/lib/hooks/useTags";
 import TagPicker from "@/components/TagPicker";
 import { ApplicantType, FundingCall, ReportingPeriodicity } from "@/lib/types";
 
@@ -59,6 +60,7 @@ export default function ImportUtlysningPage() {
   const { t, lang } = useLanguage();
   const ci = t.callImport;
   const { imported, addImportedCall, removeImportedCall, hydrated } = useFundingCalls();
+  const { all: allTags, addCustomTag } = useTags();
 
   const [rawText, setRawText] = useState("");
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -364,6 +366,7 @@ export default function ImportUtlysningPage() {
             </div>
             <div className="mt-1">
               <TagPicker
+                tags={allTags}
                 selected={form.tags}
                 onChange={(tags) => setForm({ ...form, tags })}
                 suggested={liveSuggestedTags}
@@ -372,7 +375,10 @@ export default function ImportUtlysningPage() {
                   hint: t.demo.intake.tagsHint,
                   suggestedLabel: t.demo.intake.tagsSuggestedLabel,
                   addAllLabel: t.demo.intake.tagsAddAllLabel,
+                  addNewPlaceholder: t.demo.intake.tagsAddNewPlaceholder,
+                  addNewButton: t.demo.intake.tagsAddNewButton,
                 }}
+                onAddTag={addCustomTag}
               />
             </div>
             {form.tags.length === 0 && <p className="mt-2 text-xs text-amber-700">{ci.noTagsWarning}</p>}

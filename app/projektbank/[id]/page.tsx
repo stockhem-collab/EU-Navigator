@@ -17,12 +17,12 @@ import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { orgUnits as seedOrgUnits, projectRoleLabels, shareableUnits, unitDepth } from "@/lib/data/users";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
-import { tagLabel } from "@/lib/data/tags";
 import { computeMatchesForEntry, projectBankEntryToAwardedProject, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
 import { computeSimilarProjects } from "@/lib/matching/similarProjects";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
 import { ProjectStatus, Sector } from "@/lib/types";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
+import { useTags } from "@/lib/hooks/useTags";
 import TagPicker from "@/components/TagPicker";
 
 const SECTORS: Sector[] = ["energy", "climate", "digital", "social", "mobility", "education", "health", "research"];
@@ -65,6 +65,7 @@ export default function ProjectBankDetailPage() {
   // appear once `hydrated` flips true.
   const router = useRouter();
   const { all, hydrated, updateEntry } = useProjectBank();
+  const { all: allTags, addCustomTag } = useTags();
   const { all: fundingCalls } = useFundingCalls();
   const { all: awardedProjectsAll, addAwardedProject } = useAwardedProjects();
   const { users } = useUsersDirectory();
@@ -279,6 +280,7 @@ export default function ProjectBankDetailPage() {
                 <label className="block text-sm font-semibold text-navy-700">{t.demo.intake.fieldTags}</label>
                 <div className="mt-1">
                   <TagPicker
+                    tags={allTags}
                     selected={draft.tags}
                     onChange={(tags) => setDraft({ ...draft, tags })}
                     suggested={suggestedTagsForDraft}
@@ -287,7 +289,10 @@ export default function ProjectBankDetailPage() {
                       hint: t.demo.intake.tagsHint,
                       suggestedLabel: t.demo.intake.tagsSuggestedLabel,
                       addAllLabel: t.demo.intake.tagsAddAllLabel,
+                      addNewPlaceholder: t.demo.intake.tagsAddNewPlaceholder,
+                      addNewButton: t.demo.intake.tagsAddNewButton,
                     }}
+                    onAddTag={addCustomTag}
                   />
                 </div>
               </div>
@@ -387,11 +392,15 @@ export default function ProjectBankDetailPage() {
                 <div className="sm:col-span-2">
                   <dt className="text-xs font-semibold uppercase text-navy-400">{t.demo.intake.fieldTags}</dt>
                   <dd className="mt-2 flex flex-wrap gap-2">
-                    {entry.tags.map((id) => (
-                      <span key={id} className="rounded-full bg-navy-50 px-2.5 py-1 text-xs font-medium text-navy-700">
-                        {tagLabel(id, lang)}
-                      </span>
-                    ))}
+                    {entry.tags.map((id) => {
+                      const tag = allTags.find((t) => t.id === id);
+                      const label = tag ? (lang === "sv" ? tag.label_sv : tag.label_en) : id;
+                      return (
+                        <span key={id} className="rounded-full bg-navy-50 px-2.5 py-1 text-xs font-medium text-navy-700">
+                          {label}
+                        </span>
+                      );
+                    })}
                   </dd>
                 </div>
               )}

@@ -97,6 +97,8 @@ export interface TranslationTree {
       tagsHint: string;
       tagsSuggestedLabel: string;
       tagsAddAllLabel: string;
+      tagsAddNewPlaceholder: string;
+      tagsAddNewButton: string;
       submit: string;
       fillExample: string;
       prefilledFromBank: string;
@@ -863,6 +865,8 @@ export const translations: Record<Lang, TranslationTree> = {
         tagsHint: "Välj de taggar som beskriver projektet — taggar matchas exakt mot utlysningarnas teman och missar inte synonymer på samma sätt som fritextsökning.",
         tagsSuggestedLabel: "Förslag baserat på beskrivningen:",
         tagsAddAllLabel: "Lägg till alla",
+        tagsAddNewPlaceholder: "Ny tagg som saknas…",
+        tagsAddNewButton: "Lägg till ny tagg",
         submit: "Hitta finansieringsmöjligheter",
         fillExample: "Fyll i exempel",
         prefilledFromBank: "Förifyllt från projektbanken — granska och komplettera innan ni fortsätter.",
@@ -1663,6 +1667,8 @@ export const translations: Record<Lang, TranslationTree> = {
         tagsHint: "Pick the tags that describe the project — tags are matched exactly against the calls' themes, and don't miss synonyms the way free-text search does.",
         tagsSuggestedLabel: "Suggestions based on the description:",
         tagsAddAllLabel: "Add all",
+        tagsAddNewPlaceholder: "New tag that's missing…",
+        tagsAddNewButton: "Add new tag",
         submit: "Find funding opportunities",
         fillExample: "Fill example",
         prefilledFromBank: "Pre-filled from the project bank — review and complete before continuing.",
