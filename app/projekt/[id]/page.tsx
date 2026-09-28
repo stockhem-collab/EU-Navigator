@@ -302,7 +302,7 @@ function CommitmentCard({ commitment: c, project }: { commitment: Commitment; pr
             />
             <div className="flex h-full items-end gap-2">
               {history.map((h, i) => (
-                <div key={i} className="flex flex-1 flex-col items-center justify-end gap-1" title={`${fmt(h.value)} ${unit}`}>
+                <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1" title={`${fmt(h.value)} ${unit}`}>
                   <div
                     className="w-full rounded-t bg-navy-600"
                     style={{ height: `${Math.min(100, (h.value / maxValue) * 100)}%` }}
