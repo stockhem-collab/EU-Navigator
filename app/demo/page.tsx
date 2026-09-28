@@ -114,9 +114,17 @@ function DemoPageInner() {
             draftProject={step.project}
             onSubmit={(project) => {
               // Coming from a specific call in the EU database ("Hjälp mig
-              // söka") locks the AI straight into that call's context,
-              // skipping the general results list.
-              const preselectedCall = preselectedCallId ? fundingCalls.find((c) => c.id === preselectedCallId) : undefined;
+              // söka") locks the AI straight into that call's context on the
+              // very first submission, skipping the general results list —
+              // but only then. `step.project` is only set here when this
+              // intake was reached via "Ändra projekt" (the results step's
+              // back button) — i.e. the user already saw the matching step
+              // once and deliberately went back to edit the description. In
+              // that case they get the results step again, recomputed
+              // against the edited project, rather than being silently
+              // funnelled back into the one originally preselected call.
+              const preselectedCall =
+                !step.project && preselectedCallId ? fundingCalls.find((c) => c.id === preselectedCallId) : undefined;
               const preselectedProgram = preselectedCall ? findProgram(preselectedCall.programId) : undefined;
 
               if (preselectedCall && preselectedProgram) {

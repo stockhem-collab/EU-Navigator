@@ -38,3 +38,31 @@ test("intake -> results -> workspace happy path, with accessible tabs", async ({
 
   expect(errors).toEqual([]);
 });
+
+test("editing the project after 'Ändra projekt' re-shows matching results instead of re-locking onto the originally preselected call", async ({
+  page,
+}) => {
+  // Entering via a call-specific deep link ("Hjälp mig söka" on a single
+  // call) should still skip straight to the workspace on the FIRST
+  // submission — that shortcut is the whole point of the deep link.
+  await page.goto("/demo?call=life-2027-climate-schools");
+  await page.getByRole("button", { name: /Fyll i exempel/i }).click();
+  await page.locator('button[type="submit"]').click();
+  await expect(page.getByText("AI-stödd ansökningsyta")).toBeVisible();
+
+  // Going back shows the real matching step, across every call — not just
+  // the one originally preselected.
+  await page.getByRole("button", { name: /Tillbaka till matchningar/i }).click();
+  await expect(page.getByText("Finansieringsmöjligheter hittade")).toBeVisible();
+
+  // "Ändra projekt" returns to intake with the draft preserved, and editing
+  // it and resubmitting must show the matching step again — recomputed
+  // against the edited description — rather than silently jumping straight
+  // back into the one originally preselected call's workspace.
+  await page.getByRole("button", { name: "Ändra projekt" }).click();
+  const textarea = page.locator("textarea").first();
+  await textarea.fill((await textarea.inputValue()) + " Nytt fokus: digitalisering.");
+  await page.locator('button[type="submit"]').click();
+
+  await expect(page.getByText("Finansieringsmöjligheter hittade")).toBeVisible();
+});
