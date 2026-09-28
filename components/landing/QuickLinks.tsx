@@ -10,11 +10,11 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 // this page.
 const LINKS: { href: string; icon: string; labelKey: "demo" | "euDatabase" | "projectBank" | "monitoring" | "referenceProjects" | "myProjects" | "datacenter" }[] = [
   { href: "/demo", icon: "📝", labelKey: "demo" },
-  { href: "/eu-databas", icon: "📚", labelKey: "euDatabase" },
-  { href: "/projektbank", icon: "🗂", labelKey: "projectBank" },
-  { href: "/bevakning", icon: "🔔", labelKey: "monitoring" },
-  { href: "/referensprojekt", icon: "🏆", labelKey: "referenceProjects" },
   { href: "/projekt", icon: "📁", labelKey: "myProjects" },
+  { href: "/bevakning", icon: "🔔", labelKey: "monitoring" },
+  { href: "/projektbank", icon: "🗂", labelKey: "projectBank" },
+  { href: "/eu-databas", icon: "📚", labelKey: "euDatabase" },
+  { href: "/referensprojekt", icon: "🏆", labelKey: "referenceProjects" },
   { href: "/datacenter", icon: "🛠", labelKey: "datacenter" },
 ];
 

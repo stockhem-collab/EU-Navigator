@@ -7,11 +7,11 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const NAV_LINKS: { href: string; labelKey: keyof ReturnType<typeof useLanguage>["t"]["nav"] }[] = [
   { href: "/oversikt", labelKey: "overview" },
-  { href: "/projektbank", labelKey: "projectBank" },
+  { href: "/projekt", labelKey: "myProjects" },
   { href: "/bevakning", labelKey: "monitoring" },
+  { href: "/projektbank", labelKey: "projectBank" },
   { href: "/eu-databas", labelKey: "euDatabase" },
   { href: "/referensprojekt", labelKey: "referenceProjects" },
-  { href: "/projekt", labelKey: "myProjects" },
   { href: "/datacenter", labelKey: "datacenter" },
 ];
 
