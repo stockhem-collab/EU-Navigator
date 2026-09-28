@@ -41,7 +41,7 @@ const project: ProjectInput = {
   hasInternationalPartner: false,
 };
 
-function makeCall(evaluationCriteria: EvaluationCriterion[]): FundingCall {
+function makeCall(evaluationCriteria: EvaluationCriterion[], tags: string[] = []): FundingCall {
   return {
     id: "test-call",
     programId: program.id,
@@ -58,6 +58,7 @@ function makeCall(evaluationCriteria: EvaluationCriterion[]): FundingCall {
     priorities_sv: [],
     priorities_en: [],
     extraKeywords: [],
+    tags,
     evaluationCriteria,
     documents: [],
   };
@@ -124,5 +125,47 @@ test.describe("scoreMatch evaluationCriteria weighting", () => {
     // weighting (implementationRatio 2.0 vs 1.0), so the point-upside from
     // fixing a budget gap should be roughly twice as large too.
     expect(skewedBudgetGap!.deltaIfFixed!).toBeCloseTo(defaultBudgetGap!.deltaIfFixed! * 2, 0);
+  });
+});
+
+// Coverage for the tag-overlap signal added alongside the curated tag
+// vocabulary (lib/data/tags.ts): a controlled-vocabulary complement to the
+// free-text keyword matching above, meant to catch thematic matches that
+// exact-word matching misses on synonyms — without any AI call at match
+// time. Reuses `project` (sector mismatch, no keyword overlap, clean
+// implementation fit) and criteria that don't classify, so thematicRatio
+// and implementationRatio are both 1.0 and the tag contribution is visible
+// directly in the final score.
+test.describe("scoreMatch tag overlap scoring", () => {
+  const unclassifiedCriteria: EvaluationCriterion[] = [
+    { name_sv: "Foo", name_en: "Foo", maxPoints: 50 },
+    { name_sv: "Bar", name_en: "Bar", maxPoints: 50 },
+  ];
+
+  test("an untagged project scores the same as before tags existed, with an advisory note", () => {
+    const call = makeCall(unclassifiedCriteria, ["energieffektivisering", "klimatatgarder"]);
+    const result = scoreMatch(project, call, program);
+    expect(result.score).toBe(30);
+    expect(result.rationale.find((r) => r.category === "tags" && r.type === "neutral")).toBeDefined();
+  });
+
+  test("overlapping tags add points to the thematic bucket and surface a positive rationale line", () => {
+    const call = makeCall(unclassifiedCriteria, ["energieffektivisering", "klimatatgarder"]);
+    const taggedProject: ProjectInput = {
+      ...project,
+      tags: ["energieffektivisering", "klimatatgarder", "digitalisering"],
+    };
+    const result = scoreMatch(taggedProject, call, program);
+    // thematicScore = 0 (sector) + min(20, 2*7) (tags) + 0 (keywords) = 14.
+    expect(result.score).toBe(44);
+    const tagLine = result.rationale.find((r) => r.category === "tags" && r.type === "positive");
+    expect(tagLine).toBeDefined();
+  });
+
+  test("tag overlap points are capped at 20 even with more than ~3 matching tags", () => {
+    const call = makeCall(unclassifiedCriteria, ["a", "b", "c", "d"]);
+    const taggedProject: ProjectInput = { ...project, tags: ["a", "b", "c", "d"] };
+    const result = scoreMatch(taggedProject, call, program);
+    expect(result.score).toBe(50); // 20 (tags, capped) + 30 (implementation)
   });
 });

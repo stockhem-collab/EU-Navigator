@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { ProjectInput, Sector } from "@/lib/types";
+import { suggestTags } from "@/lib/matching/tagSuggestions";
+import TagPicker from "@/components/TagPicker";
 
 const SECTORS: Sector[] = [
   "energy",
@@ -67,6 +69,11 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject }: 
   const intake = t.demo.intake;
 
   const fillExample = () => setProject(lang === "sv" ? EXAMPLE_SV : EXAMPLE_EN);
+
+  const suggestedTags = useMemo(
+    () => suggestTags(`${project.title} ${project.description}`),
+    [project.title, project.description]
+  );
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -165,6 +172,23 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject }: 
               value={project.endYear}
               onChange={(e) => setProject({ ...project, endYear: Number(e.target.value) })}
               className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-navy-800">{intake.fieldTags}</label>
+          <div className="mt-1">
+            <TagPicker
+              selected={project.tags ?? []}
+              onChange={(tags) => setProject({ ...project, tags })}
+              suggested={suggestedTags}
+              lang={lang}
+              labels={{
+                hint: intake.tagsHint,
+                suggestedLabel: intake.tagsSuggestedLabel,
+                addAllLabel: intake.tagsAddAllLabel,
+              }}
             />
           </div>
         </div>

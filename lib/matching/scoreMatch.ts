@@ -1,5 +1,6 @@
 import { EvaluationCriterion, FundingCall, FundingProgram, MatchResult, ProjectInput, RationaleLine } from "@/lib/types";
 import { findProgram } from "@/lib/data/fundingPrograms";
+import { tagLabel } from "@/lib/data/tags";
 import type { FundingProfile } from "@/lib/hooks/useFundingProfile";
 
 function normalizeWords(text: string): string[] {
@@ -91,10 +92,11 @@ export function scoreMatch(
   let thematicScore = 0; // nominal max 60
   let implementationScore = 0; // nominal max 40 (can go to -10 on a missing required partner)
 
-  // Sector alignment (max 35 of the thematic bucket)
+  // Sector alignment (max 30 of the thematic bucket — down from 35 now that
+  // tag overlap below carries part of the thematic signal)
   const sectorMatch = program.sectors.includes(project.sector);
   if (sectorMatch) {
-    thematicScore += 35;
+    thematicScore += 30;
     rationale.push({
       type: "positive",
       category: "sector",
@@ -103,9 +105,41 @@ export function scoreMatch(
     });
   }
 
-  // Keyword overlap (max 25 of the thematic bucket)
+  // Tag overlap (max 20 of the thematic bucket) — the curated, controlled
+  // vocabulary (lib/data/tags.ts) shared between calls and projects,
+  // chosen by the user or accepted from a keyword-based suggestion
+  // (lib/matching/tagSuggestions.ts) rather than inferred live from free
+  // text. This is now the primary thematic-fit signal, ahead of the raw
+  // keyword overlap below: it catches genuine thematic matches that exact
+  // word matching misses on synonyms/paraphrasing, without any AI call at
+  // match time.
+  const matchedTags = (project.tags ?? []).filter((id) => call.tags.includes(id));
+  const tagScore = Math.min(20, matchedTags.length * 7);
+  thematicScore += tagScore;
+  if (matchedTags.length > 0) {
+    rationale.push({
+      type: "positive",
+      category: "tags",
+      text_sv: `Matchar ${matchedTags.length} tagg${matchedTags.length > 1 ? "ar" : ""} med utlysningens tema (t.ex. "${tagLabel(matchedTags[0], "sv")}")`,
+      text_en: `Matches ${matchedTags.length} tag${matchedTags.length > 1 ? "s" : ""} with the call's theme (e.g. "${tagLabel(matchedTags[0], "en")}")`,
+    });
+  } else if ((project.tags ?? []).length === 0) {
+    rationale.push({
+      type: "neutral",
+      category: "tags",
+      text_sv: "Inga taggar valda för projektet – lägg till taggar i ansökningsstudion för säkrare matchning.",
+      text_en: "No tags selected for the project — add tags in the application studio for more accurate matching.",
+    });
+  }
+
+  // Keyword overlap (max 10 of the thematic bucket, down from 25) — a
+  // secondary signal now that tags above carry the primary thematic-fit
+  // weight. Kept rather than dropped since it still catches genuine
+  // free-text overlap the tag vocabulary doesn't cover yet, but it's pure
+  // exact-word matching with no synonym handling, so it shouldn't outweigh
+  // the curated tag signal.
   const matchedKeywords = keywordOverlapCount(project, program, call);
-  const keywordScore = Math.min(25, matchedKeywords.length * 6);
+  const keywordScore = Math.min(10, matchedKeywords.length * 3);
   thematicScore += keywordScore;
   if (matchedKeywords.length > 0) {
     rationale.push({
@@ -114,13 +148,13 @@ export function scoreMatch(
       text_sv: `Projektbeskrivningen matchar ${matchedKeywords.length} nyckelbegrepp i utlysningens prioriteringar (t.ex. "${matchedKeywords[0]}")`,
       text_en: `Your project description matches ${matchedKeywords.length} key terms in the call's priorities (e.g. "${matchedKeywords[0]}")`,
     });
-  } else if (!sectorMatch) {
+  } else if (!sectorMatch && matchedTags.length === 0) {
     rationale.push({
       type: "warning",
       category: "keywords",
       text_sv: "Svag tematisk koppling mellan projektet och utlysningens prioriteringar",
       text_en: "Weak thematic overlap between the project and the call's priorities",
-      deltaIfFixed: 15,
+      deltaIfFixed: 20,
     });
   }
 
@@ -206,7 +240,7 @@ export function scoreMatch(
   // score consistent with the score it's built from.
   for (const line of rationale) {
     if (line.deltaIfFixed === undefined) continue;
-    const ratio = line.category === "keywords" ? thematicRatio : implementationRatio;
+    const ratio = line.category === "keywords" || line.category === "tags" ? thematicRatio : implementationRatio;
     line.deltaIfFixed = Math.round(line.deltaIfFixed * ratio);
   }
 

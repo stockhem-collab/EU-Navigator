@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
@@ -17,10 +17,13 @@ import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { orgUnits as seedOrgUnits, projectRoleLabels, shareableUnits, unitDepth } from "@/lib/data/users";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
+import { tagLabel } from "@/lib/data/tags";
 import { computeMatchesForEntry, projectBankEntryToAwardedProject, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
 import { computeSimilarProjects } from "@/lib/matching/similarProjects";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
 import { ProjectStatus, Sector } from "@/lib/types";
+import { suggestTags } from "@/lib/matching/tagSuggestions";
+import TagPicker from "@/components/TagPicker";
 
 const SECTORS: Sector[] = ["energy", "climate", "digital", "social", "mobility", "education", "health", "research"];
 const STATUSES: ProjectStatus[] = [
@@ -45,6 +48,7 @@ interface EditDraft {
   periodStart: number;
   periodEnd: number;
   sector: Sector;
+  tags: string[];
   hasInternationalPartner: boolean;
 }
 
@@ -78,6 +82,10 @@ export default function ProjectBankDetailPage() {
   const [editTaskText, setEditTaskText] = useState("");
   const [editTaskDue, setEditTaskDue] = useState("");
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
+  const suggestedTagsForDraft = useMemo(
+    () => suggestTags(`${draft?.title ?? ""} ${draft?.description ?? ""}`),
+    [draft?.title, draft?.description]
+  );
 
   if (!entry) {
     if (!hydrated) return null;
@@ -138,6 +146,7 @@ export default function ProjectBankDetailPage() {
       periodStart: entry.periodStart,
       periodEnd: entry.periodEnd,
       sector: entry.sector,
+      tags: entry.tags ?? [],
       hasInternationalPartner: entry.hasInternationalPartner,
     });
 
@@ -159,6 +168,7 @@ export default function ProjectBankDetailPage() {
       periodStart: draft.periodStart,
       periodEnd: draft.periodEnd,
       sector: draft.sector,
+      tags: draft.tags,
       hasInternationalPartner: draft.hasInternationalPartner,
     });
     setDraft(null);
@@ -265,6 +275,22 @@ export default function ProjectBankDetailPage() {
                   className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
                 />
               </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-navy-700">{t.demo.intake.fieldTags}</label>
+                <div className="mt-1">
+                  <TagPicker
+                    selected={draft.tags}
+                    onChange={(tags) => setDraft({ ...draft, tags })}
+                    suggested={suggestedTagsForDraft}
+                    lang={lang}
+                    labels={{
+                      hint: t.demo.intake.tagsHint,
+                      suggestedLabel: t.demo.intake.tagsSuggestedLabel,
+                      addAllLabel: t.demo.intake.tagsAddAllLabel,
+                    }}
+                  />
+                </div>
+              </div>
               <label className="flex items-center gap-2 text-sm font-semibold text-navy-700 sm:col-span-2">
                 <input
                   type="checkbox"
@@ -357,6 +383,18 @@ export default function ProjectBankDetailPage() {
                 <dt className="text-xs font-semibold uppercase text-navy-400">{pb.columnReadiness}</dt>
                 <dd className="mt-1 text-lg font-bold text-gold-600">{entry.aiReadinessPct}%</dd>
               </div>
+              {entry.tags && entry.tags.length > 0 && (
+                <div className="sm:col-span-2">
+                  <dt className="text-xs font-semibold uppercase text-navy-400">{t.demo.intake.fieldTags}</dt>
+                  <dd className="mt-2 flex flex-wrap gap-2">
+                    {entry.tags.map((id) => (
+                      <span key={id} className="rounded-full bg-navy-50 px-2.5 py-1 text-xs font-medium text-navy-700">
+                        {tagLabel(id, lang)}
+                      </span>
+                    ))}
+                  </dd>
+                </div>
+              )}
             </dl>
 
             <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">

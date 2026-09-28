@@ -93,6 +93,10 @@ export interface TranslationTree {
       fieldMunicipality: string;
       fieldMunicipalityPlaceholder: string;
       fieldPartnership: string;
+      fieldTags: string;
+      tagsHint: string;
+      tagsSuggestedLabel: string;
+      tagsAddAllLabel: string;
       submit: string;
       fillExample: string;
       prefilledFromBank: string;
@@ -853,6 +857,10 @@ export const translations: Record<Lang, TranslationTree> = {
         fieldMunicipality: "Kommun/organisation",
         fieldMunicipalityPlaceholder: "T.ex. Exempelstad kommun",
         fieldPartnership: "Vi har (eller kan skaffa) en internationell partnerorganisation",
+        fieldTags: "Taggar (för säkrare matchning)",
+        tagsHint: "Välj de taggar som beskriver projektet — taggar matchas exakt mot utlysningarnas teman och missar inte synonymer på samma sätt som fritextsökning.",
+        tagsSuggestedLabel: "Förslag baserat på beskrivningen:",
+        tagsAddAllLabel: "Lägg till alla",
         submit: "Hitta finansieringsmöjligheter",
         fillExample: "Fyll i exempel",
         prefilledFromBank: "Förifyllt från projektbanken — granska och komplettera innan ni fortsätter.",
@@ -1647,6 +1655,10 @@ export const translations: Record<Lang, TranslationTree> = {
         fieldMunicipality: "Municipality / organisation",
         fieldMunicipalityPlaceholder: "E.g. Example City Municipality",
         fieldPartnership: "We have (or can secure) an international partner organisation",
+        fieldTags: "Tags (for more accurate matching)",
+        tagsHint: "Pick the tags that describe the project — tags are matched exactly against the calls' themes, and don't miss synonyms the way free-text search does.",
+        tagsSuggestedLabel: "Suggestions based on the description:",
+        tagsAddAllLabel: "Add all",
         submit: "Find funding opportunities",
         fillExample: "Fill example",
         prefilledFromBank: "Pre-filled from the project bank — review and complete before continuing.",

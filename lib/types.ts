@@ -10,7 +10,26 @@ export type Sector =
   | "health"
   | "research";
 
-export type GapCategory = "sector" | "keywords" | "budget" | "partnership" | "duration";
+export type GapCategory = "sector" | "keywords" | "tags" | "budget" | "partnership" | "duration";
+
+// ---------------------------------------------------------------------------
+// Tags — a fixed, curated vocabulary shared between funding calls and
+// projects (lib/data/tags.ts), the structured complement to the free-text
+// keyword matching above. A call's tags are chosen once, by hand or via a
+// reviewed rule-based suggestion (see extractionSource on FundingCall,
+// same review gate); a project's tags are picked by the user or accepted
+// from a suggestion (lib/matching/tagSuggestions.ts) — never inferred
+// silently. Catches synonym/paraphrase matches that exact-word keyword
+// overlap misses, without any AI call at match time.
+// ---------------------------------------------------------------------------
+export interface Tag {
+  id: string;
+  label_sv: string;
+  label_en: string;
+  /** Optional grouping under the existing Sector taxonomy, for browsability
+   * in the tag picker — not used in scoring. */
+  sector?: Sector;
+}
 
 // ---------------------------------------------------------------------------
 // Level 1: Programme / fund — permanent, slow-changing information.
@@ -100,6 +119,10 @@ export interface FundingCall {
   priorities_sv: string[];
   priorities_en: string[];
   extraKeywords: string[]; // in addition to the programme's own keywords
+  /** This call's tags from the curated vocabulary (lib/data/tags.ts) — the
+   * primary thematic-fit signal in scoreMatch, ahead of the free-text
+   * keyword overlap above. */
+  tags: string[];
   evaluationCriteria: EvaluationCriterion[];
   documents: FundingDocument[];
   /** This call's own application-form structure, when known — see
@@ -201,6 +224,10 @@ export interface ProjectBankEntry {
   aiReadinessPct: number;
   missingFields_sv: string[];
   missingFields_en: string[];
+  /** Tags from the curated vocabulary (lib/data/tags.ts), picked by the
+   * user or accepted from a suggestion. Undefined/empty = not tagged yet —
+   * scoreMatch degrades gracefully, just without this signal's points. */
+  tags?: string[];
   /** OrgUnit ids this project has been explicitly shared with, in addition
    * to whoever already has a ProjectRoleAssignment on it — lets it surface
    * under "Mina projekt" for people outside its own role assignments,
@@ -428,6 +455,8 @@ export interface ProjectInput {
   endYear: number;
   municipality: string;
   hasInternationalPartner: boolean;
+  /** See ProjectBankEntry.tags. */
+  tags?: string[];
 }
 
 // ---------------------------------------------------------------------------

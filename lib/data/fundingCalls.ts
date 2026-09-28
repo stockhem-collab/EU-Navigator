@@ -70,6 +70,7 @@ export const fundingCalls: FundingCall[] = [
       "Innovative technology or ways of working",
     ],
     extraKeywords: ["skolor", "byggnader", "renovering", "schools", "buildings", "renovation"],
+    tags: ["energieffektivisering", "skolor-byggnader", "renovering", "klimatatgarder"],
     evaluationCriteria: [
       { name_sv: "Relevans", name_en: "Relevance", maxPoints: 30 },
       { name_sv: "Effekt (Impact)", name_en: "Impact", maxPoints: 30 },
@@ -129,6 +130,7 @@ export const fundingCalls: FundingCall[] = [
       "Regional competitiveness",
     ],
     extraKeywords: ["smart city", "medborgarservice", "citizen service"],
+    tags: ["digitalisering", "medborgarservice", "gron-stadsutveckling", "regional-konkurrenskraft", "infrastruktur"],
     evaluationCriteria: [
       { name_sv: "Regional relevans", name_en: "Regional relevance", maxPoints: 25 },
       { name_sv: "Effekt", name_en: "Impact", maxPoints: 25 },
@@ -161,6 +163,7 @@ export const fundingCalls: FundingCall[] = [
     priorities_sv: ["Kompetensförsörjning inom välfärden", "Social inkludering", "Jämställd arbetsmarknad"],
     priorities_en: ["Skills supply in welfare services", "Social inclusion", "Gender-equal labour market"],
     extraKeywords: ["kompetenslyft", "upskilling"],
+    tags: ["utbildning-kompetens", "halso-sjukvard", "socialtjanst-inkludering", "jamstalldhet", "arbetsmarknad"],
     evaluationCriteria: [
       { name_sv: "Behovsanalys", name_en: "Needs analysis", maxPoints: 20 },
       { name_sv: "Effekt för målgruppen", name_en: "Impact on target group", maxPoints: 35 },
@@ -207,6 +210,7 @@ export const fundingCalls: FundingCall[] = [
     priorities_sv: ["Gränsöverskridande klimatlösningar", "Gemensam kunskapsuppbyggnad"],
     priorities_en: ["Cross-border climate solutions", "Joint knowledge-building"],
     extraKeywords: ["norden", "nordic"],
+    tags: ["gransoverskridande", "klimatatgarder", "ostersjosamarbete", "natverk-samverkan", "konsortiesamarbete"],
     evaluationCriteria: [
       { name_sv: "Partnerskapets kvalitet", name_en: "Partnership quality", maxPoints: 25 },
       { name_sv: "Gränsöverskridande mervärde", name_en: "Cross-border added value", maxPoints: 30 },
@@ -235,6 +239,7 @@ export const fundingCalls: FundingCall[] = [
     priorities_sv: ["Hög innovationsgrad (TRL 5-7)", "Pilottestning i verklig miljö", "Konsortiets kompetensbredd"],
     priorities_en: ["High innovation level (TRL 5-7)", "Piloting in a real-world setting", "Breadth of consortium expertise"],
     extraKeywords: ["trl", "handläggning"],
+    tags: ["forskning-innovation", "ai-artificiell-intelligens", "pilotprojekt-trl", "konsortiesamarbete", "digitalisering"],
     evaluationCriteria: [
       { name_sv: "Excellens", name_en: "Excellence", maxPoints: 35 },
       { name_sv: "Effekt", name_en: "Impact", maxPoints: 35 },
@@ -298,6 +303,7 @@ export const fundingCalls: FundingCall[] = [
     priorities_sv: ["Effektivare medborgarservice", "Ansvarsfull AI-användning", "Interoperabilitet"],
     priorities_en: ["More efficient citizen services", "Responsible use of AI", "Interoperability"],
     extraKeywords: ["kontaktcenter", "chatbot"],
+    tags: ["ai-artificiell-intelligens", "medborgarservice", "etik-datasakerhet", "interoperabilitet", "digitalisering"],
     evaluationCriteria: [
       { name_sv: "Digital mognad och behov", name_en: "Digital maturity and need", maxPoints: 25 },
       { name_sv: "Effekt för medborgare", name_en: "Impact for citizens", maxPoints: 35 },
@@ -327,6 +333,7 @@ export const fundingCalls: FundingCall[] = [
     priorities_sv: ["Gränsöverskridande energi-/transportnät", "Kapacitetsökning"],
     priorities_en: ["Cross-border energy/transport networks", "Capacity increase"],
     extraKeywords: [],
+    tags: ["laddinfrastruktur", "energinat", "infrastruktur", "gransoverskridande", "kapacitetsokning"],
     evaluationCriteria: [
       { name_sv: "EU-mervärde", name_en: "EU added value", maxPoints: 30 },
       { name_sv: "Mognadsgrad", name_en: "Maturity", maxPoints: 30 },
@@ -353,6 +360,7 @@ export const fundingCalls: FundingCall[] = [
     priorities_sv: ["Personalutbyte och kompetensutveckling", "Digital kompetens i skolan"],
     priorities_en: ["Staff exchange and professional development", "Digital competence in schools"],
     extraKeywords: [],
+    tags: ["ungdom", "utbildning-kompetens", "skolor-byggnader", "digitalisering", "gransoverskridande"],
     evaluationCriteria: [
       { name_sv: "Relevans", name_en: "Relevance", maxPoints: 30 },
       { name_sv: "Kvalitet i utformning", name_en: "Quality of design", maxPoints: 40 },

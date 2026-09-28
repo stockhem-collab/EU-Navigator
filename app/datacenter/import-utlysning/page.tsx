@@ -121,6 +121,10 @@ export default function ImportUtlysningPage() {
       priorities_sv,
       priorities_en: priorities_sv,
       extraKeywords: [],
+      // Not extracted by this tool yet (same as extraKeywords above) — a
+      // reviewer can add tags from the fixed vocabulary after saving, once
+      // an edit UI for imported calls exists.
+      tags: [],
       evaluationCriteria: [],
       documents: [],
       reportingRequirements: {

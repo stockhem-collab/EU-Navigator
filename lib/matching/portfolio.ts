@@ -23,6 +23,7 @@ export function projectBankEntryToProjectInput(entry: ProjectBankEntry): Project
     endYear: entry.periodEnd,
     municipality: "Exempelstad",
     hasInternationalPartner: entry.hasInternationalPartner,
+    tags: entry.tags,
   };
 }
 
@@ -49,6 +50,7 @@ export function projectInputToProjectBankEntry(project: ProjectInput, readiness:
     description_sv: project.description,
     description_en: project.description,
     hasInternationalPartner: project.hasInternationalPartner,
+    tags: project.tags,
     aiReadinessPct: readiness.overall,
     missingFields_sv: readiness.dimensions.flatMap((d) => (d.action_sv ? [d.action_sv] : [])),
     missingFields_en: readiness.dimensions.flatMap((d) => (d.action_en ? [d.action_en] : [])),

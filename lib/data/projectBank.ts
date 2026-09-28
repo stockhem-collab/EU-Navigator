@@ -34,6 +34,7 @@ export const projectBank: ProjectBankEntry[] = [
       "Description of the level of innovation",
       "Potential for an international partnership",
     ],
+    tags: ["energieffektivisering", "skolor-byggnader", "klimatatgarder"],
   },
   {
     id: "pb-2",
@@ -55,6 +56,7 @@ export const projectBank: ProjectBankEntry[] = [
     aiReadinessPct: 61,
     missingFields_sv: ["Kvantifierad tidsbesparing för handläggare", "Plan för dataskydd och etikprövning"],
     missingFields_en: ["Quantified time savings for caseworkers", "Data protection and ethics review plan"],
+    tags: ["ai-artificiell-intelligens", "medborgarservice", "digitalisering"],
   },
   {
     id: "pb-3",
@@ -76,6 +78,7 @@ export const projectBank: ProjectBankEntry[] = [
     aiReadinessPct: 68,
     missingFields_sv: ["Antal deltagare per år", "Uppföljningsplan efter utbildning"],
     missingFields_en: ["Number of participants per year", "Follow-up plan after training"],
+    tags: ["utbildning-kompetens", "halso-sjukvard", "arbetsmarknad"],
   },
   {
     id: "pb-4",
@@ -97,6 +100,7 @@ export const projectBank: ProjectBankEntry[] = [
     aiReadinessPct: 55,
     missingFields_sv: ["Beräknad minskning av biltrafik", "Koppling till klimatmål", "Budget per delsträcka"],
     missingFields_en: ["Estimated reduction in car traffic", "Link to climate goals", "Budget per section"],
+    tags: ["infrastruktur", "gron-stadsutveckling", "klimatatgarder"],
   },
   {
     id: "pb-5",
@@ -118,6 +122,7 @@ export const projectBank: ProjectBankEntry[] = [
     aiReadinessPct: 88,
     missingFields_sv: ["Fördelning av budget mellan partners"],
     missingFields_en: ["Budget split between partners"],
+    tags: ["gransoverskridande", "klimatatgarder", "ostersjosamarbete"],
   },
   {
     id: "pb-6",
@@ -139,6 +144,7 @@ export const projectBank: ProjectBankEntry[] = [
     aiReadinessPct: 79,
     missingFields_sv: ["Antal deltagande skolor", "Plan för utvärdering"],
     missingFields_en: ["Number of participating schools", "Evaluation plan"],
+    tags: ["utbildning-kompetens", "digitalisering", "gransoverskridande"],
   },
 ];
 

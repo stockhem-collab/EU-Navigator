@@ -41,6 +41,7 @@ const call: FundingCall = {
   priorities_sv: [],
   priorities_en: [],
   extraKeywords: [],
+  tags: [],
   evaluationCriteria: [],
   documents: [],
 };

@@ -41,6 +41,7 @@ function makeCall(applicationTemplate?: ApplicationTemplateSection[]): FundingCa
     priorities_sv: [],
     priorities_en: [],
     extraKeywords: [],
+    tags: [],
     evaluationCriteria: [],
     documents: [],
     applicationTemplate,
