@@ -656,6 +656,8 @@ export interface TranslationTree {
     fieldsMissingForBestMatch: (n: number) => string;
     describeNewProject: string;
     viewAllInBevakning: string;
+    searchProjectsPlaceholder: string;
+    noProjectsMatchSearch: string;
     ongoingApplicationsTitle: string;
     ongoingApplicationsHint: string;
     ongoingApplicationsNone: string;
@@ -1426,7 +1428,7 @@ export const translations: Record<Lang, TranslationTree> = {
     oversikt: {
       title: "Översikt",
       subtitle: "Samma data, olika vy beroende på vad du behöver se.",
-      roleLabel: "Visa som",
+      roleLabel: "Perspektiv",
       roleLedning: "Kommunledning / ekonomi",
       roleLedningDesc: "Portföljekonomi och status över hela investeringsplanen.",
       roleSamordnare: "EU-/finansieringssamordnare",
@@ -1444,6 +1446,8 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldsMissingForBestMatch: (n) => `${n} fält saknas för bästa matchning`,
       describeNewProject: "Beskriv ett nytt projekt",
       viewAllInBevakning: "Se all bevakning →",
+      searchProjectsPlaceholder: "Sök bland projekten…",
+      noProjectsMatchSearch: "Inga projekt matchar din sökning.",
       ongoingApplicationsTitle: "Pågående ansökningar",
       ongoingApplicationsHint: "Hoppa direkt tillbaka till en ansökan du redan börjat skriva på.",
       ongoingApplicationsNone: "Inga pågående ansökningar just nu — de dyker upp här så fort du börjar skriva i Ansökningsstudion.",
@@ -2207,7 +2211,7 @@ export const translations: Record<Lang, TranslationTree> = {
     oversikt: {
       title: "Overview",
       subtitle: "The same data, arranged differently depending on what you need to see.",
-      roleLabel: "View as",
+      roleLabel: "Perspective",
       roleLedning: "Municipal leadership / finance",
       roleLedningDesc: "Portfolio economics and status across the whole investment plan.",
       roleSamordnare: "EU / funding coordinator",
@@ -2225,6 +2229,8 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldsMissingForBestMatch: (n) => `${n} fields missing for the best match`,
       describeNewProject: "Describe a new project",
       viewAllInBevakning: "See all monitoring →",
+      searchProjectsPlaceholder: "Search the projects…",
+      noProjectsMatchSearch: "No projects match your search.",
       ongoingApplicationsTitle: "Ongoing applications",
       ongoingApplicationsHint: "Jump straight back into an application you've already started writing.",
       ongoingApplicationsNone: "No ongoing applications right now — they'll show up here as soon as you start writing in the Application workspace.",

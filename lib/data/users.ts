@@ -1,4 +1,4 @@
-import { DemoUser, OrgRoleKey, OrgUnit, ProjectRoleKey } from "@/lib/types";
+import { DemoUser, OrgRoleKey, OrgUnit, ProjectBankEntry, ProjectRoleKey } from "@/lib/types";
 
 // Illustrative example organisation structure and people — one plausible
 // setup a municipality could have, editable in Organisationsinställningar,
@@ -73,6 +73,19 @@ export function unitIncludesUnit(units: OrgUnit[], sharedUnitId: string, viewerU
     current = current.parentId ? units.find((u) => u.id === current!.parentId) : undefined;
   }
   return false;
+}
+
+/** True once a project counts as "mine" for `viewer` — it has a role
+ * assignment for them, or has been explicitly shared (see
+ * ProjectBankEntry.sharedWithUnitIds) with an org unit that reaches their
+ * own unit. The single definition behind every "mina och delade projekt"
+ * filter in the system (Mina projekt, and Översikt's Verksamhetsutvecklare
+ * view), so they all agree on what "shared with me" means. */
+export function isProjectRelevantToUser(entry: ProjectBankEntry, viewer: DemoUser | undefined, units: OrgUnit[]): boolean {
+  if (!viewer) return true;
+  if (viewer.projectRoles.some((r) => r.projectId === entry.id)) return true;
+  if (!viewer.unitId) return false;
+  return (entry.sharedWithUnitIds ?? []).some((unitId) => unitIncludesUnit(units, unitId, viewer.unitId!));
 }
 
 const PROJECT_ROLE_PRIORITY: ProjectRoleKey[] = [

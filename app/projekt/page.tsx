@@ -17,7 +17,7 @@ import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { findCall } from "@/lib/data/fundingCalls";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { CURRENT_USER_ID, orgUnits as seedOrgUnits, unitIncludesUnit } from "@/lib/data/users";
+import { CURRENT_USER_ID, isProjectRelevantToUser, orgUnits as seedOrgUnits } from "@/lib/data/users";
 import { computeBestMatchForEntry } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
 import { PROJECT_STATUS_ORDER, ProjectBankEntry, ProjectStatus } from "@/lib/types";
@@ -55,12 +55,7 @@ function MyProjectsPageInner() {
   // reaches the current user's own unit (sharing with the whole
   // organisation reaches everyone; sharing with a department reaches only
   // that department) — see the Projektbank entry's own "Dela projekt".
-  const isRelevantToMe = (entry: ProjectBankEntry) => {
-    if (!currentUser) return true;
-    if (currentUser.projectRoles.some((r) => r.projectId === entry.id)) return true;
-    if (!currentUser.unitId) return false;
-    return (entry.sharedWithUnitIds ?? []).some((unitId) => unitIncludesUnit(orgUnitsAll, unitId, currentUser.unitId!));
-  };
+  const isRelevantToMe = (entry: ProjectBankEntry) => isProjectRelevantToUser(entry, currentUser, orgUnitsAll);
 
   // Arriving from Översikt's "Projekt per status" tiles (?status=...) opens
   // this page pre-filtered to that status, so the two views show exactly
