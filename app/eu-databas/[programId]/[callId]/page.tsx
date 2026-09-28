@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { applicantTypeLabel } from "@/lib/data/fundingCalls";
+import { applicantTypeLabel, documentTypeLabel } from "@/lib/data/fundingCalls";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { fundedProjectsForProgram, computeProgramStats } from "@/lib/data/fundedProjects";
 import { topKeywords } from "@/lib/matching/patternAnalysis";
@@ -18,6 +18,7 @@ export default function CallDetailPage() {
   const { t, lang } = useLanguage();
   const db = t.euDatabase;
   const bv = t.bevakning;
+  const ap = t.awardedProjects;
   const { prefs, toggleCall } = useWatchPreferences();
   // A call added via Datacenter's import tool only exists in this browser's
   // localStorage, which isn't available during the server render — so
@@ -138,8 +139,11 @@ export default function CallDetailPage() {
           <h2 className="text-sm font-semibold uppercase text-navy-400">{db.documentsTitle}</h2>
           <ul className="mt-3 divide-y divide-navy-50">
             {call.documents.map((d) => (
-              <li key={d.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                <span className="text-navy-700">{lang === "sv" ? d.title_sv : d.title_en}</span>
+              <li key={d.id} className="flex flex-wrap items-center justify-between gap-3 py-2 text-sm">
+                <span className="flex items-center gap-2">
+                  <span className="badge bg-navy-50 text-navy-500">{documentTypeLabel(d.type, lang)}</span>
+                  <span className="text-navy-700">{lang === "sv" ? d.title_sv : d.title_en}</span>
+                </span>
                 <span className="flex items-center gap-3">
                   <span className="text-xs text-navy-400">{db.documentUpdated(d.updatedAt)}</span>
                   {d.needsUpdate && <span className="badge bg-amber-100 text-amber-800">{db.documentNeedsUpdate}</span>}
@@ -148,6 +152,31 @@ export default function CallDetailPage() {
             ))}
           </ul>
         </section>
+
+        {call.reportingRequirements && (
+          <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+            <h2 className="text-sm font-semibold uppercase text-navy-400">{ap.reportingRequirementsTitle}</h2>
+            <p className="mt-1 text-xs text-navy-400">{db.reportingRequirementsHint}</p>
+            <dl className="mt-3">
+              <dt className="text-xs text-navy-400">{ap.periodicityLabel}</dt>
+              <dd className="font-semibold text-navy-800">
+                {call.reportingRequirements.periodicity === "quarterly"
+                  ? ap.periodicityQuarterly
+                  : call.reportingRequirements.periodicity === "biannual"
+                  ? ap.periodicityBiannual
+                  : ap.periodicityAnnual}
+              </dd>
+            </dl>
+            <p className="mt-3 text-sm text-navy-600">
+              {ap.interimReportsRequiredLabel(call.reportingRequirements.interimReportsRequired)}
+            </p>
+            {call.reportingRequirements.requiresAuditAboveSEK !== null && (
+              <p className="mt-3 text-sm text-navy-600">
+                {ap.auditRequiredAboveLabel} {fmtSEK(call.reportingRequirements.requiresAuditAboveSEK, lang)}
+              </p>
+            )}
+          </section>
+        )}
 
         {refProjects.length > 0 && (
           <section className="mt-6 rounded-xl border border-navy-100 bg-navy-800 p-6 text-white">

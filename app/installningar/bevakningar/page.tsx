@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SettingsTabs from "@/components/settings/SettingsTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useWatchPreferences, NotifyPreferences, DigestFrequency } from "@/lib/hooks/useWatchPreferences";
 import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
@@ -66,6 +67,7 @@ export default function WatchSettingsPage() {
         <Link href="/installningar" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
           {ws.back}
         </Link>
+        <SettingsTabs />
 
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -74,7 +76,9 @@ export default function WatchSettingsPage() {
           </div>
           <button
             type="button"
-            onClick={resetAll}
+            onClick={() => {
+              if (window.confirm(ws.confirmResetAll)) resetAll();
+            }}
             className="shrink-0 rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-600 hover:bg-navy-50"
           >
             {ws.resetAll}

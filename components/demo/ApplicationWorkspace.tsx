@@ -85,6 +85,14 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
     onSavedAsProject?.(entry.id);
   };
 
+  // An ad-hoc, unpersisted draft's edits live only in this component's
+  // state (see useApplication) — leaving without a warning would silently
+  // discard everything typed so far.
+  const handleBack = () => {
+    if (!isPersisted && Object.keys(sectionDrafts).length > 0 && !window.confirm(ws.confirmLeaveUnsavedDraft)) return;
+    onBack();
+  };
+
   const handleSaveVersion = (name: string) => {
     if (!name.trim()) return;
     const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
@@ -119,7 +127,7 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
 
   return (
     <div className="mx-auto max-w-5xl">
-      <button onClick={onBack} className="text-sm font-semibold text-navy-600 hover:text-navy-900">
+      <button onClick={handleBack} className="text-sm font-semibold text-navy-600 hover:text-navy-900">
         ← {ws.back}
       </button>
 
@@ -344,7 +352,9 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
                             </button>
                             <button
                               type="button"
-                              onClick={() => deleteVersion(v.id)}
+                              onClick={() => {
+                                if (window.confirm(ws.confirmDeleteVersion(v.name))) deleteVersion(v.id);
+                              }}
                               className="text-xs font-medium text-navy-400 hover:text-amber-700"
                             >
                               {ws.deleteVersionButton}
@@ -456,14 +466,17 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
                 {coach.confidence === "low" && (
                   <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-4">
                     <p className="text-sm text-amber-800">{coachT.lowConfidenceNote}</p>
-                    <button
-                      type="button"
-                      disabled
-                      title={coachT.requestAiReviewDisabledReason}
-                      className="mt-3 cursor-not-allowed rounded-md border border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-amber-700 opacity-60"
-                    >
-                      {coachT.requestAiReviewButton}
-                    </button>
+                    <div className="mt-3 flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled
+                        title={coachT.requestAiReviewDisabledReason}
+                        className="cursor-not-allowed rounded-md border border-dashed border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-amber-700 opacity-70"
+                      >
+                        {coachT.requestAiReviewButton}
+                      </button>
+                      <span className="badge bg-amber-100 text-amber-800">{coachT.requestAiReviewComingSoonBadge}</span>
+                    </div>
                   </div>
                 )}
               </section>

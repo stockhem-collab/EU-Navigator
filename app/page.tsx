@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Hero from "@/components/landing/Hero";
 import EntryCards from "@/components/landing/EntryCards";
+import QuickLinks from "@/components/landing/QuickLinks";
 import Problem from "@/components/landing/Problem";
 import Workflow from "@/components/landing/Workflow";
 import Radar from "@/components/landing/Radar";
@@ -16,6 +17,7 @@ export default function HomePage() {
       <main>
         <Hero />
         <EntryCards />
+        <QuickLinks />
         <Problem />
         <Workflow />
         <Radar />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -11,6 +12,12 @@ export default function EuDatabasePage() {
   const { t, lang } = useLanguage();
   const db = t.euDatabase;
   const { all: fundingCalls } = useFundingCalls();
+  const [search, setSearch] = useState("");
+
+  const query = search.trim().toLowerCase();
+  const filteredPrograms = fundingPrograms.filter((p) =>
+    query ? `${p.name_sv} ${p.name} ${p.description_sv} ${p.description_en}`.toLowerCase().includes(query) : true
+  );
 
   return (
     <>
@@ -19,8 +26,17 @@ export default function EuDatabasePage() {
         <h1 className="text-2xl font-bold text-navy-900">{db.title}</h1>
         <p className="mt-2 text-sm text-navy-600">{db.subtitle}</p>
 
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={db.searchProgramsPlaceholder}
+          className="mt-6 w-full max-w-sm rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+        />
+
+        {filteredPrograms.length === 0 && <p className="mt-6 text-sm text-navy-500">{db.noProgramsMatch}</p>}
+
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
-          {[...fundingPrograms]
+          {[...filteredPrograms]
             .sort((a, b) => (a.status === b.status ? 0 : a.status === "active" ? -1 : 1))
             .map((program) => {
               const calls = fundingCalls.filter((c) => c.programId === program.id);

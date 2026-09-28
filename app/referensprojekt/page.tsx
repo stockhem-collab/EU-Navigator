@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -21,12 +22,19 @@ function ReferenceProjectsInner() {
   const searchParams = useSearchParams();
   const initialProgram = searchParams.get("program") ?? "all";
   const [programFilter, setProgramFilter] = useState(initialProgram);
+  const [search, setSearch] = useState("");
   const { t, lang } = useLanguage();
   const rp = t.referenceProjects;
 
+  const query = search.trim().toLowerCase();
   const filtered = useMemo(
-    () => (programFilter === "all" ? fundedProjects : fundedProjects.filter((p) => p.programId === programFilter)),
-    [programFilter]
+    () =>
+      (programFilter === "all" ? fundedProjects : fundedProjects.filter((p) => p.programId === programFilter)).filter((p) =>
+        query
+          ? `${p.title} ${p.organisation} ${p.theme_sv} ${p.theme_en}`.toLowerCase().includes(query)
+          : true
+      ),
+    [programFilter, query]
   );
   const stats = computeProgramStats(filtered);
 
@@ -38,7 +46,20 @@ function ReferenceProjectsInner() {
         <p className="mt-2 text-sm text-navy-600">{rp.subtitle}</p>
         <p className="mt-3 rounded-md bg-navy-50 px-3 py-2 text-xs text-navy-700">{rp.disclaimer}</p>
 
-        <div className="mt-6">
+        <Link
+          href="/demo"
+          className="mt-4 inline-block rounded-md bg-gold-500 px-4 py-2 text-sm font-semibold text-navy-900 shadow-sm transition hover:bg-gold-400"
+        >
+          {rp.startApplicationCta}
+        </Link>
+
+        <div className="mt-6 flex flex-wrap gap-3">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={rp.searchPlaceholder}
+            className="w-full max-w-xs rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+          />
           <select
             value={programFilter}
             onChange={(e) => setProgramFilter(e.target.value)}
@@ -74,6 +95,8 @@ function ReferenceProjectsInner() {
           </div>
           <p className="mt-4 text-sm text-navy-300">{rp.statCurrentVsLegacy(stats.currentCount, stats.legacyCount)}</p>
         </section>
+
+        {filtered.length === 0 && <p className="mt-8 text-sm text-navy-500">{rp.noProjectsMatch}</p>}
 
         <div className="mt-8 grid gap-5 md:grid-cols-2">
           {filtered.map((project) => {

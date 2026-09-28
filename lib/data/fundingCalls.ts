@@ -1,4 +1,4 @@
-import { ApplicantType, FundingCall, Lang } from "@/lib/types";
+import { ApplicantType, DocumentType, FundingCall, Lang } from "@/lib/types";
 
 const APPLICANT_TYPE_LABELS: Record<ApplicantType, { sv: string; en: string }> = {
   municipality: { sv: "Kommun", en: "Municipality" },
@@ -18,6 +18,28 @@ export function applicantTypeLabel(type: ApplicantType, lang: Lang): string {
 }
 
 export const ALL_APPLICANT_TYPES = Object.keys(APPLICANT_TYPE_LABELS) as ApplicantType[];
+
+// A call's own documents (call.documents) are otherwise a flat, unordered
+// list where a reporting-instructions doc looks identical to a FAQ — a
+// small type label is enough to make the list scannable without a bigger
+// restructure into per-type sections.
+const DOCUMENT_TYPE_LABELS: Record<DocumentType, { sv: string; en: string }> = {
+  call: { sv: "Utlysningstext", en: "Call text" },
+  guide: { sv: "Vägledning", en: "Guide" },
+  form: { sv: "Blankett", en: "Form" },
+  criteria: { sv: "Bedömningskriterier", en: "Evaluation criteria" },
+  budget: { sv: "Budgetmall", en: "Budget template" },
+  faq: { sv: "Vanliga frågor", en: "FAQ" },
+  agreement: { sv: "Avtal", en: "Agreement" },
+  reporting: { sv: "Rapporteringsanvisning", en: "Reporting instructions" },
+  template: { sv: "Mall", en: "Template" },
+  annex: { sv: "Bilaga", en: "Annex" },
+  corrigendum: { sv: "Rättelse", en: "Corrigendum" },
+};
+
+export function documentTypeLabel(type: DocumentType, lang: Lang): string {
+  return DOCUMENT_TYPE_LABELS[type][lang];
+}
 
 // Level 2 (utlysning) + embedded level 3 (dokument). This is the AI's
 // actual "context package" per call — everything scoring, the application

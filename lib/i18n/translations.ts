@@ -29,6 +29,7 @@ export interface TranslationTree {
     entry3Title: string;
     entry3Desc: string;
     entry3Cta: string;
+    quickLinksTitle: string;
   };
   hero: {
     eyebrow: string;
@@ -141,6 +142,7 @@ export interface TranslationTree {
       topPriorityNone: string;
       draftSavedNote: string;
       draftNotSavedNote: string;
+      confirmLeaveUnsavedDraft: string;
       saveAsNewProjectButton: string;
       templateSourceNote: (callTitle: string) => string;
       templateGenericNote: string;
@@ -155,6 +157,7 @@ export interface TranslationTree {
       restoreVersionButton: string;
       exportVersionButton: string;
       deleteVersionButton: string;
+      confirmDeleteVersion: (name: string) => string;
       versionSavedAt: (date: string) => string;
     };
     gapAnalysis: {
@@ -180,6 +183,7 @@ export interface TranslationTree {
       lowConfidenceNote: string;
       requestAiReviewButton: string;
       requestAiReviewDisabledReason: string;
+      requestAiReviewComingSoonBadge: string;
     };
   };
   projectBank: {
@@ -276,6 +280,11 @@ export interface TranslationTree {
     documentsTitle: string;
     documentNeedsUpdate: string;
     documentUpdated: (date: string) => string;
+    reportingRequirementsHint: string;
+    searchProgramsPlaceholder: string;
+    noProgramsMatch: string;
+    searchCallsPlaceholder: string;
+    noCallsMatch: string;
     learnFromWinnersButton: string;
     patternTitle: string;
     patternIntro: string;
@@ -289,6 +298,9 @@ export interface TranslationTree {
     title: string;
     subtitle: string;
     disclaimer: string;
+    startApplicationCta: string;
+    searchPlaceholder: string;
+    noProjectsMatch: string;
     filterAll: string;
     statsTitle: string;
     statsIntro: (n: number) => string;
@@ -331,6 +343,10 @@ export interface TranslationTree {
     fieldsMissing: (n: number) => string;
     openLink: string;
     importCallButton: string;
+    reportingAttentionTitle: string;
+    reportingAttentionBody: string;
+    noReportingAttention: string;
+    viewProjectLink: string;
   };
   callImport: {
     title: string;
@@ -348,6 +364,8 @@ export interface TranslationTree {
     fieldStatus: string;
     statusOpen: string;
     statusUpcoming: string;
+    fieldDeadline: string;
+    fieldDeadlineHint: string;
     fieldBudget: string;
     fieldMinGrant: string;
     fieldMaxGrant: string;
@@ -366,6 +384,7 @@ export interface TranslationTree {
     importedListTitle: string;
     noImportedCalls: string;
     removeButton: string;
+    confirmRemoveImportedCall: (title: string) => string;
     provenanceAssisted: string;
     provenanceManual: string;
     importedAtLabel: (date: string) => string;
@@ -395,6 +414,7 @@ export interface TranslationTree {
     auditRequiredAboveLabel: string;
     interimDocumentsLabel: string;
     finalReportDocumentsLabel: string;
+    viewReportingInstructionsLink: string;
     reportingTimelineTitle: string;
     reportingTimelineHint: string;
     reportTypeInterim: string;
@@ -482,6 +502,7 @@ export interface TranslationTree {
     confirmRemoveUnit: (name: string) => string;
     confirmRemoveUnitCascade: (name: string, count: number) => string;
     resetAll: string;
+    confirmResetAll: string;
     savedIndicator: string;
   };
   settingsHub: {
@@ -577,6 +598,7 @@ export interface TranslationTree {
     digestWeekly: string;
     savedIndicator: string;
     resetAll: string;
+    confirmResetAll: string;
     watchedCallsTitle: string;
     watchedCallsHint: string;
     noWatchedCalls: string;
@@ -611,6 +633,7 @@ export interface TranslationTree {
     coFinancingOver50: string;
     savedIndicator: string;
     resetAll: string;
+    confirmResetAll: string;
   };
   oversikt: {
     title: string;
@@ -680,6 +703,7 @@ export const translations: Record<Lang, TranslationTree> = {
       entry3Title: "Jag har fått finansiering",
       entry3Desc: "Hantera projektplan, ekonomi, indikatorer och rapportering på ett ställe.",
       entry3Cta: "Hantera projekt",
+      quickLinksTitle: "Alla delar av systemet",
     },
     hero: {
       eyebrow: "Kommunens operativsystem för extern finansiering",
@@ -882,6 +906,8 @@ export const translations: Record<Lang, TranslationTree> = {
         topPriorityNone: "Inga akuta åtgärder — ansökan ser stark ut.",
         draftSavedNote: "Utkastet sparas automatiskt i din webbläsare.",
         draftNotSavedNote: "Spara projektet i projektbanken för att utkastet ska sparas mellan besök.",
+        confirmLeaveUnsavedDraft:
+          "Det här utkastet är inte sparat i projektbanken — går du tillbaka nu försvinner det du skrivit. Fortsätt ändå?",
         saveAsNewProjectButton: "Spara som nytt projekt i Projektbanken",
         templateSourceNote: (callTitle) => `Strukturerad enligt ${callTitle}s eget ansökningsformulär.`,
         templateGenericNote:
@@ -897,6 +923,7 @@ export const translations: Record<Lang, TranslationTree> = {
         restoreVersionButton: "Återställ till denna version",
         exportVersionButton: "Exportera (.docx)",
         deleteVersionButton: "Ta bort",
+        confirmDeleteVersion: (name) => `Ta bort versionen "${name}"? Det går inte att ångra.`,
         versionSavedAt: (date) => `Sparad ${date}`,
         nextSteps: [
           "Åtgärda punkterna som AI-granskningen flaggat",
@@ -931,6 +958,7 @@ export const translations: Record<Lang, TranslationTree> = {
           "Texten är för kort eller saknar tydliga mönster — regelmotorns bedömning ovan är därför ospecifik. Det här är precis den situation där en riktig AI-granskning (inte aktiverad i denna demo) skulle tillföra mest.",
         requestAiReviewButton: "Begär AI-bedömning",
         requestAiReviewDisabledReason: "Kräver en AI-tjänst kopplad till systemet — inte aktiverad i denna demo.",
+        requestAiReviewComingSoonBadge: "Kommande funktion",
       },
     },
     projectBank: {
@@ -1037,6 +1065,11 @@ export const translations: Record<Lang, TranslationTree> = {
       documentsTitle: "Dokument (AI-kontextpaket)",
       documentNeedsUpdate: "Behöver uppdateras",
       documentUpdated: (date) => `Uppdaterad ${date}`,
+      reportingRequirementsHint: "Vad rapporteringen kommer innebära om ni beviljas medel för den här utlysningen.",
+      searchProgramsPlaceholder: "Sök program…",
+      noProgramsMatch: "Inga program matchar sökningen.",
+      searchCallsPlaceholder: "Sök utlysningar…",
+      noCallsMatch: "Inga utlysningar matchar sökningen.",
       learnFromWinnersButton: "Lär av tidigare beviljade projekt",
       patternTitle: "Vad brukar beviljas inom detta program?",
       patternIntro: "Återkommande begrepp i tidigare beviljade projekt inom programmet — inte en garanti, men en fingervisning om vad utlysningarna faktiskt brukar finansiera.",
@@ -1051,6 +1084,9 @@ export const translations: Record<Lang, TranslationTree> = {
       subtitle: "Vad har faktiskt fått finansiering tidigare — och varför?",
       disclaimer:
         "Verklig data: en anonymiserad kommuns faktiska register över EU-finansierade projekt 2014–2027, hämtat ur kommunens egen dokumentation (organisationsnamn ersatta med \"Exempelstad\"). Inte alla projekt har publicerat en fullständig budgetsiffra.",
+      startApplicationCta: "Har du ett liknande projekt? Starta en ansökan →",
+      searchPlaceholder: "Sök bland projekten…",
+      noProjectsMatch: "Inga projekt matchar din sökning.",
       filterAll: "Alla program",
       statsTitle: "Statistik för valt program",
       statsIntro: (n) => `${n} beviljade projekt`,
@@ -1094,6 +1130,10 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldsMissing: (n) => `${n} fält saknas`,
       openLink: "Öppna →",
       importCallButton: "Importera ny utlysning",
+      reportingAttentionTitle: "Rapporteringar som kräver uppmärksamhet",
+      reportingAttentionBody: "Kommande rapporter och rapporter som skickats tillbaka för komplettering, i ett och samma flöde.",
+      noReportingAttention: "Inga rapporter kräver uppmärksamhet just nu.",
+      viewProjectLink: "Visa projekt →",
     },
     callImport: {
       title: "Importera ny utlysning",
@@ -1112,6 +1152,8 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldStatus: "Status",
       statusOpen: "Öppen",
       statusUpcoming: "Kommande",
+      fieldDeadline: "Deadline (månader från idag)",
+      fieldDeadlineHint: "Ange hur många månader bort utlysningens faktiska sista ansökningsdag ligger.",
       fieldBudget: "Total budget (SEK)",
       fieldMinGrant: "Lägsta bidrag (SEK)",
       fieldMaxGrant: "Högsta bidrag (SEK)",
@@ -1130,6 +1172,7 @@ export const translations: Record<Lang, TranslationTree> = {
       importedListTitle: "Tidigare importerade utlysningar",
       noImportedCalls: "Inga utlysningar har importerats ännu.",
       removeButton: "Ta bort",
+      confirmRemoveImportedCall: (title) => `Ta bort den importerade utlysningen "${title}"?`,
       provenanceAssisted: "Inläst via granskat importflöde",
       provenanceManual: "Manuellt inlagd",
       importedAtLabel: (date) => `Importerad ${date}`,
@@ -1159,6 +1202,7 @@ export const translations: Record<Lang, TranslationTree> = {
       auditRequiredAboveLabel: "Revisionsintyg krävs för beviljat belopp över",
       interimDocumentsLabel: "Underlag som krävs vid delrapportering",
       finalReportDocumentsLabel: "Underlag som krävs vid slutrapportering",
+      viewReportingInstructionsLink: "Se utlysningens rapporteringsanvisningar →",
       reportingTimelineTitle: "Rapporteringstillfällen",
       reportingTimelineHint: "Delrapporter och slutrapport i kronologisk ordning, med utfall per tillfälle.",
       reportTypeInterim: "Delrapport",
@@ -1250,6 +1294,7 @@ export const translations: Record<Lang, TranslationTree> = {
       confirmRemoveUnitCascade: (name, count) =>
         `Ta bort enheten "${name}"? Detta tar även bort ${count} underliggande ${count === 1 ? "enhet" : "enheter"}.`,
       resetAll: "Återställ allt till exempeldata",
+      confirmResetAll: "Återställa organisationsuppgifter och enhetsstruktur till exempeldata? Dina egna ändringar går förlorade.",
       savedIndicator: "Sparat i din webbläsare",
     },
     settingsHub: {
@@ -1345,6 +1390,7 @@ export const translations: Record<Lang, TranslationTree> = {
       digestWeekly: "Veckovis",
       savedIndicator: "Sparat i din webbläsare",
       resetAll: "Återställ till exempeldata",
+      confirmResetAll: "Återställa alla bevakningar och notifieringsinställningar? Dina egna val går förlorade.",
       watchedCallsTitle: "Bevakade utlysningar",
       watchedCallsHint: "Utlysningar du flaggat direkt från Bevakning eller EU-databasen.",
       noWatchedCalls: "Inga enskilda utlysningar bevakas ännu.",
@@ -1379,6 +1425,7 @@ export const translations: Record<Lang, TranslationTree> = {
       coFinancingOver50: "Över 50 %",
       savedIndicator: "Sparat i din webbläsare",
       resetAll: "Återställ till exempeldata",
+      confirmResetAll: "Återställa hela finansieringsprofilen till exempeldata? Dina egna val går förlorade.",
     },
     oversikt: {
       title: "Översikt",
@@ -1446,6 +1493,7 @@ export const translations: Record<Lang, TranslationTree> = {
       entry3Title: "I received funding",
       entry3Desc: "Manage the project plan, finances, indicators and reporting in one place.",
       entry3Cta: "Manage project",
+      quickLinksTitle: "Every part of the system",
     },
     hero: {
       eyebrow: "The operating system for external funding",
@@ -1647,6 +1695,8 @@ export const translations: Record<Lang, TranslationTree> = {
         topPriorityNone: "No urgent action items — the application looks strong.",
         draftSavedNote: "This draft is saved automatically in your browser.",
         draftNotSavedNote: "Save this project to the project bank so its draft is kept between visits.",
+        confirmLeaveUnsavedDraft:
+          "This draft isn't saved to the project bank — going back now will lose what you've written. Continue anyway?",
         saveAsNewProjectButton: "Save as a new project in the project bank",
         templateSourceNote: (callTitle) => `Structured according to ${callTitle}'s own application form.`,
         templateGenericNote: "Generic project logic — this call has no predefined application structure in the system yet.",
@@ -1661,6 +1711,7 @@ export const translations: Record<Lang, TranslationTree> = {
         restoreVersionButton: "Restore this version",
         exportVersionButton: "Export (.docx)",
         deleteVersionButton: "Delete",
+        confirmDeleteVersion: (name) => `Delete the version "${name}"? This can't be undone.`,
         versionSavedAt: (date) => `Saved ${date}`,
         nextSteps: [
           "Address the points flagged by the AI review",
@@ -1695,6 +1746,7 @@ export const translations: Record<Lang, TranslationTree> = {
           "The text is too short or lacks clear patterns — the rule engine's assessment above is therefore unspecific. This is exactly the situation where a real AI review (not enabled in this demo) would add the most value.",
         requestAiReviewButton: "Request AI review",
         requestAiReviewDisabledReason: "Requires an AI service connected to the system — not enabled in this demo.",
+        requestAiReviewComingSoonBadge: "Coming feature",
       },
     },
     projectBank: {
@@ -1801,6 +1853,11 @@ export const translations: Record<Lang, TranslationTree> = {
       documentsTitle: "Documents (AI context package)",
       documentNeedsUpdate: "Needs update",
       documentUpdated: (date) => `Updated ${date}`,
+      reportingRequirementsHint: "What reporting will involve if you're awarded funding under this call.",
+      searchProgramsPlaceholder: "Search programmes…",
+      noProgramsMatch: "No programmes match your search.",
+      searchCallsPlaceholder: "Search calls…",
+      noCallsMatch: "No calls match your search.",
       learnFromWinnersButton: "Learn from previously awarded projects",
       patternTitle: "What tends to get funded under this programme?",
       patternIntro: "Recurring terms across previously funded projects in this programme — not a guarantee, but a hint at what its calls actually tend to fund.",
@@ -1815,6 +1872,9 @@ export const translations: Record<Lang, TranslationTree> = {
       subtitle: "What has actually been funded before — and why?",
       disclaimer:
         "Real data: an anonymised municipality's actual register of EU-funded projects 2014-2027, drawn from its own documentation (organisation names replaced with \"Exempelstad\"). Not every project has published a full budget figure.",
+      startApplicationCta: "Have a similar project? Start an application →",
+      searchPlaceholder: "Search the projects…",
+      noProjectsMatch: "No projects match your search.",
       filterAll: "All programmes",
       statsTitle: "Statistics for the selected programme",
       statsIntro: (n) => `${n} awarded projects`,
@@ -1857,6 +1917,10 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldsMissing: (n) => `${n} fields missing`,
       openLink: "Open →",
       importCallButton: "Import a new call",
+      reportingAttentionTitle: "Reports needing attention",
+      reportingAttentionBody: "Upcoming reports and reports sent back for revision, in one place.",
+      noReportingAttention: "No reports need attention right now.",
+      viewProjectLink: "View project →",
     },
     callImport: {
       title: "Import a new call",
@@ -1875,6 +1939,8 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldStatus: "Status",
       statusOpen: "Open",
       statusUpcoming: "Upcoming",
+      fieldDeadline: "Deadline (months from now)",
+      fieldDeadlineHint: "Enter how many months away the call's real application deadline is.",
       fieldBudget: "Total budget (SEK)",
       fieldMinGrant: "Minimum grant (SEK)",
       fieldMaxGrant: "Maximum grant (SEK)",
@@ -1893,6 +1959,7 @@ export const translations: Record<Lang, TranslationTree> = {
       importedListTitle: "Previously imported calls",
       noImportedCalls: "No calls have been imported yet.",
       removeButton: "Remove",
+      confirmRemoveImportedCall: (title) => `Remove the imported call "${title}"?`,
       provenanceAssisted: "Added via reviewed import flow",
       provenanceManual: "Manually entered",
       importedAtLabel: (date) => `Imported ${date}`,
@@ -1922,6 +1989,7 @@ export const translations: Record<Lang, TranslationTree> = {
       auditRequiredAboveLabel: "An auditor's certificate is required for awards above",
       interimDocumentsLabel: "Evidence required for an interim report",
       finalReportDocumentsLabel: "Evidence required for the final report",
+      viewReportingInstructionsLink: "View this call's reporting instructions →",
       reportingTimelineTitle: "Reporting timeline",
       reportingTimelineHint: "Interim reports and the final report in chronological order, with the outturn reported at each.",
       reportTypeInterim: "Interim report",
@@ -2011,6 +2079,7 @@ export const translations: Record<Lang, TranslationTree> = {
       confirmRemoveUnitCascade: (name, count) =>
         `Remove the unit "${name}"? This will also remove its ${count} sub-unit${count === 1 ? "" : "s"}.`,
       resetAll: "Reset everything to the example data",
+      confirmResetAll: "Reset organisation details and the unit structure to the example data? Your own changes will be lost.",
       savedIndicator: "Saved in your browser",
     },
     settingsHub: {
@@ -2106,6 +2175,7 @@ export const translations: Record<Lang, TranslationTree> = {
       digestWeekly: "Weekly",
       savedIndicator: "Saved in your browser",
       resetAll: "Reset to the example data",
+      confirmResetAll: "Reset all watchlists and notification settings? Your own choices will be lost.",
       watchedCallsTitle: "Watched calls",
       watchedCallsHint: "Calls you've flagged directly from Watchlist or the EU database.",
       noWatchedCalls: "No individual calls watched yet.",
@@ -2140,6 +2210,7 @@ export const translations: Record<Lang, TranslationTree> = {
       coFinancingOver50: "Over 50%",
       savedIndicator: "Saved in your browser",
       resetAll: "Reset to the example data",
+      confirmResetAll: "Reset the whole funding profile to the example data? Your own choices will be lost.",
     },
     oversikt: {
       title: "Overview",

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams, notFound } from "next/navigation";
 import Header from "@/components/Header";
@@ -14,10 +15,15 @@ export default function ProgramCallsPage() {
   const { t, lang } = useLanguage();
   const db = t.euDatabase;
   const { all: fundingCalls } = useFundingCalls();
+  const [search, setSearch] = useState("");
 
   const program = findProgram(params.programId);
   if (!program) return notFound();
-  const calls = fundingCalls.filter((c) => c.programId === program.id);
+  const query = search.trim().toLowerCase();
+  const allCallsForProgram = fundingCalls.filter((c) => c.programId === program.id);
+  const calls = allCallsForProgram
+    .filter((c) => (query ? `${c.title_sv} ${c.title_en}`.toLowerCase().includes(query) : true))
+    .sort((a, b) => a.deadlineMonthsFromNow - b.deadlineMonthsFromNow);
 
   return (
     <>
@@ -39,7 +45,19 @@ export default function ProgramCallsPage() {
           </div>
         </div>
 
-        {calls.length === 0 && <p className="mt-8 text-sm text-navy-500">{db.noCallsForProgram}</p>}
+        {allCallsForProgram.length > 1 && (
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={db.searchCallsPlaceholder}
+            className="mt-6 w-full max-w-sm rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+          />
+        )}
+
+        {allCallsForProgram.length === 0 && <p className="mt-8 text-sm text-navy-500">{db.noCallsForProgram}</p>}
+        {allCallsForProgram.length > 0 && calls.length === 0 && (
+          <p className="mt-8 text-sm text-navy-500">{db.noCallsMatch}</p>
+        )}
 
         <div className="mt-8 space-y-4">
           {calls.map((call) => (

@@ -33,10 +33,13 @@ test("parsing pasted call text proposes structured fields for review, not a live
   await page.locator("textarea").first().fill(SAMPLE_TEXT);
   await page.getByRole("button", { name: "Tolka texten" }).click();
 
+  // nth(0) is the deadline field (not something the parser detects from
+  // this sample text, so it keeps its manual default) — budget/grant range
+  // are the fields actually populated from parsing.
   const numberInputs = page.locator('input[type="number"]');
-  await expect(numberInputs.nth(0)).toHaveValue("250000000");
-  await expect(numberInputs.nth(1)).toHaveValue("4000000");
-  await expect(numberInputs.nth(2)).toHaveValue("60000000");
+  await expect(numberInputs.nth(1)).toHaveValue("250000000");
+  await expect(numberInputs.nth(2)).toHaveValue("4000000");
+  await expect(numberInputs.nth(3)).toHaveValue("60000000");
   await expect(page.locator('input[type="checkbox"]').first()).toBeChecked();
   await expect(page.getByText("Hittat i texten").first()).toBeVisible();
 });
@@ -58,8 +61,10 @@ test("saving an imported call makes it a first-class part of the catalogue", asy
   const before = await page.locator("main").innerText();
   expect(before).toContain("Utlysningar med strukturerad behörighet");
 
-  // Removable again from the import tool's own list.
+  // Removable again from the import tool's own list — removal now asks for
+  // confirmation first.
   await page.goto("/datacenter/import-utlysning");
+  page.once("dialog", (d) => d.accept());
   await page.locator("li", { hasText: title }).getByRole("button", { name: "Ta bort" }).click();
   await expect(page.getByText(title)).toHaveCount(0);
 });
@@ -77,5 +82,6 @@ test("an imported call participates in matching just like a seeded one", async (
 
   // Clean up so this doesn't leak into other tests sharing storage.
   await page.goto("/datacenter/import-utlysning");
+  page.once("dialog", (d) => d.accept());
   await page.locator("li", { hasText: title }).getByRole("button", { name: "Ta bort" }).click();
 });

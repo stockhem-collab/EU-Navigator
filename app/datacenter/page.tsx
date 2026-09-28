@@ -38,6 +38,7 @@ function StatTile({ label, value }: { label: string; value: string | number }) {
 export default function DatacenterPage() {
   const { t, lang } = useLanguage();
   const dc = t.datacenter;
+  const ap = t.awardedProjects;
   const { all: projectBank } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
   const { all: awardedProjects } = useAwardedProjects();
@@ -55,9 +56,16 @@ export default function DatacenterPage() {
     (p) => (lang === "sv" ? p.missingFields_sv : p.missingFields_en).length > 0
   );
 
-  const reportingEvents = awardedProjects.flatMap((p) => withSubmissions(p).reportingEvents);
-  const upcomingReportsCount = reportingEvents.filter((e) => e.status === "upcoming").length;
-  const reportsNeedingRevisionCount = reportingEvents.filter((e) => e.status === "revision-requested").length;
+  const reportingRows = awardedProjects.flatMap((p) => {
+    const project = withSubmissions(p);
+    return project.reportingEvents.map((event) => ({ project, event }));
+  });
+  const reportsNeedingAttention = reportingRows
+    .filter((r) => r.event.status === "revision-requested" || r.event.status === "upcoming")
+    // Revision-requested is the more urgent of the two — surface it first.
+    .sort((a, b) => (a.event.status === b.event.status ? 0 : a.event.status === "revision-requested" ? -1 : 1));
+  const upcomingReportsCount = reportingRows.filter((r) => r.event.status === "upcoming").length;
+  const reportsNeedingRevisionCount = reportingRows.filter((r) => r.event.status === "revision-requested").length;
 
   const callsWithStructuredEligibility = fundingCalls.filter((c) => c.applicantTypes && c.applicantTypes.length > 0).length;
 
@@ -121,6 +129,37 @@ export default function DatacenterPage() {
                 );
               })}
             </ul>
+          </div>
+        </section>
+
+        <section className="mt-10">
+          <h2 className="text-lg font-bold text-navy-800">{dc.reportingAttentionTitle}</h2>
+          <p className="mt-1 text-sm text-navy-500">{dc.reportingAttentionBody}</p>
+          <div className="mt-4 overflow-hidden rounded-xl border border-navy-100 bg-white">
+            {reportsNeedingAttention.length === 0 ? (
+              <p className="px-4 py-3 text-sm text-navy-500">{dc.noReportingAttention}</p>
+            ) : (
+              <ul className="divide-y divide-navy-50">
+                {reportsNeedingAttention.map(({ project, event }) => (
+                  <li key={event.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
+                    <div>
+                      <p className="font-medium text-navy-800">
+                        {lang === "sv" ? project.title_sv : project.title_en}
+                      </p>
+                      <p className="text-xs text-navy-400">
+                        {lang === "sv" ? event.periodLabel_sv : event.periodLabel_en} ·{" "}
+                        <span className={event.status === "revision-requested" ? "text-amber-700" : ""}>
+                          {event.status === "revision-requested" ? ap.reportStatusRevisionRequested : ap.nextReportDue(event.deadlineMonthsFromNow)}
+                        </span>
+                      </p>
+                    </div>
+                    <Link href={`/projekt/${project.id}`} className="text-xs font-semibold text-navy-600 hover:text-navy-900">
+                      {dc.viewProjectLink}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </section>
 

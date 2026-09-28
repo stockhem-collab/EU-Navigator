@@ -168,7 +168,7 @@ export default function AwardedProjectDetailPage() {
               <dd className="font-semibold text-navy-800">{periodicityLabel(reportingReq.periodicity)}</dd>
             </dl>
             <p className="mt-3 text-sm text-navy-600">{ap.interimReportsRequiredLabel(reportingReq.interimReportsRequired)}</p>
-            {reportingReq.requiresAuditAboveSEK !== null && (
+            {reportingReq.requiresAuditAboveSEK !== null && project.awardedAmountSEK > reportingReq.requiresAuditAboveSEK && (
               <p className="mt-3 text-sm text-navy-600">
                 {ap.auditRequiredAboveLabel} {fmtSEK(reportingReq.requiresAuditAboveSEK, lang)}
               </p>
@@ -405,6 +405,45 @@ function ReportingEventCard({
           )}
         </div>
       </div>
+
+      {call?.reportingRequirements &&
+        event.type !== "sustainability" &&
+        (event.status === "upcoming" || event.status === "revision-requested") && (
+          <div className="mt-3 rounded-md bg-navy-50 px-3 py-3">
+            <p className="text-xs font-semibold uppercase text-navy-400">
+              {event.type === "final" ? ap.finalReportDocumentsLabel : ap.interimDocumentsLabel}
+            </p>
+            <ul className="mt-1.5 space-y-1">
+              {(event.type === "final"
+                ? lang === "sv"
+                  ? call.reportingRequirements.finalReportDocuments_sv
+                  : call.reportingRequirements.finalReportDocuments_en
+                : lang === "sv"
+                ? call.reportingRequirements.interimDocuments_sv
+                : call.reportingRequirements.interimDocuments_en
+              ).map((d) => (
+                <li key={d} className="text-sm text-navy-700">
+                  · {d}
+                </li>
+              ))}
+            </ul>
+            {event.type === "final" &&
+              call.reportingRequirements.requiresAuditAboveSEK !== null &&
+              project.awardedAmountSEK > call.reportingRequirements.requiresAuditAboveSEK && (
+                <p className="mt-2 text-xs font-semibold text-amber-700">
+                  ⚠ {ap.auditRequiredAboveLabel} {fmtSEK(call.reportingRequirements.requiresAuditAboveSEK, lang)}
+                </p>
+              )}
+            {call.documents.some((d) => d.type === "reporting") && (
+              <Link
+                href={`/eu-databas/${call.programId}/${call.id}`}
+                className="mt-2 inline-block text-xs font-semibold text-navy-600 hover:text-navy-900"
+              >
+                {ap.viewReportingInstructionsLink}
+              </Link>
+            )}
+          </div>
+        )}
 
       {(event.status === "upcoming" || event.status === "revision-requested") && (
         <button

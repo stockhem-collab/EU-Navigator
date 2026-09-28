@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SettingsTabs from "@/components/settings/SettingsTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
@@ -43,6 +44,7 @@ export default function ProfileSettingsPage() {
         <Link href="/installningar" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
           {ps.back}
         </Link>
+        <SettingsTabs />
 
         <h1 className="mt-4 text-2xl font-bold text-navy-900">{ps.title}</h1>
         <p className="mt-2 text-sm text-navy-600">{ps.subtitle}</p>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const NAV_LINKS: { href: string; labelKey: keyof ReturnType<typeof useLanguage>["t"]["nav"] }[] = [
@@ -17,6 +18,8 @@ const NAV_LINKS: { href: string; labelKey: keyof ReturnType<typeof useLanguage>[
 export default function Header() {
   const { lang, setLang, t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const isActive = (href: string) => pathname === href || pathname?.startsWith(`${href}/`);
 
   return (
     <header className="sticky top-0 z-40 border-b border-navy-100 bg-white/90 backdrop-blur">
@@ -30,7 +33,12 @@ export default function Header() {
 
         <nav className="hidden items-center gap-5 text-sm font-medium text-navy-700 lg:flex">
           {NAV_LINKS.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-navy-900">
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={isActive(link.href) ? "page" : undefined}
+              className={isActive(link.href) ? "font-semibold text-navy-900" : "hover:text-navy-900"}
+            >
               {t.nav[link.labelKey]}
             </Link>
           ))}
@@ -41,7 +49,8 @@ export default function Header() {
             href="/installningar"
             aria-label={t.nav.settings}
             title={t.nav.settings}
-            className="hidden text-navy-400 hover:text-navy-700 lg:block"
+            aria-current={isActive("/installningar") ? "page" : undefined}
+            className={`hidden lg:block ${isActive("/installningar") ? "text-navy-800" : "text-navy-400 hover:text-navy-700"}`}
           >
             ⚙
           </Link>
@@ -88,13 +97,23 @@ export default function Header() {
           <ul className="flex flex-col gap-3 text-sm font-medium text-navy-700">
             {NAV_LINKS.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="block" onClick={() => setMenuOpen(false)}>
+                <Link
+                  href={link.href}
+                  aria-current={isActive(link.href) ? "page" : undefined}
+                  className={`block ${isActive(link.href) ? "font-semibold text-navy-900" : ""}`}
+                  onClick={() => setMenuOpen(false)}
+                >
                   {t.nav[link.labelKey]}
                 </Link>
               </li>
             ))}
             <li>
-              <Link href="/installningar" className="block" onClick={() => setMenuOpen(false)}>
+              <Link
+                href="/installningar"
+                aria-current={isActive("/installningar") ? "page" : undefined}
+                className={`block ${isActive("/installningar") ? "font-semibold text-navy-900" : ""}`}
+                onClick={() => setMenuOpen(false)}
+              >
                 ⚙ {t.nav.settings}
               </Link>
             </li>

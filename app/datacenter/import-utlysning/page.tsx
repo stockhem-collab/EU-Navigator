@@ -16,6 +16,7 @@ interface FormState {
   titleSv: string;
   titleEn: string;
   status: "open" | "upcoming";
+  deadlineMonthsFromNow: number;
   budgetTotalSEK: number;
   minGrantSEK: number;
   maxGrantSEK: number;
@@ -34,6 +35,7 @@ const EMPTY_FORM: FormState = {
   titleSv: "",
   titleEn: "",
   status: "open",
+  deadlineMonthsFromNow: 6,
   budgetTotalSEK: 0,
   minGrantSEK: 0,
   maxGrantSEK: 0,
@@ -108,7 +110,7 @@ export default function ImportUtlysningPage() {
       title_sv: form.titleSv.trim(),
       title_en: form.titleEn.trim(),
       status: form.status,
-      deadlineMonthsFromNow: 6,
+      deadlineMonthsFromNow: form.deadlineMonthsFromNow,
       budgetTotalSEK: form.budgetTotalSEK,
       minGrantSEK: form.minGrantSEK,
       maxGrantSEK: form.maxGrantSEK,
@@ -210,6 +212,16 @@ export default function ImportUtlysningPage() {
                 <option value="open">{ci.statusOpen}</option>
                 <option value="upcoming">{ci.statusUpcoming}</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-navy-700">{ci.fieldDeadline}</label>
+              <input
+                type="number"
+                value={form.deadlineMonthsFromNow}
+                onChange={(e) => setForm({ ...form, deadlineMonthsFromNow: Number(e.target.value) })}
+                className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+              />
+              <p className="mt-0.5 text-xs text-navy-400">{ci.fieldDeadlineHint}</p>
             </div>
             <div>
               <label className="block text-sm font-semibold text-navy-700">{ci.fieldTitleSv}</label>
@@ -400,7 +412,10 @@ export default function ImportUtlysningPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => removeImportedCall(call.id)}
+                    onClick={() => {
+                      const title = lang === "sv" ? call.title_sv : call.title_en;
+                      if (window.confirm(ci.confirmRemoveImportedCall(title))) removeImportedCall(call.id);
+                    }}
                     className="text-xs font-semibold text-navy-400 hover:text-red-600"
                   >
                     {ci.removeButton}
