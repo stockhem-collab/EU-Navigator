@@ -69,6 +69,27 @@ test("saving an imported call makes it a first-class part of the catalogue", asy
   await expect(page.getByText(title)).toHaveCount(0);
 });
 
+test("parsing also suggests tags from the fixed vocabulary, and warns if none end up selected", async ({ page }) => {
+  await page.goto("/datacenter/import-utlysning");
+  await page.locator("textarea").first().fill(SAMPLE_TEXT);
+  await page.getByRole("button", { name: "Tolka texten" }).click();
+
+  // SAMPLE_TEXT doesn't contain any word the tag dictionary recognises
+  // (see lib/matching/tagSuggestions.ts), so no tags get pre-selected and
+  // the advisory warning should be visible rather than silently absent.
+  await expect(page.getByText("Utlysningen har inga taggar valda")).toBeVisible();
+
+  // A tag can still be picked by hand from the full vocabulary.
+  await page.getByRole("button", { name: "Klimatåtgärder", exact: true }).click();
+  await expect(page.getByText("Utlysningen har inga taggar valda")).toHaveCount(0);
+
+  // Text that does match the dictionary pre-selects the corresponding tag.
+  await page.locator("textarea").first().fill("Utlysningen fokuserar på energieffektivisering i skolor.");
+  await page.getByRole("button", { name: "Tolka texten" }).click();
+  const energyChip = page.getByRole("button", { name: "Energieffektivisering", exact: true });
+  await expect(energyChip).toHaveAttribute("aria-pressed", "true");
+});
+
 test("an imported call participates in matching just like a seeded one", async ({ page }) => {
   const title = `Matchningstest ${Date.now()}`;
   const slug = title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");

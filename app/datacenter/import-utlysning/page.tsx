@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -9,6 +9,8 @@ import { fundingPrograms } from "@/lib/data/fundingPrograms";
 import { fundingCalls, applicantTypeLabel, ALL_APPLICANT_TYPES } from "@/lib/data/fundingCalls";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { extractCallDraft, slugifyCallId, ExtractionConfidence } from "@/lib/matching/callExtraction";
+import { suggestTags } from "@/lib/matching/tagSuggestions";
+import TagPicker from "@/components/TagPicker";
 import { ApplicantType, FundingCall, ReportingPeriodicity } from "@/lib/types";
 
 interface FormState {
@@ -25,6 +27,7 @@ interface FormState {
   eligibleEn: string;
   applicantTypes: ApplicantType[];
   prioritiesSv: string;
+  tags: string[];
   periodicity: ReportingPeriodicity;
   interimReportsRequired: number;
   auditThreshold: string;
@@ -44,12 +47,13 @@ const EMPTY_FORM: FormState = {
   eligibleEn: "",
   applicantTypes: [],
   prioritiesSv: "",
+  tags: [],
   periodicity: "annual",
   interimReportsRequired: 2,
   auditThreshold: "",
 };
 
-type ConfidenceMap = Partial<Record<"budget" | "grantRange" | "partnership" | "applicantTypes" | "priorities" | "periodicity" | "audit", ExtractionConfidence>>;
+type ConfidenceMap = Partial<Record<"budget" | "grantRange" | "partnership" | "applicantTypes" | "priorities" | "tags" | "periodicity" | "audit", ExtractionConfidence>>;
 
 export default function ImportUtlysningPage() {
   const { t, lang } = useLanguage();
@@ -63,6 +67,12 @@ export default function ImportUtlysningPage() {
 
   const handleParse = () => {
     const draft = extractCallDraft(rawText);
+    // Tags aren't part of extractCallDraft's regex-based fields above — they
+    // come from the fixed vocabulary (lib/data/tags.ts) via the same
+    // deterministic keyword dictionary the application studio uses to
+    // suggest tags from a project's description (lib/matching/
+    // tagSuggestions.ts), applied here to the pasted call text instead.
+    const suggestedTags = suggestTags(rawText);
     setForm((prev) => ({
       ...prev,
       budgetTotalSEK: draft.budgetTotalSEK.value,
@@ -71,6 +81,7 @@ export default function ImportUtlysningPage() {
       requiresPartnership: draft.requiresPartnership.value,
       applicantTypes: draft.applicantTypes.value,
       prioritiesSv: draft.priorities_sv.value.join("\n"),
+      tags: suggestedTags,
       periodicity: draft.periodicity.value,
       auditThreshold: draft.requiresAuditAboveSEK.value !== null ? String(draft.requiresAuditAboveSEK.value) : "",
     }));
@@ -80,10 +91,17 @@ export default function ImportUtlysningPage() {
       partnership: draft.requiresPartnership.confidence,
       applicantTypes: draft.applicantTypes.confidence,
       priorities: draft.priorities_sv.confidence,
+      tags: suggestedTags.length > 0 ? "detected" : "default",
       periodicity: draft.periodicity.confidence,
       audit: draft.requiresAuditAboveSEK.confidence,
     });
   };
+
+  // Recomputed live from the pasted text (not just at parse time) so a tag
+  // removed from the selection, or a manual edit to the pasted text,
+  // still offers it back as a one-click suggestion rather than requiring
+  // a full re-parse.
+  const liveSuggestedTags = useMemo(() => suggestTags(rawText), [rawText]);
 
   const toggleApplicantType = (type: ApplicantType) =>
     setForm((prev) => ({
@@ -121,10 +139,7 @@ export default function ImportUtlysningPage() {
       priorities_sv,
       priorities_en: priorities_sv,
       extraKeywords: [],
-      // Not extracted by this tool yet (same as extraKeywords above) — a
-      // reviewer can add tags from the fixed vocabulary after saving, once
-      // an edit UI for imported calls exists.
-      tags: [],
+      tags: form.tags,
       evaluationCriteria: [],
       documents: [],
       reportingRequirements: {
@@ -340,6 +355,27 @@ export default function ImportUtlysningPage() {
               onChange={(e) => setForm({ ...form, prioritiesSv: e.target.value })}
               className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
             />
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2">
+              <label className="block text-sm font-semibold text-navy-700">{ci.fieldTags}</label>
+              {badge("tags")}
+            </div>
+            <div className="mt-1">
+              <TagPicker
+                selected={form.tags}
+                onChange={(tags) => setForm({ ...form, tags })}
+                suggested={liveSuggestedTags}
+                lang={lang}
+                labels={{
+                  hint: t.demo.intake.tagsHint,
+                  suggestedLabel: t.demo.intake.tagsSuggestedLabel,
+                  addAllLabel: t.demo.intake.tagsAddAllLabel,
+                }}
+              />
+            </div>
+            {form.tags.length === 0 && <p className="mt-2 text-xs text-amber-700">{ci.noTagsWarning}</p>}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">

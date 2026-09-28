@@ -388,6 +388,8 @@ export interface TranslationTree {
     fieldApplicantTypes: string;
     fieldPriorities: string;
     fieldPrioritiesHint: string;
+    fieldTags: string;
+    noTagsWarning: string;
     fieldPeriodicity: string;
     fieldInterimReports: string;
     fieldAuditThreshold: string;
@@ -1184,6 +1186,8 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldApplicantTypes: "Sökandekategorier",
       fieldPriorities: "Prioriteringar",
       fieldPrioritiesHint: "En prioritering per rad.",
+      fieldTags: "Taggar",
+      noTagsWarning: "Utlysningen har inga taggar valda — matchningen mot projekt blir mindre träffsäker utan dem.",
       fieldPeriodicity: "Rapporteringsfrekvens",
       fieldInterimReports: "Antal delrapporter som krävs",
       fieldAuditThreshold: "Revisionsintyg krävs över (SEK, lämna tomt om ej tillämpligt)",
@@ -1979,6 +1983,8 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldApplicantTypes: "Applicant categories",
       fieldPriorities: "Priorities",
       fieldPrioritiesHint: "One priority per line.",
+      fieldTags: "Tags",
+      noTagsWarning: "This call has no tags selected — matching against projects will be less accurate without them.",
       fieldPeriodicity: "Reporting frequency",
       fieldInterimReports: "Interim reports required",
       fieldAuditThreshold: "Auditor's certificate required above (SEK, leave blank if not applicable)",
