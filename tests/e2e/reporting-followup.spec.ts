@@ -3,10 +3,9 @@ import { test, expect } from "@playwright/test";
 // Coverage for the follow-up/reporting improvements built on top of the base
 // reporting cycle: correcting a revision-requested report leaves an audit
 // trail (including the seed data's own original outcome, which is never
-// itself a dated submission), a specific reporting deadline can be watched
-// independently of the underlying call, a completed project can get a
-// voluntary sustainability follow-up event, and an awarded project links
-// back to the Projektbank idea it came from.
+// itself a dated submission), a completed project can get a voluntary
+// sustainability follow-up event, and an awarded project links back to the
+// Projektbank idea it came from.
 
 test("correcting a revision-requested report shows the original outcome as reporting history", async ({ page }) => {
   await page.goto("/projekt/ap-2");
@@ -22,20 +21,6 @@ test("correcting a revision-requested report shows the original outcome as repor
   await page.getByRole("button", { name: /Tidigare inlämningar/ }).click();
   await expect(page.getByText("Ursprunglig rapport")).toBeVisible();
   await expect(page.getByText("Antal utbildade medarbetare: 140")).toBeVisible();
-});
-
-test("a specific reporting deadline can be watched and managed from Inställningar", async ({ page }) => {
-  await page.goto("/projekt/ap-2");
-  const q3Card = page.locator("div.rounded-xl", { hasText: "Delrapport Q3 2027" });
-  await q3Card.getByRole("button", { name: "☆ Bevaka" }).click();
-  await expect(q3Card.getByRole("button", { name: "★ Bevakas" })).toBeVisible();
-
-  await page.goto("/installningar/bevakningar");
-  await expect(page.getByText("Bevakade rapporteringar")).toBeVisible();
-  await expect(page.getByText("Delrapport Q3 2027")).toBeVisible();
-
-  await page.getByRole("button", { name: "Sluta bevaka" }).click();
-  await expect(page.getByText("Delrapport Q3 2027")).toHaveCount(0);
 });
 
 test("completing all reporting unlocks a voluntary sustainability follow-up", async ({ page }) => {

@@ -8,8 +8,6 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useWatchPreferences, NotifyPreferences, DigestFrequency } from "@/lib/hooks/useWatchPreferences";
 import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
-import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
-import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import { Sector } from "@/lib/types";
 
@@ -18,30 +16,17 @@ const SECTORS: Sector[] = ["energy", "climate", "digital", "social", "mobility",
 export default function WatchSettingsPage() {
   const { t, lang } = useLanguage();
   const ws = t.watchSettings;
-  const { prefs, hydrated, toggleSector, toggleProgram, toggleCall, toggleReportingEvent, toggleNotify, setDigest, resetAll } =
+  const { prefs, hydrated, toggleSector, toggleProgram, toggleCall, toggleNotify, setDigest, resetAll } =
     useWatchPreferences();
   const { all: fundingCalls, hydrated: callsHydrated } = useFundingCalls();
-  const { all: awardedProjects, hydrated: awardedProjectsHydrated } = useAwardedProjects();
-  const { withSubmissions, hydrated: reportingHydrated } = useReportingSubmissions();
 
-  if (!hydrated || !callsHydrated || !reportingHydrated || !awardedProjectsHydrated) return null;
+  if (!hydrated || !callsHydrated) return null;
 
   const watchedCalls = prefs.callIds
     .map((callId) => {
       const call = fundingCalls.find((c) => c.id === callId);
       const program = call ? findProgram(call.programId) : undefined;
       return call && program ? { call, program } : null;
-    })
-    .filter((row): row is NonNullable<typeof row> => row !== null);
-
-  const watchedReporting = prefs.reportingEventKeys
-    .map((key) => {
-      const [projectId, eventId] = key.split(":");
-      const seedProject = awardedProjects.find((a) => a.id === projectId);
-      if (!seedProject) return null;
-      const project = withSubmissions(seedProject);
-      const event = project.reportingEvents.find((e) => e.id === eventId);
-      return event ? { key, project, event } : null;
     })
     .filter((row): row is NonNullable<typeof row> => row !== null);
 
@@ -130,36 +115,6 @@ export default function WatchSettingsPage() {
                     <button
                       type="button"
                       onClick={() => toggleCall(call.id)}
-                      className="shrink-0 text-xs font-semibold text-navy-500 hover:text-amber-700"
-                    >
-                      {ws.removeWatchedCall}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          <section className="rounded-xl border border-navy-100 bg-white p-6">
-            <p className="text-sm font-semibold text-navy-800">{ws.watchedReportingTitle}</p>
-            <p className="mt-1 text-xs text-navy-500">{ws.watchedReportingHint}</p>
-            {watchedReporting.length === 0 ? (
-              <p className="mt-3 text-sm text-navy-500">{ws.noWatchedReporting}</p>
-            ) : (
-              <ul className="mt-3 divide-y divide-navy-50">
-                {watchedReporting.map(({ key, project, event }) => (
-                  <li key={key} className="flex items-center justify-between gap-3 py-2.5">
-                    <div>
-                      <p className="text-xs font-semibold uppercase text-navy-400">
-                        {lang === "sv" ? project.title_sv : project.title_en}
-                      </p>
-                      <p className="text-sm font-semibold text-navy-800">
-                        {lang === "sv" ? event.periodLabel_sv : event.periodLabel_en}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => toggleReportingEvent(key)}
                       className="shrink-0 text-xs font-semibold text-navy-500 hover:text-amber-700"
                     >
                       {ws.removeWatchedCall}

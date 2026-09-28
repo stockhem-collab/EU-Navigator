@@ -37,7 +37,6 @@ test("watching a call from its own card is reflected immediately in the 'only wa
         sectors: [],
         programIds: [],
         callIds: [],
-        reportingEventKeys: [],
         notify: {
           newCallMatchesOrg: true,
           callMatchesProject: true,

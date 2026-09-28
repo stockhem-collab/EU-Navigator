@@ -19,7 +19,6 @@ import { findProgram } from "@/lib/data/fundingPrograms";
 import { useReportingSubmissions, ReportingSubmission } from "@/lib/hooks/useReportingSubmissions";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
-import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
 import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
 import { buildReportDocx } from "@/lib/export/exportReport";
 import { downloadBlob } from "@/lib/export/exportApplication";
@@ -342,11 +341,9 @@ function ReportingEventCard({
 }) {
   const { t, lang } = useLanguage();
   const ap = t.awardedProjects;
-  const { prefs, toggleReportingEvent } = useWatchPreferences();
   const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
   const attachmentKey = `report:${project.id}:${event.id}`;
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
-  const watchKey = `${project.id}:${event.id}`;
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(
       project.commitments.map((c) => {
@@ -444,18 +441,6 @@ function ReportingEventCard({
             )}
           </div>
         )}
-
-      {(event.status === "upcoming" || event.status === "revision-requested") && (
-        <button
-          type="button"
-          onClick={() => toggleReportingEvent(watchKey)}
-          className={`mt-2 text-xs font-semibold ${
-            prefs.reportingEventKeys.includes(watchKey) ? "text-gold-700 hover:text-gold-800" : "text-navy-500 hover:text-navy-800"
-          }`}
-        >
-          {prefs.reportingEventKeys.includes(watchKey) ? ap.watchingReportButton : ap.watchReportButton}
-        </button>
-      )}
 
       {event.outcomes.length > 0 && (
         <ul className="mt-3 space-y-1 border-t border-navy-50 pt-3">

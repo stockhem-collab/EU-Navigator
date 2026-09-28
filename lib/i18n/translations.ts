@@ -443,8 +443,6 @@ export interface TranslationTree {
     reportHistoryOriginalLabel: string;
     trendChartTitle: string;
     trendChartTarget: string;
-    watchReportButton: string;
-    watchingReportButton: string;
     exportReportButton: string;
     reportAttachmentsLabel: string;
     reportAttachmentUploadButton: string;
@@ -606,9 +604,6 @@ export interface TranslationTree {
     watchedCallsHint: string;
     noWatchedCalls: string;
     removeWatchedCall: string;
-    watchedReportingTitle: string;
-    watchedReportingHint: string;
-    noWatchedReporting: string;
   };
   fundingProfileSettings: {
     title: string;
@@ -1232,8 +1227,6 @@ export const translations: Record<Lang, TranslationTree> = {
       reportHistoryOriginalLabel: "Ursprunglig rapport",
       trendChartTitle: "Utveckling över tid",
       trendChartTarget: "Mål",
-      watchReportButton: "☆ Bevaka",
-      watchingReportButton: "★ Bevakas",
       exportReportButton: "Exportera rapport (.docx)",
       reportAttachmentsLabel: "Bilagor",
       reportAttachmentUploadButton: "+ Ladda upp bilaga",
@@ -1399,9 +1392,6 @@ export const translations: Record<Lang, TranslationTree> = {
       watchedCallsHint: "Utlysningar du flaggat direkt från Bevakning eller EU-databasen.",
       noWatchedCalls: "Inga enskilda utlysningar bevakas ännu.",
       removeWatchedCall: "Sluta bevaka",
-      watchedReportingTitle: "Bevakade rapporteringar",
-      watchedReportingHint: "Rapporteringstillfällen du flaggat direkt på ett beviljat projekts sida.",
-      noWatchedReporting: "Inga rapporteringstillfällen bevakas ännu.",
     },
     fundingProfileSettings: {
       title: "Finansieringsprofil",
@@ -2020,8 +2010,6 @@ export const translations: Record<Lang, TranslationTree> = {
       reportHistoryOriginalLabel: "Original report",
       trendChartTitle: "Trend over time",
       trendChartTarget: "Target",
-      watchReportButton: "☆ Watch",
-      watchingReportButton: "★ Watching",
       exportReportButton: "Export report (.docx)",
       reportAttachmentsLabel: "Attachments",
       reportAttachmentUploadButton: "+ Upload attachment",
@@ -2186,9 +2174,6 @@ export const translations: Record<Lang, TranslationTree> = {
       watchedCallsHint: "Calls you've flagged directly from Watchlist or the EU database.",
       noWatchedCalls: "No individual calls watched yet.",
       removeWatchedCall: "Stop watching",
-      watchedReportingTitle: "Watched reports",
-      watchedReportingHint: "Reporting events you've flagged directly on an awarded project's page.",
-      noWatchedReporting: "No reporting events watched yet.",
     },
     fundingProfileSettings: {
       title: "Funding profile",

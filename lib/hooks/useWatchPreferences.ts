@@ -28,10 +28,6 @@ export interface WatchPreferences {
    * opposed to the broader sector/programme preferences above, which watch
    * entire categories at once. */
   callIds: string[];
-  /** Individually flagged reporting deadlines — same direct "watch this one
-   * upcoming report" action, but on a post-award ReportingEvent rather than
-   * a call, keyed "<awardedProjectId>:<reportingEventId>". */
-  reportingEventKeys: string[];
   notify: NotifyPreferences;
   digest: DigestFrequency;
 }
@@ -40,7 +36,6 @@ const DEFAULT: WatchPreferences = {
   sectors: ["digital", "climate", "social"],
   programIds: [],
   callIds: [],
-  reportingEventKeys: [],
   notify: {
     newCallMatchesOrg: true,
     callMatchesProject: true,
@@ -61,7 +56,6 @@ function read(): WatchPreferences {
       sectors: Array.isArray(parsed.sectors) ? parsed.sectors : DEFAULT.sectors,
       programIds: Array.isArray(parsed.programIds) ? parsed.programIds : DEFAULT.programIds,
       callIds: Array.isArray(parsed.callIds) ? parsed.callIds : DEFAULT.callIds,
-      reportingEventKeys: Array.isArray(parsed.reportingEventKeys) ? parsed.reportingEventKeys : DEFAULT.reportingEventKeys,
       notify: { ...DEFAULT.notify, ...(parsed.notify && typeof parsed.notify === "object" ? parsed.notify : {}) },
       digest: parsed.digest === "instant" || parsed.digest === "daily" || parsed.digest === "weekly" ? parsed.digest : DEFAULT.digest,
     };
@@ -124,17 +118,6 @@ export function useWatchPreferences() {
     [update]
   );
 
-  const toggleReportingEvent = useCallback(
-    (key: string) =>
-      update((prev) => ({
-        ...prev,
-        reportingEventKeys: prev.reportingEventKeys.includes(key)
-          ? prev.reportingEventKeys.filter((k) => k !== key)
-          : [...prev.reportingEventKeys, key],
-      })),
-    [update]
-  );
-
   const toggleNotify = useCallback(
     (key: keyof NotifyPreferences) =>
       update((prev) => ({ ...prev, notify: { ...prev.notify, [key]: !prev.notify[key] } })),
@@ -154,7 +137,6 @@ export function useWatchPreferences() {
     toggleSector,
     toggleProgram,
     toggleCall,
-    toggleReportingEvent,
     toggleNotify,
     setDigest,
     resetAll,
