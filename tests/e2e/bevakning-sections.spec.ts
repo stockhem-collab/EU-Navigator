@@ -1,13 +1,14 @@
 import { test, expect } from "@playwright/test";
 
 // Same "recommended vs. lower relevance" split as the Ansökningsstudio's
-// matching results, applied to the Bevakning call list: calls with a real
+// matching results, applied to the call list under Ansöka → Hitta
+// finansiering (formerly the Bevakning tab): calls with a real
 // portfolio match (or an explicit watch) show under "Utlysningar som
 // matchar din portfölj" up front; anything else collapses behind a "Visa
 // fler" toggle instead of disappearing outright.
 
 test("every call renders under one section or the other — none silently dropped", async ({ page }) => {
-  await page.goto("/bevakning");
+  await page.goto("/ansok");
 
   await expect(page.getByRole("heading", { name: /Utlysningar som matchar din portfölj/i })).toBeVisible();
   const visibleCount = await page.getByRole("button", { name: /^☆ Bevaka$|^★ Bevakas$/ }).count();
@@ -37,21 +38,13 @@ test("watching a call from its own card is reflected immediately in the 'only wa
         sectors: [],
         programIds: [],
         callIds: [],
-        notify: {
-          newCallMatchesOrg: true,
-          callMatchesProject: true,
-          highRelevanceMatch: true,
-          deadlineApproaching: true,
-          commentOnApplication: true,
-          reportingDeadline: true,
-        },
-        digest: "weekly",
       })
     );
   });
 
-  await page.goto("/bevakning");
-  const firstCard = page.locator("div.rounded-xl").first();
+  await page.goto("/ansok");
+  const findFunding = page.locator("section", { has: page.getByRole("heading", { name: "Hitta finansiering" }) });
+  const firstCard = findFunding.locator("div.rounded-xl").first();
   await firstCard.getByRole("button", { name: "☆ Bevaka" }).click();
   await expect(firstCard.getByRole("button", { name: "★ Bevakas" })).toBeVisible();
 

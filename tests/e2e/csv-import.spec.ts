@@ -8,7 +8,7 @@ test("importing the same CSV twice does not create colliding ids, and a row can 
     if (msg.type() === "error" || /same key/i.test(msg.text())) consoleWarnings.push(msg.text());
   });
 
-  await page.goto("/projektbank");
+  await page.goto("/projekt");
   const fileInput = page.locator('input[type="file"]');
 
   const asFile = { name: "test.csv", mimeType: "text/csv", buffer: Buffer.from(CSV, "utf-8") };

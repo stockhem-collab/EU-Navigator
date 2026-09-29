@@ -11,7 +11,8 @@ export const projectBank: ProjectBankEntry[] = [
     department_sv: "Fastighet",
     department_en: "Property & Facilities",
     owner: "Anna Andersson",
-    status: "idea",
+    // Has a seeded grant (lib/data/grants.ts) mid-reporting.
+    status: "running",
     estimatedCostSEK: 35_000_000,
     periodStart: 2027,
     periodEnd: 2029,
@@ -65,7 +66,8 @@ export const projectBank: ProjectBankEntry[] = [
     department_sv: "Socialförvaltningen",
     department_en: "Social Services",
     owner: "Maria Lindqvist",
-    status: "idea",
+    // Has a seeded grant (lib/data/grants.ts) mid-reporting.
+    status: "running",
     estimatedCostSEK: 25_000_000,
     periodStart: 2027,
     periodEnd: 2029,

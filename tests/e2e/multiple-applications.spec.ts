@@ -5,7 +5,7 @@ import { test, expect, Page } from "@playwright/test";
 // project page lists them, and the project's own status follows them.
 
 async function startFromMatch(page: Page, projectId: string, nth: number) {
-  await page.goto(`/projektbank/${projectId}`);
+  await page.goto(`/projekt/${projectId}`);
   // The match list's own buttons — the applications section above it links
   // into the workspace too.
   const link = page.locator("main").getByRole("link", { name: /^(Starta ansökan|Fortsätt ansökan)$/ }).nth(nth);
@@ -24,20 +24,21 @@ test("applications to two calls are listed separately, each with its own status"
   await startFromMatch(page, "pb-4", 1);
   await editDraft(page, "Andra ansökan");
 
-  await page.goto("/projektbank/pb-4");
+  await page.goto("/projekt/pb-4");
   const section = page.locator("section", { has: page.getByRole("heading", { name: "Ansökningar" }) });
   const rows = section.locator("li");
   await expect(rows).toHaveCount(2);
   await expect(rows.first().locator(".badge", { hasText: "Utkast" })).toBeVisible();
-  // A draft moves the project itself into the application stage.
-  await expect(page.locator("main .badge", { hasText: "Ansökan pågår" })).toBeVisible();
+  // Applying moves the project itself into "searching for funding".
+  await expect(page.locator("main .badge", { hasText: "Söker finansiering" }).first()).toBeVisible();
 
   // Submitting one application doesn't touch the other's status…
   await rows.first().locator("select").selectOption("submitted");
   await expect(rows.first().locator(".badge", { hasText: "Inskickad" })).toBeVisible();
   await expect(rows.nth(1).locator("select")).toHaveValue("draft");
-  // One application with the funder moves the project to "Inlämnad".
-  await expect(page.locator("main .badge", { hasText: "Inlämnad" })).toBeVisible();
+  // The project's own status is a lifecycle: still searching for funding
+  // while an application is with the funder.
+  await expect(page.locator("main .badge", { hasText: "Söker finansiering" }).first()).toBeVisible();
 
   // …and the drafts stay separate.
   await rows.nth(1).getByRole("link", { name: "Fortsätt" }).click();
@@ -59,7 +60,7 @@ test("a new round to the same call gets its own empty draft; the old one is kept
   await expect(page.getByText("Projektet har 1 annan ansökan till samma utlysning.")).toBeVisible();
   await editDraft(page, "Omgång 2");
 
-  await page.goto("/projektbank/pb-5");
+  await page.goto("/projekt/pb-5");
   const section = page.locator("section", { has: page.getByRole("heading", { name: "Ansökningar" }) });
   await expect(section.getByText(/· Ansökan 1/)).toBeVisible();
   await expect(section.getByText(/· Ansökan 2/)).toBeVisible();
@@ -80,20 +81,42 @@ test("after a rejection, 'Starta ansökan' starts a fresh application instead of
   await expect(page.getByLabel("Ansökans status")).toHaveValue("draft");
 });
 
-test("an awarded application becomes an awarded project under its own call", async ({ page }) => {
+test("an awarded application becomes a grant under its own call", async ({ page }) => {
   await startFromMatch(page, "pb-3", 1);
   const callTitle = (await page.locator("h1 + p").innerText()).split(" — ")[1];
   await editDraft(page, "Beviljad ansökan");
   await page.getByLabel("Ansökans status").selectOption("awarded");
 
-  await page.goto("/projektbank/pb-3");
+  await page.goto("/projekt/pb-3");
   page.once("dialog", (d) => d.accept());
-  await page.getByRole("button", { name: "Skapa beviljat projekt" }).click();
-  await expect(page).toHaveURL(/\/projekt\//);
+  await page.getByRole("button", { name: "Registrera beviljat stöd" }).click();
+  await expect(page).toHaveURL(/\/stod\//);
   await expect(page.getByText(callTitle).first()).toBeVisible();
+  // The grant links back to the application it was awarded on.
+  await expect(page.getByRole("link", { name: "Öppna ansökan" })).toBeVisible();
 
-  await page.goto("/projektbank/pb-3");
-  await expect(page.getByRole("link", { name: "Visa beviljat projekt" })).toBeVisible();
+  await page.goto("/projekt/pb-3");
+  await expect(page.getByRole("link", { name: "Visa beviljat stöd" }).first()).toBeVisible();
+
+  // Its reporting shows up under Rapportera, next to the seeded grant.
+  await page.goto("/rapportera");
+  await expect(page.getByRole("heading", { name: "Beviljade stöd" })).toBeVisible();
+  await expect(page.locator("main").getByText(callTitle).first()).toBeVisible();
+});
+
+test("two awarded applications on one project get two separate grants", async ({ page }) => {
+  for (const nth of [0, 1]) {
+    await startFromMatch(page, "pb-6", nth);
+    await editDraft(page, `Beviljad ${nth}`);
+    await page.getByLabel("Ansökans status").selectOption("awarded");
+    await page.goto("/projekt/pb-6");
+    page.once("dialog", (d) => d.accept());
+    await page.getByRole("button", { name: "Registrera beviljat stöd" }).first().click();
+    await expect(page).toHaveURL(/\/stod\//);
+  }
+  await page.goto("/projekt/pb-6");
+  const grants = page.locator("section", { has: page.getByRole("heading", { name: "Beviljat stöd och rapportering" }) });
+  await expect(grants.getByRole("link", { name: "Visa beviljat stöd" })).toHaveCount(2);
 });
 
 test("drafts saved before application records existed show up as applications", async ({ page }) => {
@@ -104,7 +127,7 @@ test("drafts saved before application records existed show up as applications", 
       JSON.stringify({ sectionDrafts: { Problem: "Gammalt utkast" }, updatedAt: new Date().toISOString(), versions: [] })
     );
   });
-  await page.goto("/projektbank/pb-2");
+  await page.goto("/projekt/pb-2");
   const section = page.locator("section", { has: page.getByRole("heading", { name: "Ansökningar" }) });
   await expect(section.locator("li")).toHaveCount(1);
   await section.getByRole("link", { name: "Fortsätt" }).click();

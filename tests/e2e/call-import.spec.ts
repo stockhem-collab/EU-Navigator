@@ -90,7 +90,7 @@ test("an imported call participates in matching just like a seeded one", async (
   const slug = title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
   await importSampleCall(page, title, "Matching test");
 
-  await page.goto(`/demo?call=${slug}`);
+  await page.goto(`/ansokan?call=${slug}`);
   await page.getByRole("button", { name: /Fyll i exempel/i }).click();
   await page.locator('button[type="submit"]').click();
 

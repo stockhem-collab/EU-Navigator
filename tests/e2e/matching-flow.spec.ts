@@ -4,7 +4,7 @@ test("intake -> results -> workspace happy path, with accessible tabs", async ({
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
 
-  await page.goto("/demo");
+  await page.goto("/ansokan");
   await page.getByRole("button", { name: /Fyll i exempel/i }).click();
   await page.locator('button[type="submit"]').click();
 
@@ -45,7 +45,7 @@ test("editing the project after 'Ändra projekt' re-shows matching results inste
   // Entering via a call-specific deep link ("Hjälp mig söka" on a single
   // call) should still skip straight to the workspace on the FIRST
   // submission — that shortcut is the whole point of the deep link.
-  await page.goto("/demo?call=life-2027-climate-schools");
+  await page.goto("/ansokan?call=life-2027-climate-schools");
   await page.getByRole("button", { name: /Fyll i exempel/i }).click();
   await page.locator('button[type="submit"]').click();
   await expect(page.getByText("AI-stödd ansökningsyta")).toBeVisible();

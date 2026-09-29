@@ -11,7 +11,7 @@ import { test, expect } from "@playwright/test";
 test("a custom tag added on intake is immediately usable on Projektbank and in the import tool", async ({ page }) => {
   const customLabel = `Testtagg ${Date.now()}`;
 
-  await page.goto("/demo");
+  await page.goto("/ansokan");
   await page.getByRole("button", { name: /Fyll i exempel/i }).click();
   await page.getByPlaceholder("Ny tagg som saknas…").fill(customLabel);
   await page.getByRole("button", { name: "Lägg till ny tagg" }).click();
@@ -22,7 +22,7 @@ test("a custom tag added on intake is immediately usable on Projektbank and in t
 
   // Visible and selectable from a completely different picker, in the same
   // browser (shared localStorage) — not just re-created locally.
-  await page.goto("/projektbank/pb-1");
+  await page.goto("/projekt/pb-1");
   await page.getByRole("button", { name: "✎ Redigera" }).click();
   const chipOnPb = page.getByRole("button", { name: customLabel, exact: true });
   await expect(chipOnPb).toBeVisible();

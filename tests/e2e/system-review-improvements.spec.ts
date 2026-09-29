@@ -9,8 +9,8 @@ import { test, expect } from "@playwright/test";
 // to the call and the report type, instead of being generic.
 
 test("the active nav link is visually marked, and the homepage links to every section", async ({ page }) => {
-  await page.goto("/projektbank");
-  await expect(page.getByRole("navigation").first().getByRole("link", { name: "Projektbank" })).toHaveAttribute(
+  await page.goto("/projekt");
+  await expect(page.getByRole("navigation").first().getByRole("link", { name: "Projekt", exact: true })).toHaveAttribute(
     "aria-current",
     "page"
   );
@@ -32,11 +32,11 @@ test("Inställningar subpages share a tab strip, and resetting asks for confirma
   await expect(page.getByRole("heading", { name: "Organisationsstruktur" })).toBeVisible();
 });
 
-test("Datacenter surfaces reports needing attention with a link into the project", async ({ page }) => {
+test("Datacenter surfaces reports needing attention with a link into the grant", async ({ page }) => {
   await page.goto("/datacenter");
   await expect(page.getByRole("heading", { name: "Rapporteringar som kräver uppmärksamhet" })).toBeVisible();
-  await page.getByRole("link", { name: "Visa projekt →" }).first().click();
-  await expect(page).toHaveURL(/\/projekt\/ap-/);
+  await page.getByRole("link", { name: "Visa beviljat stöd →" }).first().click();
+  await expect(page).toHaveURL(/\/stod\/ap-/);
 });
 
 test("EU-databas call page groups documents by type and shows the call's reporting requirements", async ({ page }) => {
@@ -55,7 +55,7 @@ test("Referensprojekt can be searched and links back into starting an applicatio
 test("a reporting event shows the right document checklist for its type and links to the call's instructions", async ({
   page,
 }) => {
-  await page.goto("/projekt/ap-1");
+  await page.goto("/stod/ap-1");
   // ap-1's next actionable report is the final report — its checklist must
   // be the final-report documents (shown both in the call-level summary and
   // now in the event's own card), not the generic interim list.
@@ -67,7 +67,7 @@ test("a reporting event shows the right document checklist for its type and link
 test("leaving an unsaved ad-hoc draft asks for confirmation, and the AI-review button is a labelled coming feature", async ({
   page,
 }) => {
-  await page.goto("/demo");
+  await page.goto("/ansokan");
   await page.getByRole("button", { name: "Fyll i exempel" }).click();
   await page.getByRole("button", { name: "Hitta finansieringsmöjligheter" }).click();
   await page.getByRole("button", { name: "Starta ansökan" }).first().click();

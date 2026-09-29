@@ -1,33 +1,55 @@
 import { test, expect } from "@playwright/test";
 
-// Nav rename: /referensprojekt's tab now reads "Referensprojekt", not the
-// old "Beviljade projekt" (which also collided with /projekt's own page
-// title). And Översikt's "Projekt per status" tiles deep-link into Mina
-// projekt pre-filtered to that status, which Mina projekt must support.
+// The main menu has one tab per purpose, with EU-databas and Referensprojekt
+// grouped under Kunskapsbank. And Datacenter's portfolio "Projekt per
+// status" tiles deep-link into the Projekt list pre-filtered to that status.
 
-test("the referensprojekt nav tab reads Referensprojekt", async ({ page }) => {
-  await page.goto("/");
-  const navLink = page.getByRole("link", { name: "Referensprojekt", exact: true });
-  await expect(navLink).toBeVisible();
-  await expect(page.getByRole("link", { name: "Beviljade projekt" })).toHaveCount(0);
-  await navLink.click();
+test("the menu has one tab per purpose, and Kunskapsbank leads to both reference sections", async ({ page }) => {
+  await page.goto("/oversikt");
+  const nav = page.getByRole("navigation").first();
+  for (const label of ["Översikt", "Projekt", "Ansöka", "Rapportera", "Kunskapsbank", "Datacenter"]) {
+    await expect(nav.getByRole("link", { name: label, exact: true })).toBeVisible();
+  }
+  // The old tabs are gone.
+  for (const old of ["Mina projekt", "Bevakning", "Projektbank"]) {
+    await expect(nav.getByRole("link", { name: old, exact: true })).toHaveCount(0);
+  }
+
+  await nav.getByRole("link", { name: "Kunskapsbank", exact: true }).click();
+  await expect(page).toHaveURL(/\/eu-databas/);
+  await page.getByRole("navigation", { name: "Kunskapsbank" }).getByRole("link", { name: "Referensprojekt" }).click();
   await expect(page).toHaveURL(/\/referensprojekt/);
+  // Still highlighted as Kunskapsbank.
+  await expect(page.getByRole("navigation").first().getByRole("link", { name: "Kunskapsbank", exact: true })).toHaveAttribute(
+    "aria-current",
+    "page"
+  );
 });
 
-test("Översikt's status tiles link into Mina projekt pre-filtered to that status", async ({ page }) => {
-  await page.goto("/oversikt");
-  // "Idé" is one of the seeded statuses with at least one project bank entry.
-  const ideaTile = page.getByRole("link").filter({ hasText: "Idé" }).first();
-  await expect(ideaTile).toBeVisible();
-  await ideaTile.click();
+test("Datacenter's status tiles link into Projekt pre-filtered to that status", async ({ page }) => {
+  await page.goto("/datacenter");
+  const portfolio = page.locator("section", { has: page.getByRole("heading", { name: "Portfölj" }) });
+  // "Idé" is one of the seeded statuses with at least one project.
+  await portfolio.getByRole("link").filter({ hasText: "Idé" }).first().click();
 
   await expect(page).toHaveURL(/\/projekt\?status=idea/);
-  // The matching status tile on Mina projekt is pre-selected (dark/active).
-  const activeTile = page.getByRole("button").filter({ hasText: "Idé" }).first();
+  // The matching status tile on Projekt is pre-selected.
+  const activeTile = page.getByRole("button", { pressed: true }).filter({ hasText: "Idé" });
   await expect(activeTile).toHaveClass(/bg-navy-800/);
 
   // Clicking the same tile again clears the filter back to "all".
   await activeTile.click();
   const totalCount = await page.getByRole("button").filter({ hasText: "Alla" }).locator("p").first().textContent();
   expect(Number(totalCount)).toBeGreaterThan(0);
+});
+
+test("old addresses still work", async ({ page }) => {
+  await page.goto("/projektbank/pb-1");
+  await expect(page).toHaveURL(/\/projekt\/pb-1$/);
+  await page.goto("/projekt/ap-1");
+  await expect(page).toHaveURL(/\/stod\/ap-1$/);
+  await page.goto("/bevakning");
+  await expect(page).toHaveURL(/\/ansok$/);
+  await page.goto("/demo?call=life-2027-climate-schools");
+  await expect(page).toHaveURL(/\/ansokan\?call=life-2027-climate-schools$/);
 });

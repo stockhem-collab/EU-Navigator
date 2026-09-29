@@ -10,8 +10,8 @@ import { test, expect } from "@playwright/test";
 // live draft, and the header's call-to-action reflecting what it actually
 // opens.
 
-test("a document can be attached to, downloaded from, and removed from a Projektbank entry", async ({ page }) => {
-  await page.goto("/projektbank/pb-1");
+test("a document can be attached to, downloaded from, and removed from a project", async ({ page }) => {
+  await page.goto("/projekt/pb-1");
 
   await expect(page.getByText("Inga bilagor sparade än.")).toBeVisible();
 
@@ -33,8 +33,8 @@ test("a document can be attached to, downloaded from, and removed from a Projekt
   await expect(page.getByText("Inga bilagor sparade än.")).toBeVisible();
 });
 
-test("a task can be added and completed on a Projektbank entry, and shows up on Översikt", async ({ page }) => {
-  await page.goto("/projektbank/pb-1");
+test("a task can be added and completed on a project, and shows up on Översikt", async ({ page }) => {
+  await page.goto("/projekt/pb-1");
 
   await expect(page.getByText("Inga uppgifter tillagda än.")).toBeVisible();
 
@@ -44,18 +44,20 @@ test("a task can be added and completed on a Projektbank entry, and shows up on 
   await expect(page.getByText(taskText)).toBeVisible();
 
   await page.goto("/oversikt");
-  await expect(page.getByText("Aktuella uppgifter")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Uppgifter" })).toBeVisible();
   await expect(page.getByText(taskText)).toBeVisible();
 
-  await page.goto("/projektbank/pb-1");
-  await page.getByRole("checkbox").first().check();
+  await page.goto("/projekt/pb-1");
+  // The task's own checkbox — the sharing checkboxes further up the page
+  // can render first.
+  await page.locator("li", { hasText: taskText }).getByRole("checkbox").check();
 
   await page.goto("/oversikt");
   await expect(page.getByText(taskText)).toHaveCount(0);
 });
 
 test("an existing task's text and due date can be edited in place", async ({ page }) => {
-  await page.goto("/projektbank/pb-1");
+  await page.goto("/projekt/pb-1");
 
   const originalText = `Original text ${Date.now()}`;
   await page.getByPlaceholder(/Ny uppgift/).fill(originalText);
@@ -90,21 +92,19 @@ test("an existing task's text and due date can be edited in place", async ({ pag
   await page.getByRole("button", { name: "Ta bort" }).click();
 });
 
-test("every awarded project's outstanding reporting deadlines show on Bevakning by default, with no watch action needed", async ({ page }) => {
+test("every grant's outstanding reports show under Rapportera by default, with no watch action needed", async ({ page }) => {
   // ap-2 has both a revision-requested report (Q1 2027) and an upcoming one
-  // (Q3 2027), neither of which has ever been starred/watched — starring a
-  // reporting deadline adds no value here (unlike a funding call, where the
-  // catalogue is large enough that opting in is genuinely useful), so both
-  // must be visible purely because they're outstanding.
-  await page.goto("/bevakning");
-  await expect(page.getByText("Rapporteringsdeadlines (beviljade projekt)")).toBeVisible();
+  // (Q3 2027), neither of which has ever been starred/watched — reporting
+  // an organisation is accountable for is always shown, unlike calls where
+  // opting in to a watchlist is genuinely useful.
+  await page.goto("/rapportera");
   await expect(page.getByText("Delrapport Q1 2027")).toBeVisible();
   await expect(page.getByText("Delrapport Q3 2027")).toBeVisible();
 });
 
 test("a saved application version exports independently of later edits to the live draft", async ({ page }) => {
-  await page.goto("/projektbank/pb-4");
-  const startLink = page.locator('a[href*="/demo?project=pb-4"]').first();
+  await page.goto("/projekt/pb-4");
+  const startLink = page.locator('a[href*="/ansokan?project=pb-4"]').first();
   const href = await startLink.getAttribute("href");
   await page.goto(href!);
   await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
@@ -132,7 +132,7 @@ test("a saved application version exports independently of later edits to the li
 });
 
 test("a document can be attached to a specific reporting event", async ({ page }) => {
-  await page.goto("/projekt/ap-1");
+  await page.goto("/stod/ap-1");
 
   const reportCard = page.locator("div.rounded-xl", { hasText: "Lägesrapport 2027" });
   await reportCard.locator('input[type="file"]').setInputFiles({

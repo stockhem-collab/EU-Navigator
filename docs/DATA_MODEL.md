@@ -195,9 +195,13 @@ real entity.
 `project_owner`, `department` (plain string — see §7.3, deliberately **not**
 a full `Organisation` row), `sector`, `has_international_partner`, `status`:
 
-`IDEA → ASSESSING → FUNDING_SEARCH → APPLICATION → SUBMITTED → APPROVED →
-REJECTED → RUNNING → COMPLETED` (supersedes v1's narrower `ProjectStatus`
-enum with the real portfolio lifecycle a coordinator actually thinks in).
+`IDEA → ASSESSING → FUNDING_SEARCH → FUNDED → RUNNING → COMPLETED` — the
+project's own lifecycle. Where each of its applications stands (submitted,
+approved, rejected…) is `Application.status` (§2.6), not the project's: a
+project with several applications is "searching for funding" until one is
+awarded. (An earlier version of this model folded application stages into
+the project status; that stopped working once a project could have several
+applications.)
 
 `share_as_reference_on_award: boolean` (default `false`) — kept from the
 first draft and worth restating prominently: **this is the mechanism that
@@ -418,7 +422,7 @@ Erasmus+) that don't have one.
 | `FundingCall`, embedded `FundingDocument[]`, `EvaluationCriterion[]` | `Call` (absolute dates) + `EvaluationCriterion` table + `Document` rows (`entity_type = "call"`) |
 | — (didn't exist) | `CallRequirement`, `ApplicationRequirementDefinition`, `ReportingRequirementDefinition` — currently implicit in `eligibleApplicants_sv/en` free text and nowhere for reporting; this is genuinely new structure, not a rename. |
 | `ProjectBankEntry` | `CustomerProject` (`department_sv/en` free text → single `department` string once bilingual UI does its own lookup of the customer's own locale preference, not a stored translation) |
-| `ReferenceProject` + `AwardedProject` + `Commitment` | `FundedProject` (+ `ProjectPartner`, `FundedProjectResult`); `Commitment` splits into `ProjectIndicator` (ongoing tracking) + `Report` (the periodic submission) |
+| `ReferenceProject` + `Grant` (formerly `AwardedProject`; linked to its project and `applicationId`) + `Commitment` | `FundedProject` (+ `ProjectPartner`, `FundedProjectResult`); `Commitment` splits into `ProjectIndicator` (ongoing tracking) + `Report` (the periodic submission) |
 | Client-only `ApplicationRecord` (id, project, call, status, dates, awarded project — `lib/hooks/useApplications.ts`) + its draft and saved versions (`useApplication`) | `Application` + `ApplicationSection` |
 | `computeMatchesForEntry`/`computeBestMatchForEntry` (recomputed every render) | `Match`, persisted, invalidated via `inputs_hash` |
 

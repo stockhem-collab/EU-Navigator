@@ -1037,7 +1037,7 @@ export const translations: Record<Lang, TranslationTree> = {
         tagsNudgeButton: "Lägg till föreslagna",
         submit: "Hitta finansieringsmöjligheter",
         fillExample: "Fyll i exempel",
-        prefilledFromBank: "Förifyllt från projektbanken — granska och komplettera innan ni fortsätter.",
+        prefilledFromBank: "Förifyllt från projektet — granska och komplettera innan ni fortsätter.",
         sectors: {
           energy: "Energi",
           climate: "Klimat & miljö",
@@ -1155,7 +1155,7 @@ export const translations: Record<Lang, TranslationTree> = {
       title: "Projekt",
       subtitle:
         "Verksamhetens projekt – idéer, behov och planerade investeringar. Varje projekt samlar sina ansökningar, beviljade stöd och rapporter.",
-      columnApplications: "Ansökningar",
+      columnApplications: "Ansökningar och rapportering",
       applicationsSummary: (active, awarded) =>
         [active > 0 ? `${active} pågående` : "", awarded > 0 ? `${awarded} beviljad${awarded > 1 ? "e" : ""}` : ""]
           .filter(Boolean)
@@ -1192,7 +1192,7 @@ export const translations: Record<Lang, TranslationTree> = {
       assignedRolesTitle: "Tilldelade roller",
       noAssignedRoles: "Ingen har tilldelats en roll för detta projekt ännu.",
       shareTitle: "Dela projekt",
-      shareHint: "Gör projektet synligt i Mina projekt för fler än de som har en tilldelad roll — för hela organisationen eller en specifik förvaltning.",
+      shareHint: "Gör projektet synligt för fler än de som har en tilldelad roll — för hela organisationen eller en specifik förvaltning. Den som projektet delas med får en avisering.",
       tasksTitle: "Uppgifter",
       tasksHint: "Konkreta att-göra-punkter för just detta projekt, oavsett fas.",
       taskAddPlaceholder: "Ny uppgift, t.ex. \"Boka avstämning med ekonomi\"",
@@ -1352,7 +1352,7 @@ export const translations: Record<Lang, TranslationTree> = {
       documentsNeedingUpdateTitle: "Dokument som behöver uppdateras",
       incompleteProjectsTitle: "Projekt med ofullständig information",
       incompleteProjectsBody:
-        "Dessa projekt i projektbanken saknar information som krävs för en tillförlitlig EU-matchning.",
+        "Dessa projekt saknar information som krävs för en tillförlitlig EU-matchning.",
       viewCallLink: "Visa utlysning →",
       fieldsMissing: (n) => `${n} fält saknas`,
       openLink: "Öppna →",
@@ -1360,7 +1360,7 @@ export const translations: Record<Lang, TranslationTree> = {
       reportingAttentionTitle: "Rapporteringar som kräver uppmärksamhet",
       reportingAttentionBody: "Kommande rapporter och rapporter som skickats tillbaka för komplettering, i ett och samma flöde.",
       noReportingAttention: "Inga rapporter kräver uppmärksamhet just nu.",
-      viewProjectLink: "Visa projekt →",
+      viewProjectLink: "Visa beviljat stöd →",
     },
     callImport: {
       title: "Importera ny utlysning",
@@ -1509,7 +1509,7 @@ export const translations: Record<Lang, TranslationTree> = {
       reportFinancialLine: (amount) => `Förbrukat denna period: ${amount}`,
     },
     bevakning: {
-      title: "Bevakning",
+      title: "Hitta finansiering",
       subtitle: "Öppna och kommande utlysningar, och vilka av organisationens projekt som passar bäst.",
       disclaimer:
         "I en skarp version skulle detta skickas som ett återkommande veckobrev till EU-samordnaren. Här visas samma information direkt i gränssnittet.",
@@ -2021,7 +2021,7 @@ export const translations: Record<Lang, TranslationTree> = {
         tagsNudgeButton: "Add suggested",
         submit: "Find funding opportunities",
         fillExample: "Fill example",
-        prefilledFromBank: "Pre-filled from the project bank — review and complete before continuing.",
+        prefilledFromBank: "Pre-filled from the project — review and complete before continuing.",
         sectors: {
           energy: "Energy",
           climate: "Climate & environment",
@@ -2137,7 +2137,7 @@ export const translations: Record<Lang, TranslationTree> = {
       title: "Projects",
       subtitle:
         "The organisation's projects — ideas, needs and planned investments. Each project brings together its applications, grants and reports.",
-      columnApplications: "Applications",
+      columnApplications: "Applications and reporting",
       applicationsSummary: (active, awarded) =>
         [active > 0 ? `${active} in progress` : "", awarded > 0 ? `${awarded} awarded` : ""].filter(Boolean).join(" · "),
       searchPlaceholder: "Search projects…",
@@ -2172,7 +2172,7 @@ export const translations: Record<Lang, TranslationTree> = {
       assignedRolesTitle: "Assigned roles",
       noAssignedRoles: "No one has been assigned a role on this project yet.",
       shareTitle: "Share project",
-      shareHint: "Makes the project visible in My projects to more than just its assigned roles — for the whole organisation or a specific department.",
+      shareHint: "Makes the project visible to more than just its assigned roles — for the whole organisation or a specific department. Those it's shared with get a notification.",
       tasksTitle: "Tasks",
       tasksHint: "Concrete to-dos for this specific project, whatever phase it's in.",
       taskAddPlaceholder: "New task, e.g. \"Book a check-in with finance\"",
@@ -2339,7 +2339,7 @@ export const translations: Record<Lang, TranslationTree> = {
       reportingAttentionTitle: "Reports needing attention",
       reportingAttentionBody: "Upcoming reports and reports sent back for revision, in one place.",
       noReportingAttention: "No reports need attention right now.",
-      viewProjectLink: "View project →",
+      viewProjectLink: "View grant →",
     },
     callImport: {
       title: "Import a new call",
@@ -2488,7 +2488,7 @@ export const translations: Record<Lang, TranslationTree> = {
       reportFinancialLine: (amount) => `Spent this period: ${amount}`,
     },
     bevakning: {
-      title: "Monitoring",
+      title: "Find funding",
       subtitle: "Open and upcoming calls, and which of the organisation's projects fit them best.",
       disclaimer:
         "In a production version this would be sent as a recurring weekly digest to the EU coordinator. Here it's shown directly in the interface instead.",
