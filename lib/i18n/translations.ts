@@ -113,6 +113,8 @@ export interface TranslationTree {
       matchLabel: string;
       deadlineLabel: string;
       estFundingLabel: string;
+      viewCallDetails: string;
+      viewCallDetailsHint: string;
       recommendationProceed: string;
       recommendationConsider: string;
       recommendationLow: string;
@@ -893,6 +895,8 @@ export const translations: Record<Lang, TranslationTree> = {
         matchLabel: "matchning",
         deadlineLabel: "Nästa deadline",
         estFundingLabel: "Uppskattad EU-finansiering",
+        viewCallDetails: "Läs mer om utlysningen",
+        viewCallDetailsHint: "Öppnas i en ny flik",
         recommendationProceed: "GÅ VIDARE",
         recommendationConsider: "ÖVERVÄG",
         recommendationLow: "LÅG PRIORITET",
@@ -1701,6 +1705,8 @@ export const translations: Record<Lang, TranslationTree> = {
         matchLabel: "match",
         deadlineLabel: "Next deadline",
         estFundingLabel: "Estimated EU funding",
+        viewCallDetails: "Read more about the call",
+        viewCallDetailsHint: "Opens in a new tab",
         recommendationProceed: "PROCEED",
         recommendationConsider: "CONSIDER",
         recommendationLow: "LOW PRIORITY",

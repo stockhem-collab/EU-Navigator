@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { MatchResult } from "@/lib/types";
 import { fmtSEK } from "@/lib/format";
@@ -82,6 +83,11 @@ function MatchCard({ match, onSelect }: { match: MatchResult; onSelect: (match: 
   const { t, lang } = useLanguage();
   const results = t.demo.results;
 
+  // Opens the call's own EU-databas page in a new tab: the match results
+  // live only in the demo page's React state, so navigating away in the same
+  // tab would throw away the user's just-computed matches.
+  const callHref = `/eu-databas/${match.call.programId}/${match.call.id}`;
+
   const recommendationLabel = (rec: MatchResult["recommendation"]) => {
     if (rec === "proceed") return results.recommendationProceed;
     if (rec === "consider") return results.recommendationConsider;
@@ -103,7 +109,26 @@ function MatchCard({ match, onSelect }: { match: MatchResult; onSelect: (match: 
           </span>
           <div>
             <p className="text-xs font-semibold uppercase text-navy-400">{match.program.shortName}</p>
-            <h2 className="font-bold text-navy-900">{lang === "sv" ? match.call.title_sv : match.call.title_en}</h2>
+            <h2 className="font-bold text-navy-900">
+              <Link
+                href={callHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={results.viewCallDetailsHint}
+                className="hover:underline"
+              >
+                {lang === "sv" ? match.call.title_sv : match.call.title_en}
+              </Link>
+            </h2>
+            <Link
+              href={callHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={results.viewCallDetailsHint}
+              className="mt-1 inline-block text-sm font-semibold text-navy-600 hover:text-navy-900"
+            >
+              {results.viewCallDetails} ↗<span className="sr-only"> ({results.viewCallDetailsHint})</span>
+            </Link>
           </div>
         </div>
         <div className="text-right">
