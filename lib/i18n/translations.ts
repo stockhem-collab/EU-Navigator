@@ -674,17 +674,6 @@ export interface TranslationTree {
     back: string;
     sectorsTitle: string;
     programsTitle: string;
-    notifyTitle: string;
-    notifyNewCallOrg: string;
-    notifyCallProject: string;
-    notifyHighRelevance: string;
-    notifyDeadline: string;
-    notifyComment: string;
-    notifyReportingDeadline: string;
-    digestTitle: string;
-    digestInstant: string;
-    digestDaily: string;
-    digestWeekly: string;
     savedIndicator: string;
     resetAll: string;
     confirmResetAll: string;
@@ -818,6 +807,31 @@ export interface TranslationTree {
     grantsHint: string;
     open: string;
     overdueLabel: (n: number) => string;
+  };
+  notifications: {
+    title: string;
+    bellLabel: (unread: number) => string;
+    markAllRead: string;
+    none: string;
+    settingsLink: string;
+    unreadMarker: (n: number) => string;
+    categoryLabels: Record<"deadlines" | "calls" | "applications" | "reporting" | "projects" | "system", string>;
+    categoryHints: Record<"deadlines" | "calls" | "applications" | "reporting" | "projects" | "system", string>;
+    settingsTitle: string;
+    settingsIntro: string;
+    columnCategory: string;
+    columnInApp: string;
+    columnEmail: string;
+    emailModes: Record<"off" | "instant" | "daily" | "weekly", string>;
+    emailNote: string;
+    scopeTitle: string;
+    scopeMine: string;
+    scopeAll: string;
+    leadTitle: string;
+    leadOption: (n: number) => string;
+    resetDefaults: string;
+    watchTitle: string;
+    watchIntro: string;
   };
 }
 
@@ -1555,8 +1569,8 @@ export const translations: Record<Lang, TranslationTree> = {
       cardOrgDesc: "Organisation, enheter och EU-information.",
       cardUsersTitle: "Användare & behörigheter",
       cardUsersDesc: (count, admins) => `${count} användare · ${admins} administratörer`,
-      cardWatchTitle: "Bevakningar & notifieringar",
-      cardWatchDesc: "Utlysningar, matchningar och deadlines.",
+      cardWatchTitle: "Aviseringar & bevakningar",
+      cardWatchDesc: "Vad du får aviseringar om, var och när – och vilka utlysningar du bevakar.",
       cardFundingProfileTitle: "Finansieringsprofil",
       cardFundingProfileDesc: "Vad organisationen söker finansiering för — används av matchningsmotorn.",
       securityTitle: "🔐 Säkerhet",
@@ -1621,27 +1635,16 @@ export const translations: Record<Lang, TranslationTree> = {
       permManageUsers: "Hantera användare",
     },
     watchSettings: {
-      title: "Bevakningar & notifieringar",
-      subtitle: "Vad vill du bevaka, och när vill du bli meddelad?",
+      title: "Aviseringar & bevakningar",
+      subtitle: "Vad du vill få aviseringar om, och vilka utlysningar, program och ämnesområden du bevakar.",
       back: "← Tillbaka till Inställningar",
       sectorsTitle: "Ämnesområden",
       programsTitle: "EU-program",
-      notifyTitle: "Meddela mig när...",
-      notifyNewCallOrg: "En ny utlysning matchar vår organisation",
-      notifyCallProject: "En utlysning matchar något av mina projekt",
-      notifyHighRelevance: "En projektmatchning får hög relevans",
-      notifyDeadline: "Deadline närmar sig",
-      notifyComment: "Någon kommenterar min ansökan",
-      notifyReportingDeadline: "En rapporteringsdeadline närmar sig",
-      digestTitle: "Sammanställning",
-      digestInstant: "Direkt",
-      digestDaily: "Dagligen",
-      digestWeekly: "Veckovis",
       savedIndicator: "Sparat i din webbläsare",
-      resetAll: "Återställ till exempeldata",
-      confirmResetAll: "Återställa alla bevakningar och notifieringsinställningar? Dina egna val går förlorade.",
+      resetAll: "Återställ bevakningar",
+      confirmResetAll: "Återställa alla bevakningar till exempeldata? Dina egna val går förlorade.",
       watchedCallsTitle: "Bevakade utlysningar",
-      watchedCallsHint: "Utlysningar du flaggat direkt från Bevakning eller EU-databasen.",
+      watchedCallsHint: "Utlysningar du flaggat under Ansöka → Hitta finansiering eller i EU-databasen.",
       noWatchedCalls: "Inga enskilda utlysningar bevakas ännu.",
       removeWatchedCall: "Sluta bevaka",
     },
@@ -1779,6 +1782,45 @@ export const translations: Record<Lang, TranslationTree> = {
       grantsHint: "Varje beviljat stöd med sin rapporteringsstatus.",
       open: "Öppna",
       overdueLabel: (n) => (n === 0 ? "Försenad" : `Försenad ${n} ${n === 1 ? "månad" : "månader"}`),
+    },
+    notifications: {
+      title: "Aviseringar",
+      bellLabel: (n) => (n === 0 ? "Aviseringar" : `Aviseringar, ${n} olästa`),
+      markAllRead: "Markera alla som lästa",
+      none: "Inga aviseringar just nu.",
+      settingsLink: "Inställningar för aviseringar",
+      unreadMarker: (n) => `${n} ${n === 1 ? "oläst avisering" : "olästa aviseringar"}`,
+      categoryLabels: {
+        deadlines: "Deadlines och påminnelser",
+        calls: "Utlysningar",
+        applications: "Ansökningar",
+        reporting: "Rapportering",
+        projects: "Projekt",
+        system: "System",
+      },
+      categoryHints: {
+        deadlines: "Ansökningar och rapporter som ska lämnas, bevakade utlysningar som stänger, uppgifter som förfaller.",
+        calls: "Nya utlysningar som passar ett projekt, och bevakade utlysningar som ändrats.",
+        applications: "Ändrad status på en ansökan, och beviljade ansökningar vars stöd ska registreras.",
+        reporting: "Rapporter som returnerats eller är försenade, och nya beviljade stöd.",
+        projects: "Projekt som delas med din enhet.",
+        system: "Importerade utlysningar och dokument i EU-databasen som behöver uppdateras.",
+      },
+      settingsTitle: "Aviseringar",
+      settingsIntro: "Välj vad du vill få aviseringar om, var, och hur långt i förväg. Aviseringarna samlas under klockan uppe till höger.",
+      columnCategory: "Typ av händelse",
+      columnInApp: "I systemet",
+      columnEmail: "E-post",
+      emailModes: { off: "Av", instant: "Direkt", daily: "Daglig sammanfattning", weekly: "Veckosammanfattning" },
+      emailNote: "E-postvalen sparas, men i den här demoversionen skickas inga e-postmeddelanden – det kräver en koppling till en e-posttjänst.",
+      scopeTitle: "Vilka projekt",
+      scopeMine: "Bara projekt där jag har en roll eller som delats med min enhet",
+      scopeAll: "Hela organisationens projekt",
+      leadTitle: "Påminn om deadlines",
+      leadOption: (n) => `${n} ${n === 1 ? "månad" : "månader"} i förväg`,
+      resetDefaults: "Återställ standardval",
+      watchTitle: "Bevakningar",
+      watchIntro: "Bevakade utlysningar och program ger påminnelser om deadlines och ändringar. De visas också under Ansöka → Hitta finansiering.",
     },
   },
   en: {
@@ -2508,8 +2550,8 @@ export const translations: Record<Lang, TranslationTree> = {
       cardOrgDesc: "Organisation, units and EU information.",
       cardUsersTitle: "Users & permissions",
       cardUsersDesc: (count, admins) => `${count} users · ${admins} administrators`,
-      cardWatchTitle: "Watchlists & notifications",
-      cardWatchDesc: "Calls, matches and deadlines.",
+      cardWatchTitle: "Notifications & watchlists",
+      cardWatchDesc: "What you're notified about, where and when — and which calls you watch.",
       cardFundingProfileTitle: "Funding profile",
       cardFundingProfileDesc: "What the organisation seeks funding for — used by the matching engine.",
       securityTitle: "🔐 Security",
@@ -2574,27 +2616,16 @@ export const translations: Record<Lang, TranslationTree> = {
       permManageUsers: "Manage users",
     },
     watchSettings: {
-      title: "Watchlists & notifications",
-      subtitle: "What do you want to watch, and when should we notify you?",
+      title: "Notifications & watchlists",
+      subtitle: "What you want to be notified about, and which calls, programmes and subject areas you watch.",
       back: "← Back to Settings",
       sectorsTitle: "Subject areas",
       programsTitle: "EU programmes",
-      notifyTitle: "Notify me when...",
-      notifyNewCallOrg: "A new call matches our organisation",
-      notifyCallProject: "A call matches one of my projects",
-      notifyHighRelevance: "A project match reaches high relevance",
-      notifyDeadline: "A deadline is approaching",
-      notifyComment: "Someone comments on my application",
-      notifyReportingDeadline: "A reporting deadline is approaching",
-      digestTitle: "Digest",
-      digestInstant: "Instant",
-      digestDaily: "Daily",
-      digestWeekly: "Weekly",
       savedIndicator: "Saved in your browser",
-      resetAll: "Reset to the example data",
-      confirmResetAll: "Reset all watchlists and notification settings? Your own choices will be lost.",
+      resetAll: "Reset watchlists",
+      confirmResetAll: "Reset all watchlists to the example data? Your own choices will be lost.",
       watchedCallsTitle: "Watched calls",
-      watchedCallsHint: "Calls you've flagged directly from Watchlist or the EU database.",
+      watchedCallsHint: "Calls you've flagged under Apply → Find funding or in the EU database.",
       noWatchedCalls: "No individual calls watched yet.",
       removeWatchedCall: "Stop watching",
     },
@@ -2732,6 +2763,45 @@ export const translations: Record<Lang, TranslationTree> = {
       grantsHint: "Each grant with its reporting status.",
       open: "Open",
       overdueLabel: (n) => (n === 0 ? "Overdue" : `Overdue by ${n} ${n === 1 ? "month" : "months"}`),
+    },
+    notifications: {
+      title: "Notifications",
+      bellLabel: (n) => (n === 0 ? "Notifications" : `Notifications, ${n} unread`),
+      markAllRead: "Mark all as read",
+      none: "No notifications right now.",
+      settingsLink: "Notification settings",
+      unreadMarker: (n) => `${n} unread ${n === 1 ? "notification" : "notifications"}`,
+      categoryLabels: {
+        deadlines: "Deadlines and reminders",
+        calls: "Calls",
+        applications: "Applications",
+        reporting: "Reporting",
+        projects: "Projects",
+        system: "System",
+      },
+      categoryHints: {
+        deadlines: "Applications and reports coming due, watched calls closing, tasks falling due.",
+        calls: "New calls that fit a project, and watched calls that changed.",
+        applications: "An application's status changing, and awarded applications whose grant needs registering.",
+        reporting: "Reports returned or overdue, and new grants.",
+        projects: "Projects shared with your unit.",
+        system: "Imported calls and EU database documents that need updating.",
+      },
+      settingsTitle: "Notifications",
+      settingsIntro: "Choose what to be notified about, where, and how far ahead. Notifications collect under the bell at the top right.",
+      columnCategory: "Kind of event",
+      columnInApp: "In the system",
+      columnEmail: "E-mail",
+      emailModes: { off: "Off", instant: "Immediately", daily: "Daily digest", weekly: "Weekly digest" },
+      emailNote: "E-mail choices are saved, but this demo sends no e-mail — that needs a connection to an e-mail service.",
+      scopeTitle: "Which projects",
+      scopeMine: "Only projects where I have a role or that are shared with my unit",
+      scopeAll: "All of the organisation's projects",
+      leadTitle: "Remind me of deadlines",
+      leadOption: (n) => `${n} ${n === 1 ? "month" : "months"} ahead`,
+      resetDefaults: "Reset to defaults",
+      watchTitle: "Watchlists",
+      watchIntro: "Watched calls and programmes produce deadline and change reminders. They also show under Apply → Find funding.",
     },
   },
 };

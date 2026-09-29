@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Grant, ReportingEvent, ReportingEventStatus } from "@/lib/types";
+import { notifyDataChanged } from "@/lib/hooks/useActivityLog";
 
 // Marking a reporting event as submitted from the UI — same no-backend,
 // localStorage-overlay pattern as useProjectBank's edits: the seed data
@@ -65,6 +66,7 @@ function write(state: SubmissionsState) {
   } catch {
     // localStorage unavailable — the submission just won't persist.
   }
+  notifyDataChanged();
 }
 
 function readExtra(): ExtraEventsState {
@@ -84,6 +86,7 @@ function writeExtra(state: ExtraEventsState) {
   } catch {
     // localStorage unavailable — the added event just won't persist.
   }
+  notifyDataChanged();
 }
 
 function readStatusOverrides(): StatusOverridesState {
@@ -108,6 +111,7 @@ function writeStatusOverrides(state: StatusOverridesState) {
   } catch {
     // localStorage unavailable — the status change just won't persist.
   }
+  notifyDataChanged();
 }
 
 export function useReportingSubmissions() {

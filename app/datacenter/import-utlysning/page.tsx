@@ -8,6 +8,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { fundingCalls, applicantTypeLabel, ALL_APPLICANT_TYPES, monthsUntilDate } from "@/lib/data/fundingCalls";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
+import { logActivity } from "@/lib/hooks/useActivityLog";
 import { extractCallDraft, slugifyCallId, ExtractionConfidence } from "@/lib/matching/callExtraction";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
 import { useTags } from "@/lib/hooks/useTags";
@@ -280,6 +281,7 @@ export default function ImportUtlysningPage() {
     };
 
     addImportedCall(call);
+    logActivity({ kind: "call-imported", callId: call.id, programId: call.programId });
     setForm({ ...EMPTY_FORM, deadlineDate: isoDateMonthsFromNow(6) });
     setConfidence({});
     setRawText("");

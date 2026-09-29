@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ProjectTask } from "@/lib/types";
+import { notifyDataChanged } from "@/lib/hooks/useActivityLog";
 
 // Ad-hoc, per-project to-dos — "what's actually left to do on this, right
 // now". Keyed by ProjectBankEntry.id, same localStorage-overlay convention
@@ -27,6 +28,7 @@ function write(state: TasksState) {
   } catch {
     // localStorage unavailable — tasks stay in-memory for this session only.
   }
+  notifyDataChanged();
 }
 
 export function useProjectTasks() {

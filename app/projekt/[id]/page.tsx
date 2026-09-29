@@ -14,6 +14,7 @@ import { useProjectTasks } from "@/lib/hooks/useProjectTasks";
 import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
 import { useGrants } from "@/lib/hooks/useGrants";
 import { syncProjectStatus, useApplications } from "@/lib/hooks/useApplications";
+import { logActivity } from "@/lib/hooks/useActivityLog";
 import { isActiveApplication } from "@/lib/matching/applications";
 import { scoreMatch } from "@/lib/matching/scoreMatch";
 import { findProgram } from "@/lib/data/fundingPrograms";
@@ -145,6 +146,7 @@ export default function ProjectBankDetailPage() {
     const awarded = projectToGrant(entry, match, record.id);
     addGrant(awarded);
     updateApplication(record.id, { awardedProjectId: awarded.id });
+    logActivity({ kind: "grant-registered", grantId: awarded.id, projectId: entry.id, callId: call.id });
     updateEntry(entry.id, { status: "running" });
     router.push(`/stod/${awarded.id}`);
   };
@@ -169,14 +171,18 @@ export default function ProjectBankDetailPage() {
     if (!window.confirm(pb.confirmMarkAsAwarded)) return;
     const awarded = projectToGrant(entry, bestMatch);
     addGrant(awarded);
+    logActivity({ kind: "grant-registered", grantId: awarded.id, projectId: entry.id, callId: bestMatch.call.id });
     updateEntry(entry.id, { status: "running" });
     router.push(`/stod/${awarded.id}`);
   };
 
   const toggleShareUnit = (unitId: string) => {
     const current = entry.sharedWithUnitIds ?? [];
-    const next = current.includes(unitId) ? current.filter((id) => id !== unitId) : [...current, unitId];
+    const sharing = !current.includes(unitId);
+    const next = sharing ? [...current, unitId] : current.filter((id) => id !== unitId);
     updateEntry(entry.id, { sharedWithUnitIds: next });
+    const unit = orgUnits.find((u) => u.id === unitId);
+    if (sharing && unit) logActivity({ kind: "project-shared", projectId: entry.id, unitName: unit.name });
   };
 
   const startEditing = () =>

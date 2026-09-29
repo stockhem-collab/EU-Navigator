@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Grant } from "@/lib/types";
 import { seedGrants } from "@/lib/data/grants";
+import { notifyDataChanged } from "@/lib/hooks/useActivityLog";
 
-// Awarded projects created from the Projektbank once a project actually
-// wins funding (see ApplicationWorkspace's "Markera som beviljad") — same
-// seed-plus-localStorage-overlay pattern as useProjectBank's imported
-// entries, since there's no backend to persist a brand-new Grant
-// to.
+// Grants ("beviljat stöd") registered from an awarded application on the
+// project page — same seed-plus-localStorage-overlay pattern as
+// useProjectBank's imported entries, since there's no backend to persist a
+// new Grant to. The storage key predates the rename and is kept so existing
+// data still loads.
 const STORAGE_KEY = "eu-navigator-added-awarded-projects";
 
 function readAdded(): Grant[] {
@@ -29,6 +30,7 @@ function writeAdded(list: Grant[]) {
     // localStorage unavailable — the newly-awarded project stays in-memory
     // for this session only.
   }
+  notifyDataChanged();
 }
 
 export function useGrants() {
