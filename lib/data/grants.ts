@@ -1,13 +1,13 @@
-import { AwardedProject, ReportingEvent } from "@/lib/types";
+import { Grant, ReportingEvent } from "@/lib/types";
 
-// Awarded projects — the reporting/compliance loop after the money is
-// granted. Each project's `reportingEvents` is only as long as its actual
+// Grants ("beviljat stöd") — the funding decision an awarded application
+// leads to, and the reporting/compliance loop that follows. Each project's `reportingEvents` is only as long as its actual
 // history so far (past interim reports plus the next one known about) —
 // not a pre-filled slot for every report the call's ReportingRequirement
 // will eventually require, the same way a real grantee doesn't schedule a
 // report before the funder has opened that reporting window. Illustrative
 // demo data.
-export const awardedProjects: AwardedProject[] = [
+export const seedGrants: Grant[] = [
   {
     id: "ap-1",
     title_sv: "LIFE – Green Schools",
@@ -159,8 +159,8 @@ export const awardedProjects: AwardedProject[] = [
   },
 ];
 
-export function findAwardedProject(id: string): AwardedProject | undefined {
-  return awardedProjects.find((a) => a.id === id);
+export function findGrant(id: string): Grant | undefined {
+  return seedGrants.find((a) => a.id === id);
 }
 
 /** The next reporting event still awaiting submission, in chronological
@@ -168,7 +168,7 @@ export function findAwardedProject(id: string): AwardedProject | undefined {
  * known event has been submitted (nothing scheduled yet). Does not surface
  * a "revision-requested" event — see nextActionableReport for the version
  * that also does. */
-export function nextUpcomingReport(project: AwardedProject): ReportingEvent | undefined {
+export function nextUpcomingReport(project: Grant): ReportingEvent | undefined {
   return project.reportingEvents.find((r) => r.status === "upcoming");
 }
 
@@ -177,7 +177,7 @@ export function nextUpcomingReport(project: AwardedProject): ReportingEvent | un
  * over the next scheduled-but-not-yet-due report. This is what the
  * submission form should open on, so a "revision-requested" report is
  * actually fixable rather than just visibly stuck. */
-export function nextActionableReport(project: AwardedProject): ReportingEvent | undefined {
+export function nextActionableReport(project: Grant): ReportingEvent | undefined {
   return project.reportingEvents.find((r) => r.status === "revision-requested") ?? nextUpcomingReport(project);
 }
 
@@ -185,7 +185,7 @@ export function nextActionableReport(project: AwardedProject): ReportingEvent | 
  * indicator_sv) — the last reporting event that actually carries outcomes
  * for it, regardless of whether that event has since been approved.
  * Undefined if nothing has been reported for this indicator yet. */
-export function latestOutcomeFor(project: AwardedProject, indicatorSv: string): number | undefined {
+export function latestOutcomeFor(project: Grant, indicatorSv: string): number | undefined {
   for (let i = project.reportingEvents.length - 1; i >= 0; i--) {
     const outcome = project.reportingEvents[i].outcomes.find((o) => o.indicator_sv === indicatorSv);
     if (outcome) return outcome.value;
@@ -198,7 +198,7 @@ export function latestOutcomeFor(project: AwardedProject, indicatorSv: string): 
  * it came from — the series a trend chart needs, rather than just the
  * latest point latestOutcomeFor gives. */
 export function outcomeHistoryFor(
-  project: AwardedProject,
+  project: Grant,
   indicatorSv: string
 ): { periodLabel_sv: string; periodLabel_en: string; value: number }[] {
   return project.reportingEvents
@@ -215,7 +215,7 @@ export function outcomeHistoryFor(
  * after it. A final report still sitting at "revision-requested" does NOT
  * count as complete: there's a correction outstanding, so the project
  * isn't actually done winding down into closure/archiving yet. */
-export function isReportingComplete(project: AwardedProject): boolean {
+export function isReportingComplete(project: Grant): boolean {
   const final = project.reportingEvents.find((e) => e.type === "final");
   return final !== undefined && (final.status === "submitted" || final.status === "approved");
 }
@@ -224,7 +224,7 @@ export function isReportingComplete(project: AwardedProject): boolean {
  * reporting history, in chronological order — the series a spend view
  * needs, mirroring outcomeHistoryFor's shape for indicators. */
 export function financialHistory(
-  project: AwardedProject
+  project: Grant
 ): { periodLabel_sv: string; periodLabel_en: string; spentThisPeriodSEK: number }[] {
   return project.reportingEvents
     .filter((e) => e.financials !== undefined)
@@ -240,7 +240,7 @@ export function financialHistory(
  * project's chronological reporting history. Computed from the per-period
  * figures rather than stored as its own running total, so it can't drift
  * from them. */
-export function cumulativeSpentThrough(project: AwardedProject, eventId: string): number {
+export function cumulativeSpentThrough(project: Grant, eventId: string): number {
   let total = 0;
   for (const event of project.reportingEvents) {
     if (event.financials) total += event.financials.spentThisPeriodSEK;
@@ -258,11 +258,23 @@ export type ReportingHealth = "good" | "attention" | "blocked";
  * "good" otherwise. Same 90%-of-promised threshold already used for the
  * per-indicator deviation flag, just rolled up to one project-level
  * verdict for list views. */
-export function reportingHealth(project: AwardedProject): ReportingHealth {
+export function reportingHealth(project: Grant): ReportingHealth {
   if (project.reportingEvents.some((e) => e.status === "revision-requested")) return "blocked";
   const anyDeviates = project.commitments.some((c) => {
     const latest = latestOutcomeFor(project, c.indicator_sv);
     return latest !== undefined && latest < c.promisedValue * 0.9;
   });
   return anyDeviates ? "attention" : "good";
+}
+
+/** Where a report stands from the reporter's point of view: "attention"
+ * (returned for revision, or past its deadline without being submitted),
+ * "upcoming" (still to do, not yet due), or "done" (submitted/approved).
+ * Shared by Rapportera, Översikt and the notifications. */
+export type ReportState = "attention" | "upcoming" | "done";
+
+export function reportState(event: ReportingEvent): ReportState {
+  if (event.status === "revision-requested") return "attention";
+  if (event.status === "upcoming") return event.deadlineMonthsFromNow < 0 ? "attention" : "upcoming";
+  return "done";
 }

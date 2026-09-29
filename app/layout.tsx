@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
+import NotificationsProvider from "@/components/NotificationsProvider";
 
 export const metadata: Metadata = {
   title: "EU Navigator — Från kommunens behov till finansierat projekt",
@@ -12,7 +13,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="sv">
       <body className="min-h-screen font-sans antialiased">
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          <NotificationsProvider>{children}</NotificationsProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

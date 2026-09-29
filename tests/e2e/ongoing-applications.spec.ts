@@ -10,8 +10,8 @@ test("appears once a draft has edits and resumes straight into the workspace", a
   await expect(page.getByText(/Inga pågående ansökningar|No ongoing applications/i)).toBeVisible();
 
   // Start and edit an application for a saved Projektbank entry.
-  await page.goto("/projektbank/pb-4");
-  const startLink = page.locator('a[href*="/demo?project=pb-4"]').first();
+  await page.goto("/projekt/pb-4");
+  const startLink = page.locator('a[href*="/ansokan?project=pb-4"]').first();
   const href = await startLink.getAttribute("href");
   await page.goto(href!);
   // Typing before the stored draft has loaded can be overwritten by it.

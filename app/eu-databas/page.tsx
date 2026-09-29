@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import KnowledgeTabs from "@/components/KnowledgeTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fundingPrograms } from "@/lib/data/fundingPrograms";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
@@ -25,6 +26,7 @@ export default function EuDatabasePage() {
     <>
       <Header />
       <main className="section">
+        <KnowledgeTabs />
         <h1 className="text-2xl font-bold text-navy-900">{db.title}</h1>
         <p className="mt-2 text-sm text-navy-600">{db.subtitle}</p>
 

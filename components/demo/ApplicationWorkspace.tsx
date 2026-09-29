@@ -99,7 +99,7 @@ export default function ApplicationWorkspace({
   const handleNewApplication = () => {
     if (!customerProjectId || !window.confirm(at.confirmNewApplication)) return;
     const created = createApplication(customerProjectId, match.call.id);
-    router.replace(`/demo?project=${customerProjectId}&call=${match.call.id}&application=${encodeURIComponent(created.id)}`, {
+    router.replace(`/ansokan?project=${customerProjectId}&call=${match.call.id}&application=${encodeURIComponent(created.id)}`, {
       scroll: false,
     });
   };
@@ -220,7 +220,7 @@ export default function ApplicationWorkspace({
           >
             + {at.newApplicationButton}
           </button>
-          <Link href={`/projektbank/${customerProjectId}`} className="text-sm font-semibold text-navy-600 hover:text-navy-900">
+          <Link href={`/projekt/${customerProjectId}`} className="text-sm font-semibold text-navy-600 hover:text-navy-900">
             {at.allApplicationsLink} →
           </Link>
           {otherApplicationsToCall > 0 && (

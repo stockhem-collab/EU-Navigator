@@ -8,11 +8,46 @@ projects. The core idea: the AI never reasons about "EU grants" in
 general — it always works in the context of one specific call and its
 documentation.
 
-## The six modules
+## How the app is organised
 
-- **Projektbank** (`/projektbank`) — the municipality's own project ideas,
-  needs and planned investments, each with an AI-readiness score and a
-  list of what's missing for optimal matching.
+One main tab per purpose, following the chain *project → application →
+grant → reports*:
+
+- **Översikt** (`/oversikt`) — what needs doing now: applications in
+  progress, reports needing action or coming up, open tasks and unread
+  notifications, across all projects.
+- **Projekt** (`/projekt`, `/projekt/[id]`) — the organisation's projects
+  (ideas, needs, planned investments), each with a lifecycle status (idea
+  → being scoped → searching for funding → funded → running → completed).
+  The project page is the hub: the project's path at a glance, its
+  applications, its grants and their reporting, and matching calls.
+- **Ansöka** (`/ansok`) — every application across projects by where it
+  stands (draft, with the funder, decided), plus *Hitta finansiering*:
+  calls matched against the portfolio and the calls the user watches. The
+  application workspace itself is `/ansokan`.
+- **Rapportera** (`/rapportera`) — every report on every grant: needing
+  action (returned or overdue), upcoming, done. A grant
+  ("beviljat stöd", `/stod/[id]`) is the funding decision on an awarded
+  application, with its own reporting; a project can have several.
+- **Kunskapsbank** — EU-databas and Referensprojekt (below).
+- **Datacenter** (`/datacenter`) — the portfolio view for leadership
+  (economics, projects and applications per status, total awarded) and
+  the admin/knowledge-hub view of the data the AI works from.
+- **Aviseringar** — the bell at the top right. Derived from the data
+  (deadlines within the reminder window, reports returned or overdue,
+  calls that fit a project, awarded applications whose grant isn't
+  registered yet, tasks due) and from what people do (status changes,
+  grants registered, projects shared, calls imported). Per-user settings
+  under Inställningar → Aviseringar & bevakningar: per category in the
+  app and by e-mail (off / immediately / daily / weekly), only my projects
+  or all, and how far ahead to remind. E-mail choices are stored but not
+  sent in the demo. See `lib/notifications.ts`.
+
+Old addresses (`/demo`, `/projektbank`, `/bevakning`, grants under
+`/projekt/ap-…`) redirect to the new ones (`next.config.mjs`).
+
+## The modules behind it
+
 - **EU-databas** (`/eu-databas`) — a three-level structure: **Programme**
   (permanent info: purpose, priorities) → **Call/utlysning** (deadline,
   budget, evaluation criteria) → **Documents** (the actual AI context
@@ -33,7 +68,7 @@ documentation.
   in number of countries, and project start against the expected funding
   decision. A call the organisation isn't eligible for is capped at a low
   score however well it fits thematically.
-- **Ansökningsstudio** (inside `/demo`) — once a call is chosen, the AI is
+- **Ansökningsstudio** (`/ansokan`) — once a call is chosen, the AI is
   locked to that call's evaluation criteria. Includes an "Application
   Coach" that scores the project description on Relevance/Impact/Evidence
   and suggests concrete additions, plus a dual-compliance check against
@@ -43,7 +78,7 @@ documentation.
   EU-funded projects 2014-2027 (fund, budget, EU share, role, theme), with aggregated
   statistics (share led as project owner, average budget, most common
   theme), reachable standalone or from any call page.
-- **Projekt & rapportering** (`/projekt`) — awarded projects, where
+- **Beviljat stöd & rapportering** (`/stod/[id]`) — grants, where
   commitments made in the application (indicators, targets) are tracked
   against reported outturn, with an AI comment on any deviation.
 - **Datacenter** (`/datacenter`) — the admin/knowledge-hub view: exactly
@@ -52,9 +87,9 @@ documentation.
   (documents needing an update, projects with incomplete information).
 
 The homepage's three entry points route into this same system depending
-on where the user is in the chain: *"Jag har ett projekt"* → `/demo`,
+on where the user is in the chain: *"Jag har ett projekt"* → `/ansokan`,
 *"Jag har hittat en utlysning"* → `/eu-databas`, *"Jag har fått
-finansiering"* → `/projekt`.
+finansiering"* → `/rapportera`.
 
 ## What's real data vs. illustrative example data
 
@@ -67,7 +102,7 @@ finansiering"* → `/projekt`.
   awarded from).
 - **Still illustrative**: `lib/data/projectBank.ts` (a municipality's own
   in-progress project ideas — inherently invented for a demo, since real
-  ones are usually confidential), `lib/data/awardedProjects.ts` (the
+  ones are usually confidential), `lib/data/grants.ts` (the
   commitments-vs-actuals reporting example), and the specific open
   `FundingCall` deadlines/criteria in `lib/data/fundingCalls.ts` (real
   calls change constantly; wiring this to the live EU Funding & Tenders
@@ -141,19 +176,20 @@ becomes anything more than a pitch/demo site.
 ## Project structure
 
 ```
-app/                        Routes: /, /demo, /projektbank(+[id]),
+app/                        Routes: /, /oversikt, /projekt(+[id]), /ansok,
+                             /ansokan (workspace), /rapportera, /stod/[id],
                              /eu-databas(+[programId]+[callId]),
-                             /referensprojekt, /projekt(+[id]), /datacenter
+                             /referensprojekt, /datacenter, /installningar
 components/                 UI components (landing sections, demo flow,
                              shared header/footer/status badge)
 lib/i18n/                   Swedish/English translation dictionary + language context
 lib/types.ts                Shared data model (Programme/Call/Document,
-                             ProjectBankEntry, FundedProject,
-                             AwardedProject, matching types)
+                             ProjectBankEntry, ApplicationRecord, Grant,
+                             FundedProject, matching types)
 lib/data/                   Seed data — real programmes (22) and awarded
                              reference projects (74), plus illustrative
                              calls/documents, project bank and
-                             awarded-project reporting example
+                             grant reporting example
 lib/matching/                Scoring engine, gap analysis, readiness score,
                              application coach, workspace content generator
 tests/unit/                  Logic-only tests (no browser) for the matching/

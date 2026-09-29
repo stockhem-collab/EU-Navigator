@@ -8,15 +8,15 @@ import {
   reportingHealth,
   financialHistory,
   cumulativeSpentThrough,
-} from "../../lib/data/awardedProjects";
-import { AwardedProject } from "../../lib/types";
+} from "../../lib/data/grants";
+import { Grant } from "../../lib/types";
 
 // Coverage for the post-award reporting-cycle helpers: the next upcoming
 // report, the latest known outturn per indicator (regardless of whether
 // that report has since been approved), and whether a project's reporting
 // is fully wrapped up (so the UI can hand off to the closure phase).
 
-function makeProject(overrides: Partial<AwardedProject> = {}): AwardedProject {
+function makeProject(overrides: Partial<Grant> = {}): Grant {
   return {
     id: "ap-test",
     title_sv: "Test",
@@ -233,7 +233,7 @@ test("reportingHealth is good when nothing is blocked or behind plan", () => {
 // history series and a running cumulative total, without storing a
 // redundant total that could drift from the underlying per-period figures.
 
-function makeFinancialProject(): AwardedProject {
+function makeFinancialProject(): Grant {
   return makeProject({
     awardedAmountSEK: 1_000_000,
     reportingEvents: [

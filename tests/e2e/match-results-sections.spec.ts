@@ -7,7 +7,7 @@ import { test, expect } from "@playwright/test";
 // catalogue grows, without ever hiding a call outright.
 
 test("recommended matches show up front; lower-relevance ones stay collapsed until asked for", async ({ page }) => {
-  await page.goto("/demo");
+  await page.goto("/ansokan");
   await page.getByRole("button", { name: /Fyll i exempel/i }).click();
   await page.locator('button[type="submit"]').click();
   await page.waitForTimeout(200);

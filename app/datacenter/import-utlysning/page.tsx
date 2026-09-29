@@ -8,6 +8,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { fundingCalls, applicantTypeLabel, ALL_APPLICANT_TYPES, monthsUntilDate } from "@/lib/data/fundingCalls";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
+import { logActivity } from "@/lib/hooks/useActivityLog";
 import { extractCallDraft, slugifyCallId, ExtractionConfidence } from "@/lib/matching/callExtraction";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
 import { useTags } from "@/lib/hooks/useTags";
@@ -280,6 +281,7 @@ export default function ImportUtlysningPage() {
     };
 
     addImportedCall(call);
+    logActivity({ kind: "call-imported", callId: call.id, programId: call.programId });
     setForm({ ...EMPTY_FORM, deadlineDate: isoDateMonthsFromNow(6) });
     setConfidence({});
     setRawText("");
@@ -695,9 +697,9 @@ export default function ImportUtlysningPage() {
                 onChange={(e) => setForm({ ...form, periodicity: e.target.value as ReportingPeriodicity })}
                 className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
               >
-                <option value="quarterly">{t.awardedProjects.periodicityQuarterly}</option>
-                <option value="biannual">{t.awardedProjects.periodicityBiannual}</option>
-                <option value="annual">{t.awardedProjects.periodicityAnnual}</option>
+                <option value="quarterly">{t.grants.periodicityQuarterly}</option>
+                <option value="biannual">{t.grants.periodicityBiannual}</option>
+                <option value="annual">{t.grants.periodicityAnnual}</option>
               </select>
             </div>
             <div>

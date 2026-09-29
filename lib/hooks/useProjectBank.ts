@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ProjectBankEntry } from "@/lib/types";
+import { ProjectBankEntry, normalizeProjectStatus } from "@/lib/types";
 import { projectBank as seededProjectBank } from "@/lib/data/projectBank";
 
 // The project bank as actually shown to a user: the seeded demo entries
@@ -143,8 +143,15 @@ export function useProjectBank() {
     });
   }, []);
 
+  // Stored statuses can predate the lifecycle-only ProjectStatus (see
+  // normalizeProjectStatus); normalised on read rather than migrated in
+  // storage, so nothing is rewritten behind the user's back.
   const withOverrides = useCallback(
-    (entry: ProjectBankEntry): ProjectBankEntry => (overrides[entry.id] ? { ...entry, ...overrides[entry.id] } : entry),
+    (entry: ProjectBankEntry): ProjectBankEntry => {
+      const merged = overrides[entry.id] ? { ...entry, ...overrides[entry.id] } : entry;
+      const status = normalizeProjectStatus(merged.status);
+      return status === merged.status ? merged : { ...merged, status };
+    },
     [overrides]
   );
 
@@ -160,5 +167,6 @@ export function findAnyProjectBankEntry(id: string): ProjectBankEntry | undefine
   const entry = seededProjectBank.find((p) => p.id === id) ?? readImported().find((p) => p.id === id);
   if (!entry) return undefined;
   const override = readOverrides()[id];
-  return override ? { ...entry, ...override } : entry;
+  const merged = override ? { ...entry, ...override } : entry;
+  return { ...merged, status: normalizeProjectStatus(merged.status) };
 }

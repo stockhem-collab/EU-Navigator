@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AwardedProject, ReportingEvent, ReportingEventStatus } from "@/lib/types";
+import { Grant, ReportingEvent, ReportingEventStatus } from "@/lib/types";
+import { notifyDataChanged } from "@/lib/hooks/useActivityLog";
 
 // Marking a reporting event as submitted from the UI — same no-backend,
 // localStorage-overlay pattern as useProjectBank's edits: the seed data
@@ -65,6 +66,7 @@ function write(state: SubmissionsState) {
   } catch {
     // localStorage unavailable — the submission just won't persist.
   }
+  notifyDataChanged();
 }
 
 function readExtra(): ExtraEventsState {
@@ -84,6 +86,7 @@ function writeExtra(state: ExtraEventsState) {
   } catch {
     // localStorage unavailable — the added event just won't persist.
   }
+  notifyDataChanged();
 }
 
 function readStatusOverrides(): StatusOverridesState {
@@ -108,6 +111,7 @@ function writeStatusOverrides(state: StatusOverridesState) {
   } catch {
     // localStorage unavailable — the status change just won't persist.
   }
+  notifyDataChanged();
 }
 
 export function useReportingSubmissions() {
@@ -182,7 +186,7 @@ export function useReportingSubmissions() {
     });
   }, []);
 
-  // Overlays any locally-submitted reports onto the seed AwardedProject,
+  // Overlays any locally-submitted reports onto the seed Grant,
   // and appends any locally-added extra events (e.g. a sustainability
   // follow-up) — same shape-preserving overlay as useProjectBank's
   // withOverrides. An "upcoming" or "revision-requested" event with a
@@ -190,7 +194,7 @@ export function useReportingSubmissions() {
   // approval, not left stuck), carrying the latest reported outcomes/note.
   // A manual status override, if set, applies last and wins over both.
   const withSubmissions = useCallback(
-    (project: AwardedProject): AwardedProject => {
+    (project: Grant): Grant => {
       const extra = extraEvents[project.id] ?? [];
       const seedWithOverlay = project.reportingEvents.map((event) => {
         const history = submissions[storageKey(project.id, event.id)];

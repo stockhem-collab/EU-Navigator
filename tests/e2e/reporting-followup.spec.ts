@@ -8,7 +8,7 @@ import { test, expect } from "@playwright/test";
 // Projektbank idea it came from.
 
 test("correcting a revision-requested report shows the original outcome as reporting history", async ({ page }) => {
-  await page.goto("/projekt/ap-2");
+  await page.goto("/stod/ap-2");
 
   const numberInputs = page.locator('input[type="number"]');
   await expect(numberInputs.nth(0)).toHaveValue("140");
@@ -24,7 +24,7 @@ test("correcting a revision-requested report shows the original outcome as repor
 });
 
 test("completing all reporting unlocks a voluntary sustainability follow-up", async ({ page }) => {
-  await page.goto("/projekt/ap-1");
+  await page.goto("/stod/ap-1");
 
   const inputs = page.locator('input[type="number"]');
   await inputs.nth(0).fill("1500");
@@ -39,19 +39,21 @@ test("completing all reporting unlocks a voluntary sustainability follow-up", as
   await expect(page.getByRole("button", { name: "Lägg till hållbarhetsuppföljning" })).toHaveCount(0);
 });
 
-test("an awarded project links back to its originating Projektbank idea, and vice versa", async ({ page }) => {
-  await page.goto("/projekt/ap-1");
-  await expect(page.getByText("Ursprunglig projektidé i Projektbanken")).toBeVisible();
+test("a grant links back to its project, and the project page lists the grant", async ({ page }) => {
+  await page.goto("/stod/ap-1");
   await page.getByRole("link", { name: "Energieffektivisering kommunala skolor" }).click();
-  await expect(page).toHaveURL(/\/projektbank\/pb-1/);
+  await expect(page).toHaveURL(/\/projekt\/pb-1/);
 
-  await expect(page.getByText("Beviljad och under rapportering")).toBeVisible();
-  await page.getByRole("link", { name: "Visa rapportering →" }).click();
-  await expect(page).toHaveURL(/\/projekt\/ap-1/);
+  // The project's path shows its grant and reporting, and the grants
+  // section links back to the grant.
+  await expect(page.getByRole("region", { name: "Projektets väg" })).toBeVisible();
+  const grants = page.locator("section", { has: page.getByRole("heading", { name: "Beviljat stöd och rapportering" }) });
+  await grants.getByRole("link", { name: "Visa beviljat stöd" }).click();
+  await expect(page).toHaveURL(/\/stod\/ap-1/);
 });
 
 test("a reported event can be exported as a .docx file", async ({ page }) => {
-  await page.goto("/projekt/ap-1");
+  await page.goto("/stod/ap-1");
 
   const [download] = await Promise.all([
     page.waitForEvent("download"),

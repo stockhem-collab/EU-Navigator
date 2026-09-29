@@ -159,7 +159,7 @@ function DemoPageInner() {
               // Keeps the URL resumable after a refresh, without remounting
               // the workspace (which would lose the in-memory draft) —
               // replace only updates history, it doesn't reset component state.
-              router.replace(`/demo?project=${newId}&call=${step.match.call.id}`, { scroll: false });
+              router.replace(`/ansokan?project=${newId}&call=${step.match.call.id}`, { scroll: false });
             }}
             onBack={() =>
               setStep({

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-// The "Spara som nytt projekt i Projektbanken" button: an ad-hoc intake
+// The "Spara ansökan" button: an ad-hoc intake
 // (never started from a saved Projektbank entry) has its version controls
 // disabled with a note pointing at saving the project to the project bank
 // — this button is what actually does that, carrying over the in-progress
@@ -8,7 +8,7 @@ import { test, expect } from "@playwright/test";
 // place (no navigation, no reload) so version saving immediately works.
 
 test("converts an ad-hoc draft into a saved project without losing what was typed, and unlocks versions", async ({ page }) => {
-  await page.goto("/demo");
+  await page.goto("/ansokan");
   await page.getByRole("button", { name: /Fyll i exempel/i }).click();
   await page.locator('button[type="submit"]').click();
   await page.getByRole("button", { name: /Starta ansökan/i }).first().click();
@@ -21,13 +21,13 @@ test("converts an ad-hoc draft into a saved project without losing what was type
   await expect(page.getByPlaceholder(/Versionsnamn|Version name/i)).toBeDisabled();
   await expect(page.getByRole("button", { name: /Spara version|Save version/i })).toBeDisabled();
 
-  await page.getByRole("button", { name: "Spara som nytt projekt i Projektbanken" }).click();
+  await page.getByRole("button", { name: "Spara ansökan" }).click();
   await page.waitForTimeout(200);
 
   // Draft text survived the transition, and this exact same page instance
   // is now persisted — no navigation, no lost in-progress edits.
   await expect(textarea).toHaveValue(draftText);
-  await expect(page.getByRole("button", { name: "Spara som nytt projekt i Projektbanken" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Spara ansökan" })).toHaveCount(0);
   await expect(page.getByPlaceholder(/Versionsnamn|Version name/i)).toBeEnabled();
 
   await page.getByPlaceholder(/Versionsnamn|Version name/i).fill("Första utkastet");
@@ -41,7 +41,7 @@ test("converts an ad-hoc draft into a saved project without losing what was type
   await expect(page.getByText("Första utkastet")).toBeVisible();
 
   // The new entry is a first-class part of the project bank.
-  await page.goto("/projektbank");
+  await page.goto("/projekt");
   await expect(page.getByText("Energieffektivisering av 14 skolor")).toBeVisible();
 });
 
@@ -55,7 +55,7 @@ test("resuming a deep link to a localStorage-only project causes no hydration er
   const pageErrors: string[] = [];
   page.on("pageerror", (e) => pageErrors.push(e.message));
 
-  await page.goto("/projektbank");
+  await page.goto("/projekt");
   await page.locator('input[type="file"]').setInputFiles({
     name: "test.csv",
     mimeType: "text/csv",
@@ -63,7 +63,7 @@ test("resuming a deep link to a localStorage-only project causes no hydration er
   });
   await page.getByText("Djuplänkstest").click();
 
-  const href = await page.locator('a[href*="/demo?project=import-"]').first().getAttribute("href");
+  const href = await page.locator('a[href*="/ansokan?project=import-"]').first().getAttribute("href");
   expect(href).toBeTruthy();
 
   // A direct navigation to the resume link — the same shape of load as a

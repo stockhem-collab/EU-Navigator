@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ApplicationRecord, ApplicationStatus, ProjectStatus } from "@/lib/types";
 import type { ProjectBankEdit } from "@/lib/hooks/useProjectBank";
 import { isActiveApplication, projectStatusFromApplications } from "@/lib/matching/applications";
+import { logActivity, notifyDataChanged } from "@/lib/hooks/useActivityLog";
 
 // The index of every application (ApplicationRecord) in this browser — which
 // project, which call, what status. Each record's draft text and saved
@@ -113,13 +114,26 @@ export function patchApplicationRecord(
   patch: Partial<Pick<ApplicationRecord, "status" | "awardedProjectId">>
 ): ApplicationRecord[] {
   const now = new Date().toISOString();
-  const next = readApplicationRecords().map((r) => {
+  const before = readApplicationRecords();
+  const next = before.map((r) => {
     if (r.id !== id) return r;
     const updated: ApplicationRecord = { ...r, ...patch, updatedAt: now };
     if (patch.status && patch.status !== "draft" && !r.submittedAt) updated.submittedAt = now;
     return updated;
   });
   writeRecords(next);
+  const previous = before.find((r) => r.id === id);
+  if (previous && patch.status && patch.status !== previous.status) {
+    logActivity({
+      kind: "application-status",
+      applicationId: id,
+      projectId: previous.projectId,
+      callId: previous.callId,
+      status: patch.status,
+    });
+  } else {
+    notifyDataChanged();
+  }
   return next;
 }
 
@@ -152,6 +166,7 @@ export function useApplications() {
     const next = change(readApplicationRecords());
     writeRecords(next);
     setRecords(next);
+    notifyDataChanged();
     return next;
   }, []);
 

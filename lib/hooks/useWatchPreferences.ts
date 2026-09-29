@@ -2,49 +2,29 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Sector } from "@/lib/types";
+import { notifyDataChanged } from "@/lib/hooks/useActivityLog";
 
-// "Mina bevakningar" — which subject areas and EU programmes this person
-// watches, and when they want to be notified. Persisted to localStorage,
-// same no-backend demo pattern as the rest of /installningar: nothing here
-// actually sends an email or a push notification yet.
+// "Mina bevakningar" — which subject areas, EU programmes and individual
+// calls this person watches. Watched calls and programmes feed the
+// notifications (deadline and change reminders); how and when to be
+// notified is useNotificationPreferences. Persisted to localStorage, same
+// no-backend demo pattern as the rest of /installningar.
 const STORAGE_KEY = "eu-navigator-watch-preferences";
-
-export type DigestFrequency = "instant" | "daily" | "weekly";
-
-export interface NotifyPreferences {
-  newCallMatchesOrg: boolean;
-  callMatchesProject: boolean;
-  highRelevanceMatch: boolean;
-  deadlineApproaching: boolean;
-  commentOnApplication: boolean;
-  reportingDeadline: boolean;
-}
 
 export interface WatchPreferences {
   sectors: Sector[];
   programIds: string[];
   /** Individually flagged calls — the direct, unambiguous "watch this
-   * specific utlysning" action (from Bevakning or a call's own page), as
-   * opposed to the broader sector/programme preferences above, which watch
-   * entire categories at once. */
+   * specific utlysning" action (from Ansöka → Hitta finansiering or a
+   * call's own page), as opposed to the broader sector/programme
+   * preferences above, which watch entire categories at once. */
   callIds: string[];
-  notify: NotifyPreferences;
-  digest: DigestFrequency;
 }
 
 const DEFAULT: WatchPreferences = {
   sectors: ["digital", "climate", "social"],
   programIds: [],
   callIds: [],
-  notify: {
-    newCallMatchesOrg: true,
-    callMatchesProject: true,
-    highRelevanceMatch: true,
-    deadlineApproaching: true,
-    commentOnApplication: true,
-    reportingDeadline: true,
-  },
-  digest: "weekly",
 };
 
 function read(): WatchPreferences {
@@ -56,8 +36,6 @@ function read(): WatchPreferences {
       sectors: Array.isArray(parsed.sectors) ? parsed.sectors : DEFAULT.sectors,
       programIds: Array.isArray(parsed.programIds) ? parsed.programIds : DEFAULT.programIds,
       callIds: Array.isArray(parsed.callIds) ? parsed.callIds : DEFAULT.callIds,
-      notify: { ...DEFAULT.notify, ...(parsed.notify && typeof parsed.notify === "object" ? parsed.notify : {}) },
-      digest: parsed.digest === "instant" || parsed.digest === "daily" || parsed.digest === "weekly" ? parsed.digest : DEFAULT.digest,
     };
   } catch {
     return DEFAULT;
@@ -70,6 +48,7 @@ function write(prefs: WatchPreferences) {
   } catch {
     // localStorage unavailable — preferences just won't persist.
   }
+  notifyDataChanged();
 }
 
 export function useWatchPreferences() {
@@ -118,14 +97,6 @@ export function useWatchPreferences() {
     [update]
   );
 
-  const toggleNotify = useCallback(
-    (key: keyof NotifyPreferences) =>
-      update((prev) => ({ ...prev, notify: { ...prev.notify, [key]: !prev.notify[key] } })),
-    [update]
-  );
-
-  const setDigest = useCallback((digest: DigestFrequency) => update((prev) => ({ ...prev, digest })), [update]);
-
   const resetAll = useCallback(() => {
     setPrefs(DEFAULT);
     write(DEFAULT);
@@ -137,8 +108,6 @@ export function useWatchPreferences() {
     toggleSector,
     toggleProgram,
     toggleCall,
-    toggleNotify,
-    setDigest,
     resetAll,
   };
 }

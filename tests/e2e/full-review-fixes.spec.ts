@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
 // while walking every page, fixed in the same pass.
 
 test("a CSV-imported project is assignable to a user, not just seeded ones", async ({ page }) => {
-  await page.goto("/projektbank");
+  await page.goto("/projekt");
   const csv = "Titel,Budget\nAnvandare-testprojekt,1000000\n";
   await page.locator('input[type="file"]').setInputFiles({
     name: "test.csv",
@@ -19,14 +19,14 @@ test("a CSV-imported project is assignable to a user, not just seeded ones", asy
   await expect(projectSelect.locator("option", { hasText: "Anvandare-testprojekt" })).toHaveCount(1);
 
   // Clean up so this doesn't leak into other tests sharing storage.
-  await page.goto("/projektbank");
+  await page.goto("/projekt");
   page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: /Rensa importerade projekt|Clear imported projects/i }).click();
   await expect(page.locator("tbody tr", { hasText: "Anvandare-testprojekt" })).toHaveCount(0);
 });
 
 test("saving a named version is disabled with an explanation for an ad-hoc, unsaved project", async ({ page }) => {
-  await page.goto("/demo");
+  await page.goto("/ansokan");
   await page.getByRole("button", { name: /Fyll i exempel/i }).click();
   await page.locator('button[type="submit"]').click();
   await page.getByRole("button", { name: /Starta ansökan/i }).first().click();

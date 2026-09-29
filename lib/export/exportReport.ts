@@ -1,7 +1,7 @@
 import type { Paragraph as ParagraphType } from "docx";
-import { AwardedProject, FundingCall, FundingProgram, Lang, ReportingEvent } from "@/lib/types";
+import { Grant, FundingCall, FundingProgram, Lang, ReportingEvent } from "@/lib/types";
 import { fmtSEK } from "@/lib/format";
-import { cumulativeSpentThrough } from "@/lib/data/awardedProjects";
+import { cumulativeSpentThrough } from "@/lib/data/grants";
 
 // Exports one reporting event as a real .docx draft — the same
 // dynamically-imported docx pattern as exportApplication.ts, for the same
@@ -10,7 +10,7 @@ import { cumulativeSpentThrough } from "@/lib/data/awardedProjects";
 // demo stops short of an actual submission integration.
 
 export async function buildReportDocx(
-  project: AwardedProject,
+  project: Grant,
   event: ReportingEvent,
   call: FundingCall | undefined,
   program: FundingProgram | undefined,

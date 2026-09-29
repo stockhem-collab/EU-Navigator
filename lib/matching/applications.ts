@@ -17,19 +17,14 @@ const PAST_APPLICATION_STAGE: ProjectStatus[] = ["running", "completed"];
 
 /**
  * The project status its applications imply, or `current` when they don't
- * imply a change. The most advanced application wins: one award makes the
- * project approved even if other applications were rejected; otherwise any
- * application still with the funder means "submitted", any draft means
- * "application", and only when every application has been rejected or
- * withdrawn does the project fall back ("rejected", or back to searching
- * for funding when they were all withdrawn).
+ * imply a change. The project status is a lifecycle, not an application
+ * status: one awarded application makes the project "funded"; otherwise,
+ * as soon as it has any application — in progress, or closed without an
+ * award — it is "searching for funding". Where each application stands is
+ * shown on the application itself.
  */
 export function projectStatusFromApplications(current: ProjectStatus, records: ApplicationRecord[]): ProjectStatus {
   if (records.length === 0 || PAST_APPLICATION_STAGE.includes(current)) return current;
-  const statuses = new Set(records.map((r) => r.status));
-  if (statuses.has("awarded")) return "approved";
-  if (statuses.has("submitted") || statuses.has("under-review")) return "submitted";
-  if (statuses.has("draft")) return "application";
-  if (statuses.has("rejected")) return "rejected";
+  if (records.some((r) => r.status === "awarded")) return "funded";
   return "funding-search";
 }

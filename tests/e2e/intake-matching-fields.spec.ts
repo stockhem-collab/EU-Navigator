@@ -7,7 +7,7 @@ import { test, expect } from "@playwright/test";
 // recommended list, however well it fits thematically.
 
 test("the example fills the new matching fields and the results explain them", async ({ page }) => {
-  await page.goto("/demo");
+  await page.goto("/ansokan");
   await page.getByRole("button", { name: /Fyll i exempel/i }).click();
 
   await expect(page.getByLabel("Typ av insats")).toHaveValue("investment");
@@ -26,7 +26,7 @@ test("the example fills the new matching fields and the results explain them", a
 });
 
 test("an applicant type the call doesn't accept moves it out of the recommended list", async ({ page }) => {
-  await page.goto("/demo");
+  await page.goto("/ansokan");
   await page.getByRole("button", { name: /Fyll i exempel/i }).click();
   await page.getByLabel("Sökande organisationstyp").selectOption("sme");
   await page.locator('button[type="submit"]').click();
@@ -42,7 +42,7 @@ test("an applicant type the call doesn't accept moves it out of the recommended 
 });
 
 test("a requested grant larger than the total budget is rejected in the form", async ({ page }) => {
-  await page.goto("/demo");
+  await page.goto("/ansokan");
   await page.getByRole("button", { name: /Fyll i exempel/i }).click();
   await page.getByLabel(/Sökt EU-bidrag/).fill("999000000");
   await expect(page.getByText("Sökt bidrag kan inte vara större än totalbudgeten.")).toBeVisible();

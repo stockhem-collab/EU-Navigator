@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
 // state and would be lost by navigating away.
 
 test("each match card links to its call's detail page in a new tab", async ({ page, context }) => {
-  await page.goto("/demo");
+  await page.goto("/ansokan");
   await page.getByRole("button", { name: /Fyll i exempel/i }).click();
   await page.locator('button[type="submit"]').click();
 

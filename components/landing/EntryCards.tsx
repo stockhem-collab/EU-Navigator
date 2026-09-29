@@ -8,9 +8,9 @@ export default function EntryCards() {
   const h = t.home;
 
   const cards = [
-    { title: h.entry1Title, desc: h.entry1Desc, cta: h.entry1Cta, href: "/demo" },
+    { title: h.entry1Title, desc: h.entry1Desc, cta: h.entry1Cta, href: "/ansokan" },
     { title: h.entry2Title, desc: h.entry2Desc, cta: h.entry2Cta, href: "/eu-databas" },
-    { title: h.entry3Title, desc: h.entry3Desc, cta: h.entry3Cta, href: "/projekt" },
+    { title: h.entry3Title, desc: h.entry3Desc, cta: h.entry3Cta, href: "/rapportera" },
   ];
 
   return (

@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
 // the Mina projekt list and Översikt's samordnare view.
 
 test("an awarded project's reporting timeline and requirements are visible", async ({ page }) => {
-  await page.goto("/projekt/ap-1");
+  await page.goto("/stod/ap-1");
 
   await expect(page.getByText("Rapporteringskrav för utlysningen")).toBeVisible();
   await expect(page.getByText("Årsvis")).toBeVisible();
@@ -27,7 +27,7 @@ test("an awarded project's reporting timeline and requirements are visible", asy
 test("submitting the next upcoming report updates the commitment summary and moves the project into closure", async ({
   page,
 }) => {
-  await page.goto("/projekt/ap-1");
+  await page.goto("/stod/ap-1");
 
   const inputs = page.locator('input[type="number"]');
   await inputs.nth(0).fill("1500");
@@ -40,7 +40,7 @@ test("submitting the next upcoming report updates the commitment summary and mov
   await expect(page.getByText("1 500 / 1 500 personer")).toBeVisible();
   await expect(page.getByText("All rapportering avslutad.")).toBeVisible();
 
-  // The reporting badge on Mina projekt reflects the same local submission
+  // The reporting badge on the Projekt list reflects the same local submission
   // — folded into the project's own status row (see LinkedReportingBadge),
   // not a separate section further down.
   await page.goto("/projekt");
@@ -50,7 +50,7 @@ test("submitting the next upcoming report updates the commitment summary and mov
 test("a financial summary is shown once spend has been reported, and updates when a new report is submitted", async ({
   page,
 }) => {
-  await page.goto("/projekt/ap-1");
+  await page.goto("/stod/ap-1");
 
   // ap-1's seed data already has spend figures on its two past reports
   // (9.5M + 8.9M of a 42.4M award).
@@ -70,12 +70,21 @@ test("a financial summary is shown once spend has been reported, and updates whe
   await expect(page.getByText("31,4 mnkr / 42,4 mnkr")).toBeVisible();
 });
 
-test("a report needing revision surfaces on Mina projekt and Översikt", async ({ page }) => {
+test("a report needing revision surfaces on Projekt, Rapportera, Översikt and in the notifications", async ({ page }) => {
   await page.goto("/projekt");
-  await expect(page.getByText("Komplettering begärd")).toBeVisible();
+  await expect(page.getByText("Komplettering begärd").first()).toBeVisible();
 
+  // Rapportera lists it under "Kräver åtgärd", naming its project.
+  await page.goto("/rapportera");
+  const attention = page.locator("section", { has: page.getByRole("heading", { name: "Kräver åtgärd" }) });
+  await expect(attention.getByText("Komplettering begärd").first()).toBeVisible();
+
+  // Översikt counts and lists it.
   await page.goto("/oversikt");
-  await page.getByRole("button", { name: "EU-/finansieringssamordnare" }).click();
-  await expect(page.getByText("Kommande rapporteringar")).toBeVisible();
-  await expect(page.getByText("ESF+ – Kompetenslyft äldreomsorg")).toBeVisible();
+  const reporting = page.locator("section", { has: page.getByRole("heading", { name: "Rapportering" }) });
+  await expect(reporting.getByText("Komplettering begärd").first()).toBeVisible();
+
+  // And the bell has a notification for it.
+  await page.getByRole("button", { name: /^Aviseringar/ }).click();
+  await expect(page.getByRole("dialog", { name: "Aviseringar" }).getByText("Rapport returnerad för komplettering").first()).toBeVisible();
 });

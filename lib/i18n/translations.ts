@@ -7,13 +7,14 @@ export interface TranslationTree {
     personas: string;
     pricing: string;
     demo: string;
-    projectBank: string;
+    projects: string;
+    apply: string;
+    report: string;
+    knowledgeBank: string;
     euDatabase: string;
     referenceProjects: string;
-    myProjects: string;
     datacenter: string;
     overview: string;
-    monitoring: string;
     settings: string;
     menu: string;
   };
@@ -215,6 +216,21 @@ export interface TranslationTree {
   projectBank: {
     title: string;
     subtitle: string;
+    lifecycleTitle: string;
+    lifecycleProject: string;
+    lifecycleApplications: string;
+    lifecycleGrants: string;
+    lifecycleReporting: string;
+    lifecycleApplicationsSummary: (active: number, closed: number, awarded: number) => string;
+    lifecycleGrantsSummary: (n: number) => string;
+    lifecycleNone: string;
+    grantsSectionTitle: string;
+    grantsSectionHint: string;
+    grantsNone: string;
+    columnApplications: string;
+    applicationsSummary: (active: number, awarded: number) => string;
+    searchPlaceholder: string;
+    noProjectsMatch: string;
     columnTitle: string;
     columnDepartment: string;
     columnStatus: string;
@@ -226,7 +242,7 @@ export interface TranslationTree {
     statAvgMatch: string;
     statProceedReady: string;
     statusLabels: Record<
-      "idea" | "assessing" | "funding-search" | "application" | "submitted" | "approved" | "rejected" | "running" | "completed",
+      "idea" | "assessing" | "funding-search" | "funded" | "running" | "completed",
       string
     >;
     detailOwner: string;
@@ -361,6 +377,11 @@ export interface TranslationTree {
   datacenter: {
     title: string;
     subtitle: string;
+    portfolioTitle: string;
+    portfolioHint: string;
+    applicationsByStatusTitle: string;
+    grantsTotalLabel: string;
+    grantsCountLabel: string;
     statProjectIdeas: string;
     statActiveProjects: string;
     statPrograms: string;
@@ -456,7 +477,7 @@ export interface TranslationTree {
     provenanceManual: string;
     importedAtLabel: (date: string) => string;
   };
-  awardedProjects: {
+  grants: {
     title: string;
     subtitle: string;
     nextReportDue: (months: number) => string;
@@ -518,6 +539,8 @@ export interface TranslationTree {
     healthAttentionLabel: string;
     healthBlockedLabel: string;
     linkedProjectBankLabel: string;
+    linkedApplicationLabel: string;
+    openApplicationLink: string;
     linkedProjectStatusAutoSyncNote: string;
     financialSummaryTitle: string;
     financialSpentLabel: string;
@@ -656,17 +679,6 @@ export interface TranslationTree {
     back: string;
     sectorsTitle: string;
     programsTitle: string;
-    notifyTitle: string;
-    notifyNewCallOrg: string;
-    notifyCallProject: string;
-    notifyHighRelevance: string;
-    notifyDeadline: string;
-    notifyComment: string;
-    notifyReportingDeadline: string;
-    digestTitle: string;
-    digestInstant: string;
-    digestDaily: string;
-    digestWeekly: string;
     savedIndicator: string;
     resetAll: string;
     confirmResetAll: string;
@@ -706,29 +718,21 @@ export interface TranslationTree {
   oversikt: {
     title: string;
     subtitle: string;
-    roleLabel: string;
-    roleLedning: string;
-    roleLedningDesc: string;
-    roleSamordnare: string;
-    roleSamordnareDesc: string;
-    roleVerksamhet: string;
-    roleVerksamhetDesc: string;
+    statActiveApplications: string;
+    statReportsAttention: string;
+    statReportsUpcoming: string;
+    statOpenTasks: string;
+    statUnread: string;
+    myApplicationsTitle: string;
+    myApplicationsNone: string;
+    viewAllApplications: string;
+    myReportsTitle: string;
+    myReportsNone: string;
+    viewAllReports: string;
+    latestNotificationsTitle: string;
+    latestNotificationsNone: string;
     sectionStatusBreakdown: string;
-    sectionUpcomingDeadlines: string;
-    sectionUpcomingReports: string;
-    viewAllInMyProjects: string;
-    sectionYourProjects: string;
-    departmentFilterLabel: string;
-    allDepartments: string;
-    noProjectsInDepartment: string;
-    fieldsMissingForBestMatch: (n: number) => string;
     describeNewProject: string;
-    viewAllInBevakning: string;
-    searchProjectsPlaceholder: string;
-    noProjectsMatchSearch: string;
-    ongoingApplicationsTitle: string;
-    ongoingApplicationsHint: string;
-    ongoingApplicationsNone: string;
     ongoingApplicationsResume: string;
     ongoingApplicationsUpdatedAt: (date: string) => string;
     ongoingApplicationsVersions: (n: number) => string;
@@ -749,6 +753,8 @@ export interface TranslationTree {
     confirmDelete: string;
     createAwardedButton: string;
     confirmCreateAwarded: string;
+    confirmRegisterYes: string;
+    confirmCancel: string;
     viewAwardedLink: string;
     updatedAt: (date: string) => string;
     roundLabel: (n: number) => string;
@@ -759,6 +765,73 @@ export interface TranslationTree {
     allApplicationsLink: string;
     otherApplicationsNote: (n: number) => string;
   };
+  apply: {
+    title: string;
+    subtitle: string;
+    myApplicationsTitle: string;
+    filterActive: string;
+    filterDecided: string;
+    filterAll: string;
+    statActive: string;
+    statWithFunder: string;
+    statAwarded: string;
+    statClosed: string;
+    columnProjectCall: string;
+    columnStatus: string;
+    columnDeadline: string;
+    columnUpdated: string;
+    noApplications: string;
+    noApplicationsHint: string;
+    registerGrant: string;
+    findFundingTitle: string;
+    browseEuDatabase: string;
+  };
+  report: {
+    title: string;
+    subtitle: string;
+    statAttention: string;
+    statUpcoming: string;
+    statDone: string;
+    statGrants: string;
+    attentionTitle: string;
+    attentionHint: string;
+    upcomingTitle: string;
+    doneTitle: (n: number) => string;
+    showDone: (n: number) => string;
+    hideDone: string;
+    noAttention: string;
+    noUpcoming: string;
+    noGrants: string;
+    grantsTitle: string;
+    grantsHint: string;
+    open: string;
+    overdueLabel: (n: number) => string;
+  };
+  notifications: {
+    title: string;
+    bellLabel: (unread: number) => string;
+    markAllRead: string;
+    none: string;
+    settingsLink: string;
+    unreadMarker: (n: number) => string;
+    categoryLabels: Record<"deadlines" | "calls" | "applications" | "reporting" | "projects" | "system", string>;
+    categoryHints: Record<"deadlines" | "calls" | "applications" | "reporting" | "projects" | "system", string>;
+    settingsTitle: string;
+    settingsIntro: string;
+    columnCategory: string;
+    columnInApp: string;
+    columnEmail: string;
+    emailModes: Record<"off" | "instant" | "daily" | "weekly", string>;
+    emailNote: string;
+    scopeTitle: string;
+    scopeMine: string;
+    scopeAll: string;
+    leadTitle: string;
+    leadOption: (n: number) => string;
+    resetDefaults: string;
+    watchTitle: string;
+    watchIntro: string;
+  };
 }
 
 export const translations: Record<Lang, TranslationTree> = {
@@ -768,14 +841,15 @@ export const translations: Record<Lang, TranslationTree> = {
       workflow: "Så fungerar det",
       personas: "För vem",
       pricing: "Prismodell",
-      demo: "Starta ansökan",
-      projectBank: "Projektbank",
+      demo: "Ny ansökan",
+      projects: "Projekt",
+      apply: "Ansöka",
+      report: "Rapportera",
+      knowledgeBank: "Kunskapsbank",
       euDatabase: "EU-databas",
       referenceProjects: "Referensprojekt",
-      myProjects: "Mina projekt",
       datacenter: "Datacenter",
       overview: "Översikt",
-      monitoring: "Bevakning",
       settings: "Inställningar",
       menu: "Meny",
     },
@@ -925,8 +999,9 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     demo: {
       intake: {
-        title: "Beskriv ert projekt",
-        subtitle: "Fyll i så mycket ni kan — AI-matchningen blir bättre ju mer konkret beskrivningen är.",
+        title: "Ny ansökan – beskriv projektet",
+        subtitle:
+          "Beskriv projektet ni vill söka finansiering för, så matchas det mot EU-utlysningarna. Fyll i så mycket ni kan — matchningen blir bättre ju mer konkret beskrivningen är.",
         fieldTitle: "Projektnamn",
         fieldTitlePlaceholder: "T.ex. Energieffektivisering av 14 skolor",
         fieldDescription: "Beskrivning",
@@ -964,7 +1039,7 @@ export const translations: Record<Lang, TranslationTree> = {
         tagsNudgeButton: "Lägg till föreslagna",
         submit: "Hitta finansieringsmöjligheter",
         fillExample: "Fyll i exempel",
-        prefilledFromBank: "Förifyllt från projektbanken — granska och komplettera innan ni fortsätter.",
+        prefilledFromBank: "Förifyllt från projektet — granska och komplettera innan ni fortsätter.",
         sectors: {
           energy: "Energi",
           climate: "Klimat & miljö",
@@ -1019,10 +1094,11 @@ export const translations: Record<Lang, TranslationTree> = {
         topPriorityLabel: "Viktigast att åtgärda",
         topPriorityNone: "Inga akuta åtgärder — ansökan ser stark ut.",
         draftSavedNote: "Utkastet sparas automatiskt i din webbläsare.",
-        draftNotSavedNote: "Spara projektet i projektbanken för att utkastet ska sparas mellan besök.",
+        draftNotSavedNote:
+          "Ansökan är inte sparad. När du sparar den skapas också projektet under Projekt, så att ansökan och projektet hör ihop.",
         confirmLeaveUnsavedDraft:
-          "Det här utkastet är inte sparat i projektbanken — går du tillbaka nu försvinner det du skrivit. Fortsätt ändå?",
-        saveAsNewProjectButton: "Spara som nytt projekt i Projektbanken",
+          "Den här ansökan är inte sparad — går du tillbaka nu försvinner det du skrivit. Fortsätt ändå?",
+        saveAsNewProjectButton: "Spara ansökan",
         templateSourceNote: (callTitle) => `Strukturerad enligt ${callTitle}s eget ansökningsformulär.`,
         templateGenericNote:
           "Generisk projektlogik — den här utlysningen har ingen fördefinierad ansökningsstruktur i systemet ännu.",
@@ -1078,8 +1154,16 @@ export const translations: Record<Lang, TranslationTree> = {
       },
     },
     projectBank: {
-      title: "Projektbank",
-      subtitle: "Alla registrerade projektidéer, behov och planerade investeringar.",
+      title: "Projekt",
+      subtitle:
+        "Verksamhetens projekt – idéer, behov och planerade investeringar. Varje projekt samlar sina ansökningar, beviljade stöd och rapporter.",
+      columnApplications: "Ansökningar och rapportering",
+      applicationsSummary: (active, awarded) =>
+        [active > 0 ? `${active} pågående` : "", awarded > 0 ? `${awarded} beviljad${awarded > 1 ? "e" : ""}` : ""]
+          .filter(Boolean)
+          .join(" · "),
+      searchPlaceholder: "Sök bland projekten…",
+      noProjectsMatch: "Inga projekt matchar filtret.",
       columnTitle: "Projekt",
       columnDepartment: "Förvaltning",
       columnStatus: "Status",
@@ -1092,12 +1176,9 @@ export const translations: Record<Lang, TranslationTree> = {
       statProceedReady: "Redo att gå vidare",
       statusLabels: {
         idea: "Idé",
-        assessing: "Under bedömning",
+        assessing: "Under utredning",
         "funding-search": "Söker finansiering",
-        application: "Ansökan pågår",
-        submitted: "Inlämnad",
-        approved: "Beviljat",
-        rejected: "Avslag",
+        funded: "Finansierat",
         running: "Genomförs",
         completed: "Avslutat",
       },
@@ -1113,7 +1194,7 @@ export const translations: Record<Lang, TranslationTree> = {
       assignedRolesTitle: "Tilldelade roller",
       noAssignedRoles: "Ingen har tilldelats en roll för detta projekt ännu.",
       shareTitle: "Dela projekt",
-      shareHint: "Gör projektet synligt i Mina projekt för fler än de som har en tilldelad roll — för hela organisationen eller en specifik förvaltning.",
+      shareHint: "Gör projektet synligt för fler än de som har en tilldelad roll — för hela organisationen eller en specifik förvaltning. Den som projektet delas med får en avisering.",
       tasksTitle: "Uppgifter",
       tasksHint: "Konkreta att-göra-punkter för just detta projekt, oavsett fas.",
       taskAddPlaceholder: "Ny uppgift, t.ex. \"Boka avstämning med ekonomi\"",
@@ -1147,7 +1228,21 @@ export const translations: Record<Lang, TranslationTree> = {
       similarProjectsNone: "Inga tillräckligt lika beviljade projekt hittades än — komplettera beskrivningen för fler träffar.",
       similarProjectsSharedLabel: "Gemensamma begrepp",
       detailFindFunding: "Hitta finansiering för detta projekt",
-      back: "Tillbaka till projektbanken",
+      back: "Tillbaka till Projekt",
+      lifecycleTitle: "Projektets väg",
+      lifecycleProject: "Projekt",
+      lifecycleApplications: "Ansökningar",
+      lifecycleGrants: "Beviljat stöd",
+      lifecycleReporting: "Rapportering",
+      lifecycleApplicationsSummary: (active, closed, awarded) =>
+        [active > 0 ? `${active} pågående` : "", awarded > 0 ? `${awarded} beviljad${awarded > 1 ? "e" : ""}` : "", closed > 0 ? `${closed} avslutad${closed > 1 ? "e" : ""} utan stöd` : ""]
+          .filter(Boolean)
+          .join(" · "),
+      lifecycleGrantsSummary: (n) => `${n} beviljat stöd`,
+      lifecycleNone: "Inget ännu",
+      grantsSectionTitle: "Beviljat stöd och rapportering",
+      grantsSectionHint: "Varje beviljad ansökan får ett eget beviljat stöd med egen rapportering. Rapporterna hanteras under Rapportera.",
+      grantsNone: "Inget beviljat stöd ännu. När en ansökan beviljas registrerar du stödet på ansökan ovan.",
       importButton: "Importera projekt (CSV)",
       downloadTemplate: "Ladda ner mall",
       importHint:
@@ -1163,12 +1258,12 @@ export const translations: Record<Lang, TranslationTree> = {
       statPortfolioBudget: "Total portföljbudget",
       statFundingPotential: "Identifierad EU-finansieringspotential",
       statCoFinancingNeed: "Uppskattat medfinansieringsbehov",
-      linkedAwardedProjectLabel: "Beviljad och under rapportering",
+      linkedAwardedProjectLabel: "Har beviljat stöd under rapportering",
       linkedAwardedProjectLink: "Visa rapportering →",
       markAsAwardedButton: "Markera som beviljad",
       markAsAwardedHint: "Skapar rapporteringsspårning för projektet baserat på bäst matchande utlysning.",
       confirmMarkAsAwarded:
-        "Markera som beviljad? Detta skapar ett nytt beviljat projekt med egen rapporteringsspårning. Det går inte att ångra.",
+        "Markera som beviljad? Detta registrerar ett beviljat stöd med egen rapportering. Det går inte att ångra.",
     },
     euDatabase: {
       title: "EU-databas",
@@ -1238,6 +1333,11 @@ export const translations: Record<Lang, TranslationTree> = {
     datacenter: {
       title: "Datacenter",
       subtitle: "Vad AI:n faktiskt har tillgång till — och vad som behöver kompletteras.",
+      portfolioTitle: "Portfölj",
+      portfolioHint: "Ledningens bild av hela investeringsplanen: ekonomi, projekt per status, ansökningar och beviljat stöd.",
+      applicationsByStatusTitle: "Ansökningar per status",
+      grantsTotalLabel: "Beviljat totalt",
+      grantsCountLabel: "Beviljade stöd",
       statProjectIdeas: "Projektidéer",
       statActiveProjects: "Aktiva projekt",
       statPrograms: "EU-program",
@@ -1254,7 +1354,7 @@ export const translations: Record<Lang, TranslationTree> = {
       documentsNeedingUpdateTitle: "Dokument som behöver uppdateras",
       incompleteProjectsTitle: "Projekt med ofullständig information",
       incompleteProjectsBody:
-        "Dessa projekt i projektbanken saknar information som krävs för en tillförlitlig EU-matchning.",
+        "Dessa projekt saknar information som krävs för en tillförlitlig EU-matchning.",
       viewCallLink: "Visa utlysning →",
       fieldsMissing: (n) => `${n} fält saknas`,
       openLink: "Öppna →",
@@ -1262,7 +1362,7 @@ export const translations: Record<Lang, TranslationTree> = {
       reportingAttentionTitle: "Rapporteringar som kräver uppmärksamhet",
       reportingAttentionBody: "Kommande rapporter och rapporter som skickats tillbaka för komplettering, i ett och samma flöde.",
       noReportingAttention: "Inga rapporter kräver uppmärksamhet just nu.",
-      viewProjectLink: "Visa projekt →",
+      viewProjectLink: "Visa beviljat stöd →",
     },
     callImport: {
       title: "Importera ny utlysning",
@@ -1338,9 +1438,9 @@ export const translations: Record<Lang, TranslationTree> = {
       provenanceManual: "Manuellt inlagd",
       importedAtLabel: (date) => `Importerad ${date}`,
     },
-    awardedProjects: {
-      title: "Mina projekt",
-      subtitle: "Alla dina projekt oavsett status — och rapportering på det som beviljats.",
+    grants: {
+      title: "Beviljat stöd",
+      subtitle: "Beslut om finansiering, med rapportering per period.",
       nextReportDue: (m) => `Nästa rapportering om ${m} månader`,
       nextReportDueLabel: "Nästa rapportering",
       awardedAmount: "Beviljat belopp",
@@ -1348,7 +1448,7 @@ export const translations: Record<Lang, TranslationTree> = {
       promised: "Utlovat",
       reported: "Rapporterat",
       noLatestOutcome: "Ej rapporterat än",
-      back: "Tillbaka till mina projekt",
+      back: "Tillbaka till Rapportera",
       statusFilterAll: "Alla",
       noProjectsForStatus: "Inga projekt med denna status.",
       onlyMineAndSharedToggle: "Visa endast mina och delade projekt",
@@ -1399,8 +1499,10 @@ export const translations: Record<Lang, TranslationTree> = {
       healthGoodLabel: "Enligt plan",
       healthAttentionLabel: "Kräver uppmärksamhet",
       healthBlockedLabel: "Komplettering begärd",
-      linkedProjectBankLabel: "Ursprunglig projektidé i Projektbanken",
-      linkedProjectStatusAutoSyncNote: "Statusen i Projektbanken hålls automatiskt i synk med rapporteringen här.",
+      linkedProjectBankLabel: "Projekt",
+      linkedApplicationLabel: "Beviljad ansökan",
+      openApplicationLink: "Öppna ansökan",
+      linkedProjectStatusAutoSyncNote: "Projektets status följer rapporteringen här: genomförs medan rapporteringen pågår, avslutat när den är klar.",
       financialSummaryTitle: "Ekonomisk uppföljning",
       financialSpentLabel: "Förbrukat / beviljat",
       financialRemainingLabel: "Kvarstående budget",
@@ -1409,8 +1511,8 @@ export const translations: Record<Lang, TranslationTree> = {
       reportFinancialLine: (amount) => `Förbrukat denna period: ${amount}`,
     },
     bevakning: {
-      title: "Bevakning",
-      subtitle: "Kommande deadlines, och vilka projekt i portföljen som passar bäst.",
+      title: "Hitta finansiering",
+      subtitle: "Öppna och kommande utlysningar, och vilka av organisationens projekt som passar bäst.",
       disclaimer:
         "I en skarp version skulle detta skickas som ett återkommande veckobrev till EU-samordnaren. Här visas samma information direkt i gränssnittet.",
       columnCall: "Utlysning",
@@ -1471,8 +1573,8 @@ export const translations: Record<Lang, TranslationTree> = {
       cardOrgDesc: "Organisation, enheter och EU-information.",
       cardUsersTitle: "Användare & behörigheter",
       cardUsersDesc: (count, admins) => `${count} användare · ${admins} administratörer`,
-      cardWatchTitle: "Bevakningar & notifieringar",
-      cardWatchDesc: "Utlysningar, matchningar och deadlines.",
+      cardWatchTitle: "Aviseringar & bevakningar",
+      cardWatchDesc: "Vad du får aviseringar om, var och när – och vilka utlysningar du bevakar.",
       cardFundingProfileTitle: "Finansieringsprofil",
       cardFundingProfileDesc: "Vad organisationen söker finansiering för — används av matchningsmotorn.",
       securityTitle: "🔐 Säkerhet",
@@ -1537,27 +1639,16 @@ export const translations: Record<Lang, TranslationTree> = {
       permManageUsers: "Hantera användare",
     },
     watchSettings: {
-      title: "Bevakningar & notifieringar",
-      subtitle: "Vad vill du bevaka, och när vill du bli meddelad?",
+      title: "Aviseringar & bevakningar",
+      subtitle: "Vad du vill få aviseringar om, och vilka utlysningar, program och ämnesområden du bevakar.",
       back: "← Tillbaka till Inställningar",
       sectorsTitle: "Ämnesområden",
       programsTitle: "EU-program",
-      notifyTitle: "Meddela mig när...",
-      notifyNewCallOrg: "En ny utlysning matchar vår organisation",
-      notifyCallProject: "En utlysning matchar något av mina projekt",
-      notifyHighRelevance: "En projektmatchning får hög relevans",
-      notifyDeadline: "Deadline närmar sig",
-      notifyComment: "Någon kommenterar min ansökan",
-      notifyReportingDeadline: "En rapporteringsdeadline närmar sig",
-      digestTitle: "Sammanställning",
-      digestInstant: "Direkt",
-      digestDaily: "Dagligen",
-      digestWeekly: "Veckovis",
       savedIndicator: "Sparat i din webbläsare",
-      resetAll: "Återställ till exempeldata",
-      confirmResetAll: "Återställa alla bevakningar och notifieringsinställningar? Dina egna val går förlorade.",
+      resetAll: "Återställ bevakningar",
+      confirmResetAll: "Återställa alla bevakningar till exempeldata? Dina egna val går förlorade.",
       watchedCallsTitle: "Bevakade utlysningar",
-      watchedCallsHint: "Utlysningar du flaggat direkt från Bevakning eller EU-databasen.",
+      watchedCallsHint: "Utlysningar du flaggat under Ansöka → Hitta finansiering eller i EU-databasen.",
       noWatchedCalls: "Inga enskilda utlysningar bevakas ännu.",
       removeWatchedCall: "Sluta bevaka",
     },
@@ -1591,36 +1682,28 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     oversikt: {
       title: "Översikt",
-      subtitle: "Samma data, olika vy beroende på vad du behöver se.",
-      roleLabel: "Perspektiv",
-      roleLedning: "Kommunledning / ekonomi",
-      roleLedningDesc: "Portföljekonomi och status över hela investeringsplanen.",
-      roleSamordnare: "EU-/finansieringssamordnare",
-      roleSamordnareDesc: "Alla projekt rankade efter matchning, kommande deadlines och rapporteringar.",
-      roleVerksamhet: "Verksamhetsutvecklare",
-      roleVerksamhetDesc: "Dina förvaltningens projekt och vad som saknas för bästa matchning.",
+      subtitle: "Det du behöver göra nu – dina ansökningar, rapporter och uppgifter.",
+      statActiveApplications: "Pågående ansökningar",
+      statReportsAttention: "Rapporter som kräver åtgärd",
+      statReportsUpcoming: "Kommande rapporter",
+      statOpenTasks: "Öppna uppgifter",
+      statUnread: "Olästa aviseringar",
+      myApplicationsTitle: "Ansökningar",
+      myApplicationsNone: "Inga pågående ansökningar. Starta en ny, eller hitta en utlysning under Ansöka.",
+      viewAllApplications: "Alla ansökningar under Ansöka →",
+      myReportsTitle: "Rapportering",
+      myReportsNone: "Ingen rapportering att göra just nu.",
+      viewAllReports: "All rapportering under Rapportera →",
+      latestNotificationsTitle: "Olästa aviseringar",
+      latestNotificationsNone: "Inga olästa aviseringar.",
       sectionStatusBreakdown: "Projekt per status",
-      sectionUpcomingDeadlines: "Närmaste deadlines",
-      sectionUpcomingReports: "Kommande rapporteringar",
-      viewAllInMyProjects: "Se alla i mina projekt →",
-      sectionYourProjects: "Projekt",
-      departmentFilterLabel: "Förvaltning",
-      allDepartments: "Alla förvaltningar",
-      noProjectsInDepartment: "Inga projekt i denna förvaltning ännu.",
-      fieldsMissingForBestMatch: (n) => `${n} fält saknas för bästa matchning`,
-      describeNewProject: "Beskriv ett nytt projekt",
-      viewAllInBevakning: "Se all bevakning →",
-      searchProjectsPlaceholder: "Sök bland projekten…",
-      noProjectsMatchSearch: "Inga projekt matchar din sökning.",
-      ongoingApplicationsTitle: "Pågående ansökningar",
-      ongoingApplicationsHint: "Hoppa direkt tillbaka till en ansökan du redan börjat skriva på.",
-      ongoingApplicationsNone: "Inga pågående ansökningar just nu — de dyker upp här så fort du börjar skriva i Ansökningsstudion.",
-      ongoingApplicationsResume: "Fortsätt →",
+      describeNewProject: "Ny ansökan",
+      ongoingApplicationsResume: "Fortsätt",
       ongoingApplicationsUpdatedAt: (date) => `Senast redigerad ${date}`,
       ongoingApplicationsVersions: (n) => (n === 1 ? "1 sparad version" : `${n} sparade versioner`),
-      currentTasksTitle: "Aktuella uppgifter",
-      currentTasksHint: "Öppna uppgifter över hela portföljen, snarast förfallande först.",
-      currentTasksNone: "Inga öppna uppgifter just nu. Lägg till uppgifter under ett projekt i Projektbanken.",
+      currentTasksTitle: "Uppgifter",
+      currentTasksHint: "Öppna uppgifter i projekten, snarast förfallande först.",
+      currentTasksNone: "Inga öppna uppgifter just nu. Lägg till uppgifter på ett projekts sida.",
       currentTasksViewAll: "Visa projekt →",
     },
     applications: {
@@ -1641,9 +1724,11 @@ export const translations: Record<Lang, TranslationTree> = {
       open: "Öppna",
       deleteButton: "Ta bort",
       confirmDelete: "Ta bort ansökan med dess utkast och sparade versioner?",
-      createAwardedButton: "Skapa beviljat projekt",
-      confirmCreateAwarded: "Skapa ett beviljat projekt för uppföljning och rapportering, kopplat till den här ansökan?",
-      viewAwardedLink: "Visa beviljat projekt",
+      createAwardedButton: "Registrera beviljat stöd",
+      confirmCreateAwarded: "Registrera beviljat stöd för den här ansökan? Då skapas rapporteringen för stödet under Rapportera.",
+      confirmRegisterYes: "Ja, registrera",
+      confirmCancel: "Avbryt",
+      viewAwardedLink: "Visa beviljat stöd",
       updatedAt: (date) => `Uppdaterad ${date}`,
       roundLabel: (n) => `Ansökan ${n}`,
       continueApplication: "Fortsätt ansökan",
@@ -1654,6 +1739,87 @@ export const translations: Record<Lang, TranslationTree> = {
       allApplicationsLink: "Alla ansökningar för projektet",
       otherApplicationsNote: (n) => `Projektet har ${n} ${n === 1 ? "annan ansökan" : "andra ansökningar"} till samma utlysning.`,
     },
+    apply: {
+      title: "Ansöka",
+      subtitle: "Alla ansökningar oavsett projekt – och var ni kan hitta ny finansiering.",
+      myApplicationsTitle: "Ansökningar",
+      filterActive: "Pågående",
+      filterDecided: "Beslut",
+      filterAll: "Alla",
+      statActive: "Utkast",
+      statWithFunder: "Hos finansiären",
+      statAwarded: "Beviljade",
+      statClosed: "Avslag eller återtagna",
+      columnProjectCall: "Projekt och utlysning",
+      columnStatus: "Status",
+      columnDeadline: "Deadline",
+      columnUpdated: "Uppdaterad",
+      noApplications: "Inga ansökningar här.",
+      noApplicationsHint: "Starta en ny ansökan, eller välj en utlysning under Hitta finansiering nedan.",
+      registerGrant: "Registrera beviljat stöd",
+      findFundingTitle: "Hitta finansiering",
+      browseEuDatabase: "Bläddra i hela EU-databasen →",
+    },
+    report: {
+      title: "Rapportera",
+      subtitle: "All rapportering för beviljat stöd, oavsett projekt – vad som ska göras och när.",
+      statAttention: "Kräver åtgärd",
+      statUpcoming: "Kommande",
+      statDone: "Inlämnade eller godkända",
+      statGrants: "Beviljade stöd",
+      attentionTitle: "Kräver åtgärd",
+      attentionHint: "Rapporter som returnerats för komplettering eller vars deadline har passerat.",
+      upcomingTitle: "Kommande rapporter",
+      doneTitle: (n) => `Inlämnade och godkända (${n})`,
+      showDone: (n) => `Visa inlämnade och godkända (${n})`,
+      hideDone: "Dölj inlämnade och godkända",
+      noAttention: "Inget kräver åtgärd just nu.",
+      noUpcoming: "Inga kommande rapporter.",
+      noGrants: "Inget beviljat stöd ännu. När en ansökan beviljas registreras stödet på projektets sida, och rapporteringen visas här.",
+      grantsTitle: "Beviljade stöd",
+      grantsHint: "Varje beviljat stöd med sin rapporteringsstatus.",
+      open: "Öppna",
+      overdueLabel: (n) => (n === 0 ? "Försenad" : `Försenad ${n} ${n === 1 ? "månad" : "månader"}`),
+    },
+    notifications: {
+      title: "Aviseringar",
+      bellLabel: (n) => (n === 0 ? "Aviseringar" : `Aviseringar, ${n} olästa`),
+      markAllRead: "Markera alla som lästa",
+      none: "Inga aviseringar just nu.",
+      settingsLink: "Inställningar för aviseringar",
+      unreadMarker: (n) => `${n} ${n === 1 ? "oläst avisering" : "olästa aviseringar"}`,
+      categoryLabels: {
+        deadlines: "Deadlines och påminnelser",
+        calls: "Utlysningar",
+        applications: "Ansökningar",
+        reporting: "Rapportering",
+        projects: "Projekt",
+        system: "System",
+      },
+      categoryHints: {
+        deadlines: "Ansökningar och rapporter som ska lämnas, bevakade utlysningar som stänger, uppgifter som förfaller.",
+        calls: "Nya utlysningar som passar ett projekt, och bevakade utlysningar som ändrats.",
+        applications: "Ändrad status på en ansökan, och beviljade ansökningar vars stöd ska registreras.",
+        reporting: "Rapporter som returnerats eller är försenade, och nya beviljade stöd.",
+        projects: "Projekt som delas med din enhet.",
+        system: "Importerade utlysningar och dokument i EU-databasen som behöver uppdateras.",
+      },
+      settingsTitle: "Aviseringar",
+      settingsIntro: "Välj vad du vill få aviseringar om, var, och hur långt i förväg. Aviseringarna samlas under klockan uppe till höger.",
+      columnCategory: "Typ av händelse",
+      columnInApp: "I systemet",
+      columnEmail: "E-post",
+      emailModes: { off: "Av", instant: "Direkt", daily: "Daglig sammanfattning", weekly: "Veckosammanfattning" },
+      emailNote: "E-postvalen sparas, men i den här demoversionen skickas inga e-postmeddelanden – det kräver en koppling till en e-posttjänst.",
+      scopeTitle: "Vilka projekt",
+      scopeMine: "Bara projekt där jag har en roll eller som delats med min enhet",
+      scopeAll: "Hela organisationens projekt",
+      leadTitle: "Påminn om deadlines",
+      leadOption: (n) => `${n} ${n === 1 ? "månad" : "månader"} i förväg`,
+      resetDefaults: "Återställ standardval",
+      watchTitle: "Bevakningar",
+      watchIntro: "Bevakade utlysningar och program ger påminnelser om deadlines och ändringar. De visas också under Ansöka → Hitta finansiering.",
+    },
   },
   en: {
     nav: {
@@ -1661,14 +1827,15 @@ export const translations: Record<Lang, TranslationTree> = {
       workflow: "How it works",
       personas: "Who it's for",
       pricing: "Pricing",
-      demo: "Start an application",
-      projectBank: "Project bank",
+      demo: "New application",
+      projects: "Projects",
+      apply: "Apply",
+      report: "Report",
+      knowledgeBank: "Knowledge bank",
       euDatabase: "EU database",
       referenceProjects: "Reference projects",
-      myProjects: "My projects",
       datacenter: "Datacenter",
       overview: "Overview",
-      monitoring: "Monitoring",
       settings: "Settings",
       menu: "Menu",
     },
@@ -1818,8 +1985,9 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     demo: {
       intake: {
-        title: "Describe your project",
-        subtitle: "Fill in as much as you can — the more concrete the description, the better the AI matching.",
+        title: "New application — describe the project",
+        subtitle:
+          "Describe the project you want funding for, and it's matched against the EU calls. Fill in as much as you can — the more concrete the description, the better the matching.",
         fieldTitle: "Project name",
         fieldTitlePlaceholder: "E.g. Energy efficiency upgrade of 14 schools",
         fieldDescription: "Description",
@@ -1857,7 +2025,7 @@ export const translations: Record<Lang, TranslationTree> = {
         tagsNudgeButton: "Add suggested",
         submit: "Find funding opportunities",
         fillExample: "Fill example",
-        prefilledFromBank: "Pre-filled from the project bank — review and complete before continuing.",
+        prefilledFromBank: "Pre-filled from the project — review and complete before continuing.",
         sectors: {
           energy: "Energy",
           climate: "Climate & environment",
@@ -1911,10 +2079,11 @@ export const translations: Record<Lang, TranslationTree> = {
         topPriorityLabel: "Top priority",
         topPriorityNone: "No urgent action items — the application looks strong.",
         draftSavedNote: "This draft is saved automatically in your browser.",
-        draftNotSavedNote: "Save this project to the project bank so its draft is kept between visits.",
+        draftNotSavedNote:
+          "This application isn't saved. Saving it also creates the project under Projects, so the application and the project belong together.",
         confirmLeaveUnsavedDraft:
-          "This draft isn't saved to the project bank — going back now will lose what you've written. Continue anyway?",
-        saveAsNewProjectButton: "Save as a new project in the project bank",
+          "This application isn't saved — going back now will lose what you've written. Continue anyway?",
+        saveAsNewProjectButton: "Save application",
         templateSourceNote: (callTitle) => `Structured according to ${callTitle}'s own application form.`,
         templateGenericNote: "Generic project logic — this call has no predefined application structure in the system yet.",
         exportButton: "Export application (.docx)",
@@ -1969,8 +2138,14 @@ export const translations: Record<Lang, TranslationTree> = {
       },
     },
     projectBank: {
-      title: "Project bank",
-      subtitle: "All registered project ideas, needs and planned investments.",
+      title: "Projects",
+      subtitle:
+        "The organisation's projects — ideas, needs and planned investments. Each project brings together its applications, grants and reports.",
+      columnApplications: "Applications and reporting",
+      applicationsSummary: (active, awarded) =>
+        [active > 0 ? `${active} in progress` : "", awarded > 0 ? `${awarded} awarded` : ""].filter(Boolean).join(" · "),
+      searchPlaceholder: "Search projects…",
+      noProjectsMatch: "No projects match the filter.",
       columnTitle: "Project",
       columnDepartment: "Department",
       columnStatus: "Status",
@@ -1983,12 +2158,9 @@ export const translations: Record<Lang, TranslationTree> = {
       statProceedReady: "Ready to proceed",
       statusLabels: {
         idea: "Idea",
-        assessing: "Under assessment",
+        assessing: "Being scoped",
         "funding-search": "Searching for funding",
-        application: "Applying",
-        submitted: "Submitted",
-        approved: "Awarded",
-        rejected: "Rejected",
+        funded: "Funded",
         running: "Delivering",
         completed: "Closed",
       },
@@ -2004,7 +2176,7 @@ export const translations: Record<Lang, TranslationTree> = {
       assignedRolesTitle: "Assigned roles",
       noAssignedRoles: "No one has been assigned a role on this project yet.",
       shareTitle: "Share project",
-      shareHint: "Makes the project visible in My projects to more than just its assigned roles — for the whole organisation or a specific department.",
+      shareHint: "Makes the project visible to more than just its assigned roles — for the whole organisation or a specific department. Those it's shared with get a notification.",
       tasksTitle: "Tasks",
       tasksHint: "Concrete to-dos for this specific project, whatever phase it's in.",
       taskAddPlaceholder: "New task, e.g. \"Book a check-in with finance\"",
@@ -2038,7 +2210,21 @@ export const translations: Record<Lang, TranslationTree> = {
       similarProjectsNone: "No sufficiently similar funded projects found yet — add more detail to the description for matches.",
       similarProjectsSharedLabel: "Shared terms",
       detailFindFunding: "Find funding for this project",
-      back: "Back to the project bank",
+      back: "Back to Projects",
+      lifecycleTitle: "The project's path",
+      lifecycleProject: "Project",
+      lifecycleApplications: "Applications",
+      lifecycleGrants: "Grants",
+      lifecycleReporting: "Reporting",
+      lifecycleApplicationsSummary: (active, closed, awarded) =>
+        [active > 0 ? `${active} in progress` : "", awarded > 0 ? `${awarded} awarded` : "", closed > 0 ? `${closed} closed without funding` : ""]
+          .filter(Boolean)
+          .join(" · "),
+      lifecycleGrantsSummary: (n) => `${n} ${n === 1 ? "grant" : "grants"}`,
+      lifecycleNone: "None yet",
+      grantsSectionTitle: "Grants and reporting",
+      grantsSectionHint: "Each awarded application gets its own grant with its own reporting. Reports are handled under Report.",
+      grantsNone: "No grant yet. When an application is awarded, register the grant on the application above.",
       importButton: "Import projects (CSV)",
       downloadTemplate: "Download template",
       importHint:
@@ -2054,12 +2240,12 @@ export const translations: Record<Lang, TranslationTree> = {
       statPortfolioBudget: "Total portfolio budget",
       statFundingPotential: "Identified EU funding potential",
       statCoFinancingNeed: "Estimated co-financing need",
-      linkedAwardedProjectLabel: "Awarded and under reporting",
+      linkedAwardedProjectLabel: "Has a grant under reporting",
       linkedAwardedProjectLink: "View reporting →",
       markAsAwardedButton: "Mark as awarded",
       markAsAwardedHint: "Creates reporting tracking for the project based on its best-matching call.",
       confirmMarkAsAwarded:
-        "Mark as awarded? This creates a new awarded project with its own reporting tracking. This can't be undone.",
+        "Mark as awarded? This registers a grant with its own reporting. This can't be undone.",
     },
     euDatabase: {
       title: "EU database",
@@ -2129,6 +2315,11 @@ export const translations: Record<Lang, TranslationTree> = {
     datacenter: {
       title: "Datacenter",
       subtitle: "What the AI actually has access to — and what needs completing.",
+      portfolioTitle: "Portfolio",
+      portfolioHint: "Leadership's view of the whole investment plan: economics, projects by status, applications and grants.",
+      applicationsByStatusTitle: "Applications by status",
+      grantsTotalLabel: "Awarded in total",
+      grantsCountLabel: "Grants",
       statProjectIdeas: "Project ideas",
       statActiveProjects: "Active projects",
       statPrograms: "EU programmes",
@@ -2152,7 +2343,7 @@ export const translations: Record<Lang, TranslationTree> = {
       reportingAttentionTitle: "Reports needing attention",
       reportingAttentionBody: "Upcoming reports and reports sent back for revision, in one place.",
       noReportingAttention: "No reports need attention right now.",
-      viewProjectLink: "View project →",
+      viewProjectLink: "View grant →",
     },
     callImport: {
       title: "Import a new call",
@@ -2228,9 +2419,9 @@ export const translations: Record<Lang, TranslationTree> = {
       provenanceManual: "Manually entered",
       importedAtLabel: (date) => `Imported ${date}`,
     },
-    awardedProjects: {
-      title: "My projects",
-      subtitle: "All your projects regardless of status — and reporting on what's been awarded.",
+    grants: {
+      title: "Grant",
+      subtitle: "A funding decision, with reporting per period.",
       nextReportDue: (m) => `Next report due in ${m} months`,
       nextReportDueLabel: "Next report",
       awardedAmount: "Awarded amount",
@@ -2238,7 +2429,7 @@ export const translations: Record<Lang, TranslationTree> = {
       promised: "Promised",
       reported: "Reported",
       noLatestOutcome: "Not reported yet",
-      back: "Back to my projects",
+      back: "Back to Report",
       statusFilterAll: "All",
       noProjectsForStatus: "No projects with this status.",
       onlyMineAndSharedToggle: "Show only my and shared projects",
@@ -2289,8 +2480,10 @@ export const translations: Record<Lang, TranslationTree> = {
       healthGoodLabel: "On track",
       healthAttentionLabel: "Needs attention",
       healthBlockedLabel: "Revision requested",
-      linkedProjectBankLabel: "Original project idea in the project bank",
-      linkedProjectStatusAutoSyncNote: "The project bank status is kept automatically in sync with this reporting.",
+      linkedProjectBankLabel: "Project",
+      linkedApplicationLabel: "Awarded application",
+      openApplicationLink: "Open application",
+      linkedProjectStatusAutoSyncNote: "The project's status follows this reporting: running while reporting is ongoing, closed once it's done.",
       financialSummaryTitle: "Financial tracking",
       financialSpentLabel: "Spent / awarded",
       financialRemainingLabel: "Remaining budget",
@@ -2299,8 +2492,8 @@ export const translations: Record<Lang, TranslationTree> = {
       reportFinancialLine: (amount) => `Spent this period: ${amount}`,
     },
     bevakning: {
-      title: "Monitoring",
-      subtitle: "Upcoming deadlines, and which portfolio projects fit them best.",
+      title: "Find funding",
+      subtitle: "Open and upcoming calls, and which of the organisation's projects fit them best.",
       disclaimer:
         "In a production version this would be sent as a recurring weekly digest to the EU coordinator. Here it's shown directly in the interface instead.",
       columnCall: "Call",
@@ -2360,8 +2553,8 @@ export const translations: Record<Lang, TranslationTree> = {
       cardOrgDesc: "Organisation, units and EU information.",
       cardUsersTitle: "Users & permissions",
       cardUsersDesc: (count, admins) => `${count} users · ${admins} administrators`,
-      cardWatchTitle: "Watchlists & notifications",
-      cardWatchDesc: "Calls, matches and deadlines.",
+      cardWatchTitle: "Notifications & watchlists",
+      cardWatchDesc: "What you're notified about, where and when — and which calls you watch.",
       cardFundingProfileTitle: "Funding profile",
       cardFundingProfileDesc: "What the organisation seeks funding for — used by the matching engine.",
       securityTitle: "🔐 Security",
@@ -2426,27 +2619,16 @@ export const translations: Record<Lang, TranslationTree> = {
       permManageUsers: "Manage users",
     },
     watchSettings: {
-      title: "Watchlists & notifications",
-      subtitle: "What do you want to watch, and when should we notify you?",
+      title: "Notifications & watchlists",
+      subtitle: "What you want to be notified about, and which calls, programmes and subject areas you watch.",
       back: "← Back to Settings",
       sectorsTitle: "Subject areas",
       programsTitle: "EU programmes",
-      notifyTitle: "Notify me when...",
-      notifyNewCallOrg: "A new call matches our organisation",
-      notifyCallProject: "A call matches one of my projects",
-      notifyHighRelevance: "A project match reaches high relevance",
-      notifyDeadline: "A deadline is approaching",
-      notifyComment: "Someone comments on my application",
-      notifyReportingDeadline: "A reporting deadline is approaching",
-      digestTitle: "Digest",
-      digestInstant: "Instant",
-      digestDaily: "Daily",
-      digestWeekly: "Weekly",
       savedIndicator: "Saved in your browser",
-      resetAll: "Reset to the example data",
-      confirmResetAll: "Reset all watchlists and notification settings? Your own choices will be lost.",
+      resetAll: "Reset watchlists",
+      confirmResetAll: "Reset all watchlists to the example data? Your own choices will be lost.",
       watchedCallsTitle: "Watched calls",
-      watchedCallsHint: "Calls you've flagged directly from Watchlist or the EU database.",
+      watchedCallsHint: "Calls you've flagged under Apply → Find funding or in the EU database.",
       noWatchedCalls: "No individual calls watched yet.",
       removeWatchedCall: "Stop watching",
     },
@@ -2480,36 +2662,28 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     oversikt: {
       title: "Overview",
-      subtitle: "The same data, arranged differently depending on what you need to see.",
-      roleLabel: "Perspective",
-      roleLedning: "Municipal leadership / finance",
-      roleLedningDesc: "Portfolio economics and status across the whole investment plan.",
-      roleSamordnare: "EU / funding coordinator",
-      roleSamordnareDesc: "Every project ranked by match, upcoming deadlines, and reporting.",
-      roleVerksamhet: "Service developer",
-      roleVerksamhetDesc: "Your department's projects and what's missing for the best possible match.",
+      subtitle: "What you need to do now — your applications, reports and tasks.",
+      statActiveApplications: "Applications in progress",
+      statReportsAttention: "Reports needing action",
+      statReportsUpcoming: "Upcoming reports",
+      statOpenTasks: "Open tasks",
+      statUnread: "Unread notifications",
+      myApplicationsTitle: "Applications",
+      myApplicationsNone: "No applications in progress. Start a new one, or find a call under Apply.",
+      viewAllApplications: "All applications under Apply →",
+      myReportsTitle: "Reporting",
+      myReportsNone: "No reporting to do right now.",
+      viewAllReports: "All reporting under Report →",
+      latestNotificationsTitle: "Unread notifications",
+      latestNotificationsNone: "No unread notifications.",
       sectionStatusBreakdown: "Projects by status",
-      sectionUpcomingDeadlines: "Nearest deadlines",
-      sectionUpcomingReports: "Upcoming reports",
-      viewAllInMyProjects: "See all in my projects →",
-      sectionYourProjects: "Projects",
-      departmentFilterLabel: "Department",
-      allDepartments: "All departments",
-      noProjectsInDepartment: "No projects in this department yet.",
-      fieldsMissingForBestMatch: (n) => `${n} fields missing for the best match`,
-      describeNewProject: "Describe a new project",
-      viewAllInBevakning: "See all monitoring →",
-      searchProjectsPlaceholder: "Search the projects…",
-      noProjectsMatchSearch: "No projects match your search.",
-      ongoingApplicationsTitle: "Ongoing applications",
-      ongoingApplicationsHint: "Jump straight back into an application you've already started writing.",
-      ongoingApplicationsNone: "No ongoing applications right now — they'll show up here as soon as you start writing in the Application workspace.",
-      ongoingApplicationsResume: "Resume →",
+      describeNewProject: "New application",
+      ongoingApplicationsResume: "Continue",
       ongoingApplicationsUpdatedAt: (date) => `Last edited ${date}`,
       ongoingApplicationsVersions: (n) => (n === 1 ? "1 saved version" : `${n} saved versions`),
-      currentTasksTitle: "Current tasks",
-      currentTasksHint: "Open tasks across the whole portfolio, soonest due first.",
-      currentTasksNone: "No open tasks right now. Add tasks under a project in the project bank.",
+      currentTasksTitle: "Tasks",
+      currentTasksHint: "Open tasks in the projects, soonest due first.",
+      currentTasksNone: "No open tasks right now. Add tasks on a project's page.",
       currentTasksViewAll: "View project →",
     },
     applications: {
@@ -2530,9 +2704,11 @@ export const translations: Record<Lang, TranslationTree> = {
       open: "Open",
       deleteButton: "Delete",
       confirmDelete: "Delete this application with its draft and saved versions?",
-      createAwardedButton: "Create awarded project",
-      confirmCreateAwarded: "Create an awarded project for follow-up and reporting, linked to this application?",
-      viewAwardedLink: "View awarded project",
+      createAwardedButton: "Register grant",
+      confirmCreateAwarded: "Register the grant for this application? Its reporting is then set up under Report.",
+      confirmRegisterYes: "Yes, register",
+      confirmCancel: "Cancel",
+      viewAwardedLink: "View grant",
       updatedAt: (date) => `Updated ${date}`,
       roundLabel: (n) => `Application ${n}`,
       continueApplication: "Continue application",
@@ -2542,6 +2718,87 @@ export const translations: Record<Lang, TranslationTree> = {
         "Start a new, empty application to the same call? The current application stays under the project.",
       allApplicationsLink: "All applications for the project",
       otherApplicationsNote: (n) => `The project has ${n} other ${n === 1 ? "application" : "applications"} to the same call.`,
+    },
+    apply: {
+      title: "Apply",
+      subtitle: "Every application regardless of project — and where to find new funding.",
+      myApplicationsTitle: "Applications",
+      filterActive: "In progress",
+      filterDecided: "Decided",
+      filterAll: "All",
+      statActive: "Drafts",
+      statWithFunder: "With the funder",
+      statAwarded: "Awarded",
+      statClosed: "Rejected or withdrawn",
+      columnProjectCall: "Project and call",
+      columnStatus: "Status",
+      columnDeadline: "Deadline",
+      columnUpdated: "Updated",
+      noApplications: "No applications here.",
+      noApplicationsHint: "Start a new application, or pick a call under Find funding below.",
+      registerGrant: "Register grant",
+      findFundingTitle: "Find funding",
+      browseEuDatabase: "Browse the whole EU database →",
+    },
+    report: {
+      title: "Report",
+      subtitle: "All reporting on grants regardless of project — what's due and when.",
+      statAttention: "Needs action",
+      statUpcoming: "Upcoming",
+      statDone: "Submitted or approved",
+      statGrants: "Grants",
+      attentionTitle: "Needs action",
+      attentionHint: "Reports returned for revision, or past their deadline.",
+      upcomingTitle: "Upcoming reports",
+      doneTitle: (n) => `Submitted and approved (${n})`,
+      showDone: (n) => `Show submitted and approved (${n})`,
+      hideDone: "Hide submitted and approved",
+      noAttention: "Nothing needs action right now.",
+      noUpcoming: "No upcoming reports.",
+      noGrants: "No grants yet. When an application is awarded, the grant is registered on the project's page and its reporting shows up here.",
+      grantsTitle: "Grants",
+      grantsHint: "Each grant with its reporting status.",
+      open: "Open",
+      overdueLabel: (n) => (n === 0 ? "Overdue" : `Overdue by ${n} ${n === 1 ? "month" : "months"}`),
+    },
+    notifications: {
+      title: "Notifications",
+      bellLabel: (n) => (n === 0 ? "Notifications" : `Notifications, ${n} unread`),
+      markAllRead: "Mark all as read",
+      none: "No notifications right now.",
+      settingsLink: "Notification settings",
+      unreadMarker: (n) => `${n} unread ${n === 1 ? "notification" : "notifications"}`,
+      categoryLabels: {
+        deadlines: "Deadlines and reminders",
+        calls: "Calls",
+        applications: "Applications",
+        reporting: "Reporting",
+        projects: "Projects",
+        system: "System",
+      },
+      categoryHints: {
+        deadlines: "Applications and reports coming due, watched calls closing, tasks falling due.",
+        calls: "New calls that fit a project, and watched calls that changed.",
+        applications: "An application's status changing, and awarded applications whose grant needs registering.",
+        reporting: "Reports returned or overdue, and new grants.",
+        projects: "Projects shared with your unit.",
+        system: "Imported calls and EU database documents that need updating.",
+      },
+      settingsTitle: "Notifications",
+      settingsIntro: "Choose what to be notified about, where, and how far ahead. Notifications collect under the bell at the top right.",
+      columnCategory: "Kind of event",
+      columnInApp: "In the system",
+      columnEmail: "E-mail",
+      emailModes: { off: "Off", instant: "Immediately", daily: "Daily digest", weekly: "Weekly digest" },
+      emailNote: "E-mail choices are saved, but this demo sends no e-mail — that needs a connection to an e-mail service.",
+      scopeTitle: "Which projects",
+      scopeMine: "Only projects where I have a role or that are shared with my unit",
+      scopeAll: "All of the organisation's projects",
+      leadTitle: "Remind me of deadlines",
+      leadOption: (n) => `${n} ${n === 1 ? "month" : "months"} ahead`,
+      resetDefaults: "Reset to defaults",
+      watchTitle: "Watchlists",
+      watchIntro: "Watched calls and programmes produce deadline and change reminders. They also show under Apply → Find funding.",
     },
   },
 };

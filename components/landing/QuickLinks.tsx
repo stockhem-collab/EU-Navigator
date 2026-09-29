@@ -5,14 +5,17 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 // A compact way for someone who already works in the system (not a first-time
 // visitor) to jump straight to any section — the three funnel cards above
-// this only represent 3 of the app's 7 real sections, so a returning user
-// looking for e.g. Datacenter or Bevakning had no link to it anywhere on
-// this page.
-const LINKS: { href: string; icon: string; labelKey: "demo" | "euDatabase" | "projectBank" | "monitoring" | "referenceProjects" | "myProjects" | "datacenter" }[] = [
-  { href: "/demo", icon: "📝", labelKey: "demo" },
-  { href: "/projekt", icon: "📁", labelKey: "myProjects" },
-  { href: "/bevakning", icon: "🔔", labelKey: "monitoring" },
-  { href: "/projektbank", icon: "🗂", labelKey: "projectBank" },
+// this only cover part of the app, so every main tab is linked here too.
+const LINKS: {
+  href: string;
+  icon: string;
+  labelKey: "demo" | "overview" | "projects" | "apply" | "report" | "euDatabase" | "referenceProjects" | "datacenter";
+}[] = [
+  { href: "/ansokan", icon: "📝", labelKey: "demo" },
+  { href: "/oversikt", icon: "🏠", labelKey: "overview" },
+  { href: "/projekt", icon: "🗂", labelKey: "projects" },
+  { href: "/ansok", icon: "✍️", labelKey: "apply" },
+  { href: "/rapportera", icon: "📊", labelKey: "report" },
   { href: "/eu-databas", icon: "📚", labelKey: "euDatabase" },
   { href: "/referensprojekt", icon: "🏆", labelKey: "referenceProjects" },
   { href: "/datacenter", icon: "🛠", labelKey: "datacenter" },
@@ -24,7 +27,7 @@ export default function QuickLinks() {
   return (
     <section className="section pt-0">
       <h2 className="text-sm font-semibold uppercase text-navy-400">{t.home.quickLinksTitle}</h2>
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         {LINKS.map((link) => (
           <Link
             key={link.href}
