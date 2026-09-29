@@ -377,6 +377,11 @@ export interface TranslationTree {
   datacenter: {
     title: string;
     subtitle: string;
+    portfolioTitle: string;
+    portfolioHint: string;
+    applicationsByStatusTitle: string;
+    grantsTotalLabel: string;
+    grantsCountLabel: string;
     statProjectIdeas: string;
     statActiveProjects: string;
     statPrograms: string;
@@ -713,29 +718,21 @@ export interface TranslationTree {
   oversikt: {
     title: string;
     subtitle: string;
-    roleLabel: string;
-    roleLedning: string;
-    roleLedningDesc: string;
-    roleSamordnare: string;
-    roleSamordnareDesc: string;
-    roleVerksamhet: string;
-    roleVerksamhetDesc: string;
+    statActiveApplications: string;
+    statReportsAttention: string;
+    statReportsUpcoming: string;
+    statOpenTasks: string;
+    statUnread: string;
+    myApplicationsTitle: string;
+    myApplicationsNone: string;
+    viewAllApplications: string;
+    myReportsTitle: string;
+    myReportsNone: string;
+    viewAllReports: string;
+    latestNotificationsTitle: string;
+    latestNotificationsNone: string;
     sectionStatusBreakdown: string;
-    sectionUpcomingDeadlines: string;
-    sectionUpcomingReports: string;
-    viewAllInMyProjects: string;
-    sectionYourProjects: string;
-    departmentFilterLabel: string;
-    allDepartments: string;
-    noProjectsInDepartment: string;
-    fieldsMissingForBestMatch: (n: number) => string;
     describeNewProject: string;
-    viewAllInBevakning: string;
-    searchProjectsPlaceholder: string;
-    noProjectsMatchSearch: string;
-    ongoingApplicationsTitle: string;
-    ongoingApplicationsHint: string;
-    ongoingApplicationsNone: string;
     ongoingApplicationsResume: string;
     ongoingApplicationsUpdatedAt: (date: string) => string;
     ongoingApplicationsVersions: (n: number) => string;
@@ -1334,6 +1331,11 @@ export const translations: Record<Lang, TranslationTree> = {
     datacenter: {
       title: "Datacenter",
       subtitle: "Vad AI:n faktiskt har tillgång till — och vad som behöver kompletteras.",
+      portfolioTitle: "Portfölj",
+      portfolioHint: "Ledningens bild av hela investeringsplanen: ekonomi, projekt per status, ansökningar och beviljat stöd.",
+      applicationsByStatusTitle: "Ansökningar per status",
+      grantsTotalLabel: "Beviljat totalt",
+      grantsCountLabel: "Beviljade stöd",
       statProjectIdeas: "Projektidéer",
       statActiveProjects: "Aktiva projekt",
       statPrograms: "EU-program",
@@ -1678,36 +1680,28 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     oversikt: {
       title: "Översikt",
-      subtitle: "Samma data, olika vy beroende på vad du behöver se.",
-      roleLabel: "Perspektiv",
-      roleLedning: "Kommunledning / ekonomi",
-      roleLedningDesc: "Portföljekonomi och status över hela investeringsplanen.",
-      roleSamordnare: "EU-/finansieringssamordnare",
-      roleSamordnareDesc: "Alla projekt rankade efter matchning, kommande deadlines och rapporteringar.",
-      roleVerksamhet: "Verksamhetsutvecklare",
-      roleVerksamhetDesc: "Dina förvaltningens projekt och vad som saknas för bästa matchning.",
+      subtitle: "Det du behöver göra nu – dina ansökningar, rapporter och uppgifter.",
+      statActiveApplications: "Pågående ansökningar",
+      statReportsAttention: "Rapporter som kräver åtgärd",
+      statReportsUpcoming: "Kommande rapporter",
+      statOpenTasks: "Öppna uppgifter",
+      statUnread: "Olästa aviseringar",
+      myApplicationsTitle: "Ansökningar",
+      myApplicationsNone: "Inga pågående ansökningar. Starta en ny, eller hitta en utlysning under Ansöka.",
+      viewAllApplications: "Alla ansökningar under Ansöka →",
+      myReportsTitle: "Rapportering",
+      myReportsNone: "Ingen rapportering att göra just nu.",
+      viewAllReports: "All rapportering under Rapportera →",
+      latestNotificationsTitle: "Olästa aviseringar",
+      latestNotificationsNone: "Inga olästa aviseringar.",
       sectionStatusBreakdown: "Projekt per status",
-      sectionUpcomingDeadlines: "Närmaste deadlines",
-      sectionUpcomingReports: "Kommande rapporteringar",
-      viewAllInMyProjects: "Se alla i mina projekt →",
-      sectionYourProjects: "Projekt",
-      departmentFilterLabel: "Förvaltning",
-      allDepartments: "Alla förvaltningar",
-      noProjectsInDepartment: "Inga projekt i denna förvaltning ännu.",
-      fieldsMissingForBestMatch: (n) => `${n} fält saknas för bästa matchning`,
-      describeNewProject: "Beskriv ett nytt projekt",
-      viewAllInBevakning: "Se all bevakning →",
-      searchProjectsPlaceholder: "Sök bland projekten…",
-      noProjectsMatchSearch: "Inga projekt matchar din sökning.",
-      ongoingApplicationsTitle: "Pågående ansökningar",
-      ongoingApplicationsHint: "Hoppa direkt tillbaka till en ansökan du redan börjat skriva på.",
-      ongoingApplicationsNone: "Inga pågående ansökningar just nu — de dyker upp här så fort du börjar skriva i Ansökningsstudion.",
-      ongoingApplicationsResume: "Fortsätt →",
+      describeNewProject: "Ny ansökan",
+      ongoingApplicationsResume: "Fortsätt",
       ongoingApplicationsUpdatedAt: (date) => `Senast redigerad ${date}`,
       ongoingApplicationsVersions: (n) => (n === 1 ? "1 sparad version" : `${n} sparade versioner`),
-      currentTasksTitle: "Aktuella uppgifter",
-      currentTasksHint: "Öppna uppgifter över hela portföljen, snarast förfallande först.",
-      currentTasksNone: "Inga öppna uppgifter just nu. Lägg till uppgifter under ett projekt i Projektbanken.",
+      currentTasksTitle: "Uppgifter",
+      currentTasksHint: "Öppna uppgifter i projekten, snarast förfallande först.",
+      currentTasksNone: "Inga öppna uppgifter just nu. Lägg till uppgifter på ett projekts sida.",
       currentTasksViewAll: "Visa projekt →",
     },
     applications: {
@@ -2317,6 +2311,11 @@ export const translations: Record<Lang, TranslationTree> = {
     datacenter: {
       title: "Datacenter",
       subtitle: "What the AI actually has access to — and what needs completing.",
+      portfolioTitle: "Portfolio",
+      portfolioHint: "Leadership's view of the whole investment plan: economics, projects by status, applications and grants.",
+      applicationsByStatusTitle: "Applications by status",
+      grantsTotalLabel: "Awarded in total",
+      grantsCountLabel: "Grants",
       statProjectIdeas: "Project ideas",
       statActiveProjects: "Active projects",
       statPrograms: "EU programmes",
@@ -2659,36 +2658,28 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     oversikt: {
       title: "Overview",
-      subtitle: "The same data, arranged differently depending on what you need to see.",
-      roleLabel: "Perspective",
-      roleLedning: "Municipal leadership / finance",
-      roleLedningDesc: "Portfolio economics and status across the whole investment plan.",
-      roleSamordnare: "EU / funding coordinator",
-      roleSamordnareDesc: "Every project ranked by match, upcoming deadlines, and reporting.",
-      roleVerksamhet: "Service developer",
-      roleVerksamhetDesc: "Your department's projects and what's missing for the best possible match.",
+      subtitle: "What you need to do now — your applications, reports and tasks.",
+      statActiveApplications: "Applications in progress",
+      statReportsAttention: "Reports needing action",
+      statReportsUpcoming: "Upcoming reports",
+      statOpenTasks: "Open tasks",
+      statUnread: "Unread notifications",
+      myApplicationsTitle: "Applications",
+      myApplicationsNone: "No applications in progress. Start a new one, or find a call under Apply.",
+      viewAllApplications: "All applications under Apply →",
+      myReportsTitle: "Reporting",
+      myReportsNone: "No reporting to do right now.",
+      viewAllReports: "All reporting under Report →",
+      latestNotificationsTitle: "Unread notifications",
+      latestNotificationsNone: "No unread notifications.",
       sectionStatusBreakdown: "Projects by status",
-      sectionUpcomingDeadlines: "Nearest deadlines",
-      sectionUpcomingReports: "Upcoming reports",
-      viewAllInMyProjects: "See all in my projects →",
-      sectionYourProjects: "Projects",
-      departmentFilterLabel: "Department",
-      allDepartments: "All departments",
-      noProjectsInDepartment: "No projects in this department yet.",
-      fieldsMissingForBestMatch: (n) => `${n} fields missing for the best match`,
-      describeNewProject: "Describe a new project",
-      viewAllInBevakning: "See all monitoring →",
-      searchProjectsPlaceholder: "Search the projects…",
-      noProjectsMatchSearch: "No projects match your search.",
-      ongoingApplicationsTitle: "Ongoing applications",
-      ongoingApplicationsHint: "Jump straight back into an application you've already started writing.",
-      ongoingApplicationsNone: "No ongoing applications right now — they'll show up here as soon as you start writing in the Application workspace.",
-      ongoingApplicationsResume: "Resume →",
+      describeNewProject: "New application",
+      ongoingApplicationsResume: "Continue",
       ongoingApplicationsUpdatedAt: (date) => `Last edited ${date}`,
       ongoingApplicationsVersions: (n) => (n === 1 ? "1 saved version" : `${n} saved versions`),
-      currentTasksTitle: "Current tasks",
-      currentTasksHint: "Open tasks across the whole portfolio, soonest due first.",
-      currentTasksNone: "No open tasks right now. Add tasks under a project in the project bank.",
+      currentTasksTitle: "Tasks",
+      currentTasksHint: "Open tasks in the projects, soonest due first.",
+      currentTasksNone: "No open tasks right now. Add tasks on a project's page.",
       currentTasksViewAll: "View project →",
     },
     applications: {

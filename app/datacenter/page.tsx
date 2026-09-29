@@ -11,6 +11,12 @@ import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { useGrants } from "@/lib/hooks/useGrants";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
+import { useApplications } from "@/lib/hooks/useApplications";
+import StatusBadge from "@/components/StatusBadge";
+import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
+import { computePortfolioEconomics } from "@/lib/matching/portfolio";
+import { fmtSEK } from "@/lib/format";
+import { APPLICATION_STATUS_ORDER, PROJECT_STATUS_ORDER } from "@/lib/types";
 
 /** Formatted after mount only, so the demo's "last synced" stat always
  * reads as just now instead of a timestamp that was frozen at write time
@@ -44,6 +50,14 @@ export default function DatacenterPage() {
   const { all: awardedProjects } = useGrants();
   const { withSubmissions } = useReportingSubmissions();
   const lastSync = useNowStamp();
+  const { records: applicationRecords } = useApplications();
+  const pb = t.projectBank;
+
+  // Leadership's portfolio view (formerly Översikt's "Kommunledning /
+  // ekonomi" perspective): economics, projects per lifecycle status,
+  // applications per status, and what has actually been awarded.
+  const economics = computePortfolioEconomics(projectBank, fundingCalls);
+  const grantsTotalSEK = awardedProjects.reduce((sum, g) => sum + g.awardedAmountSEK, 0);
 
   const docs = fundingCalls.flatMap((c) => c.documents.map((d) => ({ ...d, callId: c.id })));
   const docsNeedingUpdate = docs.filter((d) => d.needsUpdate);
@@ -86,7 +100,72 @@ export default function DatacenterPage() {
           </Link>
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <section className="mt-8" aria-labelledby="portfolio-heading">
+          <h2 id="portfolio-heading" className="text-lg font-bold text-navy-800">
+            {dc.portfolioTitle}
+          </h2>
+          <p className="mt-1 text-sm text-navy-500">{dc.portfolioHint}</p>
+
+          <div className="mt-4 rounded-xl bg-navy-800 p-6 text-white">
+            <h3 className="font-bold">{pb.economicsTitle}</h3>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
+              <div>
+                <p className="text-2xl font-bold text-white">{fmtSEK(economics.totalBudgetSEK, lang)}</p>
+                <p className="text-sm text-navy-300">{pb.statPortfolioBudget}</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gold-300">{fmtSEK(economics.totalIdentifiedFundingSEK, lang)}</p>
+                <p className="text-sm text-navy-300">{pb.statFundingPotential}</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">{fmtSEK(economics.totalCoFinancingNeededSEK, lang)}</p>
+                <p className="text-sm text-navy-300">{pb.statCoFinancingNeed}</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-green-300">{fmtSEK(grantsTotalSEK, lang)}</p>
+                <p className="text-sm text-navy-300">
+                  {dc.grantsTotalLabel} · {awardedProjects.length} {dc.grantsCountLabel.toLowerCase()}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <div className="rounded-xl border border-navy-100 bg-white p-5">
+              <h3 className="text-sm font-semibold uppercase text-navy-400">{t.oversikt.sectionStatusBreakdown}</h3>
+              <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {PROJECT_STATUS_ORDER.map((status) => (
+                  <li key={status}>
+                    <Link
+                      href={`/projekt?status=${status}`}
+                      className="flex items-center justify-between gap-2 rounded-md border border-navy-100 px-3 py-2 transition hover:border-navy-300"
+                    >
+                      <StatusBadge status={status} />
+                      <span className="text-lg font-extrabold text-navy-900">
+                        {projectBank.filter((p) => p.status === status).length}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-xl border border-navy-100 bg-white p-5">
+              <h3 className="text-sm font-semibold uppercase text-navy-400">{dc.applicationsByStatusTitle}</h3>
+              <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {APPLICATION_STATUS_ORDER.map((status) => (
+                  <li key={status} className="flex items-center justify-between gap-2 rounded-md border border-navy-100 px-3 py-2">
+                    <ApplicationStatusBadge status={status} />
+                    <span className="text-lg font-extrabold text-navy-900">
+                      {applicationRecords.filter((r) => r.status === status).length}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           <StatTile label={dc.statProjectIdeas} value={projectBank.length} />
           <StatTile label={dc.statActiveProjects} value={activeProjects.length} />
           <StatTile label={dc.statPrograms} value={fundingPrograms.length} />
