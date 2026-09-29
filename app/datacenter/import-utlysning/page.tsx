@@ -51,6 +51,7 @@ interface FormState {
   coFinancingPct: string;
   evaluationCriteria: EvaluationCriterion[];
   prioritiesSv: string;
+  prioritiesEn: string;
   tags: string[];
   periodicity: ReportingPeriodicity;
   interimReportsRequired: number;
@@ -83,6 +84,7 @@ const EMPTY_FORM: FormState = {
   coFinancingPct: "",
   evaluationCriteria: [],
   prioritiesSv: "",
+  prioritiesEn: "",
   tags: [],
   periodicity: "annual",
   interimReportsRequired: 2,
@@ -141,7 +143,10 @@ export default function ImportUtlysningPage() {
       minPartnerCountries: draft.minPartnerCountries.value ?? prev.minPartnerCountries,
       deadlineDate: draft.deadlineDate.value ?? prev.deadlineDate,
       coFinancingPct: draft.coFinancingRate.value !== null ? String(Math.round(draft.coFinancingRate.value * 100)) : prev.coFinancingPct,
-      evaluationCriteria: draft.evaluationCriteria.value,
+      // The extractor can only read the Swedish text; the English names
+      // start empty (falling back to Swedish on save) rather than looking
+      // translated when they aren't.
+      evaluationCriteria: draft.evaluationCriteria.value.map((c) => ({ ...c, name_en: "" })),
       prioritiesSv: draft.priorities_sv.value.join("\n"),
       tags: suggestedTags,
       periodicity: draft.periodicity.value,
@@ -201,7 +206,7 @@ export default function ImportUtlysningPage() {
   const selectedProgram = form.programId ? findProgram(form.programId) : undefined;
   const coFinancingRate = form.coFinancingPct.trim() ? Number(form.coFinancingPct) / 100 : undefined;
   const validCriteria = form.evaluationCriteria
-    .map((c) => ({ ...c, name_sv: c.name_sv.trim(), name_en: c.name_sv.trim() }))
+    .map((c) => ({ ...c, name_sv: c.name_sv.trim(), name_en: c.name_en.trim() || c.name_sv.trim() }))
     .filter((c) => c.name_sv && c.maxPoints > 0);
   const deadlineMonths = form.deadlineDate ? monthsUntilDate(form.deadlineDate) : null;
   const deadlinePassed = deadlineMonths !== null && deadlineMonths < 0;
@@ -230,6 +235,7 @@ export default function ImportUtlysningPage() {
     const existingIds = [...fundingCalls.map((c) => c.id), ...imported.map((c) => c.id)];
     const id = slugifyCallId(form.titleSv, existingIds);
     const priorities_sv = form.prioritiesSv.split("\n").map((l) => l.trim()).filter(Boolean);
+    const priorities_en = form.prioritiesEn.split("\n").map((l) => l.trim()).filter(Boolean);
 
     const call: FundingCall = {
       id,
@@ -254,7 +260,8 @@ export default function ImportUtlysningPage() {
       minPartnerCountries: form.requiresPartnership ? form.minPartnerCountries : undefined,
       coFinancingRate: coFinancingRate !== undefined && coFinancingRate > 0 && coFinancingRate <= 1 ? coFinancingRate : undefined,
       priorities_sv,
-      priorities_en: priorities_sv,
+      // Swedish stands in until an English version is entered.
+      priorities_en: priorities_en.length > 0 ? priorities_en : priorities_sv,
       extraKeywords: [],
       tags: form.tags,
       evaluationCriteria: validCriteria,
@@ -580,8 +587,15 @@ export default function ImportUtlysningPage() {
                   <input
                     aria-label={ci.criterionNamePlaceholder}
                     value={criterion.name_sv}
-                    onChange={(e) => setCriterion(i, { name_sv: e.target.value, name_en: e.target.value })}
+                    onChange={(e) => setCriterion(i, { name_sv: e.target.value })}
                     placeholder={ci.criterionNamePlaceholder}
+                    className="w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                  />
+                  <input
+                    aria-label={ci.criterionNameEnPlaceholder}
+                    value={criterion.name_en}
+                    onChange={(e) => setCriterion(i, { name_en: e.target.value })}
+                    placeholder={ci.criterionNameEnPlaceholder}
                     className="w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
                   />
                   <input
@@ -625,12 +639,24 @@ export default function ImportUtlysningPage() {
               {badge("priorities")}
             </div>
             <p className="mt-0.5 text-xs text-navy-400">{ci.fieldPrioritiesHint}</p>
-            <textarea
-              rows={4}
-              value={form.prioritiesSv}
-              onChange={(e) => setForm({ ...form, prioritiesSv: e.target.value })}
-              className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <textarea
+                aria-label={ci.fieldPrioritiesSv}
+                rows={4}
+                value={form.prioritiesSv}
+                onChange={(e) => setForm({ ...form, prioritiesSv: e.target.value })}
+                placeholder={ci.fieldPrioritiesSv}
+                className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+              />
+              <textarea
+                aria-label={ci.fieldPrioritiesEn}
+                rows={4}
+                value={form.prioritiesEn}
+                onChange={(e) => setForm({ ...form, prioritiesEn: e.target.value })}
+                placeholder={ci.fieldPrioritiesEn}
+                className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+              />
+            </div>
           </div>
 
           <div>

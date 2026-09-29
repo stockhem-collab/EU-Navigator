@@ -142,12 +142,21 @@ test("an imported call's deadline date, funding rate and criteria are saved and 
   await page.getByLabel(/Stödnivå/).fill("55");
   await page.getByRole("button", { name: "+ Lägg till kriterium" }).click();
   await page.getByLabel("Kriterium, t.ex. Relevans").fill("Relevans");
+  await page.getByLabel("Engelskt namn (valfritt)").fill("Relevance");
+  await page.getByLabel("Prioriteringar på engelska (valfritt)").fill("Measurable climate effect");
   await page.getByRole("button", { name: "Spara utlysning" }).click();
 
   await page.locator("li", { hasText: title }).getByRole("link").click();
   await expect(page.getByText("2031-06-30")).toBeVisible();
   await expect(page.getByText("Stödnivå upp till 55 %")).toBeVisible();
   await expect(page.getByText("Relevans", { exact: true })).toBeVisible();
+  await expect(page.getByText("Mätbar klimateffekt")).toBeVisible();
+
+  // The English versions are shown in English, not the Swedish text.
+  await page.getByRole("button", { name: "EN", exact: true }).click();
+  await expect(page.getByText("Relevance", { exact: true })).toBeVisible();
+  await expect(page.getByText("Measurable climate effect")).toBeVisible();
+  await page.getByRole("button", { name: "SV", exact: true }).click();
 
   await page.goto("/datacenter/import-utlysning");
   page.once("dialog", (d) => d.accept());

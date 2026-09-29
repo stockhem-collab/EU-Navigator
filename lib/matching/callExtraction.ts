@@ -126,8 +126,7 @@ function detectMinPartnerCountries(text: string): number | null {
 // scope — a call text naming a county in passing (an example project, a
 // contact office) mustn't restrict the call to it.
 function detectRegions(text: string): SwedishRegion[] {
-  const scopeSentences = text
-    .split(/(?<=[.!?])\s+|\n/)
+  const scopeSentences = sentencesOf(text)
     .filter((sentence) => /programområde|geografiskt område|stödberättigat område|följande län/i.test(sentence));
   const found = new Set<SwedishRegion>();
   for (const sentence of scopeSentences) {
@@ -144,8 +143,7 @@ function detectRegions(text: string): SwedishRegion[] {
 const SWEDISH_MONTHS = ["januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september", "oktober", "november", "december"];
 
 function detectDeadlineDate(text: string): string | null {
-  const sentences = text
-    .split(/(?<=[.!?])\s+|\n/)
+  const sentences = sentencesOf(text)
     .filter((sentence) => /sista ansökningsdag|deadline|senast|stänger|ansökningstiden/i.test(sentence));
   for (const sentence of sentences) {
     const iso = sentence.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
@@ -163,8 +161,7 @@ function detectDeadlineDate(text: string): string | null {
 // explicitly ("stödnivå", "% av de stödberättigande kostnaderna"), since a
 // bare "medfinansiering 40 %" could equally mean the applicant's share.
 function detectCoFinancingRate(text: string): number | null {
-  const sentence = text
-    .split(/(?<=[.!?])\s+|\n/)
+  const sentence = sentencesOf(text)
     .find((s) => /stödnivå|stödandel|%\s*av\s*(?:de\s+)?stödberättigande|procent\s+av\s+(?:de\s+)?stödberättigande/i.test(s));
   const m = sentence?.match(/(\d{1,3})\s*(?:%|procent)/i);
   if (!m) return null;
@@ -195,9 +192,32 @@ function nullableField<T>(value: T | null): ExtractedField<T | null> {
   return value !== null ? { value, confidence: "detected" } : { value: null, confidence: "default" };
 }
 
+function sentencesOf(text: string): string[] {
+  return text.split(/(?<=[.!?])\s+|\n/);
+}
+
+// The call's total budget — only "detected" from a sentence that says it's
+// the total. Falling back to the largest amount anywhere in the text used
+// to report a grant ceiling ("mellan 5 och 80 miljoner per projekt") as the
+// total budget with a "found in the text" badge; now the fallback skips
+// per-project and audit amounts and is marked as a default to check.
+function detectTotalBudget(text: string): ExtractedField<number> {
+  const sentences = sentencesOf(text);
+  const budgetSentence = sentences.find(
+    (s) =>
+      /total(?:a)?\s+budget|totalt|sammanlagt|budgetram|avsätts|avsatt|budgeten för utlysningen|finns\s+.*\s+att\s+söka/i.test(s) &&
+      findAllAmounts(s).length > 0
+  );
+  if (budgetSentence) return { value: Math.max(...findAllAmounts(budgetSentence)), confidence: "detected" };
+
+  const otherAmounts = sentences
+    .filter((s) => !/per\s+projekt|mellan\s+.*\s+och|revision|revisor/i.test(s))
+    .flatMap(findAllAmounts);
+  return { value: otherAmounts.length > 0 ? Math.max(...otherAmounts) : 0, confidence: "default" };
+}
+
 export function extractCallDraft(text: string): ExtractedCallDraft {
-  const amounts = findAllAmounts(text);
-  const budgetTotalSEK: ExtractedField<number> = amounts.length > 0 ? { value: Math.max(...amounts), confidence: "detected" } : { value: 0, confidence: "default" };
+  const budgetTotalSEK = detectTotalBudget(text);
 
   const rangeMatch = text.match(
     /mellan\s+([\d\s.,]+)\s*(miljarder|miljard|miljoner|miljon|mnkr|tkr|tusen)?\s*(?:kr|kronor|sek)?\s+och\s+([\d\s.,]+)\s*(miljarder|miljard|miljoner|miljon|mnkr|tkr|tusen)?\s*(?:kr|kronor|sek)?/i

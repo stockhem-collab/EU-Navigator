@@ -437,6 +437,9 @@ export interface TranslationTree {
     deadlinePassed: string;
     fieldPriorities: string;
     fieldPrioritiesHint: string;
+    fieldPrioritiesSv: string;
+    fieldPrioritiesEn: string;
+    criterionNameEnPlaceholder: string;
     fieldTags: string;
     noTagsWarning: string;
     fieldPeriodicity: string;
@@ -1277,7 +1280,7 @@ export const translations: Record<Lang, TranslationTree> = {
           ? "Lämna tomt för att använda programmets typiska stödnivå."
           : `Lämna tomt för att använda programmets typiska stödnivå (${pct} %).`,
       fieldCriteria: "Bedömningskriterier",
-      fieldCriteriaHint: "Styr hur matchningen väger tematisk passform mot genomförbarhet. Utan kriterier används en standardfördelning (60/40).",
+      fieldCriteriaHint: "Styr hur matchningen väger tematisk passform mot genomförbarhet. Utan kriterier används en standardfördelning (60/40). Utan engelskt namn visas det svenska.",
       criterionNamePlaceholder: "Kriterium, t.ex. Relevans",
       criterionPointsLabel: "Poäng",
       addCriterion: "Lägg till kriterium",
@@ -1293,7 +1296,10 @@ export const translations: Record<Lang, TranslationTree> = {
       missingDeadline: "Sista ansökningsdag",
       deadlinePassed: "Sista ansökningsdag har redan passerat – utlysningen kommer att visas som stängd i matchningen.",
       fieldPriorities: "Prioriteringar",
-      fieldPrioritiesHint: "En prioritering per rad.",
+      fieldPrioritiesHint: "En prioritering per rad. Lämnas den engelska tom används den svenska texten även på engelska.",
+      fieldPrioritiesSv: "Prioriteringar på svenska",
+      fieldPrioritiesEn: "Prioriteringar på engelska (valfritt)",
+      criterionNameEnPlaceholder: "Engelskt namn (valfritt)",
       fieldTags: "Taggar",
       noTagsWarning: "Utlysningen har inga taggar valda — matchningen mot projekt blir mindre träffsäker utan dem.",
       fieldPeriodicity: "Rapporteringsfrekvens",
@@ -2133,7 +2139,7 @@ export const translations: Record<Lang, TranslationTree> = {
           ? "Leave empty to use the programme's typical funding rate."
           : `Leave empty to use the programme's typical funding rate (${pct}%).`,
       fieldCriteria: "Evaluation criteria",
-      fieldCriteriaHint: "Decides how matching weighs thematic fit against feasibility. Without criteria a default split (60/40) is used.",
+      fieldCriteriaHint: "Decides how matching weighs thematic fit against feasibility. Without criteria a default split (60/40) is used. Without an English name, the Swedish one is shown.",
       criterionNamePlaceholder: "Criterion, e.g. Relevance",
       criterionPointsLabel: "Points",
       addCriterion: "Add criterion",
@@ -2149,7 +2155,10 @@ export const translations: Record<Lang, TranslationTree> = {
       missingDeadline: "Application deadline",
       deadlinePassed: "The application deadline has already passed — the call will show as closed in matching.",
       fieldPriorities: "Priorities",
-      fieldPrioritiesHint: "One priority per line.",
+      fieldPrioritiesHint: "One priority per line. If the English list is left empty, the Swedish text is shown in English too.",
+      fieldPrioritiesSv: "Priorities in Swedish",
+      fieldPrioritiesEn: "Priorities in English (optional)",
+      criterionNameEnPlaceholder: "English name (optional)",
       fieldTags: "Tags",
       noTagsWarning: "This call has no tags selected — matching against projects will be less accurate without them.",
       fieldPeriodicity: "Reporting frequency",

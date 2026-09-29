@@ -111,3 +111,20 @@ test("an ISO deadline date and 'minst tre länder' are read as written", () => {
   expect(draft.deadlineDate.value).toBe("2027-09-30");
   expect(draft.minPartnerCountries.value).toBe(3);
 });
+
+test("the total budget is only 'detected' from a sentence about the total, never a per-project grant", () => {
+  const onlyGrants = extractCallDraft(
+    "Bidrag ges på mellan 5 miljoner kronor och 80 miljoner kronor per projekt. Revisionsintyg krävs över 2 miljoner kronor."
+  );
+  expect(onlyGrants.budgetTotalSEK).toEqual({ value: 0, confidence: "default" });
+
+  const withTotal = extractCallDraft(
+    "Bidrag ges på mellan 5 miljoner kronor och 80 miljoner kronor per projekt. Totalt avsätts 400 miljoner kronor i utlysningen."
+  );
+  expect(withTotal.budgetTotalSEK).toEqual({ value: 400_000_000, confidence: "detected" });
+
+  // An amount outside any recognised sentence is still offered, but as a
+  // default to check.
+  const unlabelled = extractCallDraft("Utlysningen omfattar 150 miljoner kronor.");
+  expect(unlabelled.budgetTotalSEK).toEqual({ value: 150_000_000, confidence: "default" });
+});
