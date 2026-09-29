@@ -107,6 +107,7 @@ test("a saved application version exports independently of later edits to the li
   const startLink = page.locator('a[href*="/demo?project=pb-4"]').first();
   const href = await startLink.getAttribute("href");
   await page.goto(href!);
+  await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
 
   const textarea = page.locator("textarea").first();
   const savedValue = `Saved for export ${Date.now()}`;

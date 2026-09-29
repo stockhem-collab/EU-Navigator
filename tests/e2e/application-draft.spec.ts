@@ -15,6 +15,8 @@ test("a saved project's application draft survives re-entering the workspace", a
 
   await page.goto(href!);
 
+  await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
+
   await expect(page.getByText(/sparas automatiskt|saved automatically/i)).toBeVisible();
 
   const textarea = page.locator("textarea").first();
@@ -26,6 +28,7 @@ test("a saved project's application draft survives re-entering the workspace", a
   // Re-enter the same flow from scratch (the SPA step state, not the
   // localStorage draft, resets on a fresh navigation).
   await page.goto(href!);
+  await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
   await expect(page.locator("textarea").first()).toHaveValue(testValue);
 
   // Reset restores the AI suggestion, not the manual draft — asks for
@@ -49,6 +52,7 @@ test("a version can be saved and restored, and the application exports as .docx"
   const startLink = page.locator('a[href*="/demo?project=pb-4"]').first();
   const href = await startLink.getAttribute("href");
   await page.goto(href!);
+  await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
 
   const textarea = page.locator("textarea").first();
   const draftValue = `Version draft ${Date.now()}`;
