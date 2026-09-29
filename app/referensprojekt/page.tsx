@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import KnowledgeTabs from "@/components/KnowledgeTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { fundedProjects, computeProgramStats } from "@/lib/data/fundedProjects";
@@ -42,12 +43,13 @@ function ReferenceProjectsInner() {
     <>
       <Header />
       <main className="section">
+        <KnowledgeTabs />
         <h1 className="text-2xl font-bold text-navy-900">{rp.title}</h1>
         <p className="mt-2 text-sm text-navy-600">{rp.subtitle}</p>
         <p className="mt-3 rounded-md bg-navy-50 px-3 py-2 text-xs text-navy-700">{rp.disclaimer}</p>
 
         <Link
-          href="/demo"
+          href="/ansokan"
           className="mt-4 inline-block rounded-md bg-gold-500 px-4 py-2 text-sm font-semibold text-navy-900 shadow-sm transition hover:bg-gold-400"
         >
           {rp.startApplicationCta}

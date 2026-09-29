@@ -7,13 +7,14 @@ export interface TranslationTree {
     personas: string;
     pricing: string;
     demo: string;
-    projectBank: string;
+    projects: string;
+    apply: string;
+    report: string;
+    knowledgeBank: string;
     euDatabase: string;
     referenceProjects: string;
-    myProjects: string;
     datacenter: string;
     overview: string;
-    monitoring: string;
     settings: string;
     menu: string;
   };
@@ -215,6 +216,21 @@ export interface TranslationTree {
   projectBank: {
     title: string;
     subtitle: string;
+    lifecycleTitle: string;
+    lifecycleProject: string;
+    lifecycleApplications: string;
+    lifecycleGrants: string;
+    lifecycleReporting: string;
+    lifecycleApplicationsSummary: (active: number, closed: number, awarded: number) => string;
+    lifecycleGrantsSummary: (n: number) => string;
+    lifecycleNone: string;
+    grantsSectionTitle: string;
+    grantsSectionHint: string;
+    grantsNone: string;
+    columnApplications: string;
+    applicationsSummary: (active: number, awarded: number) => string;
+    searchPlaceholder: string;
+    noProjectsMatch: string;
     columnTitle: string;
     columnDepartment: string;
     columnStatus: string;
@@ -518,6 +534,8 @@ export interface TranslationTree {
     healthAttentionLabel: string;
     healthBlockedLabel: string;
     linkedProjectBankLabel: string;
+    linkedApplicationLabel: string;
+    openApplicationLink: string;
     linkedProjectStatusAutoSyncNote: string;
     financialSummaryTitle: string;
     financialSpentLabel: string;
@@ -768,14 +786,15 @@ export const translations: Record<Lang, TranslationTree> = {
       workflow: "Så fungerar det",
       personas: "För vem",
       pricing: "Prismodell",
-      demo: "Starta ansökan",
-      projectBank: "Projektbank",
+      demo: "Ny ansökan",
+      projects: "Projekt",
+      apply: "Ansöka",
+      report: "Rapportera",
+      knowledgeBank: "Kunskapsbank",
       euDatabase: "EU-databas",
       referenceProjects: "Referensprojekt",
-      myProjects: "Mina projekt",
       datacenter: "Datacenter",
       overview: "Översikt",
-      monitoring: "Bevakning",
       settings: "Inställningar",
       menu: "Meny",
     },
@@ -925,8 +944,9 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     demo: {
       intake: {
-        title: "Beskriv ert projekt",
-        subtitle: "Fyll i så mycket ni kan — AI-matchningen blir bättre ju mer konkret beskrivningen är.",
+        title: "Ny ansökan – beskriv projektet",
+        subtitle:
+          "Beskriv projektet ni vill söka finansiering för, så matchas det mot EU-utlysningarna. Fyll i så mycket ni kan — matchningen blir bättre ju mer konkret beskrivningen är.",
         fieldTitle: "Projektnamn",
         fieldTitlePlaceholder: "T.ex. Energieffektivisering av 14 skolor",
         fieldDescription: "Beskrivning",
@@ -1019,10 +1039,11 @@ export const translations: Record<Lang, TranslationTree> = {
         topPriorityLabel: "Viktigast att åtgärda",
         topPriorityNone: "Inga akuta åtgärder — ansökan ser stark ut.",
         draftSavedNote: "Utkastet sparas automatiskt i din webbläsare.",
-        draftNotSavedNote: "Spara projektet i projektbanken för att utkastet ska sparas mellan besök.",
+        draftNotSavedNote:
+          "Ansökan är inte sparad. När du sparar den skapas också projektet under Projekt, så att ansökan och projektet hör ihop.",
         confirmLeaveUnsavedDraft:
-          "Det här utkastet är inte sparat i projektbanken — går du tillbaka nu försvinner det du skrivit. Fortsätt ändå?",
-        saveAsNewProjectButton: "Spara som nytt projekt i Projektbanken",
+          "Den här ansökan är inte sparad — går du tillbaka nu försvinner det du skrivit. Fortsätt ändå?",
+        saveAsNewProjectButton: "Spara ansökan",
         templateSourceNote: (callTitle) => `Strukturerad enligt ${callTitle}s eget ansökningsformulär.`,
         templateGenericNote:
           "Generisk projektlogik — den här utlysningen har ingen fördefinierad ansökningsstruktur i systemet ännu.",
@@ -1078,8 +1099,16 @@ export const translations: Record<Lang, TranslationTree> = {
       },
     },
     projectBank: {
-      title: "Projektbank",
-      subtitle: "Alla registrerade projektidéer, behov och planerade investeringar.",
+      title: "Projekt",
+      subtitle:
+        "Verksamhetens projekt – idéer, behov och planerade investeringar. Varje projekt samlar sina ansökningar, beviljade stöd och rapporter.",
+      columnApplications: "Ansökningar",
+      applicationsSummary: (active, awarded) =>
+        [active > 0 ? `${active} pågående` : "", awarded > 0 ? `${awarded} beviljad${awarded > 1 ? "e" : ""}` : ""]
+          .filter(Boolean)
+          .join(" · "),
+      searchPlaceholder: "Sök bland projekten…",
+      noProjectsMatch: "Inga projekt matchar filtret.",
       columnTitle: "Projekt",
       columnDepartment: "Förvaltning",
       columnStatus: "Status",
@@ -1144,7 +1173,21 @@ export const translations: Record<Lang, TranslationTree> = {
       similarProjectsNone: "Inga tillräckligt lika beviljade projekt hittades än — komplettera beskrivningen för fler träffar.",
       similarProjectsSharedLabel: "Gemensamma begrepp",
       detailFindFunding: "Hitta finansiering för detta projekt",
-      back: "Tillbaka till projektbanken",
+      back: "Tillbaka till Projekt",
+      lifecycleTitle: "Projektets väg",
+      lifecycleProject: "Projekt",
+      lifecycleApplications: "Ansökningar",
+      lifecycleGrants: "Beviljat stöd",
+      lifecycleReporting: "Rapportering",
+      lifecycleApplicationsSummary: (active, closed, awarded) =>
+        [active > 0 ? `${active} pågående` : "", awarded > 0 ? `${awarded} beviljad${awarded > 1 ? "e" : ""}` : "", closed > 0 ? `${closed} avslutad${closed > 1 ? "e" : ""} utan stöd` : ""]
+          .filter(Boolean)
+          .join(" · "),
+      lifecycleGrantsSummary: (n) => `${n} beviljat stöd`,
+      lifecycleNone: "Inget ännu",
+      grantsSectionTitle: "Beviljat stöd och rapportering",
+      grantsSectionHint: "Varje beviljad ansökan får ett eget beviljat stöd med egen rapportering. Rapporterna hanteras under Rapportera.",
+      grantsNone: "Inget beviljat stöd ännu. När en ansökan beviljas registrerar du stödet på ansökan ovan.",
       importButton: "Importera projekt (CSV)",
       downloadTemplate: "Ladda ner mall",
       importHint:
@@ -1160,12 +1203,12 @@ export const translations: Record<Lang, TranslationTree> = {
       statPortfolioBudget: "Total portföljbudget",
       statFundingPotential: "Identifierad EU-finansieringspotential",
       statCoFinancingNeed: "Uppskattat medfinansieringsbehov",
-      linkedAwardedProjectLabel: "Beviljad och under rapportering",
+      linkedAwardedProjectLabel: "Har beviljat stöd under rapportering",
       linkedAwardedProjectLink: "Visa rapportering →",
       markAsAwardedButton: "Markera som beviljad",
       markAsAwardedHint: "Skapar rapporteringsspårning för projektet baserat på bäst matchande utlysning.",
       confirmMarkAsAwarded:
-        "Markera som beviljad? Detta skapar ett nytt beviljat projekt med egen rapporteringsspårning. Det går inte att ångra.",
+        "Markera som beviljad? Detta registrerar ett beviljat stöd med egen rapportering. Det går inte att ångra.",
     },
     euDatabase: {
       title: "EU-databas",
@@ -1336,8 +1379,8 @@ export const translations: Record<Lang, TranslationTree> = {
       importedAtLabel: (date) => `Importerad ${date}`,
     },
     grants: {
-      title: "Mina projekt",
-      subtitle: "Alla dina projekt oavsett status — och rapportering på det som beviljats.",
+      title: "Beviljat stöd",
+      subtitle: "Beslut om finansiering, med rapportering per period.",
       nextReportDue: (m) => `Nästa rapportering om ${m} månader`,
       nextReportDueLabel: "Nästa rapportering",
       awardedAmount: "Beviljat belopp",
@@ -1345,7 +1388,7 @@ export const translations: Record<Lang, TranslationTree> = {
       promised: "Utlovat",
       reported: "Rapporterat",
       noLatestOutcome: "Ej rapporterat än",
-      back: "Tillbaka till mina projekt",
+      back: "Tillbaka till Rapportera",
       statusFilterAll: "Alla",
       noProjectsForStatus: "Inga projekt med denna status.",
       onlyMineAndSharedToggle: "Visa endast mina och delade projekt",
@@ -1396,8 +1439,10 @@ export const translations: Record<Lang, TranslationTree> = {
       healthGoodLabel: "Enligt plan",
       healthAttentionLabel: "Kräver uppmärksamhet",
       healthBlockedLabel: "Komplettering begärd",
-      linkedProjectBankLabel: "Ursprunglig projektidé i Projektbanken",
-      linkedProjectStatusAutoSyncNote: "Statusen i Projektbanken hålls automatiskt i synk med rapporteringen här.",
+      linkedProjectBankLabel: "Projekt",
+      linkedApplicationLabel: "Beviljad ansökan",
+      openApplicationLink: "Öppna ansökan",
+      linkedProjectStatusAutoSyncNote: "Projektets status följer rapporteringen här: genomförs medan rapporteringen pågår, avslutat när den är klar.",
       financialSummaryTitle: "Ekonomisk uppföljning",
       financialSpentLabel: "Förbrukat / beviljat",
       financialRemainingLabel: "Kvarstående budget",
@@ -1638,9 +1683,9 @@ export const translations: Record<Lang, TranslationTree> = {
       open: "Öppna",
       deleteButton: "Ta bort",
       confirmDelete: "Ta bort ansökan med dess utkast och sparade versioner?",
-      createAwardedButton: "Skapa beviljat projekt",
-      confirmCreateAwarded: "Skapa ett beviljat projekt för uppföljning och rapportering, kopplat till den här ansökan?",
-      viewAwardedLink: "Visa beviljat projekt",
+      createAwardedButton: "Registrera beviljat stöd",
+      confirmCreateAwarded: "Registrera beviljat stöd för den här ansökan? Då skapas rapporteringen för stödet under Rapportera.",
+      viewAwardedLink: "Visa beviljat stöd",
       updatedAt: (date) => `Uppdaterad ${date}`,
       roundLabel: (n) => `Ansökan ${n}`,
       continueApplication: "Fortsätt ansökan",
@@ -1658,14 +1703,15 @@ export const translations: Record<Lang, TranslationTree> = {
       workflow: "How it works",
       personas: "Who it's for",
       pricing: "Pricing",
-      demo: "Start an application",
-      projectBank: "Project bank",
+      demo: "New application",
+      projects: "Projects",
+      apply: "Apply",
+      report: "Report",
+      knowledgeBank: "Knowledge bank",
       euDatabase: "EU database",
       referenceProjects: "Reference projects",
-      myProjects: "My projects",
       datacenter: "Datacenter",
       overview: "Overview",
-      monitoring: "Monitoring",
       settings: "Settings",
       menu: "Menu",
     },
@@ -1815,8 +1861,9 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     demo: {
       intake: {
-        title: "Describe your project",
-        subtitle: "Fill in as much as you can — the more concrete the description, the better the AI matching.",
+        title: "New application — describe the project",
+        subtitle:
+          "Describe the project you want funding for, and it's matched against the EU calls. Fill in as much as you can — the more concrete the description, the better the matching.",
         fieldTitle: "Project name",
         fieldTitlePlaceholder: "E.g. Energy efficiency upgrade of 14 schools",
         fieldDescription: "Description",
@@ -1908,10 +1955,11 @@ export const translations: Record<Lang, TranslationTree> = {
         topPriorityLabel: "Top priority",
         topPriorityNone: "No urgent action items — the application looks strong.",
         draftSavedNote: "This draft is saved automatically in your browser.",
-        draftNotSavedNote: "Save this project to the project bank so its draft is kept between visits.",
+        draftNotSavedNote:
+          "This application isn't saved. Saving it also creates the project under Projects, so the application and the project belong together.",
         confirmLeaveUnsavedDraft:
-          "This draft isn't saved to the project bank — going back now will lose what you've written. Continue anyway?",
-        saveAsNewProjectButton: "Save as a new project in the project bank",
+          "This application isn't saved — going back now will lose what you've written. Continue anyway?",
+        saveAsNewProjectButton: "Save application",
         templateSourceNote: (callTitle) => `Structured according to ${callTitle}'s own application form.`,
         templateGenericNote: "Generic project logic — this call has no predefined application structure in the system yet.",
         exportButton: "Export application (.docx)",
@@ -1966,8 +2014,14 @@ export const translations: Record<Lang, TranslationTree> = {
       },
     },
     projectBank: {
-      title: "Project bank",
-      subtitle: "All registered project ideas, needs and planned investments.",
+      title: "Projects",
+      subtitle:
+        "The organisation's projects — ideas, needs and planned investments. Each project brings together its applications, grants and reports.",
+      columnApplications: "Applications",
+      applicationsSummary: (active, awarded) =>
+        [active > 0 ? `${active} in progress` : "", awarded > 0 ? `${awarded} awarded` : ""].filter(Boolean).join(" · "),
+      searchPlaceholder: "Search projects…",
+      noProjectsMatch: "No projects match the filter.",
       columnTitle: "Project",
       columnDepartment: "Department",
       columnStatus: "Status",
@@ -2032,7 +2086,21 @@ export const translations: Record<Lang, TranslationTree> = {
       similarProjectsNone: "No sufficiently similar funded projects found yet — add more detail to the description for matches.",
       similarProjectsSharedLabel: "Shared terms",
       detailFindFunding: "Find funding for this project",
-      back: "Back to the project bank",
+      back: "Back to Projects",
+      lifecycleTitle: "The project's path",
+      lifecycleProject: "Project",
+      lifecycleApplications: "Applications",
+      lifecycleGrants: "Grants",
+      lifecycleReporting: "Reporting",
+      lifecycleApplicationsSummary: (active, closed, awarded) =>
+        [active > 0 ? `${active} in progress` : "", awarded > 0 ? `${awarded} awarded` : "", closed > 0 ? `${closed} closed without funding` : ""]
+          .filter(Boolean)
+          .join(" · "),
+      lifecycleGrantsSummary: (n) => `${n} ${n === 1 ? "grant" : "grants"}`,
+      lifecycleNone: "None yet",
+      grantsSectionTitle: "Grants and reporting",
+      grantsSectionHint: "Each awarded application gets its own grant with its own reporting. Reports are handled under Report.",
+      grantsNone: "No grant yet. When an application is awarded, register the grant on the application above.",
       importButton: "Import projects (CSV)",
       downloadTemplate: "Download template",
       importHint:
@@ -2048,12 +2116,12 @@ export const translations: Record<Lang, TranslationTree> = {
       statPortfolioBudget: "Total portfolio budget",
       statFundingPotential: "Identified EU funding potential",
       statCoFinancingNeed: "Estimated co-financing need",
-      linkedAwardedProjectLabel: "Awarded and under reporting",
+      linkedAwardedProjectLabel: "Has a grant under reporting",
       linkedAwardedProjectLink: "View reporting →",
       markAsAwardedButton: "Mark as awarded",
       markAsAwardedHint: "Creates reporting tracking for the project based on its best-matching call.",
       confirmMarkAsAwarded:
-        "Mark as awarded? This creates a new awarded project with its own reporting tracking. This can't be undone.",
+        "Mark as awarded? This registers a grant with its own reporting. This can't be undone.",
     },
     euDatabase: {
       title: "EU database",
@@ -2223,8 +2291,8 @@ export const translations: Record<Lang, TranslationTree> = {
       importedAtLabel: (date) => `Imported ${date}`,
     },
     grants: {
-      title: "My projects",
-      subtitle: "All your projects regardless of status — and reporting on what's been awarded.",
+      title: "Grant",
+      subtitle: "A funding decision, with reporting per period.",
       nextReportDue: (m) => `Next report due in ${m} months`,
       nextReportDueLabel: "Next report",
       awardedAmount: "Awarded amount",
@@ -2232,7 +2300,7 @@ export const translations: Record<Lang, TranslationTree> = {
       promised: "Promised",
       reported: "Reported",
       noLatestOutcome: "Not reported yet",
-      back: "Back to my projects",
+      back: "Back to Report",
       statusFilterAll: "All",
       noProjectsForStatus: "No projects with this status.",
       onlyMineAndSharedToggle: "Show only my and shared projects",
@@ -2283,8 +2351,10 @@ export const translations: Record<Lang, TranslationTree> = {
       healthGoodLabel: "On track",
       healthAttentionLabel: "Needs attention",
       healthBlockedLabel: "Revision requested",
-      linkedProjectBankLabel: "Original project idea in the project bank",
-      linkedProjectStatusAutoSyncNote: "The project bank status is kept automatically in sync with this reporting.",
+      linkedProjectBankLabel: "Project",
+      linkedApplicationLabel: "Awarded application",
+      openApplicationLink: "Open application",
+      linkedProjectStatusAutoSyncNote: "The project's status follows this reporting: running while reporting is ongoing, closed once it's done.",
       financialSummaryTitle: "Financial tracking",
       financialSpentLabel: "Spent / awarded",
       financialRemainingLabel: "Remaining budget",
@@ -2524,9 +2594,9 @@ export const translations: Record<Lang, TranslationTree> = {
       open: "Open",
       deleteButton: "Delete",
       confirmDelete: "Delete this application with its draft and saved versions?",
-      createAwardedButton: "Create awarded project",
-      confirmCreateAwarded: "Create an awarded project for follow-up and reporting, linked to this application?",
-      viewAwardedLink: "View awarded project",
+      createAwardedButton: "Register grant",
+      confirmCreateAwarded: "Register the grant for this application? Its reporting is then set up under Report.",
+      viewAwardedLink: "View grant",
       updatedAt: (date) => `Updated ${date}`,
       roundLabel: (n) => `Application ${n}`,
       continueApplication: "Continue application",

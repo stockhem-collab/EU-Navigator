@@ -4,14 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import NotificationBell from "@/components/NotificationBell";
 
-const NAV_LINKS: { href: string; labelKey: keyof ReturnType<typeof useLanguage>["t"]["nav"] }[] = [
+type NavKey = keyof ReturnType<typeof useLanguage>["t"]["nav"];
+
+// One tab per purpose: Översikt (my work), Projekt (the projects
+// themselves), Ansöka and Rapportera (the two workflows, across all
+// projects), Kunskapsbank (EU-databas + Referensprojekt) and Datacenter.
+// `also` lists further paths that belong to the same tab.
+const NAV_LINKS: { href: string; labelKey: NavKey; also?: string[] }[] = [
   { href: "/oversikt", labelKey: "overview" },
-  { href: "/projekt", labelKey: "myProjects" },
-  { href: "/bevakning", labelKey: "monitoring" },
-  { href: "/projektbank", labelKey: "projectBank" },
-  { href: "/eu-databas", labelKey: "euDatabase" },
-  { href: "/referensprojekt", labelKey: "referenceProjects" },
+  { href: "/projekt", labelKey: "projects" },
+  { href: "/ansok", labelKey: "apply", also: ["/ansokan"] },
+  { href: "/rapportera", labelKey: "report", also: ["/stod"] },
+  { href: "/eu-databas", labelKey: "knowledgeBank", also: ["/referensprojekt"] },
   { href: "/datacenter", labelKey: "datacenter" },
 ];
 
@@ -19,7 +25,11 @@ export default function Header() {
   const { lang, setLang, t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const isActive = (href: string) => pathname === href || pathname?.startsWith(`${href}/`);
+  const matches = (href: string) => pathname === href || pathname?.startsWith(`${href}/`);
+  const isActive = (href: string) => {
+    const link = NAV_LINKS.find((l) => l.href === href);
+    return matches(href) || (link?.also ?? []).some(matches);
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-navy-100 bg-white/90 backdrop-blur">
@@ -45,6 +55,7 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <NotificationBell />
           <Link
             href="/installningar"
             aria-label={t.nav.settings}
@@ -75,7 +86,7 @@ export default function Header() {
             </button>
           </div>
           <Link
-            href="/demo"
+            href="/ansokan"
             className="hidden rounded-md bg-gold-500 px-4 py-2 text-sm font-semibold text-navy-900 shadow-sm transition hover:bg-gold-400 sm:block"
           >
             {t.nav.demo}
@@ -119,7 +130,7 @@ export default function Header() {
             </li>
             <li>
               <Link
-                href="/demo"
+                href="/ansokan"
                 className="mt-1 inline-block rounded-md bg-gold-500 px-4 py-2 font-semibold text-navy-900"
                 onClick={() => setMenuOpen(false)}
               >

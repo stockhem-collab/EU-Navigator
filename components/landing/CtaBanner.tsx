@@ -14,7 +14,7 @@ export default function CtaBanner() {
           <p className="mt-2 text-navy-600">{t.cta.subtitle}</p>
         </div>
         <Link
-          href="/demo"
+          href="/ansokan"
           className="shrink-0 rounded-md bg-navy-800 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-navy-700"
         >
           {t.cta.button}

@@ -127,7 +127,7 @@ export default function BevakningPage() {
                   key={`${project.id}:${event.id}`}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
                 >
-                  <Link href={`/projekt/${project.id}`} className="flex-1">
+                  <Link href={`/stod/${project.id}`} className="flex-1">
                     <p className="text-xs font-semibold uppercase text-navy-400">
                       {lang === "sv" ? project.title_sv : project.title_en}
                     </p>
@@ -253,13 +253,13 @@ function CallCard({
             <ul className="mt-2 space-y-2">
               {matches.map(({ entry, match }) => (
                 <li key={entry.id} className="flex items-center justify-between gap-3 text-sm">
-                  <Link href={`/projektbank/${entry.id}`} className="text-navy-700 hover:underline">
+                  <Link href={`/projekt/${entry.id}`} className="text-navy-700 hover:underline">
                     {lang === "sv" ? entry.title_sv : entry.title_en}
                   </Link>
                   <div className="flex items-center gap-3">
                     <span className="font-semibold text-navy-800">{match.score}%</span>
                     <Link
-                      href={`/demo?project=${entry.id}&call=${call.id}`}
+                      href={`/ansokan?project=${entry.id}&call=${call.id}`}
                       className="rounded-md bg-navy-800 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-navy-700"
                     >
                       {bv.startApplication}

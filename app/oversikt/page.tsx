@@ -184,7 +184,7 @@ export default function OversiktPage() {
                       </div>
                     </div>
                     <Link
-                      href={`/demo?project=${entry.id}&call=${call.id}&application=${encodeURIComponent(record.id)}`}
+                      href={`/ansokan?project=${entry.id}&call=${call.id}&application=${encodeURIComponent(record.id)}`}
                       className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
                     >
                       {ov.ongoingApplicationsResume}
@@ -218,7 +218,7 @@ export default function OversiktPage() {
                         {task.dueDate && <span className="ml-2 text-xs font-normal text-navy-400">{pb.taskDueLabel(task.dueDate)}</span>}
                       </p>
                     </div>
-                    <Link href={`/projektbank/${entry.id}`} className="shrink-0 text-xs font-semibold text-navy-600 hover:text-navy-900">
+                    <Link href={`/projekt/${entry.id}`} className="shrink-0 text-xs font-semibold text-navy-600 hover:text-navy-900">
                       {ov.currentTasksViewAll}
                     </Link>
                   </li>
@@ -306,7 +306,7 @@ export default function OversiktPage() {
                     return (
                       <Link
                         key={project.id}
-                        href={`/projekt/${project.id}`}
+                        href={`/stod/${project.id}`}
                         className="flex items-center justify-between rounded-xl border border-navy-100 bg-white p-4 transition hover:border-navy-300 hover:shadow-sm"
                       >
                         <div>
@@ -349,7 +349,7 @@ export default function OversiktPage() {
                     {searchedRows.map(({ entry, match }) => (
                       <tr key={entry.id} className="hover:bg-navy-50/50">
                         <td className="px-4 py-3">
-                          <Link href={`/projektbank/${entry.id}`} className="font-semibold text-navy-800 hover:underline">
+                          <Link href={`/projekt/${entry.id}`} className="font-semibold text-navy-800 hover:underline">
                             {lang === "sv" ? entry.title_sv : entry.title_en}
                           </Link>
                         </td>
@@ -404,7 +404,7 @@ export default function OversiktPage() {
                 </label>
               </div>
               <Link
-                href="/demo"
+                href="/ansokan"
                 className="rounded-md bg-gold-500 px-4 py-2 text-sm font-semibold text-navy-900 shadow-sm transition hover:bg-gold-400"
               >
                 {ov.describeNewProject}
@@ -420,7 +420,7 @@ export default function OversiktPage() {
                   return (
                     <div key={entry.id} className="rounded-xl border border-navy-100 bg-white p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
-                        <Link href={`/projektbank/${entry.id}`} className="font-semibold text-navy-800 hover:underline">
+                        <Link href={`/projekt/${entry.id}`} className="font-semibold text-navy-800 hover:underline">
                           {lang === "sv" ? entry.title_sv : entry.title_en}
                         </Link>
                         <div className="flex items-center gap-2">

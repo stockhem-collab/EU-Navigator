@@ -23,7 +23,7 @@ export default function Hero() {
 
         <div className="mt-10 flex flex-wrap gap-4">
           <Link
-            href="/demo"
+            href="/ansokan"
             className="rounded-md bg-gold-500 px-6 py-3 text-sm font-semibold text-navy-900 shadow-lg transition hover:bg-gold-400"
           >
             {t.hero.ctaPrimary}

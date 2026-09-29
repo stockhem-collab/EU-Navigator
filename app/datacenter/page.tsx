@@ -153,7 +153,7 @@ export default function DatacenterPage() {
                         </span>
                       </p>
                     </div>
-                    <Link href={`/projekt/${project.id}`} className="text-xs font-semibold text-navy-600 hover:text-navy-900">
+                    <Link href={`/stod/${project.id}`} className="text-xs font-semibold text-navy-600 hover:text-navy-900">
                       {dc.viewProjectLink}
                     </Link>
                   </li>
@@ -176,7 +176,7 @@ export default function DatacenterPage() {
                       {dc.fieldsMissing((lang === "sv" ? p.missingFields_sv : p.missingFields_en).length)}
                     </p>
                   </div>
-                  <Link href={`/projektbank/${p.id}`} className="text-xs font-semibold text-navy-600 hover:text-navy-900">
+                  <Link href={`/projekt/${p.id}`} className="text-xs font-semibold text-navy-600 hover:text-navy-900">
                     {dc.openLink}
                   </Link>
                 </li>

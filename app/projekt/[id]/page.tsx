@@ -1,73 +1,102 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import StatusBadge from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import {
-  nextActionableReport,
-  latestOutcomeFor,
-  outcomeHistoryFor,
-  isReportingComplete,
-  reportingHealth,
-  ReportingHealth,
-  financialHistory,
-  cumulativeSpentThrough,
-} from "@/lib/data/grants";
-import { findCall } from "@/lib/data/fundingCalls";
-import { findProgram } from "@/lib/data/fundingPrograms";
-import { useReportingSubmissions, ReportingSubmission } from "@/lib/hooks/useReportingSubmissions";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
-import { useGrants } from "@/lib/hooks/useGrants";
+import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
+import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
+import { useProjectTasks } from "@/lib/hooks/useProjectTasks";
 import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
-import { buildReportDocx } from "@/lib/export/exportReport";
-import { downloadBlob } from "@/lib/export/exportApplication";
+import { useGrants } from "@/lib/hooks/useGrants";
+import { syncProjectStatus, useApplications } from "@/lib/hooks/useApplications";
+import { isActiveApplication } from "@/lib/matching/applications";
+import { scoreMatch } from "@/lib/matching/scoreMatch";
+import { findProgram } from "@/lib/data/fundingPrograms";
+import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
+import ProjectLifecycle from "@/components/ProjectLifecycle";
+import LinkedReportingBadge from "@/components/LinkedReportingBadge";
+import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
+import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
+import { fundedProjects } from "@/lib/data/fundedProjects";
+import { orgUnits as seedOrgUnits, projectRoleLabels, shareableUnits, unitDepth } from "@/lib/data/users";
+import { sectorLabel } from "@/lib/matching/scoreMatch";
+import { computeMatchesForEntry, projectToGrant, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
+import { computeSimilarProjects } from "@/lib/matching/similarProjects";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
-import { Grant, Commitment, ReportingEvent, ReportingEventStatus, ReportingPeriodicity } from "@/lib/types";
+import { APPLICATION_STATUS_ORDER, ApplicationRecord, ApplicationStatus, PROJECT_STATUS_ORDER, ProjectStatus, Sector } from "@/lib/types";
+import { suggestTags } from "@/lib/matching/tagSuggestions";
+import { useTags } from "@/lib/hooks/useTags";
+import TagPicker from "@/components/TagPicker";
 
-export default function AwardedProjectDetailPage() {
+const SECTORS: Sector[] = ["energy", "climate", "digital", "social", "mobility", "education", "health", "research"];
+const STATUSES: ProjectStatus[] = PROJECT_STATUS_ORDER;
+
+interface EditDraft {
+  title: string;
+  department: string;
+  description: string;
+  owner: string;
+  status: ProjectStatus;
+  estimatedCostSEK: number;
+  periodStart: number;
+  periodEnd: number;
+  sector: Sector;
+  tags: string[];
+  hasInternationalPartner: boolean;
+}
+
+export default function ProjectBankDetailPage() {
   const params = useParams<{ id: string }>();
   const { t, lang } = useLanguage();
-  const ap = t.grants;
   const pb = t.projectBank;
-  const { withSubmissions, submitReport, submissionHistory, addSustainabilityEvent, setEventStatus } = useReportingSubmissions();
-  const { all: projectBank, updateEntry, hydrated: projectBankHydrated } = useProjectBank();
-  const { all: awardedProjects, hydrated: awardedProjectsHydrated } = useGrants();
+  const results = t.demo.results;
 
-  // A project added via "Markera som beviljad" only exists in this
-  // browser's localStorage, unavailable during the server render — same
-  // "wait for hydrated before deciding not-found" pattern as the
-  // Projektbank detail page uses for CSV-imported entries.
-  const seedProject = awardedProjects.find((a) => a.id === params.id);
+  // Imported (CSV) entries only exist in this browser's localStorage, which
+  // isn't available during the server render — so we can't decide "not
+  // found" until the project-bank hook has actually finished checking the
+  // client. Seeded entries render immediately either way; imported ones
+  // appear once `hydrated` flips true.
+  const router = useRouter();
+  const { all, hydrated, updateEntry } = useProjectBank();
+  const { all: allTags, addCustomTag } = useTags();
+  const { all: fundingCalls } = useFundingCalls();
+  const { all: awardedProjectsAll, addGrant } = useGrants();
+  const { records: applicationRecords, setApplicationStatus, updateApplication, deleteApplication } = useApplications();
+  const { withSubmissions } = useReportingSubmissions();
+  const at = t.applications;
+  const { users } = useUsersDirectory();
+  const { config: orgConfig } = useOrgConfig();
+  const orgUnits = orgConfig.units ?? seedOrgUnits;
+  const shareTargets = shareableUnits(orgUnits);
+  const { tasksFor, addTask, toggleTask, editTask, removeTask } = useProjectTasks();
+  const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
+  const entry = all.find((p) => p.id === params.id);
+  const assignedUsers = entry ? users.filter((u) => u.projectRoles.some((r) => r.projectId === entry.id)) : [];
+  const [draft, setDraft] = useState<EditDraft | null>(null);
+  const [newTaskText, setNewTaskText] = useState("");
+  const [newTaskDue, setNewTaskDue] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [editTaskText, setEditTaskText] = useState("");
+  const [editTaskDue, setEditTaskDue] = useState("");
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
+  const suggestedTagsForDraft = useMemo(
+    () => suggestTags(`${draft?.title ?? ""} ${draft?.description ?? ""}`),
+    [draft?.title, draft?.description]
+  );
 
-  const project = seedProject ? withSubmissions(seedProject) : undefined;
-  const linkedEntry = project?.projectBankEntryId ? projectBank.find((p) => p.id === project.projectBankEntryId) : undefined;
-  const reportingComplete = project ? isReportingComplete(project) : false;
-
-  // Keeps the originating Projektbank entry's status in sync with reality
-  // instead of requiring a manual "update status" click: an entry linked to
-  // an awarded project is, by definition, no longer just an "idea" — and
-  // once reporting is fully done, it's "completed" rather than left
-  // "running" forever.
-  useEffect(() => {
-    if (!projectBankHydrated || !linkedEntry) return;
-    if (reportingComplete && linkedEntry.status !== "completed") {
-      updateEntry(linkedEntry.id, { status: "completed" });
-    } else if (!reportingComplete && linkedEntry.status !== "running") {
-      updateEntry(linkedEntry.id, { status: "running" });
-    }
-  }, [projectBankHydrated, linkedEntry, reportingComplete, updateEntry]);
-
-  if (!project) {
-    if (!awardedProjectsHydrated) return null;
+  if (!entry) {
+    if (!hydrated) return null;
     return (
       <>
         <Header />
         <main className="section max-w-3xl">
           <Link href="/projekt" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
-            ← {ap.back}
+            ← {pb.back}
           </Link>
           <p className="mt-8 text-sm text-navy-500">{pb.detailNotFound}</p>
         </main>
@@ -76,37 +105,117 @@ export default function AwardedProjectDetailPage() {
     );
   }
 
-  const call = findCall(project.callId);
-  const program = call ? findProgram(call.programId) : undefined;
-  const reportingReq = call?.reportingRequirements;
-  const nextActionable = nextActionableReport(project);
-  const health = reportingHealth(project);
-  const hasSustainabilityEvent = project.reportingEvents.some((e) => e.type === "sustainability");
+  const missing = lang === "sv" ? entry.missingFields_sv : entry.missingFields_en;
+  const matches = computeMatchesForEntry(entry, fundingCalls);
+  const similar = computeSimilarProjects(projectBankEntryToProjectInput(entry), fundedProjects);
+  const projectGrants = awardedProjectsAll.filter((a) => a.projectBankEntryId === entry.id).map(withSubmissions);
+  const linkedAwardedProject = projectGrants[0];
+  const applications = applicationRecords
+    .filter((r) => r.projectId === entry.id)
+    .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+  // "Ansökan 2" etc. only where a project has more than one application to
+  // the same call — otherwise the call title alone identifies it.
+  const roundOf = (record: ApplicationRecord) => {
+    const sameCall = applications.filter((r) => r.callId === record.callId);
+    return sameCall.length > 1 ? sameCall.indexOf(record) + 1 : null;
+  };
+  const activeApplicationFor = (callId: string) =>
+    applications.filter((r) => r.callId === callId && isActiveApplication(r)).sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))[0];
+  const applicationHref = (record: ApplicationRecord) =>
+    `/ansokan?project=${entry.id}&call=${record.callId}&application=${encodeURIComponent(record.id)}`;
 
-  const periodicityLabel = (p: ReportingPeriodicity) =>
-    p === "quarterly" ? ap.periodicityQuarterly : p === "biannual" ? ap.periodicityBiannual : ap.periodicityAnnual;
+  const handleApplicationStatus = (record: ApplicationRecord, status: ApplicationStatus) => {
+    setApplicationStatus(record.id, status);
+    syncProjectStatus(entry.id, entry.status, updateEntry);
+  };
 
-  const statusStyle = (status: ReportingEventStatus) => {
-    if (status === "approved") return "bg-green-100 text-green-800";
-    if (status === "submitted") return "bg-navy-100 text-navy-700";
-    if (status === "revision-requested") return "bg-amber-100 text-amber-800";
-    return "bg-navy-50 text-navy-500";
+  const handleDeleteApplication = (record: ApplicationRecord) => {
+    if (!window.confirm(at.confirmDelete)) return;
+    deleteApplication(record.id);
+    syncProjectStatus(entry.id, entry.status, updateEntry);
   };
-  const statusLabel = (status: ReportingEventStatus) => {
-    if (status === "approved") return ap.reportStatusApproved;
-    if (status === "submitted") return ap.reportStatusSubmitted;
-    if (status === "revision-requested") return ap.reportStatusRevisionRequested;
-    return ap.reportStatusUpcoming;
+
+  // An awarded application becomes an awarded project under the call it
+  // was actually made to — not just the project's best match.
+  const handleCreateAwarded = (record: ApplicationRecord) => {
+    const call = fundingCalls.find((c) => c.id === record.callId);
+    const program = call ? findProgram(call.programId) : undefined;
+    if (!call || !program || !window.confirm(at.confirmCreateAwarded)) return;
+    const match = scoreMatch(projectBankEntryToProjectInput(entry), call, program);
+    const awarded = projectToGrant(entry, match, record.id);
+    addGrant(awarded);
+    updateApplication(record.id, { awardedProjectId: awarded.id });
+    updateEntry(entry.id, { status: "running" });
+    router.push(`/stod/${awarded.id}`);
   };
-  const healthStyle = (h: ReportingHealth) => {
-    if (h === "blocked") return "bg-amber-100 text-amber-800";
-    if (h === "attention") return "bg-gold-100 text-gold-800";
-    return "bg-green-100 text-green-800";
+
+  const recommendationStyle = (rec: (typeof matches)[number]["recommendation"]) => {
+    if (rec === "proceed") return "bg-green-100 text-green-800";
+    if (rec === "consider") return "bg-gold-100 text-gold-800";
+    return "bg-navy-100 text-navy-600";
   };
-  const healthLabel = (h: ReportingHealth) => {
-    if (h === "blocked") return ap.healthBlockedLabel;
-    if (h === "attention") return ap.healthAttentionLabel;
-    return ap.healthGoodLabel;
+
+  // Turns this idea into a real awarded project once it's actually won
+  // funding — before this there was no path forward except hand-editing
+  // seed data, so a real project bank status went stale in "approved"
+  // forever. Only offered for a project with no application records (e.g.
+  // one marked "funded" by hand): with records, each awarded application gets
+  // its own button under the call it was made to (handleCreateAwarded).
+  // Without them there's no record of which call was applied to, so this
+  // uses the project's best match.
+  const handleMarkAsAwarded = () => {
+    const bestMatch = matches[0];
+    if (!bestMatch) return;
+    if (!window.confirm(pb.confirmMarkAsAwarded)) return;
+    const awarded = projectToGrant(entry, bestMatch);
+    addGrant(awarded);
+    updateEntry(entry.id, { status: "running" });
+    router.push(`/stod/${awarded.id}`);
+  };
+
+  const toggleShareUnit = (unitId: string) => {
+    const current = entry.sharedWithUnitIds ?? [];
+    const next = current.includes(unitId) ? current.filter((id) => id !== unitId) : [...current, unitId];
+    updateEntry(entry.id, { sharedWithUnitIds: next });
+  };
+
+  const startEditing = () =>
+    setDraft({
+      title: lang === "sv" ? entry.title_sv : entry.title_en,
+      department: lang === "sv" ? entry.department_sv : entry.department_en,
+      description: lang === "sv" ? entry.description_sv : entry.description_en,
+      owner: entry.owner,
+      status: entry.status,
+      estimatedCostSEK: entry.estimatedCostSEK,
+      periodStart: entry.periodStart,
+      periodEnd: entry.periodEnd,
+      sector: entry.sector,
+      tags: entry.tags ?? [],
+      hasInternationalPartner: entry.hasInternationalPartner,
+    });
+
+  const saveEdit = () => {
+    if (!draft) return;
+    // The project's own idea/notes aren't professionally bilingual content
+    // like the seeded reference data — same pattern the CSV importer uses
+    // (projectIntake.ts), so an edit made in either language replaces both.
+    updateEntry(entry.id, {
+      title_sv: draft.title,
+      title_en: draft.title,
+      department_sv: draft.department,
+      department_en: draft.department,
+      description_sv: draft.description,
+      description_en: draft.description,
+      owner: draft.owner,
+      status: draft.status,
+      estimatedCostSEK: draft.estimatedCostSEK,
+      periodStart: draft.periodStart,
+      periodEnd: draft.periodEnd,
+      sector: draft.sector,
+      tags: draft.tags,
+      hasInternationalPartner: draft.hasInternationalPartner,
+    });
+    setDraft(null);
   };
 
   return (
@@ -114,583 +223,667 @@ export default function AwardedProjectDetailPage() {
       <Header />
       <main className="section max-w-3xl">
         <Link href="/projekt" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
-          ← {ap.back}
+          ← {pb.back}
         </Link>
 
-        <div className="mt-4 flex items-center gap-4">
-          {program && (
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-base font-bold text-white">
-              {program.logoLetter}
-            </span>
-          )}
-          <div className="flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold text-navy-900">{lang === "sv" ? project.title_sv : project.title_en}</h1>
-              <span className={`badge ${healthStyle(health)}`}>{healthLabel(health)}</span>
+        {draft ? (
+          <div className="mt-4 rounded-xl border border-navy-100 bg-white p-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-navy-700">{pb.editFieldTitle}</label>
+                <input
+                  value={draft.title}
+                  onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                  className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-navy-700">{pb.columnDepartment}</label>
+                <input
+                  value={draft.department}
+                  onChange={(e) => setDraft({ ...draft, department: e.target.value })}
+                  className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-navy-700">{pb.detailOwner}</label>
+                <input
+                  value={draft.owner}
+                  onChange={(e) => setDraft({ ...draft, owner: e.target.value })}
+                  className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-navy-700">{pb.columnStatus}</label>
+                <select
+                  value={draft.status}
+                  onChange={(e) => setDraft({ ...draft, status: e.target.value as ProjectStatus })}
+                  className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                >
+                  {STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {pb.statusLabels[s]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-navy-700">{pb.detailThemeLabel}</label>
+                <select
+                  value={draft.sector}
+                  onChange={(e) => setDraft({ ...draft, sector: e.target.value as Sector })}
+                  className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                >
+                  {SECTORS.map((s) => (
+                    <option key={s} value={s}>
+                      {t.demo.intake.sectors[s]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-navy-700">{pb.columnCost}</label>
+                <input
+                  type="number"
+                  value={draft.estimatedCostSEK}
+                  onChange={(e) => setDraft({ ...draft, estimatedCostSEK: Number(e.target.value) })}
+                  className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                />
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-navy-700">{t.demo.intake.fieldStartYear}</label>
+                  <input
+                    type="number"
+                    value={draft.periodStart}
+                    onChange={(e) => setDraft({ ...draft, periodStart: Number(e.target.value) })}
+                    className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-navy-700">{t.demo.intake.fieldEndYear}</label>
+                  <input
+                    type="number"
+                    value={draft.periodEnd}
+                    onChange={(e) => setDraft({ ...draft, periodEnd: Number(e.target.value) })}
+                    className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                  />
+                </div>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-navy-700">{pb.detailDescriptionLabel}</label>
+                <textarea
+                  rows={4}
+                  value={draft.description}
+                  onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+                  className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-navy-700">{t.demo.intake.fieldTags}</label>
+                <div className="mt-1">
+                  <TagPicker
+                    tags={allTags}
+                    selected={draft.tags}
+                    onChange={(tags) => setDraft({ ...draft, tags })}
+                    suggested={suggestedTagsForDraft}
+                    lang={lang}
+                    labels={{
+                      hint: t.demo.intake.tagsHint,
+                      suggestedLabel: t.demo.intake.tagsSuggestedLabel,
+                      addAllLabel: t.demo.intake.tagsAddAllLabel,
+                      addNewPlaceholder: t.demo.intake.tagsAddNewPlaceholder,
+                      addNewButton: t.demo.intake.tagsAddNewButton,
+                    }}
+                    onAddTag={addCustomTag}
+                  />
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-sm font-semibold text-navy-700 sm:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={draft.hasInternationalPartner}
+                  onChange={(e) => setDraft({ ...draft, hasInternationalPartner: e.target.checked })}
+                />
+                {pb.editFieldPartnership}
+              </label>
             </div>
-            {call && <p className="text-sm text-navy-600">{lang === "sv" ? call.title_sv : call.title_en}</p>}
+            <div className="mt-5 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={saveEdit}
+                className="rounded-md bg-gold-500 px-4 py-2 text-sm font-semibold text-navy-900 hover:bg-gold-400"
+              >
+                {pb.editSave}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDraft(null)}
+                className="rounded-md border border-navy-200 px-4 py-2 text-sm font-semibold text-navy-600 hover:bg-navy-50"
+              >
+                {pb.editCancel}
+              </button>
+              <span className="ml-2 text-xs text-navy-400">{pb.editSavedIndicator}</span>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-navy-900">{lang === "sv" ? entry.title_sv : entry.title_en}</h1>
+                <p className="mt-1 text-sm text-navy-500">
+                  {lang === "sv" ? entry.department_sv : entry.department_en} · {pb.detailOwner}: {entry.owner}
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-3">
+                <StatusBadge status={entry.status} />
+                <button
+                  type="button"
+                  onClick={startEditing}
+                  className="text-xs font-semibold text-navy-500 hover:text-navy-800"
+                >
+                  {pb.editButton}
+                </button>
+              </div>
+            </div>
+
+            <ProjectLifecycle status={entry.status} applications={applications} grants={projectGrants} />
+
+            {!linkedAwardedProject && applications.length === 0 && entry.status === "funded" && matches.length > 0 && (
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed border-navy-200 px-4 py-3">
+                <p className="text-xs text-navy-600">{pb.markAsAwardedHint}</p>
+                <button
+                  type="button"
+                  onClick={handleMarkAsAwarded}
+                  className="shrink-0 rounded-md bg-navy-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-700"
+                >
+                  {pb.markAsAwardedButton}
+                </button>
+              </div>
+            )}
+
+            <dl className="mt-8 grid gap-6 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-2">
+              <div>
+                <dt className="text-xs font-semibold uppercase text-navy-400">{pb.columnCost}</dt>
+                <dd className="mt-1 text-lg font-bold text-navy-900">{fmtSEK(entry.estimatedCostSEK, lang)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-semibold uppercase text-navy-400">{pb.columnPeriod}</dt>
+                <dd className="mt-1 text-lg font-bold text-navy-900">
+                  {entry.periodStart}–{entry.periodEnd}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs font-semibold uppercase text-navy-400">{pb.detailThemeLabel}</dt>
+                <dd className="mt-1 text-lg font-bold text-navy-900">{sectorLabel(entry.sector, lang)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-semibold uppercase text-navy-400">{pb.columnReadiness}</dt>
+                <dd className="mt-1 text-lg font-bold text-gold-600">{entry.aiReadinessPct}%</dd>
+              </div>
+              {entry.tags && entry.tags.length > 0 && (
+                <div className="sm:col-span-2">
+                  <dt className="text-xs font-semibold uppercase text-navy-400">{t.demo.intake.fieldTags}</dt>
+                  <dd className="mt-2 flex flex-wrap gap-2">
+                    {entry.tags.map((id) => {
+                      const tag = allTags.find((t) => t.id === id);
+                      const label = tag ? (lang === "sv" ? tag.label_sv : tag.label_en) : id;
+                      return (
+                        <span key={id} className="rounded-full bg-navy-50 px-2.5 py-1 text-xs font-medium text-navy-700">
+                          {label}
+                        </span>
+                      );
+                    })}
+                  </dd>
+                </div>
+              )}
+            </dl>
+
+            <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+              <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.detailDescriptionLabel}</h2>
+              <p className="mt-2 text-sm text-navy-700">{lang === "sv" ? entry.description_sv : entry.description_en}</p>
+            </div>
+          </>
+        )}
+
+        <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.peopleAndSharingTitle}</h2>
+            <Link href="/installningar/anvandare" className="text-xs font-semibold text-navy-500 hover:text-navy-800">
+              ⚙ {t.usersSettings.title}
+            </Link>
+          </div>
+
+          <div className="mt-3">
+            <h3 className="text-xs font-semibold uppercase text-navy-400">{pb.assignedRolesTitle}</h3>
+            {assignedUsers.length === 0 ? (
+              <p className="mt-1 text-sm text-navy-500">{pb.noAssignedRoles}</p>
+            ) : (
+              <ul className="mt-1.5 space-y-1.5">
+                {assignedUsers.map((u) => {
+                  const role = u.projectRoles.find((r) => r.projectId === entry.id)?.role;
+                  if (!role) return null;
+                  return (
+                    <li key={u.id} className="flex items-center justify-between text-sm">
+                      <span className="text-navy-800">
+                        {u.firstName} {u.lastName}
+                      </span>
+                      <span className="text-navy-500">{projectRoleLabels[role][lang]}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          <div className="mt-5 border-t border-navy-50 pt-4">
+            <h3 className="text-xs font-semibold uppercase text-navy-400">{pb.shareTitle}</h3>
+            <p className="mt-1 text-xs text-navy-400">{pb.shareHint}</p>
+            <ul className="mt-2 space-y-1.5">
+              {shareTargets.map((unit) => (
+                <li key={unit.id} className="flex items-center gap-2" style={{ paddingLeft: unitDepth(orgUnits, unit.id) * 20 }}>
+                  <label className="flex items-center gap-2 text-sm text-navy-700">
+                    <input
+                      type="checkbox"
+                      checked={(entry.sharedWithUnitIds ?? []).includes(unit.id)}
+                      onChange={() => toggleShareUnit(unit.id)}
+                    />
+                    {unit.name}
+                  </label>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        {projectBankHydrated && linkedEntry && (
-          <div className="mt-4 rounded-md bg-navy-50 px-4 py-3">
-            <p className="text-xs text-navy-600">
-              {ap.linkedProjectBankLabel}:{" "}
-              <Link href={`/projektbank/${linkedEntry.id}`} className="font-semibold text-navy-800 hover:underline">
-                {lang === "sv" ? linkedEntry.title_sv : linkedEntry.title_en}
-              </Link>
-            </p>
-            <p className="mt-1 text-xs text-navy-400">{ap.linkedProjectStatusAutoSyncNote}</p>
+        <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+          <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.tasksTitle}</h2>
+          <p className="mt-1 text-xs text-navy-400">{pb.tasksHint}</p>
+
+          {tasksFor(entry.id).length === 0 ? (
+            <p className="mt-3 text-sm text-navy-500">{pb.noTasks}</p>
+          ) : (
+            <ul className="mt-3 space-y-1.5">
+              {tasksFor(entry.id).map((task) =>
+                editingTaskId === task.id ? (
+                  <li key={task.id} className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="text"
+                      value={editTaskText}
+                      onChange={(e) => setEditTaskText(e.target.value)}
+                      className="min-w-0 flex-1 rounded-md border border-navy-200 px-2 py-1 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                    />
+                    <input
+                      type="date"
+                      value={editTaskDue}
+                      onChange={(e) => setEditTaskDue(e.target.value)}
+                      aria-label={pb.taskDueDateLabel}
+                      className="rounded-md border border-navy-200 px-2 py-1 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        editTask(entry.id, task.id, editTaskText, editTaskDue || undefined);
+                        setEditingTaskId(null);
+                      }}
+                      disabled={!editTaskText.trim()}
+                      className="shrink-0 text-xs font-semibold text-navy-700 hover:text-navy-900 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {pb.taskSaveButton}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingTaskId(null)}
+                      className="shrink-0 text-xs font-medium text-navy-400 hover:text-navy-700"
+                    >
+                      {pb.taskCancelButton}
+                    </button>
+                  </li>
+                ) : (
+                  <li key={task.id} className="flex items-center justify-between gap-3 text-sm">
+                    <label className="flex flex-1 items-center gap-2">
+                      <input type="checkbox" checked={task.done} onChange={() => toggleTask(entry.id, task.id)} />
+                      <span className={task.done ? "text-navy-400 line-through" : "text-navy-800"}>{task.text}</span>
+                      {task.dueDate && <span className="text-xs text-navy-400">{pb.taskDueLabel(task.dueDate)}</span>}
+                    </label>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingTaskId(task.id);
+                          setEditTaskText(task.text);
+                          setEditTaskDue(task.dueDate ?? "");
+                        }}
+                        className="text-xs font-medium text-navy-400 hover:text-navy-700"
+                      >
+                        {pb.taskEditLabel}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeTask(entry.id, task.id)}
+                        className="text-xs font-medium text-navy-400 hover:text-amber-700"
+                      >
+                        {pb.taskRemoveLabel}
+                      </button>
+                    </div>
+                  </li>
+                )
+              )}
+            </ul>
+          )}
+
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-navy-50 pt-4">
+            <input
+              type="text"
+              value={newTaskText}
+              onChange={(e) => setNewTaskText(e.target.value)}
+              placeholder={pb.taskAddPlaceholder}
+              className="min-w-0 flex-1 rounded-md border border-navy-200 px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+            />
+            <input
+              type="date"
+              value={newTaskDue}
+              onChange={(e) => setNewTaskDue(e.target.value)}
+              aria-label={pb.taskDueDateLabel}
+              className="rounded-md border border-navy-200 px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                if (!newTaskText.trim()) return;
+                addTask(entry.id, newTaskText, newTaskDue || undefined);
+                setNewTaskText("");
+                setNewTaskDue("");
+              }}
+              disabled={!newTaskText.trim()}
+              className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {pb.taskAddButton}
+            </button>
           </div>
-        )}
+        </div>
 
-        <dl className="mt-6 grid gap-4 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-2">
-          <div>
-            <dt className="text-xs font-semibold uppercase text-navy-400">{ap.awardedAmount}</dt>
-            <dd className="mt-1 text-xl font-bold text-navy-900">{fmtSEK(project.awardedAmountSEK, lang)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-semibold uppercase text-navy-400">{ap.nextReportDueLabel}</dt>
-            <dd className="mt-1 text-xl font-bold text-navy-900">
-              {nextActionable
-                ? nextActionable.status === "revision-requested"
-                  ? ap.reportStatusRevisionRequested
-                  : ap.nextReportDue(nextActionable.deadlineMonthsFromNow)
-                : ap.reportingCompleteLabel}
-            </dd>
-          </div>
-        </dl>
+        <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+          <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.attachmentsTitle}</h2>
+          <p className="mt-1 text-xs text-navy-400">{pb.attachmentsHint}</p>
 
-        <FinancialSummaryCard project={project} />
-
-        {reportingReq && (
-          <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
-            <h2 className="text-sm font-semibold uppercase text-navy-400">{ap.reportingRequirementsTitle}</h2>
-            <dl className="mt-3">
-              <dt className="text-xs text-navy-400">{ap.periodicityLabel}</dt>
-              <dd className="font-semibold text-navy-800">{periodicityLabel(reportingReq.periodicity)}</dd>
-            </dl>
-            <p className="mt-3 text-sm text-navy-600">{ap.interimReportsRequiredLabel(reportingReq.interimReportsRequired)}</p>
-            {reportingReq.requiresAuditAboveSEK !== null && project.awardedAmountSEK > reportingReq.requiresAuditAboveSEK && (
-              <p className="mt-3 text-sm text-navy-600">
-                {ap.auditRequiredAboveLabel} {fmtSEK(reportingReq.requiresAuditAboveSEK, lang)}
-              </p>
-            )}
-            <div className="mt-4 grid gap-5 sm:grid-cols-2">
-              <div>
-                <p className="text-xs font-semibold uppercase text-navy-400">{ap.interimDocumentsLabel}</p>
-                <ul className="mt-1.5 space-y-1">
-                  {(lang === "sv" ? reportingReq.interimDocuments_sv : reportingReq.interimDocuments_en).map((d) => (
-                    <li key={d} className="text-sm text-navy-600">
-                      · {d}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase text-navy-400">{ap.finalReportDocumentsLabel}</p>
-                <ul className="mt-1.5 space-y-1">
-                  {(lang === "sv" ? reportingReq.finalReportDocuments_sv : reportingReq.finalReportDocuments_en).map((d) => (
-                    <li key={d} className="text-sm text-navy-600">
-                      · {d}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {project.commitments.length > 0 && (
-          <section className="mt-6">
-            <h2 className="text-lg font-bold text-navy-800">{ap.commitmentsTitle}</h2>
-            <div className="mt-4 space-y-3">
-              {project.commitments.map((c) => (
-                <CommitmentCard key={c.indicator_sv} commitment={c} project={project} />
+          {attachmentsFor(`projectbank:${entry.id}`).length === 0 ? (
+            <p className="mt-3 text-sm text-navy-500">{pb.noAttachments}</p>
+          ) : (
+            <ul className="mt-3 divide-y divide-navy-50">
+              {attachmentsFor(`projectbank:${entry.id}`).map((a) => (
+                <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
+                  <button
+                    type="button"
+                    onClick={() => downloadAttachment(a)}
+                    className="font-semibold text-navy-700 hover:underline"
+                  >
+                    {a.fileName}
+                  </button>
+                  <div className="flex items-center gap-3 text-xs text-navy-400">
+                    <span>{fmtFileSize(a.sizeBytes)}</span>
+                    <span>{pb.attachmentUploadedAt(new Date(a.uploadedAt).toLocaleDateString(lang === "sv" ? "sv-SE" : "en-US"))}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(pb.confirmRemoveAttachment(a.fileName))) removeAttachment(`projectbank:${entry.id}`, a.id);
+                      }}
+                      className="font-medium text-navy-400 hover:text-amber-700"
+                    >
+                      {pb.attachmentRemoveLabel}
+                    </button>
+                  </div>
+                </li>
               ))}
-            </div>
-          </section>
+            </ul>
+          )}
+
+          <label className="mt-4 inline-block cursor-pointer rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-700 hover:bg-navy-50">
+            {pb.attachmentUploadButton}
+            <input
+              type="file"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (!file) return;
+                setAttachmentError(null);
+                const error = await addAttachment(`projectbank:${entry.id}`, file);
+                if (error === "too-large") setAttachmentError(pb.attachmentTooLarge(MAX_ATTACHMENT_BYTES / (1024 * 1024)));
+              }}
+            />
+          </label>
+          {attachmentError && <p className="mt-2 text-xs text-amber-700">⚠ {attachmentError}</p>}
+        </div>
+
+        {missing.length > 0 && (
+          <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-6">
+            <h2 className="font-bold text-amber-900">{pb.detailMissingInfoTitle}</h2>
+            <p className="mt-1 text-sm text-amber-800">{pb.detailMissingInfoBody}</p>
+            <ul className="mt-4 space-y-1.5">
+              {missing.map((m) => (
+                <li key={m} className="text-sm text-amber-800">
+                  ⚠ {m}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
-        <section className="mb-16 mt-6">
-          <h2 className="text-lg font-bold text-navy-800">{ap.reportingTimelineTitle}</h2>
-          <p className="mt-1 text-sm text-navy-500">{ap.reportingTimelineHint}</p>
-          <div className="mt-4 space-y-3">
-            {project.reportingEvents.map((event) => (
-              <ReportingEventCard
-                key={event.id}
-                event={event}
-                seedEvent={seedProject?.reportingEvents.find((e) => e.id === event.id)}
-                project={project}
-                call={call}
-                program={program}
-                isNext={nextActionable?.id === event.id}
-                history={submissionHistory(project.id, event.id)}
-                statusStyle={statusStyle}
-                statusLabel={statusLabel}
-                onSubmit={(outcomes, note, spentThisPeriodSEK) =>
-                  submitReport(project.id, event.id, outcomes, note, spentThisPeriodSEK)
-                }
-                onSetStatus={(status) => setEventStatus(project.id, event.id, status)}
-              />
-            ))}
-          </div>
-          {isReportingComplete(project) && !hasSustainabilityEvent && (
-            <div className="mt-4 rounded-xl border border-dashed border-navy-200 p-4">
-              <p className="text-sm text-navy-600">{ap.addSustainabilityHint}</p>
-              <button
-                type="button"
-                onClick={() => addSustainabilityEvent(project.id, 36)}
-                className="mt-2 rounded-md border border-navy-200 bg-white px-3 py-2 text-xs font-semibold text-navy-700 hover:bg-navy-50"
-              >
-                {ap.addSustainabilityButton}
-              </button>
-            </div>
+        <section className="mt-6" aria-labelledby="applications-title">
+          <h2 id="applications-title" className="text-lg font-bold text-navy-800">
+            {at.sectionTitle}
+          </h2>
+          <p className="mt-1 text-sm text-navy-500">{at.sectionHint}</p>
+          {applications.length === 0 ? (
+            <p className="mt-3 text-sm text-navy-500">{at.none}</p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {applications.map((record) => {
+                const call = fundingCalls.find((c) => c.id === record.callId);
+                const program = call ? findProgram(call.programId) : undefined;
+                const round = roundOf(record);
+                const awardedProject = record.awardedProjectId
+                  ? awardedProjectsAll.find((a) => a.id === record.awardedProjectId)
+                  : undefined;
+                const callTitle = call ? (lang === "sv" ? call.title_sv : call.title_en) : record.callId;
+                return (
+                  <li
+                    key={record.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-xs font-bold text-white">
+                        {program?.logoLetter ?? "?"}
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold uppercase text-navy-400">
+                          {program?.shortName}
+                          {round !== null && ` · ${at.roundLabel(round)}`}
+                        </p>
+                        <p className="font-semibold text-navy-800">{callTitle}</p>
+                        <p className="mt-0.5 flex items-center gap-2 text-xs text-navy-400">
+                          <ApplicationStatusBadge status={record.status} />
+                          {at.updatedAt(new Date(record.updatedAt).toLocaleDateString(lang === "sv" ? "sv-SE" : "en-US"))}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="sr-only" htmlFor={`status-${record.id}`}>
+                        {at.statusLabel}: {callTitle}
+                      </label>
+                      <select
+                        id={`status-${record.id}`}
+                        value={record.status}
+                        onChange={(e) => handleApplicationStatus(record, e.target.value as ApplicationStatus)}
+                        className="rounded-md border border-navy-200 px-2 py-1.5 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                      >
+                        {APPLICATION_STATUS_ORDER.map((st) => (
+                          <option key={st} value={st}>
+                            {at.statusLabels[st]}
+                          </option>
+                        ))}
+                      </select>
+                      {record.status === "awarded" && !awardedProject && (
+                        <button
+                          type="button"
+                          onClick={() => handleCreateAwarded(record)}
+                          className="rounded-md bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800"
+                        >
+                          {at.createAwardedButton}
+                        </button>
+                      )}
+                      {awardedProject && (
+                        <Link
+                          href={`/stod/${awardedProject.id}`}
+                          className="text-sm font-semibold text-navy-700 hover:underline"
+                        >
+                          {at.viewAwardedLink}
+                        </Link>
+                      )}
+                      {call && (
+                        <Link
+                          href={applicationHref(record)}
+                          className="rounded-md bg-navy-800 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-navy-700"
+                        >
+                          {isActiveApplication(record) ? at.resume : at.open}
+                        </Link>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteApplication(record)}
+                        aria-label={`${at.deleteButton}: ${callTitle}`}
+                        className="rounded-md px-2 py-1.5 text-sm text-navy-400 hover:bg-navy-50 hover:text-navy-700"
+                      >
+                        {at.deleteButton}
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </section>
-      </main>
-      <Footer />
-    </>
-  );
-}
 
-function CommitmentCard({ commitment: c, project }: { commitment: Commitment; project: Grant }) {
-  const { t, lang } = useLanguage();
-  const ap = t.grants;
-  const latest = latestOutcomeFor(project, c.indicator_sv);
-  const deviates = latest !== undefined && latest < c.promisedValue * 0.9;
-  const unit = lang === "sv" ? c.unit_sv : c.unit_en;
-  const fmt = (v: number) => v.toLocaleString(lang === "sv" ? "sv-SE" : "en-US");
-  const history = outcomeHistoryFor(project, c.indicator_sv);
-  const maxValue = Math.max(c.promisedValue, ...history.map((h) => h.value), 1);
-  const targetPct = Math.min(100, (c.promisedValue / maxValue) * 100);
+        <section className="mt-6" aria-labelledby="grants-title">
+          <h2 id="grants-title" className="text-lg font-bold text-navy-800">
+            {pb.grantsSectionTitle}
+          </h2>
+          <p className="mt-1 text-sm text-navy-500">{pb.grantsSectionHint}</p>
+          {projectGrants.length === 0 ? (
+            <p className="mt-3 text-sm text-navy-500">{pb.grantsNone}</p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {projectGrants.map((grant) => {
+                const call = fundingCalls.find((c) => c.id === grant.callId);
+                const program = call ? findProgram(call.programId) : undefined;
+                return (
+                  <li
+                    key={grant.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-700 text-xs font-bold text-white">
+                        {program?.logoLetter ?? "?"}
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold uppercase text-navy-400">{program?.shortName}</p>
+                        <p className="font-semibold text-navy-800">{call ? (lang === "sv" ? call.title_sv : call.title_en) : grant.callId}</p>
+                        <p className="mt-0.5 text-xs text-navy-500">
+                          {t.grants.awardedAmount}: {fmtSEK(grant.awardedAmountSEK, lang)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <LinkedReportingBadge project={grant} />
+                      <Link
+                        href={`/stod/${grant.id}`}
+                        className="rounded-md bg-navy-800 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-navy-700"
+                      >
+                        {at.viewAwardedLink}
+                      </Link>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
 
-  return (
-    <div className="rounded-xl border border-navy-100 bg-white p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="font-semibold text-navy-800">{lang === "sv" ? c.indicator_sv : c.indicator_en}</h3>
-        <span
-          className={`badge ${
-            latest === undefined ? "bg-navy-50 text-navy-400" : deviates ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"
-          }`}
-        >
-          {latest !== undefined ? `${fmt(latest)} / ${fmt(c.promisedValue)} ${unit}` : ap.noLatestOutcome}
-        </span>
-      </div>
-      <div className="mt-3 h-2 rounded-full bg-navy-100">
-        <div
-          className={`h-2 rounded-full ${latest === undefined ? "bg-navy-200" : deviates ? "bg-amber-500" : "bg-green-500"}`}
-          style={{ width: `${c.promisedValue > 0 ? Math.min(100, ((latest ?? 0) / c.promisedValue) * 100) : 0}%` }}
-        />
-      </div>
-      <p className="mt-3 text-sm text-navy-600">
-        <span className="font-semibold">{ap.promised}: </span>
-        {fmt(c.promisedValue)} {unit}
-        {" · "}
-        <span className="font-semibold">{ap.reported}: </span>
-        {latest !== undefined ? `${fmt(latest)} ${unit}` : ap.noLatestOutcome}
-      </p>
-
-      {history.length > 1 && (
-        <div className="mt-4 border-t border-navy-50 pt-3">
-          <p className="text-xs font-semibold uppercase text-navy-400">{ap.trendChartTitle}</p>
-          <div className="relative mt-2" style={{ height: 56 }}>
-            <div
-              className="absolute inset-x-0 border-t border-dashed border-gold-500"
-              style={{ bottom: `${targetPct}%` }}
-              title={`${ap.trendChartTarget}: ${fmt(c.promisedValue)} ${unit}`}
-            />
-            <div className="flex h-full items-end gap-2">
-              {history.map((h, i) => (
-                <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1" title={`${fmt(h.value)} ${unit}`}>
-                  <div
-                    className="w-full rounded-t bg-navy-600"
-                    style={{ height: `${Math.min(100, (h.value / maxValue) * 100)}%` }}
-                  />
-                  <span className="text-[10px] text-navy-400">{lang === "sv" ? h.periodLabel_sv : h.periodLabel_en}</span>
+        <div className="mt-6">
+          <h2 className="text-lg font-bold text-navy-800">{pb.detailMatchesTitle}</h2>
+          {matches.length === 0 ? (
+            <p className="mt-2 text-sm text-navy-500">{pb.detailNoMatches}</p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {matches.map((match) => (
+                <div
+                  key={match.call.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-xs font-bold text-white">
+                      {match.program.logoLetter}
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-navy-400">{match.program.shortName}</p>
+                      <p className="font-semibold text-navy-800">
+                        {lang === "sv" ? match.call.title_sv : match.call.title_en}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`badge ${recommendationStyle(match.recommendation)}`}>{match.score}%</span>
+                    {(() => {
+                      // An application already in progress to this call is
+                      // resumed; otherwise a new one starts.
+                      const active = activeApplicationFor(match.call.id);
+                      return (
+                        <Link
+                          href={active ? applicationHref(active) : `/ansokan?project=${entry.id}&call=${match.call.id}`}
+                          className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
+                        >
+                          {active ? at.continueApplication : results.startApplication}
+                        </Link>
+                      );
+                    })()}
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function FinancialSummaryCard({ project }: { project: Grant }) {
-  const { t, lang } = useLanguage();
-  const ap = t.grants;
-  const history = financialHistory(project);
-
-  // Nothing reported yet — nothing to show, same as the commitments
-  // section only rendering when there's actually something to render.
-  if (history.length === 0) return null;
-
-  const totalSpent = history.reduce((sum, h) => sum + h.spentThisPeriodSEK, 0);
-  const remaining = project.awardedAmountSEK - totalSpent;
-  const pct = project.awardedAmountSEK > 0 ? Math.min(100, (totalSpent / project.awardedAmountSEK) * 100) : 0;
-  const maxSpend = Math.max(...history.map((h) => h.spentThisPeriodSEK), 1);
-
-  return (
-    <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
-      <h2 className="text-sm font-semibold uppercase text-navy-400">{ap.financialSummaryTitle}</h2>
-      <div className="mt-3 flex items-center justify-between">
-        <span className="text-sm text-navy-600">{ap.financialSpentLabel}</span>
-        <span className="font-semibold text-navy-800">
-          {fmtSEK(totalSpent, lang)} / {fmtSEK(project.awardedAmountSEK, lang)}
-        </span>
-      </div>
-      <div className="mt-2 h-2 rounded-full bg-navy-100">
-        <div className="h-2 rounded-full bg-navy-600" style={{ width: `${pct}%` }} />
-      </div>
-      <p className="mt-2 text-xs text-navy-500">
-        {ap.financialRemainingLabel}: {fmtSEK(remaining, lang)}
-      </p>
-
-      {history.length > 1 && (
-        <div className="mt-4 border-t border-navy-50 pt-3">
-          <p className="text-xs font-semibold uppercase text-navy-400">{ap.financialHistoryTitle}</p>
-          <div className="mt-2 flex h-14 items-end gap-2">
-            {history.map((h, i) => (
-              <div
-                key={i}
-                className="flex h-full flex-1 flex-col items-center justify-end gap-1"
-                title={fmtSEK(h.spentThisPeriodSEK, lang)}
-              >
-                <div
-                  className="w-full rounded-t bg-navy-600"
-                  style={{ height: `${Math.min(100, (h.spentThisPeriodSEK / maxSpend) * 100)}%` }}
-                />
-                <span className="text-[10px] text-navy-400">{lang === "sv" ? h.periodLabel_sv : h.periodLabel_en}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </section>
-  );
-}
-
-function ReportingEventCard({
-  event,
-  seedEvent,
-  project,
-  call,
-  program,
-  isNext,
-  history,
-  statusStyle,
-  statusLabel,
-  onSubmit,
-  onSetStatus,
-}: {
-  event: ReportingEvent;
-  /** The same event as originally seeded, before any local correction is
-   * overlaid — the "before" state a resubmission needs to show as history,
-   * since it lives in static seed data rather than as a dated submission
-   * the app itself ever recorded. Undefined for an event with no seed
-   * counterpart (e.g. a locally-added sustainability follow-up). */
-  seedEvent: ReportingEvent | undefined;
-  project: Grant;
-  call: ReturnType<typeof findCall>;
-  program: ReturnType<typeof findProgram>;
-  isNext: boolean;
-  history: ReportingSubmission[];
-  statusStyle: (s: ReportingEventStatus) => string;
-  statusLabel: (s: ReportingEventStatus) => string;
-  onSubmit: (outcomes: Record<string, number>, note: string, spentThisPeriodSEK?: number) => void;
-  onSetStatus: (status: ReportingEventStatus) => void;
-}) {
-  const { t, lang } = useLanguage();
-  const ap = t.grants;
-  const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
-  const attachmentKey = `report:${project.id}:${event.id}`;
-  const [attachmentError, setAttachmentError] = useState<string | null>(null);
-  const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      project.commitments.map((c) => {
-        const existing = event.outcomes.find((o) => o.indicator_sv === c.indicator_sv);
-        return [c.indicator_sv, existing ? String(existing.value) : ""];
-      })
-    )
-  );
-  const [note, setNote] = useState(event.note_sv ?? event.note_en ?? "");
-  const [spentThisPeriod, setSpentThisPeriod] = useState(
-    event.financials ? String(event.financials.spentThisPeriodSEK) : ""
-  );
-  const [justSubmitted, setJustSubmitted] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-
-  const showForm = isNext && (event.status === "upcoming" || event.status === "revision-requested");
-  const fmt = (v: number) => v.toLocaleString(lang === "sv" ? "sv-SE" : "en-US");
-
-  // The seed data's own original outcome is never itself recorded as a
-  // dated submission — it's baked into the event, not written through
-  // submitReport. So the very first correction of a seeded event has no
-  // "before" entry in `history` to show as previous submissions unless we
-  // synthesize one here, with no real timestamp to mark it as such.
-  const fullHistory: ReportingSubmission[] =
-    history.length > 0 && seedEvent && seedEvent.outcomes.length > 0
-      ? [
-          {
-            outcomes: Object.fromEntries(seedEvent.outcomes.map((o) => [o.indicator_sv, o.value])),
-            note: seedEvent.note_sv ?? seedEvent.note_en ?? "",
-            spentThisPeriodSEK: seedEvent.financials?.spentThisPeriodSEK,
-            submittedAt: "",
-          },
-          ...history,
-        ]
-      : history;
-
-  const reportTypeLabel =
-    event.type === "final" ? ap.reportTypeFinal : event.type === "sustainability" ? ap.reportTypeSustainability : ap.reportTypeInterim;
-
-  const handleExport = async () => {
-    const blob = await buildReportDocx(project, event, call, program, lang);
-    downloadBlob(blob, `rapport-${project.id}-${event.id}.docx`);
-  };
-
-  return (
-    <div className="rounded-xl border border-navy-100 bg-white p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase text-navy-400">{reportTypeLabel}</p>
-          <h3 className="font-semibold text-navy-800">{lang === "sv" ? event.periodLabel_sv : event.periodLabel_en}</h3>
-        </div>
-        <div className="text-right">
-          {/* Editable rather than a plain badge — there's no reviewer role
-              in this demo to set "Godkänd"/"Komplettering begärd"
-              automatically, so it starts at whatever the seed data or a
-              submission gives it, and can be changed by hand from here. */}
-          <select
-            value={event.status}
-            onChange={(e) => onSetStatus(e.target.value as ReportingEventStatus)}
-            aria-label={ap.reportStatusEditLabel}
-            className={`badge cursor-pointer border-none focus:outline-none focus:ring-1 focus:ring-navy-500 ${statusStyle(event.status)}`}
-          >
-            <option value="upcoming">{ap.reportStatusUpcoming}</option>
-            <option value="submitted">{ap.reportStatusSubmitted}</option>
-            <option value="revision-requested">{ap.reportStatusRevisionRequested}</option>
-            <option value="approved">{ap.reportStatusApproved}</option>
-          </select>
-          {event.status === "upcoming" && (
-            <p className="mt-1 text-xs text-navy-500">
-              {event.deadlineMonthsFromNow >= 0
-                ? ap.reportDueInMonths(event.deadlineMonthsFromNow)
-                : ap.reportOverdueBy(Math.abs(event.deadlineMonthsFromNow))}
-            </p>
           )}
         </div>
-      </div>
 
-      {call?.reportingRequirements &&
-        event.type !== "sustainability" &&
-        (event.status === "upcoming" || event.status === "revision-requested") && (
-          <div className="mt-3 rounded-md bg-navy-50 px-3 py-3">
-            <p className="text-xs font-semibold uppercase text-navy-400">
-              {event.type === "final" ? ap.finalReportDocumentsLabel : ap.interimDocumentsLabel}
-            </p>
-            <ul className="mt-1.5 space-y-1">
-              {(event.type === "final"
-                ? lang === "sv"
-                  ? call.reportingRequirements.finalReportDocuments_sv
-                  : call.reportingRequirements.finalReportDocuments_en
-                : lang === "sv"
-                ? call.reportingRequirements.interimDocuments_sv
-                : call.reportingRequirements.interimDocuments_en
-              ).map((d) => (
-                <li key={d} className="text-sm text-navy-700">
-                  · {d}
-                </li>
-              ))}
-            </ul>
-            {event.type === "final" &&
-              call.reportingRequirements.requiresAuditAboveSEK !== null &&
-              project.awardedAmountSEK > call.reportingRequirements.requiresAuditAboveSEK && (
-                <p className="mt-2 text-xs font-semibold text-amber-700">
-                  ⚠ {ap.auditRequiredAboveLabel} {fmtSEK(call.reportingRequirements.requiresAuditAboveSEK, lang)}
-                </p>
-              )}
-            {call.documents.some((d) => d.type === "reporting") && (
-              <Link
-                href={`/eu-databas/${call.programId}/${call.id}`}
-                className="mt-2 inline-block text-xs font-semibold text-navy-600 hover:text-navy-900"
-              >
-                {ap.viewReportingInstructionsLink}
-              </Link>
-            )}
-          </div>
-        )}
-
-      {event.outcomes.length > 0 && (
-        <ul className="mt-3 space-y-1 border-t border-navy-50 pt-3">
-          {event.outcomes.map((o) => {
-            const commitment = project.commitments.find((c) => c.indicator_sv === o.indicator_sv);
-            if (!commitment) return null;
-            return (
-              <li key={o.indicator_sv} className="flex items-center justify-between text-sm">
-                <span className="text-navy-600">{lang === "sv" ? commitment.indicator_sv : commitment.indicator_en}</span>
-                <span className="font-semibold text-navy-800">
-                  {fmt(o.value)} {lang === "sv" ? commitment.unit_sv : commitment.unit_en}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-      {event.outcomes.length === 0 && !showForm && (
-        <p className="mt-3 text-sm text-navy-500">{ap.noOutcomesYet}</p>
-      )}
-
-      {event.financials && (
-        <p className="mt-3 text-sm text-navy-600">
-          {ap.reportFinancialLine(fmtSEK(event.financials.spentThisPeriodSEK, lang))}
-        </p>
-      )}
-
-      {(event.note_sv || event.note_en) && (
-        <p className="mt-3 text-sm text-navy-500">
-          <span className="font-semibold">{ap.reportNoteLabel}: </span>
-          {lang === "sv" ? event.note_sv : event.note_en}
-        </p>
-      )}
-
-      {event.outcomes.length > 0 && (
-        <button
-          type="button"
-          onClick={handleExport}
-          className="mt-3 text-xs font-semibold text-navy-500 hover:text-navy-800"
-        >
-          {ap.exportReportButton}
-        </button>
-      )}
-
-      <div className="mt-3 border-t border-navy-50 pt-3">
-        <p className="text-xs font-semibold uppercase text-navy-400">{ap.reportAttachmentsLabel}</p>
-        {attachmentsFor(attachmentKey).length > 0 && (
-          <ul className="mt-1.5 space-y-1">
-            {attachmentsFor(attachmentKey).map((a) => (
-              <li key={a.id} className="flex items-center justify-between gap-2 text-xs">
-                <button type="button" onClick={() => downloadAttachment(a)} className="text-navy-700 hover:underline">
-                  {a.fileName}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (window.confirm(ap.confirmRemoveReportAttachment(a.fileName))) removeAttachment(attachmentKey, a.id);
-                  }}
-                  className="shrink-0 text-navy-400 hover:text-amber-700"
-                >
-                  {ap.reportAttachmentRemoveLabel}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        <label className="mt-1.5 inline-block cursor-pointer text-xs font-semibold text-navy-500 hover:text-navy-800">
-          {ap.reportAttachmentUploadButton}
-          <input
-            type="file"
-            className="hidden"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              if (!file) return;
-              setAttachmentError(null);
-              const error = await addAttachment(attachmentKey, file);
-              if (error === "too-large") setAttachmentError(ap.reportAttachmentTooLarge(MAX_ATTACHMENT_BYTES / (1024 * 1024)));
-            }}
-          />
-        </label>
-        {attachmentError && <p className="mt-1 text-xs text-amber-700">⚠ {attachmentError}</p>}
-      </div>
-
-      {fullHistory.length > 1 && (
-        <div className="mt-3 border-t border-navy-50 pt-3">
-          <button
-            type="button"
-            onClick={() => setShowHistory((v) => !v)}
-            className="text-xs font-semibold text-navy-500 hover:text-navy-800"
-          >
-            {ap.reportHistoryToggle(fullHistory.length - 1)}
-          </button>
-          {showHistory && (
-            <ul className="mt-2 space-y-2">
-              {fullHistory.slice(0, -1).map((s, i) => (
-                <li key={i} className="rounded-md bg-navy-50 p-2 text-xs text-navy-600">
-                  <p className="font-semibold text-navy-700">
-                    {s.submittedAt
-                      ? ap.reportHistoryEntryLabel(new Date(s.submittedAt).toLocaleString(lang === "sv" ? "sv-SE" : "en-US"))
-                      : ap.reportHistoryOriginalLabel}
-                  </p>
-                  {Object.entries(s.outcomes).map(([indicator, value]) => (
-                    <p key={indicator}>
-                      {indicator}: {value}
+        <div className="mb-16 mt-8">
+          <h2 className="text-lg font-bold text-navy-800">{pb.similarProjectsTitle}</h2>
+          <p className="mt-1 text-sm text-navy-500">{pb.similarProjectsIntro}</p>
+          {similar.length === 0 ? (
+            <p className="mt-3 text-sm text-navy-500">{pb.similarProjectsNone}</p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {similar.map(({ project, similarityPct, sharedKeywords }) => (
+                <div key={project.id} className="rounded-xl border border-navy-100 bg-white p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-navy-400">
+                        {lang === "sv" ? project.theme_sv : project.theme_en}
+                      </p>
+                      <p className="font-semibold text-navy-800">{project.title}</p>
+                    </div>
+                    <span className="badge bg-navy-100 text-navy-700">{similarityPct}%</span>
+                  </div>
+                  {sharedKeywords.length > 0 && (
+                    <p className="mt-2 text-xs text-navy-400">
+                      {pb.similarProjectsSharedLabel}: {sharedKeywords.join(", ")}
                     </p>
-                  ))}
-                  {s.spentThisPeriodSEK !== undefined && (
-                    <p>{ap.reportFinancialLine(fmtSEK(s.spentThisPeriodSEK, lang))}</p>
                   )}
-                  {s.note && <p className="mt-1 italic">{s.note}</p>}
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
-      )}
-
-      {showForm && (
-        <div className="mt-4 space-y-3 border-t border-navy-50 pt-4">
-          <p className="text-sm font-semibold text-navy-800">{ap.reportFormTitle}</p>
-          {project.commitments.map((c) => (
-            <div key={c.indicator_sv} className="flex items-center gap-3">
-              <label className="flex-1 text-sm text-navy-700">{lang === "sv" ? c.indicator_sv : c.indicator_en}</label>
-              <input
-                type="number"
-                value={values[c.indicator_sv]}
-                onChange={(e) => setValues({ ...values, [c.indicator_sv]: e.target.value })}
-                placeholder="0"
-                className="w-28 rounded-md border border-navy-200 px-2 py-1.5 text-right text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-              />
-              <span className="w-16 shrink-0 text-xs text-navy-400">{lang === "sv" ? c.unit_sv : c.unit_en}</span>
-            </div>
-          ))}
-          <div className="flex items-center gap-3">
-            <label className="flex-1 text-sm text-navy-700">{ap.reportFormFinancialLabel}</label>
-            <input
-              type="number"
-              value={spentThisPeriod}
-              onChange={(e) => setSpentThisPeriod(e.target.value)}
-              placeholder="0"
-              className="w-32 rounded-md border border-navy-200 px-2 py-1.5 text-right text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-navy-700">{ap.reportFormNoteLabel}</label>
-            <textarea
-              rows={2}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder={ap.reportFormNotePlaceholder}
-              className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              const outcomes = Object.fromEntries(Object.entries(values).map(([k, v]) => [k, Number(v) || 0]));
-              const spentValue = spentThisPeriod.trim() ? Number(spentThisPeriod) : undefined;
-              onSubmit(outcomes, note, spentValue);
-              setJustSubmitted(true);
-            }}
-            className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
-          >
-            {event.status === "revision-requested" ? ap.reportFormCorrectButton : ap.reportFormSubmitButton}
-          </button>
-        </div>
-      )}
-      {justSubmitted && <p className="mt-3 text-xs text-navy-400">{ap.reportSubmittedIndicator}</p>}
-    </div>
+      </main>
+      <Footer />
+    </>
   );
 }

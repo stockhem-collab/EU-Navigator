@@ -265,7 +265,7 @@ export default function CallDetailPage() {
         </section>
 
         <Link
-          href={`/demo?call=${call.id}`}
+          href={`/ansokan?call=${call.id}`}
           className="mt-8 inline-block rounded-md bg-gold-500 px-6 py-3 text-sm font-semibold text-navy-900 shadow-sm transition hover:bg-gold-400"
         >
           {db.helpMeApplyButton}

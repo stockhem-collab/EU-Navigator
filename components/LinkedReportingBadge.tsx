@@ -20,7 +20,7 @@ export default function LinkedReportingBadge({ project }: { project: Grant }) {
   const style = health === "blocked" ? "bg-amber-100 text-amber-800" : health === "attention" ? "bg-gold-100 text-gold-800" : "bg-navy-100 text-navy-600";
 
   return (
-    <Link href={`/projekt/${project.id}`} className={`badge ${style} hover:underline`}>
+    <Link href={`/stod/${project.id}`} className={`badge ${style} hover:underline`}>
       {nextReport
         ? nextReport.status === "revision-requested"
           ? ap.reportStatusRevisionRequested
