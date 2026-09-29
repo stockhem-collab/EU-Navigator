@@ -64,6 +64,15 @@ const APPLICANT_TYPE_KEYWORDS: [RegExp, ApplicantType][] = [
   [/forskningsinstitut/i, "research-institute"],
 ];
 
+/** Reads an organisation-type free-text value (e.g. the organisation
+ * profile's "Kommun") as an ApplicantType — the first category it names,
+ * in the same precedence as the call-text detection above (so "Kommunalt
+ * bolag" is a municipal company, not a municipality). Undefined when the
+ * text doesn't name any known category. */
+export function applicantTypeFromText(text: string): ApplicantType | undefined {
+  return APPLICANT_TYPE_KEYWORDS.find(([pattern]) => pattern.test(text))?.[1];
+}
+
 export function extractCallDraft(text: string): ExtractedCallDraft {
   const amounts = findAllAmounts(text);
   const budgetTotalSEK: ExtractedField<number> = amounts.length > 0 ? { value: Math.max(...amounts), confidence: "detected" } : { value: 0, confidence: "default" };

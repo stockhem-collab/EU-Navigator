@@ -12,6 +12,7 @@ import { fundedProjectsForProgram, computeProgramStats } from "@/lib/data/funded
 import { topKeywords } from "@/lib/matching/patternAnalysis";
 import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
 import { fmtSEK } from "@/lib/format";
+import { activityTypeLabel, regionLabel, targetGroupLabel } from "@/lib/data/matchingVocabulary";
 
 export default function CallDetailPage() {
   const params = useParams<{ programId: string; callId: string }>();
@@ -113,6 +114,29 @@ export default function CallDetailPage() {
               ))}
             </div>
           )}
+          {call.requiresPartnership && (
+            <p className="mt-3 text-sm text-navy-700">{db.minPartnerCountriesLabel(call.minPartnerCountries ?? 2)}</p>
+          )}
+          {(
+            [
+              [db.activityTypesLabel, (call.activityTypes ?? []).map((a) => activityTypeLabel(a, lang))],
+              [db.targetGroupsLabel, (call.targetGroups ?? []).map((g) => targetGroupLabel(g, lang))],
+              [db.eligibleRegionsLabel, (call.eligibleRegions ?? []).map(regionLabel)],
+            ] as [string, string[]][]
+          )
+            .filter(([, values]) => values.length > 0)
+            .map(([label, values]) => (
+              <div key={label} className="mt-3">
+                <p className="text-xs font-semibold uppercase text-navy-400">{label}</p>
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {values.map((v) => (
+                    <span key={v} className="badge bg-navy-50 text-navy-700">
+                      {v}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
         </section>
 
         <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">

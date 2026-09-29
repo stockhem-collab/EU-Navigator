@@ -93,12 +93,28 @@ export interface TranslationTree {
       fieldMunicipality: string;
       fieldMunicipalityPlaceholder: string;
       fieldPartnership: string;
+      fieldActivityType: string;
+      activityTypePlaceholder: string;
+      activityTypeHint: string;
+      fieldSecondarySectors: string;
+      fieldTargetGroups: string;
+      targetGroupsHint: string;
+      fieldRequestedGrant: string;
+      requestedGrantHint: string;
+      requestedGrantOverBudget: string;
+      fieldRegion: string;
+      regionPlaceholder: string;
+      fieldApplicantType: string;
+      applicantTypeFromProfile: string;
+      applicantTypeDefault: string;
       fieldTags: string;
       tagsHint: string;
       tagsSuggestedLabel: string;
       tagsAddAllLabel: string;
       tagsAddNewPlaceholder: string;
       tagsAddNewButton: string;
+      tagsNudge: (n: number) => string;
+      tagsNudgeButton: string;
       submit: string;
       fillExample: string;
       prefilledFromBank: string;
@@ -292,6 +308,10 @@ export interface TranslationTree {
     budgetLabel: string;
     grantRangeLabel: string;
     eligibleApplicantsTitle: string;
+    activityTypesLabel: string;
+    targetGroupsLabel: string;
+    eligibleRegionsLabel: string;
+    minPartnerCountriesLabel: (n: number) => string;
     prioritiesTitle: string;
     evaluationCriteriaTitle: string;
     documentsTitle: string;
@@ -390,6 +410,12 @@ export interface TranslationTree {
     fieldEligibleSv: string;
     fieldEligibleEn: string;
     fieldApplicantTypes: string;
+    fieldActivityTypes: string;
+    fieldTargetGroups: string;
+    fieldTargetGroupsHint: string;
+    fieldEligibleRegions: string;
+    fieldEligibleRegionsHint: string;
+    fieldMinPartnerCountries: string;
     fieldPriorities: string;
     fieldPrioritiesHint: string;
     fieldTags: string;
@@ -863,18 +889,35 @@ export const translations: Record<Lang, TranslationTree> = {
         fieldDescriptionPlaceholder:
           "Beskriv vad ni vill genomföra, varför, och vilka aktiviteter som ingår (t.ex. solceller, styrsystem, ventilation, energilagring)...",
         fieldSector: "Huvudsakligt område",
-        fieldBudget: "Uppskattad budget (kr)",
+        fieldBudget: "Total projektbudget (kr)",
         fieldStartYear: "Startår",
         fieldEndYear: "Slutår",
         fieldMunicipality: "Kommun/organisation",
         fieldMunicipalityPlaceholder: "T.ex. Exempelstad kommun",
-        fieldPartnership: "Vi har (eller kan skaffa) en internationell partnerorganisation",
+        fieldPartnership: "Partnerskap (befintligt eller möjligt att skaffa)",
+        fieldActivityType: "Typ av insats",
+        activityTypePlaceholder: "Välj typ av insats…",
+        activityTypeHint: "Avgör vilka program som passar – t.ex. finansierar ERUF investeringar, ESF+ kompetensinsatser och Horisont Europa forskning.",
+        fieldSecondarySectors: "Övriga områden som projektet berör (valfritt)",
+        fieldTargetGroups: "Målgrupp (valfritt)",
+        targetGroupsHint: "Ange om projektet riktar sig till specifika personer – avgörande för bl.a. ESF+ och Erasmus+.",
+        fieldRequestedGrant: "Sökt EU-bidrag (kr, valfritt)",
+        requestedGrantHint: "Lämna tomt så uppskattas bidraget utifrån programmets typiska stödnivå.",
+        requestedGrantOverBudget: "Sökt bidrag kan inte vara större än totalbudgeten.",
+        fieldRegion: "Län där projektet genomförs",
+        regionPlaceholder: "Välj län…",
+        fieldApplicantType: "Sökande organisationstyp",
+        applicantTypeFromProfile: "Hämtat från organisationsprofilen. Styr vilka utlysningar ni är behöriga att söka.",
+        applicantTypeDefault: "Styr vilka utlysningar ni är behöriga att söka. Ange typen i organisationsprofilen så fylls den i automatiskt.",
         fieldTags: "Taggar (för säkrare matchning)",
         tagsHint: "Välj de taggar som beskriver projektet — taggar matchas exakt mot utlysningarnas teman och missar inte synonymer på samma sätt som fritextsökning.",
         tagsSuggestedLabel: "Förslag baserat på beskrivningen:",
         tagsAddAllLabel: "Lägg till alla",
         tagsAddNewPlaceholder: "Ny tagg som saknas…",
         tagsAddNewButton: "Lägg till ny tagg",
+        tagsNudge: (n) =>
+          `Inga taggar valda. Taggarna väger tungt i matchningen – ${n} ${n === 1 ? "tagg föreslås" : "taggar föreslås"} utifrån beskrivningen.`,
+        tagsNudgeButton: "Lägg till föreslagna",
         submit: "Hitta finansieringsmöjligheter",
         fillExample: "Fyll i exempel",
         prefilledFromBank: "Förifyllt från projektbanken — granska och komplettera innan ni fortsätter.",
@@ -1097,6 +1140,10 @@ export const translations: Record<Lang, TranslationTree> = {
       budgetLabel: "Utlysningens totala budget",
       grantRangeLabel: "Bidragsstorlek",
       eligibleApplicantsTitle: "Behöriga sökande",
+      activityTypesLabel: "Finansierar",
+      targetGroupsLabel: "Målgrupper",
+      eligibleRegionsLabel: "Programområde",
+      minPartnerCountriesLabel: (n) => `Kräver partner från minst ${n} länder.`,
       prioritiesTitle: "Prioriteringar",
       evaluationCriteriaTitle: "Bedömningskriterier",
       documentsTitle: "Dokument (AI-kontextpaket)",
@@ -1198,6 +1245,12 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldEligibleSv: "Behöriga sökande (svenska)",
       fieldEligibleEn: "Behöriga sökande (engelska)",
       fieldApplicantTypes: "Sökandekategorier",
+      fieldActivityTypes: "Typ av insats som finansieras",
+      fieldTargetGroups: "Målgrupper",
+      fieldTargetGroupsHint: "Bara för utlysningar som riktar sig till specifika personer (t.ex. ESF+). Lämna tomt annars.",
+      fieldEligibleRegions: "Programområde (län)",
+      fieldEligibleRegionsHint: "Bara för regionalt avgränsade utlysningar. Lämna tomt om hela Sverige kan söka.",
+      fieldMinPartnerCountries: "Minsta antal länder i partnerskapet",
       fieldPriorities: "Prioriteringar",
       fieldPrioritiesHint: "En prioritering per rad.",
       fieldTags: "Taggar",
@@ -1673,18 +1726,35 @@ export const translations: Record<Lang, TranslationTree> = {
         fieldDescriptionPlaceholder:
           "Describe what you want to do, why, and which activities are included (e.g. solar panels, control systems, ventilation, energy storage)...",
         fieldSector: "Primary area",
-        fieldBudget: "Estimated budget (SEK)",
+        fieldBudget: "Total project budget (SEK)",
         fieldStartYear: "Start year",
         fieldEndYear: "End year",
         fieldMunicipality: "Municipality / organisation",
         fieldMunicipalityPlaceholder: "E.g. Example City Municipality",
-        fieldPartnership: "We have (or can secure) an international partner organisation",
+        fieldPartnership: "Partnership (existing or possible to secure)",
+        fieldActivityType: "Type of activity",
+        activityTypePlaceholder: "Choose type of activity…",
+        activityTypeHint: "Decides which programmes fit — e.g. ERDF funds investment, ESF+ skills measures and Horizon Europe research.",
+        fieldSecondarySectors: "Other areas the project touches (optional)",
+        fieldTargetGroups: "Target group (optional)",
+        targetGroupsHint: "State whether the project is aimed at specific people — decisive for ESF+ and Erasmus+, among others.",
+        fieldRequestedGrant: "EU grant requested (SEK, optional)",
+        requestedGrantHint: "Leave empty to estimate the grant from the programme's typical co-financing rate.",
+        requestedGrantOverBudget: "The requested grant can't exceed the total budget.",
+        fieldRegion: "County where the project takes place",
+        regionPlaceholder: "Choose county…",
+        fieldApplicantType: "Applicant organisation type",
+        applicantTypeFromProfile: "Taken from the organisation profile. Decides which calls you're eligible for.",
+        applicantTypeDefault: "Decides which calls you're eligible for. Set the type in the organisation profile to have it filled in automatically.",
         fieldTags: "Tags (for more accurate matching)",
         tagsHint: "Pick the tags that describe the project — tags are matched exactly against the calls' themes, and don't miss synonyms the way free-text search does.",
         tagsSuggestedLabel: "Suggestions based on the description:",
         tagsAddAllLabel: "Add all",
         tagsAddNewPlaceholder: "New tag that's missing…",
         tagsAddNewButton: "Add new tag",
+        tagsNudge: (n) =>
+          `No tags selected. Tags carry a lot of weight in matching — ${n} ${n === 1 ? "tag is" : "tags are"} suggested from the description.`,
+        tagsNudgeButton: "Add suggested",
         submit: "Find funding opportunities",
         fillExample: "Fill example",
         prefilledFromBank: "Pre-filled from the project bank — review and complete before continuing.",
@@ -1905,6 +1975,10 @@ export const translations: Record<Lang, TranslationTree> = {
       budgetLabel: "Call's total budget",
       grantRangeLabel: "Grant size",
       eligibleApplicantsTitle: "Eligible applicants",
+      activityTypesLabel: "Funds",
+      targetGroupsLabel: "Target groups",
+      eligibleRegionsLabel: "Programme area",
+      minPartnerCountriesLabel: (n) => `Requires partners from at least ${n} countries.`,
       prioritiesTitle: "Priorities",
       evaluationCriteriaTitle: "Evaluation criteria",
       documentsTitle: "Documents (AI context package)",
@@ -2005,6 +2079,12 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldEligibleSv: "Eligible applicants (Swedish)",
       fieldEligibleEn: "Eligible applicants (English)",
       fieldApplicantTypes: "Applicant categories",
+      fieldActivityTypes: "Type of activity funded",
+      fieldTargetGroups: "Target groups",
+      fieldTargetGroupsHint: "Only for calls aimed at specific people (e.g. ESF+). Leave empty otherwise.",
+      fieldEligibleRegions: "Programme area (counties)",
+      fieldEligibleRegionsHint: "Only for regionally limited calls. Leave empty if all of Sweden can apply.",
+      fieldMinPartnerCountries: "Minimum number of countries in the partnership",
       fieldPriorities: "Priorities",
       fieldPrioritiesHint: "One priority per line.",
       fieldTags: "Tags",

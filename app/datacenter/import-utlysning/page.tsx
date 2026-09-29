@@ -12,7 +12,15 @@ import { extractCallDraft, slugifyCallId, ExtractionConfidence } from "@/lib/mat
 import { suggestTags } from "@/lib/matching/tagSuggestions";
 import { useTags } from "@/lib/hooks/useTags";
 import TagPicker from "@/components/TagPicker";
-import { ApplicantType, FundingCall, ReportingPeriodicity } from "@/lib/types";
+import {
+  ALL_ACTIVITY_TYPES,
+  ALL_REGIONS,
+  ALL_TARGET_GROUPS,
+  activityTypeLabel,
+  regionLabel,
+  targetGroupLabel,
+} from "@/lib/data/matchingVocabulary";
+import { ActivityType, ApplicantType, FundingCall, ReportingPeriodicity, SwedishRegion, TargetGroup } from "@/lib/types";
 
 interface FormState {
   programId: string;
@@ -27,6 +35,10 @@ interface FormState {
   eligibleSv: string;
   eligibleEn: string;
   applicantTypes: ApplicantType[];
+  activityTypes: ActivityType[];
+  targetGroups: TargetGroup[];
+  eligibleRegions: SwedishRegion[];
+  minPartnerCountries: number;
   prioritiesSv: string;
   tags: string[];
   periodicity: ReportingPeriodicity;
@@ -47,6 +59,10 @@ const EMPTY_FORM: FormState = {
   eligibleSv: "",
   eligibleEn: "",
   applicantTypes: [],
+  activityTypes: [],
+  targetGroups: [],
+  eligibleRegions: [],
+  minPartnerCountries: 2,
   prioritiesSv: "",
   tags: [],
   periodicity: "annual",
@@ -113,6 +129,20 @@ export default function ImportUtlysningPage() {
         : [...prev.applicantTypes, type],
     }));
 
+  // The structured matching fields below have no extraction heuristic —
+  // they're picked by the reviewer, like the rest of the reviewed form.
+  const toggleListField = <K extends "activityTypes" | "targetGroups" | "eligibleRegions">(
+    field: K,
+    value: FormState[K][number]
+  ) =>
+    setForm((prev) => {
+      const list = prev[field] as FormState[K][number][];
+      return {
+        ...prev,
+        [field]: list.includes(value) ? list.filter((v) => v !== value) : [...list, value],
+      };
+    });
+
   const handleSave = () => {
     if (!form.programId || !form.titleSv.trim() || !form.titleEn.trim()) {
       setError(ci.requiredFieldsError);
@@ -138,6 +168,10 @@ export default function ImportUtlysningPage() {
       eligibleApplicants_sv: form.eligibleSv.trim(),
       eligibleApplicants_en: form.eligibleEn.trim(),
       applicantTypes: form.applicantTypes.length > 0 ? form.applicantTypes : undefined,
+      activityTypes: form.activityTypes.length > 0 ? form.activityTypes : undefined,
+      targetGroups: form.targetGroups.length > 0 ? form.targetGroups : undefined,
+      eligibleRegions: form.eligibleRegions.length > 0 ? form.eligibleRegions : undefined,
+      minPartnerCountries: form.requiresPartnership ? form.minPartnerCountries : undefined,
       priorities_sv,
       priorities_en: priorities_sv,
       extraKeywords: [],
@@ -308,6 +342,22 @@ export default function ImportUtlysningPage() {
             {ci.fieldPartnership}
             {badge("partnership")}
           </label>
+          {form.requiresPartnership && (
+            <div className="max-w-xs">
+              <label htmlFor="import-min-countries" className="block text-sm font-semibold text-navy-700">
+                {ci.fieldMinPartnerCountries}
+              </label>
+              <input
+                id="import-min-countries"
+                type="number"
+                min={2}
+                max={10}
+                value={form.minPartnerCountries}
+                onChange={(e) => setForm({ ...form, minPartnerCountries: Math.max(2, Number(e.target.value)) })}
+                className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+              />
+            </div>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -344,6 +394,56 @@ export default function ImportUtlysningPage() {
               ))}
             </div>
           </div>
+
+          <fieldset>
+            <legend className="block text-sm font-semibold text-navy-700">{ci.fieldActivityTypes}</legend>
+            <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+              {ALL_ACTIVITY_TYPES.map((type) => (
+                <label key={type} className="flex items-center gap-2 text-sm text-navy-700">
+                  <input
+                    type="checkbox"
+                    checked={form.activityTypes.includes(type)}
+                    onChange={() => toggleListField("activityTypes", type)}
+                  />
+                  {activityTypeLabel(type, lang)}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend className="block text-sm font-semibold text-navy-700">{ci.fieldTargetGroups}</legend>
+            <p className="mt-0.5 text-xs text-navy-400">{ci.fieldTargetGroupsHint}</p>
+            <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+              {ALL_TARGET_GROUPS.map((group) => (
+                <label key={group} className="flex items-center gap-2 text-sm text-navy-700">
+                  <input
+                    type="checkbox"
+                    checked={form.targetGroups.includes(group)}
+                    onChange={() => toggleListField("targetGroups", group)}
+                  />
+                  {targetGroupLabel(group, lang)}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend className="block text-sm font-semibold text-navy-700">{ci.fieldEligibleRegions}</legend>
+            <p className="mt-0.5 text-xs text-navy-400">{ci.fieldEligibleRegionsHint}</p>
+            <div className="mt-2 grid gap-1.5 sm:grid-cols-3">
+              {ALL_REGIONS.map((region) => (
+                <label key={region} className="flex items-center gap-2 text-sm text-navy-700">
+                  <input
+                    type="checkbox"
+                    checked={form.eligibleRegions.includes(region)}
+                    onChange={() => toggleListField("eligibleRegions", region)}
+                  />
+                  {regionLabel(region)}
+                </label>
+              ))}
+            </div>
+          </fieldset>
 
           <div>
             <div className="flex items-center gap-2">

@@ -26,7 +26,13 @@ documentation.
   that call's own real `evaluationCriteria` (e.g. Relevance 30 / Impact 30 /
   Quality 20 / Implementation 20 points) rather than one fixed formula
   applied to every call — see the comment on `criteriaWeights` in
-  `lib/matching/scoreMatch.ts`.
+  `lib/matching/scoreMatch.ts`. Beyond thematic fit it checks eligibility
+  (applicant type from the organisation profile, the call's programme
+  area), the type of activity the call funds, target group, the requested
+  grant (not the total budget) against the grant range, partnership reach
+  in number of countries, and project start against the expected funding
+  decision. A call the organisation isn't eligible for is capped at a low
+  score however well it fits thematically.
 - **Ansökningsstudio** (inside `/demo`) — once a call is chosen, the AI is
   locked to that call's evaluation criteria. Includes an "Application
   Coach" that scores the project description on Relevance/Impact/Evidence
