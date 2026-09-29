@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
+import { ProjectBankEntry } from "@/lib/types";
 import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { callDeadlineMonths } from "@/lib/data/fundingCalls";
@@ -24,10 +25,14 @@ type CallRow = {
 // upcoming calls, which of the organisation's projects fit each one, and
 // the calls the user has chosen to watch. Watching a call is also what
 // makes its deadlines and changes show up among the notifications.
-export default function FundingOpportunities() {
+/** `projects`: which of the organisation's projects to match against —
+ * all of them unless the page narrows it (Ansöka's "Visa endast mina och
+ * delade projekt"). */
+export default function FundingOpportunities({ projects }: { projects?: ProjectBankEntry[] } = {}) {
   const { t } = useLanguage();
   const bv = t.bevakning;
-  const { all: projectBank } = useProjectBank();
+  const { all: allProjects } = useProjectBank();
+  const projectBank = projects ?? allProjects;
   const { all: fundingCalls } = useFundingCalls();
   const { prefs, hydrated: watchHydrated, toggleCall } = useWatchPreferences();
   const [onlyWatched, setOnlyWatched] = useState(false);

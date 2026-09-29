@@ -20,6 +20,7 @@ import { reportState } from "@/lib/data/grants";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { CURRENT_USER_ID, isProjectRelevantToUser, orgUnits as seedOrgUnits } from "@/lib/data/users";
 import { ProjectBankEntry } from "@/lib/types";
+import { useOnlyMineAndShared } from "@/lib/hooks/useOnlyMineAndShared";
 
 const LIST_LIMIT = 5;
 
@@ -44,7 +45,7 @@ export default function OversiktPage() {
   const notifications = useNotifications();
   const currentUser = users.find((u) => u.id === CURRENT_USER_ID);
   const orgUnitsAll = orgConfig.units ?? seedOrgUnits;
-  const [onlyMineAndShared, setOnlyMineAndShared] = useState(false);
+  const [onlyMineAndShared, setOnlyMineAndShared] = useOnlyMineAndShared();
 
   const inScope = (entry: ProjectBankEntry | undefined) =>
     !onlyMineAndShared || (entry ? isProjectRelevantToUser(entry, currentUser, orgUnitsAll) : false);
