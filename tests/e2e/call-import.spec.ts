@@ -21,9 +21,8 @@ async function importSampleCall(page: import("@playwright/test").Page, titleSv: 
   await page.locator("textarea").first().fill(SAMPLE_TEXT);
   await page.getByRole("button", { name: "Tolka texten" }).click();
   await page.locator("select").first().selectOption("life");
-  const textInputs = page.locator('input:not([type="number"]):not([type="checkbox"])');
-  await textInputs.nth(0).fill(titleSv);
-  await textInputs.nth(1).fill(titleEn);
+  await page.getByLabel("Titel (svenska)").fill(titleSv);
+  await page.getByLabel("Titel (engelska)").fill(titleEn);
   await page.getByRole("button", { name: "Spara utlysning" }).click();
   await expect(page.getByText(titleSv)).toBeVisible();
 }
@@ -33,13 +32,9 @@ test("parsing pasted call text proposes structured fields for review, not a live
   await page.locator("textarea").first().fill(SAMPLE_TEXT);
   await page.getByRole("button", { name: "Tolka texten" }).click();
 
-  // nth(0) is the deadline field (not something the parser detects from
-  // this sample text, so it keeps its manual default) — budget/grant range
-  // are the fields actually populated from parsing.
-  const numberInputs = page.locator('input[type="number"]');
-  await expect(numberInputs.nth(1)).toHaveValue("250000000");
-  await expect(numberInputs.nth(2)).toHaveValue("4000000");
-  await expect(numberInputs.nth(3)).toHaveValue("60000000");
+  await expect(page.getByLabel("Total budget (SEK)")).toHaveValue("250000000");
+  await expect(page.getByLabel("Lägsta bidrag (SEK)")).toHaveValue("4000000");
+  await expect(page.getByLabel("Högsta bidrag (SEK)")).toHaveValue("60000000");
   await expect(page.locator('input[type="checkbox"]').first()).toBeChecked();
   await expect(page.getByText("Hittat i texten").first()).toBeVisible();
 });
@@ -102,6 +97,58 @@ test("an imported call participates in matching just like a seeded one", async (
   await expect(page.getByText(`AI-stödd ansökningsyta — ${title}`)).toBeVisible();
 
   // Clean up so this doesn't leak into other tests sharing storage.
+  await page.goto("/datacenter/import-utlysning");
+  page.once("dialog", (d) => d.accept());
+  await page.locator("li", { hasText: title }).getByRole("button", { name: "Ta bort" }).click();
+});
+
+test("parsing fills the fields matching needs, and the form lists what's still missing", async ({ page }) => {
+  await page.goto("/datacenter/import-utlysning");
+  await page.locator("textarea").first().fill(`${SAMPLE_TEXT}
+Utlysningen finansierar investeringar i energieffektivisering.
+Sista ansökningsdag är 2031-03-15.
+Stödnivån är högst 70 % av de stödberättigande kostnaderna.
+
+Bedömningskriterier:
+- Relevans – 40 poäng
+- Genomförande – 60 poäng`);
+  await page.getByRole("button", { name: "Tolka texten" }).click();
+
+  await expect(page.getByLabel("Sista ansökningsdag")).toHaveValue("2031-03-15");
+  await expect(page.getByLabel(/Stödnivå/)).toHaveValue("70");
+  // "minst två andra länder" in SAMPLE_TEXT = three countries in total.
+  await expect(page.getByLabel("Minsta antal länder i partnerskapet")).toHaveValue("3");
+  await expect(page.getByLabel(/Investering/)).toBeChecked();
+  await expect(page.getByLabel("Kriterium, t.ex. Relevans")).toHaveCount(2);
+
+  // Applicant types, activity type, criteria, tags, grant range and
+  // deadline are all filled in, so nothing is flagged as missing.
+  await expect(page.getByText("Allt som matchningen använder är ifyllt.")).toBeVisible();
+
+  // Removing a criterion-relevant field shows up in the checklist.
+  await page.getByLabel(/Investering/).uncheck();
+  await expect(page.getByText(/Typ av insats – räknas som okänd/)).toBeVisible();
+});
+
+test("an imported call's deadline date, funding rate and criteria are saved and shown", async ({ page }) => {
+  const title = `Datumtest ${Date.now()}`;
+  await page.goto("/datacenter/import-utlysning");
+  await page.locator("textarea").first().fill(SAMPLE_TEXT);
+  await page.getByRole("button", { name: "Tolka texten" }).click();
+  await page.locator("select").first().selectOption("life");
+  await page.getByLabel("Titel (svenska)").fill(title);
+  await page.getByLabel("Titel (engelska)").fill("Date test");
+  await page.getByLabel("Sista ansökningsdag").fill("2031-06-30");
+  await page.getByLabel(/Stödnivå/).fill("55");
+  await page.getByRole("button", { name: "+ Lägg till kriterium" }).click();
+  await page.getByLabel("Kriterium, t.ex. Relevans").fill("Relevans");
+  await page.getByRole("button", { name: "Spara utlysning" }).click();
+
+  await page.locator("li", { hasText: title }).getByRole("link").click();
+  await expect(page.getByText("2031-06-30")).toBeVisible();
+  await expect(page.getByText("Stödnivå upp till 55 %")).toBeVisible();
+  await expect(page.getByText("Relevans", { exact: true })).toBeVisible();
+
   await page.goto("/datacenter/import-utlysning");
   page.once("dialog", (d) => d.accept());
   await page.locator("li", { hasText: title }).getByRole("button", { name: "Ta bort" }).click();

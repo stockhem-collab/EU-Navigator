@@ -161,7 +161,13 @@ export interface FundingCall {
   title_sv: string;
   title_en: string;
   status: "open" | "upcoming";
+  /** Relative deadline — what the illustrative seed calls use. Read it via
+   * callDeadlineMonths(), which prefers deadlineDate when set. */
   deadlineMonthsFromNow: number;
+  /** The real application deadline (YYYY-MM-DD), for imported calls. A
+   * relative "months from now" goes stale the day after import; this
+   * doesn't. */
+  deadlineDate?: string;
   budgetTotalSEK: number;
   minGrantSEK: number;
   maxGrantSEK: number;
@@ -180,6 +186,9 @@ export interface FundingCall {
   /** The people this call's activities must reach, for people-focused
    * calls. Undefined = the call isn't aimed at a specific target group. */
   targetGroups?: TargetGroup[];
+  /** The share of eligible costs this call's grant covers (0–1), when the
+   * call states it. Undefined = the programme's typicalCoFinancingRate. */
+  coFinancingRate?: number;
   /** Minimum number of countries in the partnership, counting the
    * applicant's own, when requiresPartnership is set (e.g. 3 for a Horizon
    * Europe consortium). Undefined with requiresPartnership = 2. */

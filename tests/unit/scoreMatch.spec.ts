@@ -294,4 +294,27 @@ test.describe("scoreMatch eligibility, programme fit and timing", () => {
 
     expect(score(project, call({})).rationale.find((r) => r.category === "timing")?.type).toBe("positive");
   });
+
+  test("a call's own funding rate is used instead of the programme's typical rate", () => {
+    // Programme rate 0.6 -> 1.8M; call rate 0.2 -> 0.6M, below the 1M
+    // minimum (partial fit).
+    const result = score(project, call({ coFinancingRate: 0.2 }));
+    expect(result.score).toBe(23); // 5 + 8 + 5 + 5
+    expect(result.rationale.find((r) => r.category === "budget")?.text_sv).toContain("20 % av budgeten");
+    expect(result.estimatedFundingSEK[1]).toBe(600_000);
+  });
+
+  test("a call whose deadline date has passed is capped as closed", () => {
+    const result = score(project, call({ deadlineDate: "2025-12-01" }));
+    expect(result.score).toBeLessThanOrEqual(15);
+    expect(result.recommendation).toBe("low");
+    expect(result.rationale[0]).toMatchObject({ type: "warning", category: "timing" });
+    expect(result.rationale.find((r) => r.category === "deadline")).toBeUndefined();
+  });
+
+  test("a deadline date is used instead of the stored relative months", () => {
+    // Stored months say 6, but the date is ~3 months after NOW.
+    const result = score(project, call({ deadlineDate: "2026-04-15" }));
+    expect(result.rationale.find((r) => r.category === "deadline")?.text_sv).toContain("om cirka 3 månader");
+  });
 });

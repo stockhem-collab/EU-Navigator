@@ -8,7 +8,7 @@ import {
 } from "@/lib/types";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { tagLabel } from "@/lib/data/tags";
-import { applicantTypeLabel } from "@/lib/data/fundingCalls";
+import { applicantTypeLabel, callDeadlineMonths } from "@/lib/data/fundingCalls";
 import {
   activityTypeShortLabel,
   partnerCountryCount,
@@ -105,7 +105,7 @@ function criteriaWeights(criteria: EvaluationCriterion[]): CriteriaWeights {
 const DECISION_LAG_MONTHS = 6;
 
 // Cap on the score of a call the project is formally ineligible for (wrong
-// applicant type, outside the programme area). Kept above 0 so the card
+// applicant type, outside the programme area, deadline passed). Kept above 0 so the card
 // still sorts sensibly among the other low matches, but always well below
 // the "consider" threshold — thematic fit can't outweigh eligibility.
 const INELIGIBLE_SCORE_CAP = 15;
@@ -153,6 +153,16 @@ export function scoreMatch(
       category: "eligibility",
       text_sv: `Kontrollera behörighet: ${call.eligibleApplicants_sv}`,
       text_en: `Check eligibility: ${call.eligibleApplicants_en}`,
+    });
+  }
+
+  const deadlineMonths = callDeadlineMonths(call, now);
+  if (deadlineMonths < 0) {
+    ineligibility.push({
+      type: "warning",
+      category: "timing",
+      text_sv: `Ansökningstiden har gått ut (deadline ${call.deadlineDate})`,
+      text_en: `The application period has closed (deadline ${call.deadlineDate})`,
     });
   }
 
@@ -334,14 +344,15 @@ export function scoreMatch(
   // applied for, not the project's total cost — the two differ by the
   // applicant's own co-financing. Estimated from the programme's typical
   // co-financing rate when the user didn't state it.
-  const maxGrantByRate = Math.round(project.budgetSEK * program.typicalCoFinancingRate);
+  const coFinancingRate = call.coFinancingRate ?? program.typicalCoFinancingRate;
+  const maxGrantByRate = Math.round(project.budgetSEK * coFinancingRate);
   const requestedGrant = project.requestedGrantSEK ?? maxGrantByRate;
   const grantDescription_sv = project.requestedGrantSEK
     ? `Sökt belopp (${fmtMSEK(requestedGrant)} mnkr)`
-    : `Beräknat bidrag (${fmtMSEK(requestedGrant)} mnkr, ${Math.round(program.typicalCoFinancingRate * 100)} % av budgeten)`;
+    : `Beräknat bidrag (${fmtMSEK(requestedGrant)} mnkr, ${Math.round(coFinancingRate * 100)} % av budgeten)`;
   const grantDescription_en = project.requestedGrantSEK
     ? `Requested grant (SEK ${fmtMSEK(requestedGrant)}M)`
-    : `Estimated grant (SEK ${fmtMSEK(requestedGrant)}M, ${Math.round(program.typicalCoFinancingRate * 100)}% of the budget)`;
+    : `Estimated grant (SEK ${fmtMSEK(requestedGrant)}M, ${Math.round(coFinancingRate * 100)}% of the budget)`;
 
   // Budget fit (max 20 of the implementation bucket)
   const fit = budgetFit(requestedGrant, call);
@@ -378,7 +389,7 @@ export function scoreMatch(
   // realism rather than the call's fit.
   if (project.requestedGrantSEK && project.budgetSEK > 0 && project.requestedGrantSEK > maxGrantByRate * 1.05) {
     const share = Math.round((project.requestedGrantSEK / project.budgetSEK) * 100);
-    const rate = Math.round(program.typicalCoFinancingRate * 100);
+    const rate = Math.round(coFinancingRate * 100);
     rationale.push({
       type: "warning",
       category: "budget",
@@ -440,7 +451,7 @@ export function scoreMatch(
   // Timing — a project that starts before the funding decision can
   // usually not charge those costs to the grant; one that starts years
   // later is likely better served by a later call.
-  const decision = new Date(now.getFullYear(), now.getMonth() + call.deadlineMonthsFromNow + DECISION_LAG_MONTHS, 1);
+  const decision = new Date(now.getFullYear(), now.getMonth() + Math.max(0, deadlineMonths) + DECISION_LAG_MONTHS, 1);
   const decisionYear = decision.getFullYear();
   if (project.startYear < decisionYear) {
     implementationScore -= 5;
@@ -508,12 +519,14 @@ export function scoreMatch(
     fundingUpper,
   ];
 
-  rationale.push({
-    type: "neutral",
-    category: "deadline",
-    text_sv: `Nästa deadline om cirka ${call.deadlineMonthsFromNow} månader`,
-    text_en: `Next deadline in approximately ${call.deadlineMonthsFromNow} months`,
-  });
+  if (deadlineMonths >= 0) {
+    rationale.push({
+      type: "neutral",
+      category: "deadline",
+      text_sv: `Nästa deadline om cirka ${deadlineMonths} månader`,
+      text_en: `Next deadline in approximately ${deadlineMonths} months`,
+    });
+  }
 
   // Purely informational — the organisation's own funding profile
   // (Inställningar → Finansieringsprofil) is a statement of intent, not a

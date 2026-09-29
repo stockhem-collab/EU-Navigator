@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { applicantTypeLabel, documentTypeLabel } from "@/lib/data/fundingCalls";
+import { applicantTypeLabel, documentTypeLabel, callDeadlineMonths } from "@/lib/data/fundingCalls";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { fundedProjectsForProgram, computeProgramStats } from "@/lib/data/fundedProjects";
 import { topKeywords } from "@/lib/matching/patternAnalysis";
@@ -86,7 +86,8 @@ export default function CallDetailPage() {
         <dl className="mt-6 grid gap-4 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-3">
           <div>
             <dt className="text-xs font-semibold uppercase text-navy-400">{db.deadlineLabel}</dt>
-            <dd className="mt-1 font-bold text-navy-900">{db.deadlineIn(call.deadlineMonthsFromNow)}</dd>
+            <dd className="mt-1 font-bold text-navy-900">{db.deadlineIn(callDeadlineMonths(call))}</dd>
+            {call.deadlineDate && <dd className="text-xs text-navy-500">{call.deadlineDate}</dd>}
           </div>
           <div>
             <dt className="text-xs font-semibold uppercase text-navy-400">{db.budgetLabel}</dt>
@@ -96,6 +97,9 @@ export default function CallDetailPage() {
             <dt className="text-xs font-semibold uppercase text-navy-400">{db.grantRangeLabel}</dt>
             <dd className="mt-1 font-bold text-navy-900">
               {fmtSEK(call.minGrantSEK, lang)}–{fmtSEK(call.maxGrantSEK, lang)}
+            </dd>
+            <dd className="text-xs text-navy-500">
+              {db.fundingRateLabel(Math.round((call.coFinancingRate ?? program.typicalCoFinancingRate) * 100))}
             </dd>
           </div>
         </dl>

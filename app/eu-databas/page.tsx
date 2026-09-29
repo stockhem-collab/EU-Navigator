@@ -1,5 +1,6 @@
 "use client";
 
+import { callDeadlineMonths } from "@/lib/data/fundingCalls";
 import { useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -84,7 +85,7 @@ export default function EuDatabasePage() {
                   </div>
                   {singleCall ? (
                     <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-xs font-semibold text-navy-400">
-                      <span>{db.deadlineIn(singleCall.deadlineMonthsFromNow)}</span>
+                      <span>{db.deadlineIn(callDeadlineMonths(singleCall))}</span>
                       <span>
                         {db.grantRangeLabel}: {fmtSEK(singleCall.minGrantSEK, lang)}–{fmtSEK(singleCall.maxGrantSEK, lang)}
                       </span>

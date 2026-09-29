@@ -403,6 +403,23 @@ export const fundingCalls: FundingCall[] = [
   },
 ];
 
+/** Whole months from `now` until an ISO date (YYYY-MM-DD, counted to the
+ * end of that day) — negative once it has passed. Null for an invalid date. */
+export function monthsUntilDate(isoDate: string, now: Date = new Date()): number | null {
+  const deadline = new Date(`${isoDate}T23:59:59`);
+  if (Number.isNaN(deadline.getTime())) return null;
+  const days = (deadline.getTime() - now.getTime()) / 86_400_000;
+  return days < 0 ? Math.floor(days / 30.44) : Math.round(days / 30.44);
+}
+
+/** Months until the call's deadline — from its real deadlineDate when it
+ * has one (imported calls), otherwise the seed data's relative value.
+ * Negative once the deadline has passed. */
+export function callDeadlineMonths(call: FundingCall, now: Date = new Date()): number {
+  if (!call.deadlineDate) return call.deadlineMonthsFromNow;
+  return monthsUntilDate(call.deadlineDate, now) ?? call.deadlineMonthsFromNow;
+}
+
 export function findCall(id: string): FundingCall | undefined {
   return fundingCalls.find((c) => c.id === id);
 }
