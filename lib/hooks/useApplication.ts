@@ -1,9 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { ApplicationVersion } from "@/lib/types";
-
-const STORAGE_KEY_PREFIX = "eu-navigator-application:";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ApplicationRecord, ApplicationStatus, ApplicationVersion } from "@/lib/types";
+import {
+  DRAFT_KEY_PREFIX,
+  defaultApplicationId,
+  latestActiveApplicationFor,
+  newApplicationId,
+  patchApplicationRecord,
+  readApplicationRecords,
+  touchApplicationRecord,
+} from "@/lib/hooks/useApplications";
 
 interface ApplicationDraft {
   /** Project-logic row label (Swedish label, used as a stable key) -> the
@@ -20,13 +27,13 @@ interface ApplicationDraft {
 
 const EMPTY_DRAFT: ApplicationDraft = { sectionDrafts: {}, updatedAt: "", versions: [] };
 
-function storageKey(customerProjectId: string, callId: string) {
-  return `${STORAGE_KEY_PREFIX}${customerProjectId}:${callId}`;
+function storageKey(applicationId: string) {
+  return `${DRAFT_KEY_PREFIX}${applicationId}`;
 }
 
-function readDraft(customerProjectId: string, callId: string): ApplicationDraft {
+function readDraft(applicationId: string): ApplicationDraft {
   try {
-    const raw = window.localStorage.getItem(storageKey(customerProjectId, callId));
+    const raw = window.localStorage.getItem(storageKey(applicationId));
     if (!raw) return EMPTY_DRAFT;
     const parsed = JSON.parse(raw);
     return {
@@ -39,9 +46,9 @@ function readDraft(customerProjectId: string, callId: string): ApplicationDraft 
   }
 }
 
-function writeDraft(customerProjectId: string, callId: string, draft: ApplicationDraft) {
+function writeDraft(applicationId: string, draft: ApplicationDraft) {
   try {
-    window.localStorage.setItem(storageKey(customerProjectId, callId), JSON.stringify(draft));
+    window.localStorage.setItem(storageKey(applicationId), JSON.stringify(draft));
   } catch {
     // localStorage unavailable (private browsing, storage full, …) — the
     // draft simply stays in-memory for the rest of this session instead.
@@ -56,61 +63,114 @@ function writeDraft(customerProjectId: string, callId: string, draft: Applicatio
  * it had been there all along. Without this, the switch from unpersisted
  * to persisted would silently drop everything the user had already typed. */
 export function seedApplicationDraft(customerProjectId: string, callId: string, sectionDrafts: Record<string, string>) {
-  writeDraft(customerProjectId, callId, { sectionDrafts, updatedAt: new Date().toISOString(), versions: [] });
+  const id = defaultApplicationId(customerProjectId, callId);
+  writeDraft(id, { sectionDrafts, updatedAt: new Date().toISOString(), versions: [] });
+  touchApplicationRecord(id, customerProjectId, callId);
 }
 
 /**
  * Persists the editable project-logic draft — and named saved versions of
- * it — for one (customer project, call) pair. The client-only stand-in for
- * docs/DATA_MODEL.md's `Application` + `ApplicationSection` entities, which
- * is where this would live in a real backend. Only enabled when the
+ * it — for one application (ApplicationRecord). The client-only stand-in
+ * for docs/DATA_MODEL.md's `Application` + `ApplicationSection` entities,
+ * which is where this would live in a real backend. Only enabled when the
  * workspace was reached from a saved Projektbank entry, i.e. a real
  * `customerProjectId` — an ad-hoc, unsaved intake (`customerProjectId ===
  * null`) keeps the previous behaviour of local-only state that resets on
  * refresh, since there's nothing stable to key persistence on for a project
  * that was never saved anywhere.
+ *
+ * Which application: `requestedApplicationId` when it belongs to this
+ * project and call, else the pair's most recently touched application
+ * that's still in play, else a new one (so "Starta ansökan" after a
+ * rejection starts a fresh application rather than reopening the rejected
+ * one). A new application's record is only created on its first edit, so
+ * opening the workspace to look doesn't leave an empty one behind.
  */
-export function useApplication(customerProjectId: string | null, callId: string) {
-  const [draft, setDraft] = useState<ApplicationDraft>(EMPTY_DRAFT);
+export function useApplication(customerProjectId: string | null, callId: string, requestedApplicationId?: string | null) {
+  const [draft, setDraftState] = useState<ApplicationDraft>(EMPTY_DRAFT);
+  // The latest draft, for building the next one outside a state updater —
+  // writing to storage (and to `record`) from inside an updater would be a
+  // side effect React may run twice.
+  const draftRef = useRef<ApplicationDraft>(EMPTY_DRAFT);
+  const setDraft = useCallback((next: ApplicationDraft) => {
+    draftRef.current = next;
+    setDraftState(next);
+  }, []);
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [record, setRecord] = useState<ApplicationRecord | undefined>(undefined);
   const [hydrated, setHydrated] = useState(false);
+
+  // Which application these inputs resolve to — decided once per
+  // (project, call, requested id) and kept in a ref, so an edit made before
+  // the mount effect has run resolves to the same application the effect
+  // will then load (a new application's id is random, so resolving twice
+  // could otherwise pick two different ones and lose the first edit).
+  const resolvedRef = useRef<{ key: string; id: string; record?: ApplicationRecord } | null>(null);
+  const resolve = useCallback((): { id: string; record?: ApplicationRecord } | null => {
+    if (!customerProjectId) return null;
+    const key = `${customerProjectId}|${callId}|${requestedApplicationId ?? ""}`;
+    if (resolvedRef.current?.key === key) return resolvedRef.current;
+    const records = readApplicationRecords();
+    const requested = requestedApplicationId
+      ? records.find((r) => r.id === requestedApplicationId && r.projectId === customerProjectId && r.callId === callId)
+      : undefined;
+    const found = requested ?? latestActiveApplicationFor(records, customerProjectId, callId);
+    resolvedRef.current = { key, id: found?.id ?? newApplicationId(customerProjectId, callId, records), record: found };
+    return resolvedRef.current;
+  }, [customerProjectId, callId, requestedApplicationId]);
 
   useEffect(() => {
     setHydrated(false);
-    if (!customerProjectId) {
+    const resolved = resolve();
+    if (!resolved) {
       setDraft(EMPTY_DRAFT);
+      setApplicationId(null);
+      setRecord(undefined);
       setHydrated(true);
       return;
     }
-    setDraft(readDraft(customerProjectId, callId));
+    setApplicationId(resolved.id);
+    setRecord(resolved.record);
+    setDraft(readDraft(resolved.id));
     setHydrated(true);
-  }, [customerProjectId, callId]);
+  }, [resolve, setDraft]);
+
+  // Every draft change is saved and also creates/bumps the application's
+  // record.
+  const commit = useCallback(
+    (change: (prev: ApplicationDraft) => ApplicationDraft) => {
+      const next = change(draftRef.current);
+      if (next === draftRef.current) return;
+      setDraft(next);
+      const resolved = resolve();
+      if (!customerProjectId || !resolved) return;
+      writeDraft(resolved.id, next);
+      const touched = touchApplicationRecord(resolved.id, customerProjectId, callId);
+      resolvedRef.current = { ...resolvedRef.current!, record: touched };
+      setApplicationId(resolved.id);
+      setRecord(touched);
+    },
+    [customerProjectId, callId, resolve, setDraft]
+  );
 
   const setSection = useCallback(
-    (label: string, value: string) => {
-      setDraft((prev) => {
-        const next: ApplicationDraft = {
-          ...prev,
-          sectionDrafts: { ...prev.sectionDrafts, [label]: value },
-          updatedAt: new Date().toISOString(),
-        };
-        if (customerProjectId) writeDraft(customerProjectId, callId, next);
-        return next;
-      });
-    },
-    [customerProjectId, callId]
+    (label: string, value: string) =>
+      commit((prev) => ({
+        ...prev,
+        sectionDrafts: { ...prev.sectionDrafts, [label]: value },
+        updatedAt: new Date().toISOString(),
+      })),
+    [commit]
   );
 
   const resetSection = useCallback(
-    (label: string) => {
-      setDraft((prev) => {
+    (label: string) =>
+      commit((prev) => {
         const sectionDrafts = { ...prev.sectionDrafts };
         delete sectionDrafts[label];
-        const next: ApplicationDraft = { ...prev, sectionDrafts, updatedAt: new Date().toISOString() };
-        if (customerProjectId) writeDraft(customerProjectId, callId, next);
-        return next;
-      });
-    },
-    [customerProjectId, callId]
+        return { ...prev, sectionDrafts, updatedAt: new Date().toISOString() };
+      }),
+    [commit]
   );
 
   // Saves a named, immutable snapshot of the application as it reads right
@@ -129,43 +189,41 @@ export function useApplication(customerProjectId: string | null, callId: string)
         createdAt: new Date().toISOString(),
         sectionDrafts: resolvedSections,
       };
-      setDraft((prev) => {
-        const next: ApplicationDraft = { ...prev, versions: [...prev.versions, version] };
-        writeDraft(customerProjectId, callId, next);
-        return next;
-      });
+      commit((prev) => ({ ...prev, versions: [...prev.versions, version] }));
     },
-    [customerProjectId, callId]
+    [customerProjectId, commit]
   );
 
   // "Revert to this version": makes every section of the live draft an
   // explicit override matching the chosen version's saved text.
   const restoreVersion = useCallback(
-    (id: string) => {
-      setDraft((prev) => {
+    (id: string) =>
+      commit((prev) => {
         const version = prev.versions.find((v) => v.id === id);
         if (!version) return prev;
-        const next: ApplicationDraft = {
-          ...prev,
-          sectionDrafts: { ...version.sectionDrafts },
-          updatedAt: new Date().toISOString(),
-        };
-        if (customerProjectId) writeDraft(customerProjectId, callId, next);
-        return next;
-      });
-    },
-    [customerProjectId, callId]
+        return { ...prev, sectionDrafts: { ...version.sectionDrafts }, updatedAt: new Date().toISOString() };
+      }),
+    [commit]
   );
 
   const deleteVersion = useCallback(
-    (id: string) => {
-      setDraft((prev) => {
-        const next: ApplicationDraft = { ...prev, versions: prev.versions.filter((v) => v.id !== id) };
-        if (customerProjectId) writeDraft(customerProjectId, callId, next);
-        return next;
-      });
+    (id: string) => commit((prev) => ({ ...prev, versions: prev.versions.filter((v) => v.id !== id) })),
+    [commit]
+  );
+
+  /** Changes this application's status, creating its record first if it
+   * hasn't been edited yet. */
+  const setStatus = useCallback(
+    (status: ApplicationStatus) => {
+      const resolved = resolve();
+      if (!customerProjectId || !resolved) return;
+      touchApplicationRecord(resolved.id, customerProjectId, callId);
+      const updated = patchApplicationRecord(resolved.id, { status }).find((r) => r.id === resolved.id);
+      resolvedRef.current = { ...resolvedRef.current!, record: updated };
+      setApplicationId(resolved.id);
+      setRecord(updated);
     },
-    [customerProjectId, callId]
+    [customerProjectId, callId, resolve]
   );
 
   return {
@@ -178,5 +236,9 @@ export function useApplication(customerProjectId: string | null, callId: string)
     deleteVersion,
     hydrated,
     isPersisted: customerProjectId !== null,
+    applicationId,
+    /** Undefined until the application has been edited or given a status. */
+    record,
+    setStatus,
   };
 }

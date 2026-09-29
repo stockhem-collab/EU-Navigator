@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { MatchResult, ProjectInput } from "@/lib/types";
 import { generateProjectLogic, generateReviewerNotes } from "@/lib/matching/generateWorkspace";
@@ -9,6 +11,8 @@ import { computeReadiness } from "@/lib/matching/readiness";
 import { analyzeSection } from "@/lib/matching/sectionCoach";
 import { useApplication, seedApplicationDraft } from "@/lib/hooks/useApplication";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
+import { syncProjectStatus, useApplications } from "@/lib/hooks/useApplications";
+import { APPLICATION_STATUS_ORDER, ApplicationStatus } from "@/lib/types";
 import { projectInputToProjectBankEntry } from "@/lib/matching/portfolio";
 import { buildApplicationDocx, downloadBlob } from "@/lib/export/exportApplication";
 import { fmtSEK } from "@/lib/format";
@@ -21,6 +25,10 @@ interface Props {
    * one — enables the draft to survive a refresh (see useApplication). Null
    * for an ad-hoc intake that was never saved anywhere. */
   customerProjectId?: string | null;
+  /** Which of the project's applications to this call to open (see
+   * useApplication) — from the URL's ?application=. Undefined = the most
+   * recent one, or a new one if there's none yet. */
+  applicationId?: string | null;
   /** Called once an ad-hoc intake is saved as a brand-new Projektbank entry
    * (see handleSaveAsNewProject below), with that entry's new id — lets the
    * parent adopt it as customerProjectId so this same workspace instance
@@ -32,9 +40,18 @@ interface Props {
 
 type Tab = "application" | "assessment" | "process";
 
-export default function ApplicationWorkspace({ project, match, onBack, customerProjectId = null, onSavedAsProject }: Props) {
+export default function ApplicationWorkspace({
+  project,
+  match,
+  onBack,
+  customerProjectId = null,
+  applicationId: requestedApplicationId = null,
+  onSavedAsProject,
+}: Props) {
+  const router = useRouter();
   const { t, lang } = useLanguage();
   const ws = t.demo.workspace;
+  const at = t.applications;
   const gapT = t.demo.gapAnalysis;
   const readinessT = t.demo.readiness;
   const coachT = t.demo.coach;
@@ -49,9 +66,43 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
 
   // Editable draft of the AI-generated project logic. Persisted per (project,
   // call) when the project was saved in the Projektbank — see useApplication.
-  const { sectionDrafts, setSection, resetSection, versions, saveVersion, restoreVersion, deleteVersion, isPersisted } =
-    useApplication(customerProjectId, match.call.id);
-  const { addImported } = useProjectBank();
+  const {
+    sectionDrafts,
+    setSection,
+    resetSection,
+    versions,
+    saveVersion,
+    restoreVersion,
+    deleteVersion,
+    isPersisted,
+    applicationId,
+    record,
+    setStatus,
+    hydrated: draftLoaded,
+  } = useApplication(customerProjectId, match.call.id, requestedApplicationId);
+  const { all: projectBankEntries, addImported, updateEntry, hydrated: projectBankHydrated } = useProjectBank();
+  const { records: allApplications, createApplication } = useApplications();
+  const otherApplicationsToCall = allApplications.filter(
+    (r) => r.projectId === customerProjectId && r.callId === match.call.id && r.id !== applicationId
+  ).length;
+  const applicationStatus: ApplicationStatus = record?.status ?? "draft";
+
+  // The project's own status follows its applications — re-checked whenever
+  // this application gets its record (first edit) or a new status.
+  const projectStatus = customerProjectId ? projectBankEntries.find((e) => e.id === customerProjectId)?.status : undefined;
+  const recordStatus = record?.status;
+  useEffect(() => {
+    if (!projectBankHydrated || !customerProjectId || !projectStatus || !recordStatus) return;
+    syncProjectStatus(customerProjectId, projectStatus, updateEntry);
+  }, [projectBankHydrated, customerProjectId, projectStatus, recordStatus, updateEntry]);
+
+  const handleNewApplication = () => {
+    if (!customerProjectId || !window.confirm(at.confirmNewApplication)) return;
+    const created = createApplication(customerProjectId, match.call.id);
+    router.replace(`/demo?project=${customerProjectId}&call=${match.call.id}&application=${encodeURIComponent(created.id)}`, {
+      scroll: false,
+    });
+  };
   const [versionName, setVersionName] = useState("");
 
   const estEu = (match.estimatedFundingSEK[0] + match.estimatedFundingSEK[1]) / 2;
@@ -126,7 +177,9 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
   ];
 
   return (
-    <div className="mx-auto max-w-5xl">
+    // data-draft-loaded: set once the stored draft has been read — before
+    // that, text typed into the (server-rendered) fields may be replaced.
+    <div className="mx-auto max-w-5xl" data-draft-loaded={draftLoaded}>
       <button onClick={handleBack} className="text-sm font-semibold text-navy-600 hover:text-navy-900">
         ← {ws.back}
       </button>
@@ -142,6 +195,39 @@ export default function ApplicationWorkspace({ project, match, onBack, customerP
           </p>
         </div>
       </div>
+
+      {isPersisted && customerProjectId && (
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-navy-100 bg-white px-4 py-3">
+          <label htmlFor="application-status" className="text-sm font-semibold text-navy-700">
+            {at.workspaceStatusLabel}
+          </label>
+          <select
+            id="application-status"
+            value={applicationStatus}
+            onChange={(e) => setStatus(e.target.value as ApplicationStatus)}
+            className="rounded-md border border-navy-200 px-2 py-1 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+          >
+            {APPLICATION_STATUS_ORDER.map((st) => (
+              <option key={st} value={st}>
+                {at.statusLabels[st]}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={handleNewApplication}
+            className="text-sm font-semibold text-navy-600 hover:text-navy-900"
+          >
+            + {at.newApplicationButton}
+          </button>
+          <Link href={`/projektbank/${customerProjectId}`} className="text-sm font-semibold text-navy-600 hover:text-navy-900">
+            {at.allApplicationsLink} →
+          </Link>
+          {otherApplicationsToCall > 0 && (
+            <p className="w-full text-xs text-navy-500">{at.otherApplicationsNote(otherApplicationsToCall)}</p>
+          )}
+        </div>
+      )}
 
       <div className="mt-8 grid gap-8 md:grid-cols-[240px_1fr]">
         {/* Persistent sidebar: readiness stays visible whichever tab is open */}

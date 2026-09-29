@@ -38,6 +38,7 @@ function DemoPageInner() {
   const searchParams = useSearchParams();
   const preselectedCallId = searchParams.get("call");
   const preselectedProjectId = searchParams.get("project");
+  const requestedApplicationId = searchParams.get("application");
   const { profile: fundingProfile } = useFundingProfile();
   const { all: fundingCalls } = useFundingCalls();
 
@@ -152,6 +153,7 @@ function DemoPageInner() {
             project={step.project}
             match={step.match}
             customerProjectId={customerProjectId}
+            applicationId={requestedApplicationId}
             onSavedAsProject={(newId) => {
               setCustomerProjectId(newId);
               // Keeps the URL resumable after a refresh, without remounting

@@ -1,4 +1,4 @@
-import { Lang } from "@/lib/types";
+import { ApplicationStatus, Lang } from "@/lib/types";
 
 export interface TranslationTree {
   nav: {
@@ -736,6 +736,28 @@ export interface TranslationTree {
     currentTasksHint: string;
     currentTasksNone: string;
     currentTasksViewAll: string;
+  };
+  applications: {
+    statusLabels: Record<ApplicationStatus, string>;
+    sectionTitle: string;
+    sectionHint: string;
+    none: string;
+    statusLabel: string;
+    resume: string;
+    open: string;
+    deleteButton: string;
+    confirmDelete: string;
+    createAwardedButton: string;
+    confirmCreateAwarded: string;
+    viewAwardedLink: string;
+    updatedAt: (date: string) => string;
+    roundLabel: (n: number) => string;
+    continueApplication: string;
+    workspaceStatusLabel: string;
+    newApplicationButton: string;
+    confirmNewApplication: string;
+    allApplicationsLink: string;
+    otherApplicationsNote: (n: number) => string;
   };
 }
 
@@ -1601,6 +1623,37 @@ export const translations: Record<Lang, TranslationTree> = {
       currentTasksNone: "Inga öppna uppgifter just nu. Lägg till uppgifter under ett projekt i Projektbanken.",
       currentTasksViewAll: "Visa projekt →",
     },
+    applications: {
+      statusLabels: {
+        draft: "Utkast",
+        submitted: "Inskickad",
+        "under-review": "Under bedömning",
+        awarded: "Beviljad",
+        rejected: "Avslag",
+        withdrawn: "Återtagen",
+      },
+      sectionTitle: "Ansökningar",
+      sectionHint:
+        "Varje ansökan har egen status och eget utkast. Ett projekt kan söka flera utlysningar – och samma utlysning igen i en ny omgång. Projektets status följer ansökningarna.",
+      none: "Inga ansökningar påbörjade ännu – starta en från matchningarna nedan.",
+      statusLabel: "Status",
+      resume: "Fortsätt",
+      open: "Öppna",
+      deleteButton: "Ta bort",
+      confirmDelete: "Ta bort ansökan med dess utkast och sparade versioner?",
+      createAwardedButton: "Skapa beviljat projekt",
+      confirmCreateAwarded: "Skapa ett beviljat projekt för uppföljning och rapportering, kopplat till den här ansökan?",
+      viewAwardedLink: "Visa beviljat projekt",
+      updatedAt: (date) => `Uppdaterad ${date}`,
+      roundLabel: (n) => `Ansökan ${n}`,
+      continueApplication: "Fortsätt ansökan",
+      workspaceStatusLabel: "Ansökans status",
+      newApplicationButton: "Ny ansökan till samma utlysning",
+      confirmNewApplication:
+        "Starta en ny, tom ansökan till samma utlysning? Den nuvarande ansökan finns kvar under projektet.",
+      allApplicationsLink: "Alla ansökningar för projektet",
+      otherApplicationsNote: (n) => `Projektet har ${n} ${n === 1 ? "annan ansökan" : "andra ansökningar"} till samma utlysning.`,
+    },
   },
   en: {
     nav: {
@@ -2458,6 +2511,37 @@ export const translations: Record<Lang, TranslationTree> = {
       currentTasksHint: "Open tasks across the whole portfolio, soonest due first.",
       currentTasksNone: "No open tasks right now. Add tasks under a project in the project bank.",
       currentTasksViewAll: "View project →",
+    },
+    applications: {
+      statusLabels: {
+        draft: "Draft",
+        submitted: "Submitted",
+        "under-review": "Under review",
+        awarded: "Awarded",
+        rejected: "Rejected",
+        withdrawn: "Withdrawn",
+      },
+      sectionTitle: "Applications",
+      sectionHint:
+        "Each application has its own status and draft. A project can apply to several calls — and to the same call again in a new round. The project's status follows its applications.",
+      none: "No applications started yet — start one from the matches below.",
+      statusLabel: "Status",
+      resume: "Continue",
+      open: "Open",
+      deleteButton: "Delete",
+      confirmDelete: "Delete this application with its draft and saved versions?",
+      createAwardedButton: "Create awarded project",
+      confirmCreateAwarded: "Create an awarded project for follow-up and reporting, linked to this application?",
+      viewAwardedLink: "View awarded project",
+      updatedAt: (date) => `Updated ${date}`,
+      roundLabel: (n) => `Application ${n}`,
+      continueApplication: "Continue application",
+      workspaceStatusLabel: "Application status",
+      newApplicationButton: "New application to the same call",
+      confirmNewApplication:
+        "Start a new, empty application to the same call? The current application stays under the project.",
+      allApplicationsLink: "All applications for the project",
+      otherApplicationsNote: (n) => `The project has ${n} other ${n === 1 ? "application" : "applications"} to the same call.`,
     },
   },
 };
