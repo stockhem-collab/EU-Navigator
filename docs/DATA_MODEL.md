@@ -419,7 +419,7 @@ Erasmus+) that don't have one.
 | — (didn't exist) | `CallRequirement`, `ApplicationRequirementDefinition`, `ReportingRequirementDefinition` — currently implicit in `eligibleApplicants_sv/en` free text and nowhere for reporting; this is genuinely new structure, not a rename. |
 | `ProjectBankEntry` | `CustomerProject` (`department_sv/en` free text → single `department` string once bilingual UI does its own lookup of the customer's own locale preference, not a stored translation) |
 | `ReferenceProject` + `AwardedProject` + `Commitment` | `FundedProject` (+ `ProjectPartner`, `FundedProjectResult`); `Commitment` splits into `ProjectIndicator` (ongoing tracking) + `Report` (the periodic submission) |
-| Client-only `draftLogic` state in `ApplicationWorkspace` | `Application` + `ApplicationSection` |
+| Client-only `ApplicationRecord` (id, project, call, status, dates, awarded project — `lib/hooks/useApplications.ts`) + its draft and saved versions (`useApplication`) | `Application` + `ApplicationSection` |
 | `computeMatchesForEntry`/`computeBestMatchForEntry` (recomputed every render) | `Match`, persisted, invalidated via `inputs_hash` |
 
 ## 9. External source field mapping

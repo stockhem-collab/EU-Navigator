@@ -14,6 +14,8 @@ test("appears once a draft has edits and resumes straight into the workspace", a
   const startLink = page.locator('a[href*="/demo?project=pb-4"]').first();
   const href = await startLink.getAttribute("href");
   await page.goto(href!);
+  // Typing before the stored draft has loaded can be overwritten by it.
+  await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
   const textarea = page.locator("textarea").first();
   await textarea.fill(`Ongoing work ${Date.now()}`);
   await page.waitForTimeout(200);

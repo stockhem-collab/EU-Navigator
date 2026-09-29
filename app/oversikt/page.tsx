@@ -9,6 +9,7 @@ import LinkedReportingBadge from "@/components/LinkedReportingBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useOngoingApplications } from "@/lib/hooks/useOngoingApplications";
+import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { useProjectTasks } from "@/lib/hooks/useProjectTasks";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
@@ -157,9 +158,9 @@ export default function OversiktPage() {
               <p className="mt-3 text-sm text-navy-500">{ov.ongoingApplicationsNone}</p>
             ) : (
               <div className="mt-3 space-y-2">
-                {ongoingApplications.map(({ entry, call, program, updatedAt, versionCount }) => (
+                {ongoingApplications.map(({ record, entry, call, program, updatedAt, versionCount }) => (
                   <div
-                    key={`${entry.id}:${call.id}`}
+                    key={record.id}
                     className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
                   >
                     <div className="flex items-center gap-3">
@@ -171,14 +172,16 @@ export default function OversiktPage() {
                         <p className="font-semibold text-navy-800">
                           {lang === "sv" ? entry.title_sv : entry.title_en}
                         </p>
+                        <p className="text-xs text-navy-500">{lang === "sv" ? call.title_sv : call.title_en}</p>
                         <p className="text-xs text-navy-400">
+                          <ApplicationStatusBadge status={record.status} />{" "}
                           {updatedAt && ov.ongoingApplicationsUpdatedAt(new Date(updatedAt).toLocaleString(lang === "sv" ? "sv-SE" : "en-US"))}
                           {versionCount > 0 && (updatedAt ? " · " : "") + ov.ongoingApplicationsVersions(versionCount)}
                         </p>
                       </div>
                     </div>
                     <Link
-                      href={`/demo?project=${entry.id}&call=${call.id}`}
+                      href={`/demo?project=${entry.id}&call=${call.id}&application=${encodeURIComponent(record.id)}`}
                       className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
                     >
                       {ov.ongoingApplicationsResume}

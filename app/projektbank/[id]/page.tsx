@@ -13,6 +13,11 @@ import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { useProjectTasks } from "@/lib/hooks/useProjectTasks";
 import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
 import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
+import { syncProjectStatus, useApplications } from "@/lib/hooks/useApplications";
+import { isActiveApplication } from "@/lib/matching/applications";
+import { scoreMatch } from "@/lib/matching/scoreMatch";
+import { findProgram } from "@/lib/data/fundingPrograms";
+import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { orgUnits as seedOrgUnits, projectRoleLabels, shareableUnits, unitDepth } from "@/lib/data/users";
@@ -20,7 +25,7 @@ import { sectorLabel } from "@/lib/matching/scoreMatch";
 import { computeMatchesForEntry, projectBankEntryToAwardedProject, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
 import { computeSimilarProjects } from "@/lib/matching/similarProjects";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
-import { ProjectStatus, Sector } from "@/lib/types";
+import { APPLICATION_STATUS_ORDER, ApplicationRecord, ApplicationStatus, ProjectStatus, Sector } from "@/lib/types";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
 import { useTags } from "@/lib/hooks/useTags";
 import TagPicker from "@/components/TagPicker";
@@ -68,6 +73,8 @@ export default function ProjectBankDetailPage() {
   const { all: allTags, addCustomTag } = useTags();
   const { all: fundingCalls } = useFundingCalls();
   const { all: awardedProjectsAll, addAwardedProject } = useAwardedProjects();
+  const { records: applicationRecords, setApplicationStatus, updateApplication, deleteApplication } = useApplications();
+  const at = t.applications;
   const { users } = useUsersDirectory();
   const { config: orgConfig } = useOrgConfig();
   const orgUnits = orgConfig.units ?? seedOrgUnits;
@@ -108,6 +115,44 @@ export default function ProjectBankDetailPage() {
   const matches = computeMatchesForEntry(entry, fundingCalls);
   const similar = computeSimilarProjects(projectBankEntryToProjectInput(entry), fundedProjects);
   const linkedAwardedProject = awardedProjectsAll.find((a) => a.projectBankEntryId === entry.id);
+  const applications = applicationRecords
+    .filter((r) => r.projectId === entry.id)
+    .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+  // "Ansökan 2" etc. only where a project has more than one application to
+  // the same call — otherwise the call title alone identifies it.
+  const roundOf = (record: ApplicationRecord) => {
+    const sameCall = applications.filter((r) => r.callId === record.callId);
+    return sameCall.length > 1 ? sameCall.indexOf(record) + 1 : null;
+  };
+  const activeApplicationFor = (callId: string) =>
+    applications.filter((r) => r.callId === callId && isActiveApplication(r)).sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))[0];
+  const applicationHref = (record: ApplicationRecord) =>
+    `/demo?project=${entry.id}&call=${record.callId}&application=${encodeURIComponent(record.id)}`;
+
+  const handleApplicationStatus = (record: ApplicationRecord, status: ApplicationStatus) => {
+    setApplicationStatus(record.id, status);
+    syncProjectStatus(entry.id, entry.status, updateEntry);
+  };
+
+  const handleDeleteApplication = (record: ApplicationRecord) => {
+    if (!window.confirm(at.confirmDelete)) return;
+    deleteApplication(record.id);
+    syncProjectStatus(entry.id, entry.status, updateEntry);
+  };
+
+  // An awarded application becomes an awarded project under the call it
+  // was actually made to — not just the project's best match.
+  const handleCreateAwarded = (record: ApplicationRecord) => {
+    const call = fundingCalls.find((c) => c.id === record.callId);
+    const program = call ? findProgram(call.programId) : undefined;
+    if (!call || !program || !window.confirm(at.confirmCreateAwarded)) return;
+    const match = scoreMatch(projectBankEntryToProjectInput(entry), call, program);
+    const awarded = projectBankEntryToAwardedProject(entry, match);
+    addAwardedProject(awarded);
+    updateApplication(record.id, { awardedProjectId: awarded.id });
+    updateEntry(entry.id, { status: "running" });
+    router.push(`/projekt/${awarded.id}`);
+  };
 
   const recommendationStyle = (rec: (typeof matches)[number]["recommendation"]) => {
     if (rec === "proceed") return "bg-green-100 text-green-800";
@@ -118,8 +163,11 @@ export default function ProjectBankDetailPage() {
   // Turns this idea into a real awarded project once it's actually won
   // funding — before this there was no path forward except hand-editing
   // seed data, so a real project bank status went stale in "approved"
-  // forever. Uses the entry's own best match, since a Projektbank entry
-  // doesn't itself track which call an application was made under.
+  // forever. Only offered for a project with no application records (e.g.
+  // a seeded "approved" one): with records, each awarded application gets
+  // its own button under the call it was made to (handleCreateAwarded).
+  // Without them there's no record of which call was applied to, so this
+  // uses the project's best match.
   const handleMarkAsAwarded = () => {
     const bestMatch = matches[0];
     if (!bestMatch) return;
@@ -356,7 +404,7 @@ export default function ProjectBankDetailPage() {
               </div>
             )}
 
-            {!linkedAwardedProject && entry.status === "approved" && matches.length > 0 && (
+            {!linkedAwardedProject && applications.length === 0 && entry.status === "approved" && matches.length > 0 && (
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed border-navy-200 px-4 py-3">
                 <p className="text-xs text-navy-600">{pb.markAsAwardedHint}</p>
                 <button
@@ -637,6 +685,101 @@ export default function ProjectBankDetailPage() {
           </div>
         )}
 
+        <section className="mt-6" aria-labelledby="applications-title">
+          <h2 id="applications-title" className="text-lg font-bold text-navy-800">
+            {at.sectionTitle}
+          </h2>
+          <p className="mt-1 text-sm text-navy-500">{at.sectionHint}</p>
+          {applications.length === 0 ? (
+            <p className="mt-3 text-sm text-navy-500">{at.none}</p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {applications.map((record) => {
+                const call = fundingCalls.find((c) => c.id === record.callId);
+                const program = call ? findProgram(call.programId) : undefined;
+                const round = roundOf(record);
+                const awardedProject = record.awardedProjectId
+                  ? awardedProjectsAll.find((a) => a.id === record.awardedProjectId)
+                  : undefined;
+                const callTitle = call ? (lang === "sv" ? call.title_sv : call.title_en) : record.callId;
+                return (
+                  <li
+                    key={record.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-xs font-bold text-white">
+                        {program?.logoLetter ?? "?"}
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold uppercase text-navy-400">
+                          {program?.shortName}
+                          {round !== null && ` · ${at.roundLabel(round)}`}
+                        </p>
+                        <p className="font-semibold text-navy-800">{callTitle}</p>
+                        <p className="mt-0.5 flex items-center gap-2 text-xs text-navy-400">
+                          <ApplicationStatusBadge status={record.status} />
+                          {at.updatedAt(new Date(record.updatedAt).toLocaleDateString(lang === "sv" ? "sv-SE" : "en-US"))}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="sr-only" htmlFor={`status-${record.id}`}>
+                        {at.statusLabel}: {callTitle}
+                      </label>
+                      <select
+                        id={`status-${record.id}`}
+                        value={record.status}
+                        onChange={(e) => handleApplicationStatus(record, e.target.value as ApplicationStatus)}
+                        className="rounded-md border border-navy-200 px-2 py-1.5 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                      >
+                        {APPLICATION_STATUS_ORDER.map((st) => (
+                          <option key={st} value={st}>
+                            {at.statusLabels[st]}
+                          </option>
+                        ))}
+                      </select>
+                      {record.status === "awarded" && !awardedProject && (
+                        <button
+                          type="button"
+                          onClick={() => handleCreateAwarded(record)}
+                          className="rounded-md bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800"
+                        >
+                          {at.createAwardedButton}
+                        </button>
+                      )}
+                      {awardedProject && (
+                        <Link
+                          href={`/projekt/${awardedProject.id}`}
+                          className="text-sm font-semibold text-navy-700 hover:underline"
+                        >
+                          {at.viewAwardedLink}
+                        </Link>
+                      )}
+                      {call && (
+                        <Link
+                          href={applicationHref(record)}
+                          className="rounded-md bg-navy-800 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-navy-700"
+                        >
+                          {isActiveApplication(record) ? at.resume : at.open}
+                        </Link>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteApplication(record)}
+                        aria-label={`${at.deleteButton}: ${callTitle}`}
+                        className="rounded-md px-2 py-1.5 text-sm text-navy-400 hover:bg-navy-50 hover:text-navy-700"
+                      >
+                        {at.deleteButton}
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
         <div className="mt-6">
           <h2 className="text-lg font-bold text-navy-800">{pb.detailMatchesTitle}</h2>
           {matches.length === 0 ? (
@@ -661,12 +804,19 @@ export default function ProjectBankDetailPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`badge ${recommendationStyle(match.recommendation)}`}>{match.score}%</span>
-                    <Link
-                      href={`/demo?project=${entry.id}&call=${match.call.id}`}
-                      className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
-                    >
-                      {results.startApplication}
-                    </Link>
+                    {(() => {
+                      // An application already in progress to this call is
+                      // resumed; otherwise a new one starts.
+                      const active = activeApplicationFor(match.call.id);
+                      return (
+                        <Link
+                          href={active ? applicationHref(active) : `/demo?project=${entry.id}&call=${match.call.id}`}
+                          className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
+                        >
+                          {active ? at.continueApplication : results.startApplication}
+                        </Link>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}

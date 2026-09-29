@@ -545,6 +545,36 @@ export interface ApplicationVersion {
   sectionDrafts: Record<string, string>;
 }
 
+/** Where one application stands — docs/DATA_MODEL.md §2.6. */
+export type ApplicationStatus = "draft" | "submitted" | "under-review" | "awarded" | "rejected" | "withdrawn";
+
+export const APPLICATION_STATUS_ORDER: ApplicationStatus[] = [
+  "draft",
+  "submitted",
+  "under-review",
+  "awarded",
+  "rejected",
+  "withdrawn",
+];
+
+/** One application from a Projektbank project to one call — the
+ * client-only stand-in for docs/DATA_MODEL.md §2.6's `Application`. A
+ * project can have any number of these: to different calls, and more than
+ * one to the same call (a new round after a rejection). The draft text and
+ * saved versions live under this record's id (see useApplication). */
+export interface ApplicationRecord {
+  id: string;
+  projectId: string;
+  callId: string;
+  status: ApplicationStatus;
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+  /** Set the first time the status moves past "draft". */
+  submittedAt?: string;
+  /** The AwardedProject created when this application was marked awarded. */
+  awardedProjectId?: string;
+}
+
 /** How much signal the deterministic heuristics actually had to go on —
  * "low" is the natural hand-off point to a real, human-in-the-loop AI
  * review, rather than trusting a generic heuristic verdict on a

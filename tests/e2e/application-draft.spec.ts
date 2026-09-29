@@ -57,7 +57,9 @@ test("a version can be saved and restored, and the application exports as .docx"
 
   await page.getByRole("button", { name: /^Utkast$|^Draft$/ }).click();
   await page.getByRole("button", { name: /Spara version|Save version/i }).click();
-  await expect(page.getByText(/^Utkast$|^Draft$/).first()).toBeVisible();
+  // Visible only: the application-status select also has a (hidden)
+  // "Utkast" option.
+  await expect(page.getByText(/^Utkast$|^Draft$/).filter({ visible: true }).first()).toBeVisible();
 
   // Change the draft further, then restore the saved version — asks for
   // confirmation first since it overwrites the current draft.

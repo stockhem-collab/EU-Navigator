@@ -115,7 +115,7 @@ test("a saved application version exports independently of later edits to the li
 
   await page.getByRole("button", { name: /^Utkast$|^Draft$/ }).click();
   await page.getByRole("button", { name: /Spara version|Save version/i }).click();
-  await expect(page.getByText(/^Utkast$|^Draft$/).first()).toBeVisible();
+  await expect(page.getByText(/^Utkast$|^Draft$/).filter({ visible: true }).first()).toBeVisible();
 
   // Keep editing the live draft after saving — the version's own export
   // must still reflect what was saved, not this later change.
