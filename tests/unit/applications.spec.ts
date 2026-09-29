@@ -1,9 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { projectStatusFromApplications } from "../../lib/matching/applications";
-import { ApplicationRecord, ApplicationStatus } from "../../lib/types";
+import { ApplicationRecord, ApplicationStatus, normalizeProjectStatus } from "../../lib/types";
 
-// How a project's own status follows its applications, now that a project
-// can have several (to different calls, or more than one to the same call).
+// The project status is a lifecycle (idea → searching for funding →
+// funded → running → completed); where each of its applications stands is
+// shown on the application itself.
 
 function app(status: ApplicationStatus, callId = "c1"): ApplicationRecord {
   return { id: `${callId}-${status}`, projectId: "p", callId, status, createdAt: "", updatedAt: "" };
@@ -11,24 +12,30 @@ function app(status: ApplicationStatus, callId = "c1"): ApplicationRecord {
 
 test("no applications leaves the project status as it is", () => {
   expect(projectStatusFromApplications("idea", [])).toBe("idea");
+  expect(projectStatusFromApplications("assessing", [])).toBe("assessing");
 });
 
-test("the most advanced application decides the project status", () => {
-  expect(projectStatusFromApplications("idea", [app("draft")])).toBe("application");
-  expect(projectStatusFromApplications("application", [app("draft", "c1"), app("submitted", "c2")])).toBe("submitted");
-  expect(projectStatusFromApplications("submitted", [app("under-review")])).toBe("submitted");
-  // One award outweighs a rejection elsewhere.
-  expect(projectStatusFromApplications("submitted", [app("rejected", "c1"), app("awarded", "c2")])).toBe("approved");
-  // A new draft after a rejection puts the project back in the application stage.
-  expect(projectStatusFromApplications("rejected", [app("rejected", "c1"), app("draft", "c1")])).toBe("application");
+test("any application puts the project in 'searching for funding' until one is awarded", () => {
+  expect(projectStatusFromApplications("idea", [app("draft")])).toBe("funding-search");
+  expect(projectStatusFromApplications("assessing", [app("submitted")])).toBe("funding-search");
+  // Rejected or withdrawn: still searching — the rejection is on the application.
+  expect(projectStatusFromApplications("idea", [app("rejected"), app("withdrawn", "c2")])).toBe("funding-search");
 });
 
-test("only when every application is closed does the project fall back", () => {
-  expect(projectStatusFromApplications("submitted", [app("rejected", "c1"), app("withdrawn", "c2")])).toBe("rejected");
-  expect(projectStatusFromApplications("application", [app("withdrawn")])).toBe("funding-search");
+test("one awarded application makes the project funded, whatever happened to the others", () => {
+  expect(projectStatusFromApplications("funding-search", [app("rejected", "c1"), app("awarded", "c2")])).toBe("funded");
 });
 
 test("a running or completed project isn't moved back by its applications", () => {
   expect(projectStatusFromApplications("running", [app("draft")])).toBe("running");
   expect(projectStatusFromApplications("completed", [app("rejected")])).toBe("completed");
+});
+
+test("older, application-level project statuses are read as lifecycle statuses", () => {
+  expect(normalizeProjectStatus("approved")).toBe("funded");
+  expect(normalizeProjectStatus("application")).toBe("funding-search");
+  expect(normalizeProjectStatus("submitted")).toBe("funding-search");
+  expect(normalizeProjectStatus("rejected")).toBe("funding-search");
+  expect(normalizeProjectStatus("running")).toBe("running");
+  expect(normalizeProjectStatus(undefined)).toBe("idea");
 });

@@ -210,7 +210,7 @@ export interface FundingCall {
    * file; the workspace falls back to the generic project-logic template. */
   applicationTemplate?: ApplicationTemplateSection[];
   /** This call's post-award reporting obligation, when known — see
-   * ReportingRequirement (defined further down, alongside AwardedProject).
+   * ReportingRequirement (defined further down, alongside Grant).
    * Undefined = not on file yet. */
   reportingRequirements?: ReportingRequirement;
   /** How this call's structured fields (evaluationCriteria,
@@ -254,37 +254,35 @@ export interface FundingDocument {
 // ---------------------------------------------------------------------------
 // Project bank — the municipality's own project ideas / investments.
 // ---------------------------------------------------------------------------
-/** The customer's own project-pipeline lifecycle, matching
- * docs/DATA_MODEL.md §2.2's `CustomerProject.status`. The prototype doesn't
- * yet have a separate persisted `Application` record driving this (see
- * `useApplication` for what is persisted today), so a project only moves
- * through these stages when its seed/import data or the Projektbank UI says
- * so — nothing here auto-advances the status yet. */
-export type ProjectStatus =
-  | "idea"
-  | "assessing"
-  | "funding-search"
-  | "application"
-  | "submitted"
-  | "approved"
-  | "rejected"
-  | "running"
-  | "completed";
+/** The project's own lifecycle, independent of any one application —
+ * docs/DATA_MODEL.md §2.2's `CustomerProject.status`. Where each
+ * application stands (draft, submitted, awarded, rejected…) lives on the
+ * application itself (ApplicationStatus); a project with several
+ * applications is simply "searching for funding" until one is awarded,
+ * then "funded", "running" and "completed" as its grant's reporting
+ * progresses. See projectStatusFromApplications. */
+export type ProjectStatus = "idea" | "assessing" | "funding-search" | "funded" | "running" | "completed";
 
 /** The lifecycle in its natural, logical order — a single source of truth
- * so Översikt's "Projekt per status" breakdown and Mina projekt's own copy
- * of it can't quietly drift apart. */
+ * for every "projects per status" breakdown. */
 export const PROJECT_STATUS_ORDER: ProjectStatus[] = [
   "idea",
   "assessing",
   "funding-search",
-  "application",
-  "submitted",
-  "approved",
-  "rejected",
+  "funded",
   "running",
   "completed",
 ];
+
+/** Reads a stored project status, mapping the application-level statuses
+ * projects used to carry before applications had their own status (still
+ * present in older browser-stored edits) onto the lifecycle. */
+export function normalizeProjectStatus(value: unknown): ProjectStatus {
+  if (PROJECT_STATUS_ORDER.includes(value as ProjectStatus)) return value as ProjectStatus;
+  if (value === "approved") return "funded";
+  if (value === "application" || value === "submitted" || value === "rejected") return "funding-search";
+  return "idea";
+}
 
 export interface ProjectBankEntry {
   id: string;
@@ -325,8 +323,8 @@ export interface ProjectBankEntry {
 //
 // This is the prototype's version of the `FundedProject` reference-data
 // entity in docs/DATA_MODEL.md §1.8 (which also folds in what a real backend
-// would call `AwardedProject`/`Commitment` for the customer's own post-award
-// reporting loop — that half stays a separate, simpler `AwardedProject` type
+// would call `Grant`/`Commitment` for the customer's own post-award
+// reporting loop — that half stays a separate, simpler `Grant` type
 // below, modelling the reporting *cycle* (ReportingRequirement +
 // ReportingEvent) rather than the doc's full `Application`/`Report` chain,
 // which would need a real per-application record this prototype doesn't
@@ -388,7 +386,7 @@ export interface FundedProject {
 // future `ReportingRequirementDefinition` (§1.7) / `Report` (§2.10) split:
 // the *obligation* a call imposes (ReportingRequirement, reference data on
 // FundingCall) versus the *instances* of actually reporting against it
-// (ReportingEvent, per AwardedProject).
+// (ReportingEvent, per Grant).
 // ---------------------------------------------------------------------------
 
 export type ReportingPeriodicity = "quarterly" | "biannual" | "annual";
@@ -465,16 +463,24 @@ export interface ReportingEvent {
   financials?: FinancialOutcome;
 }
 
-export interface AwardedProject {
+/** A grant ("beviljat stöd"): the funding decision on an awarded
+ * application, with its amount, commitments and reporting plan. It belongs
+ * to a project (projectBankEntryId) and, when created from one, to the
+ * application that won it (applicationId) — so the chain Projekt →
+ * Ansökan → Beviljat stöd → Rapporter is unbroken. docs/DATA_MODEL.md
+ * calls the persisted form `FundedProject`. */
+export interface Grant {
   id: string;
   title_sv: string;
   title_en: string;
   callId: string;
-  /** The Projektbank idea that became this awarded project, when known —
-   * lets the portfolio-pipeline entry and its post-award reporting, today
-   * two otherwise-unconnected records, link back to each other. Undefined
-   * where the link was never captured. */
+  /** The project this grant funds, when known. Undefined where the link
+   * was never captured (older seed data). */
   projectBankEntryId?: string;
+  /** The application (ApplicationRecord.id) this grant was awarded on.
+   * Undefined for seed grants and for ones created before applications
+   * had their own records. */
+  applicationId?: string;
   awardedAmountSEK: number;
   commitments: Commitment[];
   /** Chronological — interim reports followed by the closing final report.
@@ -670,7 +676,7 @@ export interface ApplicationRecord {
   updatedAt: string; // ISO
   /** Set the first time the status moves past "draft". */
   submittedAt?: string;
-  /** The AwardedProject created when this application was marked awarded. */
+  /** The Grant created when this application was marked awarded. */
   awardedProjectId?: string;
 }
 

@@ -7,10 +7,7 @@ const STYLES: Record<ProjectStatus, string> = {
   idea: "bg-navy-100 text-navy-600",
   assessing: "bg-navy-100 text-navy-600",
   "funding-search": "bg-gold-100 text-gold-700",
-  application: "bg-blue-100 text-blue-700",
-  submitted: "bg-blue-100 text-blue-700",
-  approved: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-700",
+  funded: "bg-green-100 text-green-800",
   running: "bg-green-100 text-green-800",
   completed: "bg-navy-50 text-navy-400",
 };

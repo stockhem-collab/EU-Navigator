@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 // Coverage for the Projektbank <-> reporting connection improvements from
 // the full-system review: a Projektbank idea that's actually won funding
-// can be turned into a real AwardedProject from the app itself (previously
+// can be turned into a real Grant from the app itself (previously
 // only possible by hand-editing seed data), the originating entry's status
 // then syncs automatically with the reporting lifecycle instead of via a
 // manual nudge button, and the reporting state is visible directly in the

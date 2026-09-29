@@ -10,7 +10,7 @@ import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
-import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
+import { useGrants } from "@/lib/hooks/useGrants";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeMatchesForCall } from "@/lib/matching/portfolio";
 import { FundingCall, FundingProgram } from "@/lib/types";
@@ -27,10 +27,10 @@ type CallRow = {
 export default function BevakningPage() {
   const { t, lang } = useLanguage();
   const bv = t.bevakning;
-  const ap = t.awardedProjects;
+  const ap = t.grants;
   const { all: projectBank } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
-  const { all: awardedProjects } = useAwardedProjects();
+  const { all: awardedProjects } = useGrants();
   const { prefs, hydrated: watchHydrated, toggleCall } = useWatchPreferences();
   const { withSubmissions, hydrated: reportingHydrated } = useReportingSubmissions();
   const [onlyWatched, setOnlyWatched] = useState(false);

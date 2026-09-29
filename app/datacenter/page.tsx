@@ -9,7 +9,7 @@ import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
-import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
+import { useGrants } from "@/lib/hooks/useGrants";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 
 /** Formatted after mount only, so the demo's "last synced" stat always
@@ -38,10 +38,10 @@ function StatTile({ label, value }: { label: string; value: string | number }) {
 export default function DatacenterPage() {
   const { t, lang } = useLanguage();
   const dc = t.datacenter;
-  const ap = t.awardedProjects;
+  const ap = t.grants;
   const { all: projectBank } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
-  const { all: awardedProjects } = useAwardedProjects();
+  const { all: awardedProjects } = useGrants();
   const { withSubmissions } = useReportingSubmissions();
   const lastSync = useNowStamp();
 
@@ -50,7 +50,7 @@ export default function DatacenterPage() {
   const openCalls = fundingCalls.filter((c) => c.status === "open");
   const upcomingCalls = fundingCalls.filter((c) => c.status === "upcoming");
   const activeProjects = projectBank.filter(
-    (p) => p.status !== "idea" && p.status !== "completed" && p.status !== "rejected"
+    (p) => p.status !== "idea" && p.status !== "completed"
   );
   const incompleteProjects = projectBank.filter(
     (p) => (lang === "sv" ? p.missingFields_sv : p.missingFields_en).length > 0

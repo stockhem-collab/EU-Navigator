@@ -695,9 +695,9 @@ export default function ImportUtlysningPage() {
                 onChange={(e) => setForm({ ...form, periodicity: e.target.value as ReportingPeriodicity })}
                 className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
               >
-                <option value="quarterly">{t.awardedProjects.periodicityQuarterly}</option>
-                <option value="biannual">{t.awardedProjects.periodicityBiannual}</option>
-                <option value="annual">{t.awardedProjects.periodicityAnnual}</option>
+                <option value="quarterly">{t.grants.periodicityQuarterly}</option>
+                <option value="biannual">{t.grants.periodicityBiannual}</option>
+                <option value="annual">{t.grants.periodicityAnnual}</option>
               </select>
             </div>
             <div>

@@ -11,7 +11,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
-import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
+import { useGrants } from "@/lib/hooks/useGrants";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { primaryProjectAssignment, projectRoleLabels } from "@/lib/data/users";
 import { computeBestMatchForEntry, computePortfolioEconomics } from "@/lib/matching/portfolio";
@@ -22,7 +22,7 @@ export default function ProjectBankPage() {
   const pb = t.projectBank;
   const { all: projectBank, imported, deletedEntries, addImported, deleteEntry, restoreEntry, clearImported } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
-  const { all: awardedProjects } = useAwardedProjects();
+  const { all: awardedProjects } = useGrants();
   const { withSubmissions } = useReportingSubmissions();
   const { users } = useUsersDirectory();
   const importedIds = useMemo(() => new Set(imported.map((p) => p.id)), [imported]);

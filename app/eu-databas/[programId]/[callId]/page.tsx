@@ -19,7 +19,7 @@ export default function CallDetailPage() {
   const { t, lang } = useLanguage();
   const db = t.euDatabase;
   const bv = t.bevakning;
-  const ap = t.awardedProjects;
+  const ap = t.grants;
   const { prefs, toggleCall } = useWatchPreferences();
   // A call added via Datacenter's import tool only exists in this browser's
   // localStorage, which isn't available during the server render — so

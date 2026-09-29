@@ -226,7 +226,7 @@ export interface TranslationTree {
     statAvgMatch: string;
     statProceedReady: string;
     statusLabels: Record<
-      "idea" | "assessing" | "funding-search" | "application" | "submitted" | "approved" | "rejected" | "running" | "completed",
+      "idea" | "assessing" | "funding-search" | "funded" | "running" | "completed",
       string
     >;
     detailOwner: string;
@@ -456,7 +456,7 @@ export interface TranslationTree {
     provenanceManual: string;
     importedAtLabel: (date: string) => string;
   };
-  awardedProjects: {
+  grants: {
     title: string;
     subtitle: string;
     nextReportDue: (months: number) => string;
@@ -1092,12 +1092,9 @@ export const translations: Record<Lang, TranslationTree> = {
       statProceedReady: "Redo att gå vidare",
       statusLabels: {
         idea: "Idé",
-        assessing: "Under bedömning",
+        assessing: "Under utredning",
         "funding-search": "Söker finansiering",
-        application: "Ansökan pågår",
-        submitted: "Inlämnad",
-        approved: "Beviljat",
-        rejected: "Avslag",
+        funded: "Finansierat",
         running: "Genomförs",
         completed: "Avslutat",
       },
@@ -1338,7 +1335,7 @@ export const translations: Record<Lang, TranslationTree> = {
       provenanceManual: "Manuellt inlagd",
       importedAtLabel: (date) => `Importerad ${date}`,
     },
-    awardedProjects: {
+    grants: {
       title: "Mina projekt",
       subtitle: "Alla dina projekt oavsett status — och rapportering på det som beviljats.",
       nextReportDue: (m) => `Nästa rapportering om ${m} månader`,
@@ -1983,12 +1980,9 @@ export const translations: Record<Lang, TranslationTree> = {
       statProceedReady: "Ready to proceed",
       statusLabels: {
         idea: "Idea",
-        assessing: "Under assessment",
+        assessing: "Being scoped",
         "funding-search": "Searching for funding",
-        application: "Applying",
-        submitted: "Submitted",
-        approved: "Awarded",
-        rejected: "Rejected",
+        funded: "Funded",
         running: "Delivering",
         completed: "Closed",
       },
@@ -2228,7 +2222,7 @@ export const translations: Record<Lang, TranslationTree> = {
       provenanceManual: "Manually entered",
       importedAtLabel: (date) => `Imported ${date}`,
     },
-    awardedProjects: {
+    grants: {
       title: "My projects",
       subtitle: "All your projects regardless of status — and reporting on what's been awarded.",
       nextReportDue: (m) => `Next report due in ${m} months`,

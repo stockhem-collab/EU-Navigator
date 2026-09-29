@@ -12,7 +12,7 @@ import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { useProjectTasks } from "@/lib/hooks/useProjectTasks";
 import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
-import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
+import { useGrants } from "@/lib/hooks/useGrants";
 import { syncProjectStatus, useApplications } from "@/lib/hooks/useApplications";
 import { isActiveApplication } from "@/lib/matching/applications";
 import { scoreMatch } from "@/lib/matching/scoreMatch";
@@ -22,26 +22,16 @@ import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { orgUnits as seedOrgUnits, projectRoleLabels, shareableUnits, unitDepth } from "@/lib/data/users";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
-import { computeMatchesForEntry, projectBankEntryToAwardedProject, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
+import { computeMatchesForEntry, projectToGrant, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
 import { computeSimilarProjects } from "@/lib/matching/similarProjects";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
-import { APPLICATION_STATUS_ORDER, ApplicationRecord, ApplicationStatus, ProjectStatus, Sector } from "@/lib/types";
+import { APPLICATION_STATUS_ORDER, ApplicationRecord, ApplicationStatus, PROJECT_STATUS_ORDER, ProjectStatus, Sector } from "@/lib/types";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
 import { useTags } from "@/lib/hooks/useTags";
 import TagPicker from "@/components/TagPicker";
 
 const SECTORS: Sector[] = ["energy", "climate", "digital", "social", "mobility", "education", "health", "research"];
-const STATUSES: ProjectStatus[] = [
-  "idea",
-  "assessing",
-  "funding-search",
-  "application",
-  "submitted",
-  "approved",
-  "rejected",
-  "running",
-  "completed",
-];
+const STATUSES: ProjectStatus[] = PROJECT_STATUS_ORDER;
 
 interface EditDraft {
   title: string;
@@ -72,7 +62,7 @@ export default function ProjectBankDetailPage() {
   const { all, hydrated, updateEntry } = useProjectBank();
   const { all: allTags, addCustomTag } = useTags();
   const { all: fundingCalls } = useFundingCalls();
-  const { all: awardedProjectsAll, addAwardedProject } = useAwardedProjects();
+  const { all: awardedProjectsAll, addGrant } = useGrants();
   const { records: applicationRecords, setApplicationStatus, updateApplication, deleteApplication } = useApplications();
   const at = t.applications;
   const { users } = useUsersDirectory();
@@ -147,8 +137,8 @@ export default function ProjectBankDetailPage() {
     const program = call ? findProgram(call.programId) : undefined;
     if (!call || !program || !window.confirm(at.confirmCreateAwarded)) return;
     const match = scoreMatch(projectBankEntryToProjectInput(entry), call, program);
-    const awarded = projectBankEntryToAwardedProject(entry, match);
-    addAwardedProject(awarded);
+    const awarded = projectToGrant(entry, match, record.id);
+    addGrant(awarded);
     updateApplication(record.id, { awardedProjectId: awarded.id });
     updateEntry(entry.id, { status: "running" });
     router.push(`/projekt/${awarded.id}`);
@@ -164,7 +154,7 @@ export default function ProjectBankDetailPage() {
   // funding — before this there was no path forward except hand-editing
   // seed data, so a real project bank status went stale in "approved"
   // forever. Only offered for a project with no application records (e.g.
-  // a seeded "approved" one): with records, each awarded application gets
+  // one marked "funded" by hand): with records, each awarded application gets
   // its own button under the call it was made to (handleCreateAwarded).
   // Without them there's no record of which call was applied to, so this
   // uses the project's best match.
@@ -172,8 +162,8 @@ export default function ProjectBankDetailPage() {
     const bestMatch = matches[0];
     if (!bestMatch) return;
     if (!window.confirm(pb.confirmMarkAsAwarded)) return;
-    const awarded = projectBankEntryToAwardedProject(entry, bestMatch);
-    addAwardedProject(awarded);
+    const awarded = projectToGrant(entry, bestMatch);
+    addGrant(awarded);
     updateEntry(entry.id, { status: "running" });
     router.push(`/projekt/${awarded.id}`);
   };
@@ -404,7 +394,7 @@ export default function ProjectBankDetailPage() {
               </div>
             )}
 
-            {!linkedAwardedProject && applications.length === 0 && entry.status === "approved" && matches.length > 0 && (
+            {!linkedAwardedProject && applications.length === 0 && entry.status === "funded" && matches.length > 0 && (
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed border-navy-200 px-4 py-3">
                 <p className="text-xs text-navy-600">{pb.markAsAwardedHint}</p>
                 <button

@@ -1,5 +1,5 @@
 import {
-  AwardedProject,
+  Grant,
   FundingCall,
   FundingProgram,
   MatchResult,
@@ -57,18 +57,18 @@ export function projectInputToProjectBankEntry(project: ProjectInput, readiness:
   };
 }
 
-// Turns a Projektbank idea that has actually won funding into a real
-// AwardedProject — the conversion the review flagged as missing entirely:
-// before this, the only way for one to exist was hand-editing seed data.
-// Carries over the entry's own title (kept in sync rather than duplicated
-// and drifting, as the two seed awarded projects do today) and uses the
-// call it best matches for the funding estimate, since a ProjectBankEntry
-// doesn't itself track which call an application was actually made under.
-// Commitments and the reporting timeline start empty/minimal — there's no
-// real commitment-capture step in the application flow yet to seed them
-// from honestly, so a single upcoming report is the honest starting point
-// rather than fabricating figures.
-export function projectBankEntryToAwardedProject(entry: ProjectBankEntry, match: MatchResult): AwardedProject {
+// Turns an awarded application into a Grant ("beviljat stöd") — carrying
+// over the project's own title and the call the application was made to
+// (match.call). Commitments and the reporting timeline start
+// empty/minimal: there's no real commitment-capture step in the
+// application flow yet to seed them from honestly, so a single upcoming
+// report is the honest starting point rather than fabricating figures.
+//
+// The id is unique per application, not per project: a project can have
+// several awarded applications, each with its own grant and reporting.
+// Without an application (a seeded "approved" project that never had
+// application records) it falls back to the project-based id.
+export function projectToGrant(entry: ProjectBankEntry, match: MatchResult, applicationId?: string): Grant {
   const requirement = match.call.reportingRequirements;
   const firstDeadlineMonths = requirement
     ? requirement.periodicity === "quarterly"
@@ -77,17 +77,21 @@ export function projectBankEntryToAwardedProject(entry: ProjectBankEntry, match:
       ? 6
       : 12
     : 6;
+  const id = applicationId
+    ? `ap-${entry.id}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`
+    : `ap-${entry.id}`;
   return {
-    id: `ap-${entry.id}`,
+    id,
     title_sv: entry.title_sv,
     title_en: entry.title_en,
     callId: match.call.id,
     projectBankEntryId: entry.id,
+    applicationId,
     awardedAmountSEK: Math.round((match.estimatedFundingSEK[0] + match.estimatedFundingSEK[1]) / 2),
     commitments: [],
     reportingEvents: [
       {
-        id: `ap-${entry.id}-report-1`,
+        id: `${id}-report-1`,
         type: "interim",
         periodLabel_sv: "Lägesrapport 1",
         periodLabel_en: "Progress report 1",

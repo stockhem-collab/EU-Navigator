@@ -15,26 +15,26 @@ import {
   ReportingHealth,
   financialHistory,
   cumulativeSpentThrough,
-} from "@/lib/data/awardedProjects";
+} from "@/lib/data/grants";
 import { findCall } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { useReportingSubmissions, ReportingSubmission } from "@/lib/hooks/useReportingSubmissions";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
-import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
+import { useGrants } from "@/lib/hooks/useGrants";
 import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
 import { buildReportDocx } from "@/lib/export/exportReport";
 import { downloadBlob } from "@/lib/export/exportApplication";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
-import { AwardedProject, Commitment, ReportingEvent, ReportingEventStatus, ReportingPeriodicity } from "@/lib/types";
+import { Grant, Commitment, ReportingEvent, ReportingEventStatus, ReportingPeriodicity } from "@/lib/types";
 
 export default function AwardedProjectDetailPage() {
   const params = useParams<{ id: string }>();
   const { t, lang } = useLanguage();
-  const ap = t.awardedProjects;
+  const ap = t.grants;
   const pb = t.projectBank;
   const { withSubmissions, submitReport, submissionHistory, addSustainabilityEvent, setEventStatus } = useReportingSubmissions();
   const { all: projectBank, updateEntry, hydrated: projectBankHydrated } = useProjectBank();
-  const { all: awardedProjects, hydrated: awardedProjectsHydrated } = useAwardedProjects();
+  const { all: awardedProjects, hydrated: awardedProjectsHydrated } = useGrants();
 
   // A project added via "Markera som beviljad" only exists in this
   // browser's localStorage, unavailable during the server render — same
@@ -254,9 +254,9 @@ export default function AwardedProjectDetailPage() {
   );
 }
 
-function CommitmentCard({ commitment: c, project }: { commitment: Commitment; project: AwardedProject }) {
+function CommitmentCard({ commitment: c, project }: { commitment: Commitment; project: Grant }) {
   const { t, lang } = useLanguage();
-  const ap = t.awardedProjects;
+  const ap = t.grants;
   const latest = latestOutcomeFor(project, c.indicator_sv);
   const deviates = latest !== undefined && latest < c.promisedValue * 0.9;
   const unit = lang === "sv" ? c.unit_sv : c.unit_en;
@@ -318,9 +318,9 @@ function CommitmentCard({ commitment: c, project }: { commitment: Commitment; pr
   );
 }
 
-function FinancialSummaryCard({ project }: { project: AwardedProject }) {
+function FinancialSummaryCard({ project }: { project: Grant }) {
   const { t, lang } = useLanguage();
-  const ap = t.awardedProjects;
+  const ap = t.grants;
   const history = financialHistory(project);
 
   // Nothing reported yet — nothing to show, same as the commitments
@@ -392,7 +392,7 @@ function ReportingEventCard({
    * the app itself ever recorded. Undefined for an event with no seed
    * counterpart (e.g. a locally-added sustainability follow-up). */
   seedEvent: ReportingEvent | undefined;
-  project: AwardedProject;
+  project: Grant;
   call: ReturnType<typeof findCall>;
   program: ReturnType<typeof findProgram>;
   isNext: boolean;
@@ -403,7 +403,7 @@ function ReportingEventCard({
   onSetStatus: (status: ReportingEventStatus) => void;
 }) {
   const { t, lang } = useLanguage();
-  const ap = t.awardedProjects;
+  const ap = t.grants;
   const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
   const attachmentKey = `report:${project.id}:${event.id}`;
   const [attachmentError, setAttachmentError] = useState<string | null>(null);

@@ -9,7 +9,7 @@ import StatusBadge from "@/components/StatusBadge";
 import LinkedReportingBadge from "@/components/LinkedReportingBadge";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
-import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
+import { useGrants } from "@/lib/hooks/useGrants";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
@@ -33,12 +33,12 @@ function isProjectStatus(value: string | null): value is ProjectStatus {
 function MyProjectsPageInner() {
   const searchParams = useSearchParams();
   const { t, lang } = useLanguage();
-  const ap = t.awardedProjects;
+  const ap = t.grants;
   const ov = t.oversikt;
 
   const { all: projectBank } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
-  const { all: awardedProjects } = useAwardedProjects();
+  const { all: awardedProjects } = useGrants();
   const { withSubmissions } = useReportingSubmissions();
   const { users } = useUsersDirectory();
   const { config: orgConfig } = useOrgConfig();
