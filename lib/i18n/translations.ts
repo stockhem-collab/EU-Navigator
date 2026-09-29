@@ -777,6 +777,48 @@ export interface TranslationTree {
     allApplicationsLink: string;
     otherApplicationsNote: (n: number) => string;
   };
+  apply: {
+    title: string;
+    subtitle: string;
+    myApplicationsTitle: string;
+    filterActive: string;
+    filterDecided: string;
+    filterAll: string;
+    statActive: string;
+    statWithFunder: string;
+    statAwarded: string;
+    statClosed: string;
+    columnProjectCall: string;
+    columnStatus: string;
+    columnDeadline: string;
+    columnUpdated: string;
+    noApplications: string;
+    noApplicationsHint: string;
+    registerGrant: string;
+    findFundingTitle: string;
+    browseEuDatabase: string;
+  };
+  report: {
+    title: string;
+    subtitle: string;
+    statAttention: string;
+    statUpcoming: string;
+    statDone: string;
+    statGrants: string;
+    attentionTitle: string;
+    attentionHint: string;
+    upcomingTitle: string;
+    doneTitle: (n: number) => string;
+    showDone: (n: number) => string;
+    hideDone: string;
+    noAttention: string;
+    noUpcoming: string;
+    noGrants: string;
+    grantsTitle: string;
+    grantsHint: string;
+    open: string;
+    overdueLabel: (n: number) => string;
+  };
 }
 
 export const translations: Record<Lang, TranslationTree> = {
@@ -1452,7 +1494,7 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     bevakning: {
       title: "Bevakning",
-      subtitle: "Kommande deadlines, och vilka projekt i portföljen som passar bäst.",
+      subtitle: "Öppna och kommande utlysningar, och vilka av organisationens projekt som passar bäst.",
       disclaimer:
         "I en skarp version skulle detta skickas som ett återkommande veckobrev till EU-samordnaren. Här visas samma information direkt i gränssnittet.",
       columnCall: "Utlysning",
@@ -1695,6 +1737,48 @@ export const translations: Record<Lang, TranslationTree> = {
         "Starta en ny, tom ansökan till samma utlysning? Den nuvarande ansökan finns kvar under projektet.",
       allApplicationsLink: "Alla ansökningar för projektet",
       otherApplicationsNote: (n) => `Projektet har ${n} ${n === 1 ? "annan ansökan" : "andra ansökningar"} till samma utlysning.`,
+    },
+    apply: {
+      title: "Ansöka",
+      subtitle: "Alla ansökningar oavsett projekt – och var ni kan hitta ny finansiering.",
+      myApplicationsTitle: "Ansökningar",
+      filterActive: "Pågående",
+      filterDecided: "Beslut",
+      filterAll: "Alla",
+      statActive: "Utkast",
+      statWithFunder: "Hos finansiären",
+      statAwarded: "Beviljade",
+      statClosed: "Avslag eller återtagna",
+      columnProjectCall: "Projekt och utlysning",
+      columnStatus: "Status",
+      columnDeadline: "Deadline",
+      columnUpdated: "Uppdaterad",
+      noApplications: "Inga ansökningar här.",
+      noApplicationsHint: "Starta en ny ansökan, eller välj en utlysning under Hitta finansiering nedan.",
+      registerGrant: "Registrera beviljat stöd",
+      findFundingTitle: "Hitta finansiering",
+      browseEuDatabase: "Bläddra i hela EU-databasen →",
+    },
+    report: {
+      title: "Rapportera",
+      subtitle: "All rapportering för beviljat stöd, oavsett projekt – vad som ska göras och när.",
+      statAttention: "Kräver åtgärd",
+      statUpcoming: "Kommande",
+      statDone: "Inlämnade eller godkända",
+      statGrants: "Beviljade stöd",
+      attentionTitle: "Kräver åtgärd",
+      attentionHint: "Rapporter som returnerats för komplettering eller vars deadline har passerat.",
+      upcomingTitle: "Kommande rapporter",
+      doneTitle: (n) => `Inlämnade och godkända (${n})`,
+      showDone: (n) => `Visa inlämnade och godkända (${n})`,
+      hideDone: "Dölj inlämnade och godkända",
+      noAttention: "Inget kräver åtgärd just nu.",
+      noUpcoming: "Inga kommande rapporter.",
+      noGrants: "Inget beviljat stöd ännu. När en ansökan beviljas registreras stödet på projektets sida, och rapporteringen visas här.",
+      grantsTitle: "Beviljade stöd",
+      grantsHint: "Varje beviljat stöd med sin rapporteringsstatus.",
+      open: "Öppna",
+      overdueLabel: (n) => (n === 0 ? "Försenad" : `Försenad ${n} ${n === 1 ? "månad" : "månader"}`),
     },
   },
   en: {
@@ -2364,7 +2448,7 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     bevakning: {
       title: "Monitoring",
-      subtitle: "Upcoming deadlines, and which portfolio projects fit them best.",
+      subtitle: "Open and upcoming calls, and which of the organisation's projects fit them best.",
       disclaimer:
         "In a production version this would be sent as a recurring weekly digest to the EU coordinator. Here it's shown directly in the interface instead.",
       columnCall: "Call",
@@ -2606,6 +2690,48 @@ export const translations: Record<Lang, TranslationTree> = {
         "Start a new, empty application to the same call? The current application stays under the project.",
       allApplicationsLink: "All applications for the project",
       otherApplicationsNote: (n) => `The project has ${n} other ${n === 1 ? "application" : "applications"} to the same call.`,
+    },
+    apply: {
+      title: "Apply",
+      subtitle: "Every application regardless of project — and where to find new funding.",
+      myApplicationsTitle: "Applications",
+      filterActive: "In progress",
+      filterDecided: "Decided",
+      filterAll: "All",
+      statActive: "Drafts",
+      statWithFunder: "With the funder",
+      statAwarded: "Awarded",
+      statClosed: "Rejected or withdrawn",
+      columnProjectCall: "Project and call",
+      columnStatus: "Status",
+      columnDeadline: "Deadline",
+      columnUpdated: "Updated",
+      noApplications: "No applications here.",
+      noApplicationsHint: "Start a new application, or pick a call under Find funding below.",
+      registerGrant: "Register grant",
+      findFundingTitle: "Find funding",
+      browseEuDatabase: "Browse the whole EU database →",
+    },
+    report: {
+      title: "Report",
+      subtitle: "All reporting on grants regardless of project — what's due and when.",
+      statAttention: "Needs action",
+      statUpcoming: "Upcoming",
+      statDone: "Submitted or approved",
+      statGrants: "Grants",
+      attentionTitle: "Needs action",
+      attentionHint: "Reports returned for revision, or past their deadline.",
+      upcomingTitle: "Upcoming reports",
+      doneTitle: (n) => `Submitted and approved (${n})`,
+      showDone: (n) => `Show submitted and approved (${n})`,
+      hideDone: "Hide submitted and approved",
+      noAttention: "Nothing needs action right now.",
+      noUpcoming: "No upcoming reports.",
+      noGrants: "No grants yet. When an application is awarded, the grant is registered on the project's page and its reporting shows up here.",
+      grantsTitle: "Grants",
+      grantsHint: "Each grant with its reporting status.",
+      open: "Open",
+      overdueLabel: (n) => (n === 0 ? "Overdue" : `Overdue by ${n} ${n === 1 ? "month" : "months"}`),
     },
   },
 };

@@ -266,3 +266,15 @@ export function reportingHealth(project: Grant): ReportingHealth {
   });
   return anyDeviates ? "attention" : "good";
 }
+
+/** Where a report stands from the reporter's point of view: "attention"
+ * (returned for revision, or past its deadline without being submitted),
+ * "upcoming" (still to do, not yet due), or "done" (submitted/approved).
+ * Shared by Rapportera, Översikt and the notifications. */
+export type ReportState = "attention" | "upcoming" | "done";
+
+export function reportState(event: ReportingEvent): ReportState {
+  if (event.status === "revision-requested") return "attention";
+  if (event.status === "upcoming") return event.deadlineMonthsFromNow < 0 ? "attention" : "upcoming";
+  return "done";
+}
