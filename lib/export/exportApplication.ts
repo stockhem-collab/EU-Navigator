@@ -62,7 +62,7 @@ export async function buildApplicationDocx(
     children.push(new Paragraph({ text: "" }));
   }
 
-  const estEu = (match.estimatedFundingSEK[0] + match.estimatedFundingSEK[1]) / 2;
+  const estEu = match.estimatedFundingSEK[1];
   const coFinancing = Math.max(0, project.budgetSEK - estEu);
   children.push(new Paragraph({ text: lang === "sv" ? "Budget" : "Budget", heading: HeadingLevel.HEADING_1 }));
   children.push(

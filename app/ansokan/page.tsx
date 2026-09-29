@@ -15,6 +15,8 @@ import { findAnyProjectBankEntry } from "@/lib/hooks/useProjectBank";
 import { computeMatches, scoreMatch } from "@/lib/matching/scoreMatch";
 import { projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
 import { useFundingProfile } from "@/lib/hooks/useFundingProfile";
+import { useProjectBank } from "@/lib/hooks/useProjectBank";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { MatchResult, ProjectInput } from "@/lib/types";
 
 type Step =
@@ -39,8 +41,8 @@ function DemoPageInner() {
   const preselectedCallId = searchParams.get("call");
   const preselectedProjectId = searchParams.get("project");
   const requestedApplicationId = searchParams.get("application");
-  const { profile: fundingProfile } = useFundingProfile();
-  const { all: fundingCalls } = useFundingCalls();
+  const { profile: fundingProfile, hydrated: profileHydrated } = useFundingProfile();
+  const { all: fundingCalls, hydrated: callsHydrated } = useFundingCalls();
 
   // Starts as whatever the URL said, but can also become persisted mid-session
   // — see the workspace's "save as a new project" flow below — without a
@@ -76,41 +78,59 @@ function DemoPageInner() {
     return { name: "intake" };
   });
 
-  // Upgrades the guess above once mounted, for a project that only exists
-  // in this browser's localStorage — imported via CSV, or saved from an
-  // ad-hoc draft via the workspace's "Spara som nytt projekt" button (see
-  // ApplicationWorkspace's onSavedAsProject) — which the seed-only lookup
-  // above can't see without risking the hydration mismatch it exists to
-  // avoid. Runs once; picks up the deep link a beat later rather than never.
+  // Once mounted, the deep link is resolved again against what this
+  // browser actually has: the project as saved (edits to a seeded project
+  // live in localStorage overrides, which the seed-only guess above can't
+  // see), imported calls, and the organisation's own funding profile.
+  // Without this, the workspace would score and assess a project the user
+  // has since edited — or not open at all for an imported call.
+  const [storedProject, setStoredProject] = useState<ProjectInput | undefined>(undefined);
+  const [resolved, setResolved] = useState(false);
   useEffect(() => {
-    if (step.name !== "intake" || !preselectedProjectId || !preselectedCallId) return;
+    if (resolved || !profileHydrated || !callsHydrated) return;
+    setResolved(true);
+    if (!preselectedProjectId) return;
     const entry = findAnyProjectBankEntry(preselectedProjectId);
-    const call = findCall(preselectedCallId);
+    if (!entry) return;
+    const project = projectBankEntryToProjectInput(entry);
+    setStoredProject(project);
+    if (!preselectedCallId) return;
+    const call = fundingCalls.find((c) => c.id === preselectedCallId);
     const program = call ? findProgram(call.programId) : undefined;
-    if (entry && call && program) {
-      const project = projectBankEntryToProjectInput(entry);
+    if (call && program) {
       setStep({ name: "workspace", project, match: scoreMatch(project, call, program, fundingProfile) });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [resolved, profileHydrated, callsHydrated, preselectedProjectId, preselectedCallId, step, fundingCalls, fundingProfile]);
 
-  // Same seed-only restriction as the lazy initializer above, and for the
-  // same reason: this recomputes on every render, so unlike a lazy
-  // initializer it would keep disagreeing with the server-rendered markup
-  // on every render, not just the first, if it looked at localStorage.
-  const initialProject = preselectedProjectId
+  // Same seed-only restriction as the lazy initializer above on the first
+  // render; the saved version replaces it once read (ProjectForm is keyed
+  // on it below, so its fields pick the saved values up).
+  const seedProject = preselectedProjectId
     ? (() => {
         const entry = findProjectBankEntry(preselectedProjectId);
         return entry ? projectBankEntryToProjectInput(entry) : undefined;
       })()
     : undefined;
+  const initialProject = storedProject ?? seedProject;
+
+  // Reached with both ?project= and ?call= — from a project page, Ansöka,
+  // Översikt or a notification — "back" means back to where the user came
+  // from, not to a match list they never saw.
+  const deepLinked = Boolean(preselectedProjectId && preselectedCallId);
+  const leaveWorkspace = () => {
+    if (window.history.length > 1) router.back();
+    else router.push(customerProjectId ? `/projekt/${customerProjectId}` : "/ansok");
+  };
 
   return (
     <>
       <Header />
       <main className="section min-h-[70vh]">
         {step.name === "intake" && (
+          <>
+          {!preselectedProjectId && !step.project && <ExistingProjectPicker />}
           <ProjectForm
+            key={storedProject ? "stored" : "seed"}
             initialProject={initialProject}
             draftProject={step.project}
             onSubmit={(project) => {
@@ -138,6 +158,7 @@ function DemoPageInner() {
               setStep({ name: "results", project, matches });
             }}
           />
+          </>
         )}
 
         {step.name === "results" && (
@@ -161,8 +182,11 @@ function DemoPageInner() {
               // replace only updates history, it doesn't reset component state.
               router.replace(`/ansokan?project=${newId}&call=${step.match.call.id}`, { scroll: false });
             }}
+            backLabel={deepLinked ? "back" : "matches"}
             onBack={() =>
-              setStep({
+              deepLinked
+                ? leaveWorkspace()
+                : setStep({
                 name: "results",
                 project: step.project,
                 matches: computeMatches(step.project, fundingCalls, fundingProfile),
@@ -173,5 +197,50 @@ function DemoPageInner() {
       </main>
       <Footer />
     </>
+  );
+}
+
+// "Ny ansökan" always starts by describing a project — which, for a project
+// that's already in the system, would create a duplicate. This offers the
+// existing one instead: its page lists the calls it matches, each with its
+// own "Starta ansökan".
+function ExistingProjectPicker() {
+  const router = useRouter();
+  const { t, lang } = useLanguage();
+  const intake = t.demo.intake;
+  const { all: projects, hydrated } = useProjectBank();
+  const [selected, setSelected] = useState("");
+  if (!hydrated || projects.length === 0) return null;
+  return (
+    <div className="mx-auto mb-8 max-w-2xl rounded-xl border border-navy-100 bg-white p-4">
+      <p className="text-sm font-semibold text-navy-800">{intake.existingProjectTitle}</p>
+      <p className="mt-1 text-xs text-navy-500">{intake.existingProjectHint}</p>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <label htmlFor="existing-project" className="sr-only">
+          {intake.existingProjectTitle}
+        </label>
+        <select
+          id="existing-project"
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          className="min-w-0 flex-1 rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+        >
+          <option value="">{intake.existingProjectPlaceholder}</option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {lang === "sv" ? p.title_sv : p.title_en}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          disabled={!selected}
+          onClick={() => router.push(`/projekt/${selected}#matches`)}
+          className="rounded-md bg-navy-800 px-3 py-2 text-sm font-semibold text-white hover:bg-navy-700 disabled:cursor-not-allowed disabled:bg-navy-200"
+        >
+          {intake.existingProjectGo}
+        </button>
+      </div>
+    </div>
   );
 }

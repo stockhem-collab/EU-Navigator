@@ -43,6 +43,12 @@ grant → reports*:
   or all, and how far ahead to remind. E-mail choices are stored but not
   sent in the demo. See `lib/notifications.ts`.
 
+The demo starts with three example applications (`lib/data/applications.ts`):
+the awarded applications behind the two example grants, and one with the
+funder. Confirmations (remove, reset, register a grant) are asked in the
+page itself (`components/ConfirmButton.tsx`), never with the browser's
+blocking `window.confirm`.
+
 Old addresses (`/demo`, `/projektbank`, `/bevakning`, grants under
 `/projekt/ap-…`) redirect to the new ones (`next.config.mjs`).
 
@@ -69,10 +75,16 @@ Old addresses (`/demo`, `/projektbank`, `/bevakning`, grants under
   decision. A call the organisation isn't eligible for is capped at a low
   score however well it fits thematically.
 - **Ansökningsstudio** (`/ansokan`) — once a call is chosen, the AI is
-  locked to that call's evaluation criteria. Includes an "Application
-  Coach" that scores the project description on Relevance/Impact/Evidence
-  and suggests concrete additions, plus a dual-compliance check against
-  the organisation's own internal process (`Organisationens regelverk`).
+  locked to that call's evaluation criteria. The assessment (application
+  readiness, "Application Coach" on Relevance/Impact/Evidence, reviewer
+  notes) reads the application's own text — the project description plus
+  every section the user has written or edited, not untouched AI
+  suggestions — and is recomputed as the user types, showing the change
+  since the application was opened, what each section contributes, and
+  which section each remaining action belongs in. The project page shows
+  the same readiness measure for the project against its best match.
+  Includes a dual-compliance check against the organisation's own
+  internal process (`Organisationens regelverk`).
 - **Beviljade referensprojekt / "Lär av vinnarna"** (`/referensprojekt`) —
   **real data**: an anonymised municipality's actual register of 74
   EU-funded projects 2014-2027 (fund, budget, EU share, role, theme), with aggregated

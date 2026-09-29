@@ -11,6 +11,7 @@ import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { orgUnits as seedOrgUnits, orgRoleLabels, projectRoleLabels, orgRolePermissions, CURRENT_USER_ID } from "@/lib/data/users";
 import { DemoUser, OrgRoleKey, OrgUnit, ProjectBankEntry, ProjectRoleKey } from "@/lib/types";
+import ConfirmButton from "@/components/ConfirmButton";
 
 const ORG_ROLE_KEYS = Object.keys(orgRoleLabels) as OrgRoleKey[];
 const PROJECT_ROLE_KEYS = Object.keys(projectRoleLabels) as ProjectRoleKey[];
@@ -292,15 +293,16 @@ function UserDetail({
           {user.id === CURRENT_USER_ID ? (
             <p className="shrink-0 text-xs italic text-navy-400">{us.thatsYou}</p>
           ) : (
-            <button
-              type="button"
-              onClick={() => {
-                if (window.confirm(us.confirmRemove(`${user.firstName} ${user.lastName}`))) onRemove();
-              }}
+            <ConfirmButton
+              label={us.remove}
+              ariaLabel={`${us.remove}: ${user.firstName} ${user.lastName}`}
+              message={us.confirmRemove(`${user.firstName} ${user.lastName}`)}
+              confirmLabel={t.confirm.yesRemove}
+              cancelLabel={t.confirm.cancel}
+              onConfirm={() => onRemove()}
+              danger
               className="shrink-0 text-xs font-semibold text-navy-400 hover:text-red-600"
-            >
-              {us.remove}
-            </button>
+            />
           )}
         </div>
 

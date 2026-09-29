@@ -1,6 +1,15 @@
 import { ApplicationStatus, Lang } from "@/lib/types";
 
 export interface TranslationTree {
+  confirm: {
+    yesRemove: string;
+    yesReset: string;
+    yesRestore: string;
+    yesLeave: string;
+    yesCreate: string;
+    yesRegister: string;
+    cancel: string;
+  };
   nav: {
     home: string;
     workflow: string;
@@ -119,6 +128,10 @@ export interface TranslationTree {
       submit: string;
       fillExample: string;
       prefilledFromBank: string;
+      existingProjectTitle: string;
+      existingProjectHint: string;
+      existingProjectPlaceholder: string;
+      existingProjectGo: string;
       sectors: Record<
         "energy" | "climate" | "digital" | "social" | "mobility" | "education" | "health" | "research",
         string
@@ -186,6 +199,16 @@ export interface TranslationTree {
       deleteVersionButton: string;
       confirmDeleteVersion: (name: string) => string;
       versionSavedAt: (date: string) => string;
+      backToPrevious: string;
+      estEuShareNote: string;
+      notAssessedNote: string;
+      signalQuantified: string;
+      signalIndicator: string;
+      signalBaseline: string;
+      signalHorizontal: string;
+      sectionMissing: (dimension: string) => string;
+      goToSection: (section: string) => string;
+      changeSinceOpened: (delta: number) => string;
     };
     gapAnalysis: {
       title: string;
@@ -237,6 +260,7 @@ export interface TranslationTree {
     columnCost: string;
     columnPeriod: string;
     columnReadiness: string;
+    readinessAgainst: (callTitle: string) => string;
     columnBestMatch: string;
     statTotal: string;
     statAvgMatch: string;
@@ -539,6 +563,7 @@ export interface TranslationTree {
     healthAttentionLabel: string;
     healthBlockedLabel: string;
     linkedProjectBankLabel: string;
+    euProjectName: (name: string) => string;
     linkedApplicationLabel: string;
     openApplicationLink: string;
     linkedProjectStatusAutoSyncNote: string;
@@ -753,8 +778,6 @@ export interface TranslationTree {
     confirmDelete: string;
     createAwardedButton: string;
     confirmCreateAwarded: string;
-    confirmRegisterYes: string;
-    confirmCancel: string;
     viewAwardedLink: string;
     updatedAt: (date: string) => string;
     roundLabel: (n: number) => string;
@@ -804,6 +827,7 @@ export interface TranslationTree {
     noGrants: string;
     grantsTitle: string;
     grantsHint: string;
+    euProjectName: (name: string) => string;
     open: string;
     overdueLabel: (n: number) => string;
   };
@@ -836,6 +860,15 @@ export interface TranslationTree {
 
 export const translations: Record<Lang, TranslationTree> = {
   sv: {
+    confirm: {
+      yesRemove: "Ja, ta bort",
+      yesReset: "Ja, återställ",
+      yesRestore: "Ja, återställ versionen",
+      yesLeave: "Ja, lämna utan att spara",
+      yesCreate: "Ja, skapa",
+      yesRegister: "Ja, registrera",
+      cancel: "Avbryt",
+    },
     nav: {
       home: "Hem",
       workflow: "Så fungerar det",
@@ -1040,6 +1073,10 @@ export const translations: Record<Lang, TranslationTree> = {
         submit: "Hitta finansieringsmöjligheter",
         fillExample: "Fyll i exempel",
         prefilledFromBank: "Förifyllt från projektet — granska och komplettera innan ni fortsätter.",
+        existingProjectTitle: "Finns projektet redan?",
+        existingProjectHint: "Välj det så slipper du beskriva det igen. Projektsidan visar vilka utlysningar det matchar, var och en med Starta ansökan.",
+        existingProjectPlaceholder: "Välj ett befintligt projekt",
+        existingProjectGo: "Till projektets matchningar",
         sectors: {
           energy: "Energi",
           climate: "Klimat & miljö",
@@ -1085,7 +1122,7 @@ export const translations: Record<Lang, TranslationTree> = {
         reviewerSubtitle: "Kontrollpunkter innan ansökan lämnas in",
         budgetTitle: "Budget & medfinansiering",
         totalBudget: "Total projektbudget",
-        estEuShare: "Uppskattat EU-bidrag",
+        estEuShare: "Beräknat EU-bidrag",
         coFinancing: "Kommunal medfinansiering (uppskattad)",
         nextStepsTitle: "Nästa steg",
         tabApplication: "Ansökan",
@@ -1117,6 +1154,16 @@ export const translations: Record<Lang, TranslationTree> = {
         deleteVersionButton: "Ta bort",
         confirmDeleteVersion: (name) => `Ta bort versionen "${name}"? Det går inte att ångra.`,
         versionSavedAt: (date) => `Sparad ${date}`,
+        backToPrevious: "Tillbaka",
+        estEuShareNote: "Samma belopp som i matchningen: sökt belopp, eller utlysningens stödnivå av budgeten, högst utlysningens maxbelopp.",
+        notAssessedNote: "Förslag — räknas in i bedömningen när du har skrivit eller redigerat texten.",
+        signalQuantified: "Kvantifierad effekt",
+        signalIndicator: "Indikator",
+        signalBaseline: "Utgångsvärde",
+        signalHorizontal: "Horisontella principer",
+        sectionMissing: (dimension) => `Saknas: ${dimension}`,
+        goToSection: (section) => `Gå till ${section}`,
+        changeSinceOpened: (delta) => `${delta > 0 ? "↑ +" : "↓ "}${delta} sedan du öppnade ansökan`,
         nextSteps: [
           "Åtgärda punkterna som AI-granskningen flaggat",
           "Bekräfta partnerskap/konsortium vid behov",
@@ -1130,10 +1177,10 @@ export const translations: Record<Lang, TranslationTree> = {
         strengthsTitle: "Styrkor",
         gapsTitle: "Gap",
         uplift: (from, to) => `Så höjer du matchningen från ${from} % → ${to} %`,
-        noGaps: "Inga tydliga gap identifierade — ansökan ser stark ut ur matchningsperspektiv.",
+        noGaps: "Inga gap i matchningen mot utlysningen. Det som återstår i själva texten står under Ansökningsberedskap ovan.",
       },
       readiness: {
-        title: "Application Readiness",
+        title: "Ansökningsberedskap",
         disclaimer:
           "Detta är inte en förutsägelse om EU:s beslut, utan AI:ns bedömning av hur väl ansökan möter dokumenterade krav och bedömningskriterier.",
         overallLabel: "Total poäng",
@@ -1141,7 +1188,7 @@ export const translations: Record<Lang, TranslationTree> = {
       },
       coach: {
         title: "Application Coach",
-        subtitle: "AI-granskning av projektbeskrivningen mot just denna utlysnings krav",
+        subtitle: "Granskning av ansökans text — projektbeskrivningen och de avsnitt du har skrivit — mot just denna utlysnings krav",
         relevance: "Relevans",
         impact: "Impact",
         evidence: "Evidence",
@@ -1169,7 +1216,8 @@ export const translations: Record<Lang, TranslationTree> = {
       columnStatus: "Status",
       columnCost: "Uppskattad kostnad",
       columnPeriod: "Period",
-      columnReadiness: "AI-beredskap",
+      columnReadiness: "Ansökningsberedskap",
+      readinessAgainst: (callTitle) => `Mot bästa matchning: ${callTitle}`,
       columnBestMatch: "Bästa matchning",
       statTotal: "Projekt i portföljen",
       statAvgMatch: "Genomsnittlig bästa matchning",
@@ -1500,6 +1548,7 @@ export const translations: Record<Lang, TranslationTree> = {
       healthAttentionLabel: "Kräver uppmärksamhet",
       healthBlockedLabel: "Komplettering begärd",
       linkedProjectBankLabel: "Projekt",
+      euProjectName: (name) => `EU-projektets namn: ${name}`,
       linkedApplicationLabel: "Beviljad ansökan",
       openApplicationLink: "Öppna ansökan",
       linkedProjectStatusAutoSyncNote: "Projektets status följer rapporteringen här: genomförs medan rapporteringen pågår, avslutat när den är klar.",
@@ -1726,8 +1775,6 @@ export const translations: Record<Lang, TranslationTree> = {
       confirmDelete: "Ta bort ansökan med dess utkast och sparade versioner?",
       createAwardedButton: "Registrera beviljat stöd",
       confirmCreateAwarded: "Registrera beviljat stöd för den här ansökan? Då skapas rapporteringen för stödet under Rapportera.",
-      confirmRegisterYes: "Ja, registrera",
-      confirmCancel: "Avbryt",
       viewAwardedLink: "Visa beviljat stöd",
       updatedAt: (date) => `Uppdaterad ${date}`,
       roundLabel: (n) => `Ansökan ${n}`,
@@ -1778,6 +1825,7 @@ export const translations: Record<Lang, TranslationTree> = {
       noGrants: "Inget beviljat stöd ännu. När en ansökan beviljas registreras stödet på projektets sida, och rapporteringen visas här.",
       grantsTitle: "Beviljade stöd",
       grantsHint: "Varje beviljat stöd med sin rapporteringsstatus.",
+      euProjectName: (name) => `EU-projektets namn: ${name}`,
       open: "Öppna",
       overdueLabel: (n) => (n === 0 ? "Försenad" : `Försenad ${n} ${n === 1 ? "månad" : "månader"}`),
     },
@@ -1822,6 +1870,15 @@ export const translations: Record<Lang, TranslationTree> = {
     },
   },
   en: {
+    confirm: {
+      yesRemove: "Yes, remove",
+      yesReset: "Yes, reset",
+      yesRestore: "Yes, restore the version",
+      yesLeave: "Yes, leave without saving",
+      yesCreate: "Yes, create",
+      yesRegister: "Yes, register",
+      cancel: "Cancel",
+    },
     nav: {
       home: "Home",
       workflow: "How it works",
@@ -2026,6 +2083,10 @@ export const translations: Record<Lang, TranslationTree> = {
         submit: "Find funding opportunities",
         fillExample: "Fill example",
         prefilledFromBank: "Pre-filled from the project — review and complete before continuing.",
+        existingProjectTitle: "Is the project already here?",
+        existingProjectHint: "Pick it so you don't have to describe it again. The project page shows the calls it matches, each with Start application.",
+        existingProjectPlaceholder: "Choose an existing project",
+        existingProjectGo: "To the project's matches",
         sectors: {
           energy: "Energy",
           climate: "Climate & environment",
@@ -2101,6 +2162,16 @@ export const translations: Record<Lang, TranslationTree> = {
         deleteVersionButton: "Delete",
         confirmDeleteVersion: (name) => `Delete the version "${name}"? This can't be undone.`,
         versionSavedAt: (date) => `Saved ${date}`,
+        backToPrevious: "Back",
+        estEuShareNote: "The same amount as in the match: the grant requested, or the call's funding rate of the budget, at most the call's maximum.",
+        notAssessedNote: "Suggestion — counted in the assessment once you have written or edited the text.",
+        signalQuantified: "Quantified effect",
+        signalIndicator: "Indicator",
+        signalBaseline: "Baseline",
+        signalHorizontal: "Horizontal principles",
+        sectionMissing: (dimension) => `Missing: ${dimension}`,
+        goToSection: (section) => `Go to ${section}`,
+        changeSinceOpened: (delta) => `${delta > 0 ? "↑ +" : "↓ "}${delta} since you opened the application`,
         nextSteps: [
           "Address the points flagged by the AI review",
           "Confirm partnership/consortium if required",
@@ -2114,10 +2185,10 @@ export const translations: Record<Lang, TranslationTree> = {
         strengthsTitle: "Strengths",
         gapsTitle: "Gaps",
         uplift: (from, to) => `How to raise the match from ${from}% → ${to}%`,
-        noGaps: "No clear gaps identified — the application looks strong from a matching perspective.",
+        noGaps: "No gaps in the match against the call. What remains in the text itself is listed under Application readiness above.",
       },
       readiness: {
-        title: "Application Readiness",
+        title: "Application readiness",
         disclaimer:
           "This is not a prediction of the EU's decision, but the AI's assessment of how well the application meets documented requirements and evaluation criteria.",
         overallLabel: "Overall score",
@@ -2125,7 +2196,7 @@ export const translations: Record<Lang, TranslationTree> = {
       },
       coach: {
         title: "Application Coach",
-        subtitle: "AI review of the project description against this specific call's requirements",
+        subtitle: "Review of the application's text — the project description and the sections you have written — against this specific call's requirements",
         relevance: "Relevance",
         impact: "Impact",
         evidence: "Evidence",
@@ -2151,7 +2222,8 @@ export const translations: Record<Lang, TranslationTree> = {
       columnStatus: "Status",
       columnCost: "Estimated cost",
       columnPeriod: "Period",
-      columnReadiness: "AI readiness",
+      columnReadiness: "Application readiness",
+      readinessAgainst: (callTitle) => `Against the best match: ${callTitle}`,
       columnBestMatch: "Best match",
       statTotal: "Projects in portfolio",
       statAvgMatch: "Average best match",
@@ -2481,6 +2553,7 @@ export const translations: Record<Lang, TranslationTree> = {
       healthAttentionLabel: "Needs attention",
       healthBlockedLabel: "Revision requested",
       linkedProjectBankLabel: "Project",
+      euProjectName: (name) => `EU project name: ${name}`,
       linkedApplicationLabel: "Awarded application",
       openApplicationLink: "Open application",
       linkedProjectStatusAutoSyncNote: "The project's status follows this reporting: running while reporting is ongoing, closed once it's done.",
@@ -2706,8 +2779,6 @@ export const translations: Record<Lang, TranslationTree> = {
       confirmDelete: "Delete this application with its draft and saved versions?",
       createAwardedButton: "Register grant",
       confirmCreateAwarded: "Register the grant for this application? Its reporting is then set up under Report.",
-      confirmRegisterYes: "Yes, register",
-      confirmCancel: "Cancel",
       viewAwardedLink: "View grant",
       updatedAt: (date) => `Updated ${date}`,
       roundLabel: (n) => `Application ${n}`,
@@ -2758,6 +2829,7 @@ export const translations: Record<Lang, TranslationTree> = {
       noGrants: "No grants yet. When an application is awarded, the grant is registered on the project's page and its reporting shows up here.",
       grantsTitle: "Grants",
       grantsHint: "Each grant with its reporting status.",
+      euProjectName: (name) => `EU project name: ${name}`,
       open: "Open",
       overdueLabel: (n) => (n === 0 ? "Overdue" : `Overdue by ${n} ${n === 1 ? "month" : "months"}`),
     },

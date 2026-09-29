@@ -151,12 +151,19 @@ export default function ReportPage() {
               <ul className="mt-3 divide-y divide-navy-50 rounded-xl border border-navy-100 bg-white">
                 {visibleGrants.map((grant) => {
                   const call = findCall(grant.callId);
+                  // Named after its project, like the report rows above; the
+                  // EU project's own name (often an acronym) is shown under
+                  // it when it differs.
+                  const entry = grant.projectBankEntryId ? projectBank.find((p) => p.id === grant.projectBankEntryId) : undefined;
+                  const grantName = lang === "sv" ? grant.title_sv : grant.title_en;
+                  const projectName = entry ? (lang === "sv" ? entry.title_sv : entry.title_en) : grantName;
                   return (
                     <li key={grant.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
                       <div>
                         <Link href={`/stod/${grant.id}`} className="font-semibold text-navy-800 hover:underline">
-                          {lang === "sv" ? grant.title_sv : grant.title_en}
+                          {projectName}
                         </Link>
+                        {projectName !== grantName && <p className="text-xs text-navy-500">{r.euProjectName(grantName)}</p>}
                         <p className="text-xs text-navy-500">
                           {call ? (lang === "sv" ? call.title_sv : call.title_en) : grant.callId} ·{" "}
                           {fmtSEK(grant.awardedAmountSEK, lang)}

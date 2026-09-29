@@ -17,6 +17,30 @@ const INDICATOR_PATTERN = /\d+\s?(deltagare|elever|personer|participants|student
 const HORIZONTAL_PRINCIPLES_PATTERN =
   /jämställd|jämlik|tillgänglig|icke-diskriminer|mångfald|inklud|hållbar|miljö|gender|equalit|accessib|inclusi|sustainab/i;
 
+// A starting point the change is measured from — reviewers ask for it on
+// every effect indicator.
+const BASELINE_PATTERN = /utgångsvärde|utgångsläge|nuläge|baseline|jämfört med (idag|dagens|nuvarande)|från dagens|compared (with|to) (today|current)/i;
+
+/** What the assessment looks for in a piece of text — exported so the
+ * workspace can show, next to each section, what that section contributes. */
+export interface TextSignals {
+  quantifiedEffect: boolean;
+  indicator: boolean;
+  baseline: boolean;
+  horizontalPrinciples: boolean;
+  length: number;
+}
+
+export function textSignals(text: string): TextSignals {
+  return {
+    quantifiedEffect: IMPACT_PATTERN.test(text),
+    indicator: INDICATOR_PATTERN.test(text),
+    baseline: BASELINE_PATTERN.test(text),
+    horizontalPrinciples: HORIZONTAL_PRINCIPLES_PATTERN.test(text),
+    length: text.trim().length,
+  };
+}
+
 // Readiness used to also carry separate "eligibility"/"budget"/"partnership"
 // dimensions — but those are exactly the signals already inside
 // match.score ("Strategic match" below), and a "documentation" dimension
@@ -29,11 +53,19 @@ const HORIZONTAL_PRINCIPLES_PATTERN =
 // right alongside this breakdown — removing them here removes the double
 // count without losing that information. What's left are the dimensions
 // that are each measuring something genuinely different from the others.
-export function computeReadiness(project: ProjectInput, match: MatchResult): ReadinessBreakdown {
-  const logicScore = project.description.length > 220 ? 92 : project.description.length > 120 ? 78 : 45;
-  const impactScore = IMPACT_PATTERN.test(project.description) ? 85 : 32;
-  const indicatorsScore = INDICATOR_PATTERN.test(project.description) ? 82 : 40;
-  const horizontalPrinciplesScore = HORIZONTAL_PRINCIPLES_PATTERN.test(project.description) ? 85 : 35;
+//
+// `text` is what is being assessed: the project description on its own
+// (the project page), or — in the application workspace — the description
+// plus every section the user has written or edited (see
+// assessedApplicationText). Unedited AI suggestions are left out on
+// purpose: they are generated from the call's own wording, so counting
+// them would let an untouched draft score as if someone had written it.
+export function computeReadiness(project: ProjectInput, match: MatchResult, text: string = project.description): ReadinessBreakdown {
+  const signals = textSignals(text);
+  const logicScore = signals.length > 220 ? 92 : signals.length > 120 ? 78 : 45;
+  const impactScore = signals.quantifiedEffect ? (signals.baseline ? 92 : 85) : 32;
+  const indicatorsScore = signals.indicator ? (signals.baseline ? 90 : 82) : 40;
+  const horizontalPrinciplesScore = signals.horizontalPrinciples ? 85 : 35;
 
   const dims: ReadinessBreakdown["dimensions"] = [
     {

@@ -51,8 +51,8 @@ test("a new round to the same call gets its own empty draft; the old one is kept
   await editDraft(page, "Omgång 1");
 
   await page.getByLabel("Ansökans status").selectOption("rejected");
-  page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "+ Ny ansökan till samma utlysning" }).click();
+  await page.getByRole("button", { name: "Ja, skapa" }).click();
   await expect(page).toHaveURL(/application=/);
   await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
   await expect(page.locator("textarea").first()).not.toHaveValue("Omgång 1");

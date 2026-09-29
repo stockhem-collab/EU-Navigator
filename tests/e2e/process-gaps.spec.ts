@@ -28,8 +28,8 @@ test("a document can be attached to, downloaded from, and removed from a project
   const [download] = await Promise.all([page.waitForEvent("download"), fileButton.click()]);
   expect(download.suggestedFilename()).toBe("budget.txt");
 
-  page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Ta bort" }).last().click();
+  await page.getByRole("button", { name: "Ja, ta bort" }).click();
   await expect(page.getByText("Inga bilagor sparade än.")).toBeVisible();
 });
 
@@ -89,7 +89,7 @@ test("an existing task's text and due date can be edited in place", async ({ pag
   await expect(page.getByText(editedText)).toBeVisible();
 
   // Clean up so this doesn't leak into other tests sharing storage.
-  await page.getByRole("button", { name: "Ta bort" }).click();
+  await page.locator("li", { hasText: editedText }).getByRole("button", { name: "Ta bort" }).click();
 });
 
 test("every grant's outstanding reports show under Rapportera by default, with no watch action needed", async ({ page }) => {
@@ -142,8 +142,8 @@ test("a document can be attached to a specific reporting event", async ({ page }
   });
 
   await expect(reportCard.getByText("evidence.txt")).toBeVisible();
-  page.once("dialog", (d) => d.accept());
   await reportCard.getByRole("button", { name: "Ta bort" }).click();
+  await page.getByRole("button", { name: "Ja, ta bort" }).click();
   await expect(reportCard.getByText("evidence.txt")).toHaveCount(0);
 });
 

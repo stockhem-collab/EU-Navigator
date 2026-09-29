@@ -4,10 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { MatchResult, ProjectInput } from "@/lib/types";
-import { generateProjectLogic, generateReviewerNotes } from "@/lib/matching/generateWorkspace";
+import { MatchResult, ProjectInput, ReadinessBreakdown } from "@/lib/types";
+import { assessedApplicationText, generateProjectLogic, generateReviewerNotes, ProjectLogicRow } from "@/lib/matching/generateWorkspace";
 import { computeGapAnalysis } from "@/lib/matching/gapAnalysis";
-import { computeReadiness } from "@/lib/matching/readiness";
+import { computeReadiness, textSignals } from "@/lib/matching/readiness";
+import ConfirmButton from "@/components/ConfirmButton";
 import { analyzeSection } from "@/lib/matching/sectionCoach";
 import { useApplication, seedApplicationDraft } from "@/lib/hooks/useApplication";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
@@ -36,6 +37,10 @@ interface Props {
    * Undefined when the workspace was reached from an already-saved entry,
    * where saving-as-new doesn't apply. */
   onSavedAsProject?: (newProjectId: string) => void;
+  /** "back" when the workspace was opened directly (from a project, Ansöka
+   * or a notification) and onBack returns there; "matches" when it goes
+   * back to the match list this workspace was picked from. */
+  backLabel?: "back" | "matches";
 }
 
 type Tab = "application" | "assessment" | "process";
@@ -47,6 +52,7 @@ export default function ApplicationWorkspace({
   customerProjectId = null,
   applicationId: requestedApplicationId = null,
   onSavedAsProject,
+  backLabel = "matches",
 }: Props) {
   const router = useRouter();
   const { t, lang } = useLanguage();
@@ -59,10 +65,7 @@ export default function ApplicationWorkspace({
   const [tab, setTab] = useState<Tab>("application");
 
   const logic = generateProjectLogic(project, match.call, match.program);
-  const notes = generateReviewerNotes(project, match.call);
   const gap = computeGapAnalysis(match);
-  const readiness = computeReadiness(project, match);
-  const coach = analyzeSection(project, match);
 
   // Editable draft of the AI-generated project logic. Persisted per (project,
   // call) when the project was saved in the Projektbank — see useApplication.
@@ -80,6 +83,63 @@ export default function ApplicationWorkspace({
     setStatus,
     hydrated: draftLoaded,
   } = useApplication(customerProjectId, match.call.id, requestedApplicationId);
+
+  // The assessment reads what the application actually says — the project
+  // description plus every section the user has written or edited — and
+  // is recomputed on every keystroke (see assessedApplicationText).
+  const assessedText = useMemo(() => assessedApplicationText(project, sectionDrafts), [project, sectionDrafts]);
+  const readiness = useMemo(() => computeReadiness(project, match, assessedText), [project, match, assessedText]);
+  const coach = useMemo(() => analyzeSection(project, match, assessedText), [project, match, assessedText]);
+  const notes = useMemo(() => generateReviewerNotes(project, match.call, assessedText), [project, match.call, assessedText]);
+
+  // Readiness as it was when this application was opened, so the effect of
+  // an edit is visible ("↑ +12 sedan du öppnade ansökan"). Taken once the
+  // stored draft has loaded, and again if another application or project
+  // is opened in the same workspace.
+  const [openedReadiness, setOpenedReadiness] = useState<ReadinessBreakdown | null>(null);
+  useEffect(() => {
+    setOpenedReadiness(null);
+  }, [project, applicationId]);
+  useEffect(() => {
+    if (draftLoaded && openedReadiness === null) setOpenedReadiness(readiness);
+  }, [draftLoaded, openedReadiness, readiness]);
+  const overallChange = openedReadiness ? readiness.overall - openedReadiness.overall : 0;
+  const dimensionChange = (key: string) => {
+    const before = openedReadiness?.dimensions.find((d) => d.key === key)?.score;
+    const now = readiness.dimensions.find((d) => d.key === key)?.score;
+    return before === undefined || now === undefined ? 0 : now - before;
+  };
+
+  // Which section of the application each readiness dimension is about, so
+  // an action can point to where to write it and each section can show
+  // what it's still missing.
+  const sectionForDimension = useMemo(() => {
+    const find = (pattern: RegExp) => logic.findIndex((row) => pattern.test(`${row.label_sv} ${row.label_en}`));
+    const impact = find(/effekt|outcome|impact|resultat|result/i);
+    const indicators = find(/indikator|indicator|uppfölj|mät|measur|monitor/i);
+    const logicRow = find(/problem|behov|need|aktivitet|activit|genomför|implement|mål|goal|objective/i);
+    const activities = find(/aktivitet|activit|genomför|implement/i);
+    const horizontalOwn = find(/horisont|horizontal|jämställ|hållbar|equal|sustain/i);
+    // How the project works with the horizontal principles is described
+    // with the activities, when the call has no section of its own for it.
+    const horizontal = horizontalOwn >= 0 ? horizontalOwn : activities;
+    const map: Record<string, number> = {
+      impact: impact >= 0 ? impact : 0,
+      indicators: indicators >= 0 ? indicators : impact >= 0 ? impact : 0,
+      logic: logicRow >= 0 ? logicRow : 0,
+      horizontalPrinciples: horizontal >= 0 ? horizontal : logicRow >= 0 ? logicRow : 0,
+    };
+    return map;
+  }, [logic]);
+  const sectionLabel = (row: ProjectLogicRow) => (lang === "sv" ? row.label_sv : row.label_en);
+  const goToSection = (index: number) => {
+    setTab("application");
+    window.setTimeout(() => {
+      const el = document.getElementById(`section-${index}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      el?.focus();
+    }, 0);
+  };
   const { all: projectBankEntries, addImported, updateEntry, hydrated: projectBankHydrated } = useProjectBank();
   const { records: allApplications, createApplication } = useApplications();
   const otherApplicationsToCall = allApplications.filter(
@@ -97,7 +157,7 @@ export default function ApplicationWorkspace({
   }, [projectBankHydrated, customerProjectId, projectStatus, recordStatus, updateEntry]);
 
   const handleNewApplication = () => {
-    if (!customerProjectId || !window.confirm(at.confirmNewApplication)) return;
+    if (!customerProjectId) return;
     const created = createApplication(customerProjectId, match.call.id);
     router.replace(`/ansokan?project=${customerProjectId}&call=${match.call.id}&application=${encodeURIComponent(created.id)}`, {
       scroll: false,
@@ -105,7 +165,10 @@ export default function ApplicationWorkspace({
   };
   const [versionName, setVersionName] = useState("");
 
-  const estEu = (match.estimatedFundingSEK[0] + match.estimatedFundingSEK[1]) / 2;
+  // The grant this application plans for — the same figure the match's
+  // budget line states (requested, or the call's rate of the budget, capped
+  // at the call's maximum), not the midpoint of a range.
+  const estEu = match.estimatedFundingSEK[1];
   const coFinancing = Math.max(0, project.budgetSEK - estEu);
   const callTitle = lang === "sv" ? match.call.title_sv : match.call.title_en;
   const hasCallTemplate = Boolean(match.call.applicationTemplate && match.call.applicationTemplate.length > 0);
@@ -139,10 +202,7 @@ export default function ApplicationWorkspace({
   // An ad-hoc, unpersisted draft's edits live only in this component's
   // state (see useApplication) — leaving without a warning would silently
   // discard everything typed so far.
-  const handleBack = () => {
-    if (!isPersisted && Object.keys(sectionDrafts).length > 0 && !window.confirm(ws.confirmLeaveUnsavedDraft)) return;
-    onBack();
-  };
+  const hasUnsavedDraft = !isPersisted && Object.keys(sectionDrafts).length > 0;
 
   const handleSaveVersion = (name: string) => {
     if (!name.trim()) return;
@@ -180,9 +240,16 @@ export default function ApplicationWorkspace({
     // data-draft-loaded: set once the stored draft has been read — before
     // that, text typed into the (server-rendered) fields may be replaced.
     <div className="mx-auto max-w-5xl" data-draft-loaded={draftLoaded}>
-      <button onClick={handleBack} className="text-sm font-semibold text-navy-600 hover:text-navy-900">
-        ← {ws.back}
-      </button>
+      <ConfirmButton
+        label={`← ${backLabel === "back" ? ws.backToPrevious : ws.back}`}
+        message={ws.confirmLeaveUnsavedDraft}
+        confirmLabel={t.confirm.yesLeave}
+        cancelLabel={t.confirm.cancel}
+        onConfirm={onBack}
+        skipConfirm={!hasUnsavedDraft}
+        danger
+        className="text-sm font-semibold text-navy-600 hover:text-navy-900"
+      />
 
       <div className="mt-4 flex items-center gap-4">
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-base font-bold text-white">
@@ -213,13 +280,14 @@ export default function ApplicationWorkspace({
               </option>
             ))}
           </select>
-          <button
-            type="button"
-            onClick={handleNewApplication}
+          <ConfirmButton
+            label={`+ ${at.newApplicationButton}`}
+            message={at.confirmNewApplication}
+            confirmLabel={t.confirm.yesCreate}
+            cancelLabel={t.confirm.cancel}
+            onConfirm={handleNewApplication}
             className="text-sm font-semibold text-navy-600 hover:text-navy-900"
-          >
-            + {at.newApplicationButton}
-          </button>
+          />
           <Link href={`/projekt/${customerProjectId}`} className="text-sm font-semibold text-navy-600 hover:text-navy-900">
             {at.allApplicationsLink} →
           </Link>
@@ -234,10 +302,15 @@ export default function ApplicationWorkspace({
         <aside className="md:sticky md:top-20 md:self-start">
           <div className="rounded-xl border border-navy-100 bg-white p-5">
             <p className="text-xs font-semibold uppercase text-navy-400">{readinessT.title}</p>
-            <p className="mt-1 text-4xl font-extrabold text-navy-900">
+            <p className="mt-1 text-4xl font-extrabold text-navy-900" data-testid="readiness-overall">
               {readiness.overall}
               <span className="text-base font-normal text-navy-400">/100</span>
             </p>
+            {overallChange !== 0 && (
+              <p className={`mt-1 text-xs font-semibold ${overallChange > 0 ? "text-green-700" : "text-amber-700"}`} aria-live="polite">
+                {ws.changeSinceOpened(overallChange)}
+              </p>
+            )}
             <div className="mt-3 border-t border-navy-50 pt-3">
               <p className="text-xs font-semibold uppercase text-navy-400">{ws.topPriorityLabel}</p>
               <p className="mt-1 text-sm text-amber-800">
@@ -306,9 +379,21 @@ export default function ApplicationWorkspace({
                 </p>
                 <p className="mt-1 text-xs text-navy-400">{isPersisted ? ws.draftSavedNote : ws.draftNotSavedNote}</p>
                 <div className="mt-4 space-y-4">
-                  {logic.map((row) => {
+                  {logic.map((row, index) => {
                     const content = lang === "sv" ? row.content_sv : row.content_en;
                     const isEdited = sectionDrafts[row.label_sv] !== undefined;
+                    const signals = isEdited ? textSignals(sectionDrafts[row.label_sv]) : null;
+                    const found = signals
+                      ? [
+                          signals.quantifiedEffect && ws.signalQuantified,
+                          signals.indicator && ws.signalIndicator,
+                          signals.baseline && ws.signalBaseline,
+                          signals.horizontalPrinciples && ws.signalHorizontal,
+                        ].filter((x): x is string => Boolean(x))
+                      : [];
+                    const missing = readiness.dimensions.filter(
+                      (d) => d.action_sv && sectionForDimension[d.key] === index
+                    );
                     return (
                       <div key={row.label_sv} className="rounded-xl border border-navy-100 bg-white p-4">
                         <div className="flex items-center justify-between gap-3">
@@ -322,22 +407,39 @@ export default function ApplicationWorkspace({
                               {isEdited ? ws.fieldSourceEdited : ws.fieldSourceTemplate}
                             </span>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (!isEdited || window.confirm(ws.confirmResetField)) resetSection(row.label_sv);
-                            }}
+                          <ConfirmButton
+                            label={ws.resetField}
+                            ariaLabel={`${ws.resetField}: ${sectionLabel(row)}`}
+                            message={ws.confirmResetField}
+                            confirmLabel={t.confirm.yesReset}
+                            cancelLabel={t.confirm.cancel}
+                            onConfirm={() => resetSection(row.label_sv)}
+                            skipConfirm={!isEdited}
+                            danger
                             className="text-xs font-medium text-navy-400 hover:text-navy-700"
-                          >
-                            {ws.resetField}
-                          </button>
+                          />
                         </div>
                         <textarea
+                          id={`section-${index}`}
+                          aria-label={sectionLabel(row)}
                           rows={3}
                           value={sectionDrafts[row.label_sv] ?? content}
                           onChange={(e) => setSection(row.label_sv, e.target.value)}
                           className="mt-2 w-full rounded-md border border-navy-200 px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
                         />
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5" data-testid={`section-assessment-${index}`}>
+                          {!isEdited && <span className="text-xs text-navy-400">{ws.notAssessedNote}</span>}
+                          {found.map((label) => (
+                            <span key={label} className="badge bg-green-100 text-green-800">
+                              ✓ {label}
+                            </span>
+                          ))}
+                          {missing.map((d) => (
+                            <span key={d.key} className="badge bg-amber-100 text-amber-800">
+                              {ws.sectionMissing(lang === "sv" ? d.label_sv : d.label_en)}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     );
                   })}
@@ -359,6 +461,7 @@ export default function ApplicationWorkspace({
                     <dt className="text-xs font-semibold uppercase text-navy-400">{ws.coFinancing}</dt>
                     <dd className="mt-1 text-xl font-bold text-navy-700">{fmtSEK(coFinancing, lang)}</dd>
                   </div>
+                  <p className="text-xs text-navy-400 sm:col-span-3">{ws.estEuShareNote}</p>
                 </dl>
               </section>
 
@@ -424,15 +527,14 @@ export default function ApplicationWorkspace({
                             </p>
                           </div>
                           <div className="flex items-center gap-4">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (window.confirm(ws.confirmRestoreVersion(v.name))) restoreVersion(v.id);
-                              }}
+                            <ConfirmButton
+                              label={ws.restoreVersionButton}
+                              message={ws.confirmRestoreVersion(v.name)}
+                              confirmLabel={t.confirm.yesRestore}
+                              cancelLabel={t.confirm.cancel}
+                              onConfirm={() => restoreVersion(v.id)}
                               className="text-xs font-semibold text-navy-600 hover:text-navy-900"
-                            >
-                              {ws.restoreVersionButton}
-                            </button>
+                            />
                             <button
                               type="button"
                               onClick={() => handleExportVersion(v)}
@@ -440,15 +542,15 @@ export default function ApplicationWorkspace({
                             >
                               {ws.exportVersionButton}
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (window.confirm(ws.confirmDeleteVersion(v.name))) deleteVersion(v.id);
-                              }}
+                            <ConfirmButton
+                              label={ws.deleteVersionButton}
+                              message={ws.confirmDeleteVersion(v.name)}
+                              confirmLabel={t.confirm.yesRemove}
+                              cancelLabel={t.confirm.cancel}
+                              onConfirm={() => deleteVersion(v.id)}
+                              danger
                               className="text-xs font-medium text-navy-400 hover:text-amber-700"
-                            >
-                              {ws.deleteVersionButton}
-                            </button>
+                            />
                           </div>
                         </li>
                       ))}
@@ -479,6 +581,13 @@ export default function ApplicationWorkspace({
                         />
                       </div>
                       <span className="w-10 shrink-0 text-right text-sm font-semibold text-navy-800">{d.score}</span>
+                      <span
+                        className={`w-10 shrink-0 text-right text-xs font-semibold ${
+                          dimensionChange(d.key) > 0 ? "text-green-700" : "text-amber-700"
+                        }`}
+                      >
+                        {dimensionChange(d.key) !== 0 && `${dimensionChange(d.key) > 0 ? "+" : ""}${dimensionChange(d.key)}`}
+                      </span>
                     </div>
                   ))}
 
@@ -490,7 +599,16 @@ export default function ApplicationWorkspace({
                           .filter((d) => d.action_sv)
                           .map((d) => (
                             <li key={d.key} className="text-sm text-amber-800">
-                              ⚠ {lang === "sv" ? d.action_sv : d.action_en}
+                              ⚠ {lang === "sv" ? d.action_sv : d.action_en}{" "}
+                              {sectionForDimension[d.key] !== undefined && logic[sectionForDimension[d.key]] && (
+                                <button
+                                  type="button"
+                                  onClick={() => goToSection(sectionForDimension[d.key])}
+                                  className="font-semibold text-navy-700 underline hover:text-navy-900"
+                                >
+                                  {ws.goToSection(sectionLabel(logic[sectionForDimension[d.key]]))}
+                                </button>
+                              )}
                             </li>
                           ))}
                       </ul>
