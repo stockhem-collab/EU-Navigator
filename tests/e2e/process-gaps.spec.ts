@@ -148,6 +148,7 @@ test("a document can be attached to a specific reporting event", async ({ page }
 });
 
 test("the homepage's calls-to-action reflect real function, not just a demo", async ({ page }) => {
+  await page.context().clearCookies();
   await page.goto("/");
   // Header CTA.
   await expect(page.getByRole("link", { name: "Starta ansökan" }).first()).toBeVisible();

@@ -10,6 +10,21 @@ export interface TranslationTree {
     yesRegister: string;
     cancel: string;
   };
+  login: {
+    title: string;
+    subtitle: string;
+    email: string;
+    password: string;
+    remember: string;
+    submit: string;
+    submitting: string;
+    errorInvalid: string;
+    errorNotConfigured: string;
+    errorGeneric: string;
+    logout: string;
+    loginLink: string;
+    loggedInAs: (email: string) => string;
+  };
   nav: {
     home: string;
     workflow: string;
@@ -868,6 +883,21 @@ export const translations: Record<Lang, TranslationTree> = {
       yesCreate: "Ja, skapa",
       yesRegister: "Ja, registrera",
       cancel: "Avbryt",
+    },
+    login: {
+      title: "Logga in",
+      subtitle: "Logga in för att komma till systemet. Lösenordet får du av din EU-samordnare.",
+      email: "E-post",
+      password: "Lösenord",
+      remember: "Kom ihåg mig i 30 dagar",
+      submit: "Logga in",
+      submitting: "Loggar in…",
+      errorInvalid: "Fel e-post eller lösenord.",
+      errorNotConfigured: "Inloggningen är inte konfigurerad — lösenordet (DEMO_PASSWORD) saknas i driftmiljön.",
+      errorGeneric: "Något gick fel. Försök igen.",
+      logout: "Logga ut",
+      loginLink: "Logga in",
+      loggedInAs: (email) => `Inloggad som ${email}`,
     },
     nav: {
       home: "Hem",
@@ -1878,6 +1908,21 @@ export const translations: Record<Lang, TranslationTree> = {
       yesCreate: "Yes, create",
       yesRegister: "Yes, register",
       cancel: "Cancel",
+    },
+    login: {
+      title: "Log in",
+      subtitle: "Log in to reach the system. Your EU coordinator gives you the password.",
+      email: "Email",
+      password: "Password",
+      remember: "Remember me for 30 days",
+      submit: "Log in",
+      submitting: "Logging in…",
+      errorInvalid: "Wrong email or password.",
+      errorNotConfigured: "Login isn't configured — the password (DEMO_PASSWORD) is missing in the hosting environment.",
+      errorGeneric: "Something went wrong. Please try again.",
+      logout: "Log out",
+      loginLink: "Log in",
+      loggedInAs: (email) => `Logged in as ${email}`,
     },
     nav: {
       home: "Home",
