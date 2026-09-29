@@ -753,6 +753,8 @@ export interface TranslationTree {
     confirmDelete: string;
     createAwardedButton: string;
     confirmCreateAwarded: string;
+    confirmRegisterYes: string;
+    confirmCancel: string;
     viewAwardedLink: string;
     updatedAt: (date: string) => string;
     roundLabel: (n: number) => string;
@@ -1724,6 +1726,8 @@ export const translations: Record<Lang, TranslationTree> = {
       confirmDelete: "Ta bort ansökan med dess utkast och sparade versioner?",
       createAwardedButton: "Registrera beviljat stöd",
       confirmCreateAwarded: "Registrera beviljat stöd för den här ansökan? Då skapas rapporteringen för stödet under Rapportera.",
+      confirmRegisterYes: "Ja, registrera",
+      confirmCancel: "Avbryt",
       viewAwardedLink: "Visa beviljat stöd",
       updatedAt: (date) => `Uppdaterad ${date}`,
       roundLabel: (n) => `Ansökan ${n}`,
@@ -2702,6 +2706,8 @@ export const translations: Record<Lang, TranslationTree> = {
       confirmDelete: "Delete this application with its draft and saved versions?",
       createAwardedButton: "Register grant",
       confirmCreateAwarded: "Register the grant for this application? Its reporting is then set up under Report.",
+      confirmRegisterYes: "Yes, register",
+      confirmCancel: "Cancel",
       viewAwardedLink: "View grant",
       updatedAt: (date) => `Updated ${date}`,
       roundLabel: (n) => `Application ${n}`,

@@ -18,8 +18,8 @@ test("marking a funded project as awarded creates real reporting tracking and sy
 
   const markButton = page.getByRole("button", { name: "Markera som beviljad" });
   await expect(markButton).toBeVisible();
-  page.once("dialog", (d) => d.accept());
   await markButton.click();
+  await page.getByRole("button", { name: "Ja, registrera" }).click();
 
   await expect(page).toHaveURL(/\/stod\/ap-pb-2/);
   await expect(page.getByRole("heading", { name: "Lägesrapport 1" })).toBeVisible();

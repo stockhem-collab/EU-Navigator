@@ -88,8 +88,16 @@ test("an awarded application becomes a grant under its own call", async ({ page 
   await page.getByLabel("Ansökans status").selectOption("awarded");
 
   await page.goto("/projekt/pb-3");
-  page.once("dialog", (d) => d.accept());
-  await page.getByRole("button", { name: "Registrera beviljat stöd" }).click();
+  // Confirmed in the page, not through a blocking window.confirm dialog.
+  page.on("dialog", (d) => {
+    throw new Error(`Unexpected native dialog: ${d.message()}`);
+  });
+  const register = page.getByRole("button", { name: "Registrera beviljat stöd" });
+  await register.click();
+  await page.getByRole("button", { name: "Avbryt" }).click();
+  await expect(page).toHaveURL(/\/projekt\/pb-3/);
+  await register.click();
+  await page.getByRole("button", { name: "Ja, registrera" }).click();
   await expect(page).toHaveURL(/\/stod\//);
   await expect(page.getByText(callTitle).first()).toBeVisible();
   // The grant links back to the application it was awarded on.
@@ -110,8 +118,8 @@ test("two awarded applications on one project get two separate grants", async ({
     await editDraft(page, `Beviljad ${nth}`);
     await page.getByLabel("Ansökans status").selectOption("awarded");
     await page.goto("/projekt/pb-6");
-    page.once("dialog", (d) => d.accept());
     await page.getByRole("button", { name: "Registrera beviljat stöd" }).first().click();
+    await page.getByRole("button", { name: "Ja, registrera" }).click();
     await expect(page).toHaveURL(/\/stod\//);
   }
   await page.goto("/projekt/pb-6");

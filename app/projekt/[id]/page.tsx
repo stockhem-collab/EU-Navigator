@@ -20,6 +20,7 @@ import { scoreMatch } from "@/lib/matching/scoreMatch";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
 import ProjectLifecycle from "@/components/ProjectLifecycle";
+import ConfirmButton from "@/components/ConfirmButton";
 import LinkedReportingBadge from "@/components/LinkedReportingBadge";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
@@ -141,7 +142,7 @@ export default function ProjectBankDetailPage() {
   const handleCreateAwarded = (record: ApplicationRecord) => {
     const call = fundingCalls.find((c) => c.id === record.callId);
     const program = call ? findProgram(call.programId) : undefined;
-    if (!call || !program || !window.confirm(at.confirmCreateAwarded)) return;
+    if (!call || !program) return;
     const match = scoreMatch(projectBankEntryToProjectInput(entry), call, program);
     const awarded = projectToGrant(entry, match, record.id);
     addGrant(awarded);
@@ -168,7 +169,6 @@ export default function ProjectBankDetailPage() {
   const handleMarkAsAwarded = () => {
     const bestMatch = matches[0];
     if (!bestMatch) return;
-    if (!window.confirm(pb.confirmMarkAsAwarded)) return;
     const awarded = projectToGrant(entry, bestMatch);
     addGrant(awarded);
     logActivity({ kind: "grant-registered", grantId: awarded.id, projectId: entry.id, callId: bestMatch.call.id });
@@ -398,13 +398,14 @@ export default function ProjectBankDetailPage() {
             {!linkedAwardedProject && applications.length === 0 && entry.status === "funded" && matches.length > 0 && (
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed border-navy-200 px-4 py-3">
                 <p className="text-xs text-navy-600">{pb.markAsAwardedHint}</p>
-                <button
-                  type="button"
-                  onClick={handleMarkAsAwarded}
+                <ConfirmButton
+                  label={pb.markAsAwardedButton}
+                  message={pb.confirmMarkAsAwarded}
+                  confirmLabel={at.confirmRegisterYes}
+                  cancelLabel={at.confirmCancel}
+                  onConfirm={handleMarkAsAwarded}
                   className="shrink-0 rounded-md bg-navy-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-700"
-                >
-                  {pb.markAsAwardedButton}
-                </button>
+                />
               </div>
             )}
 
@@ -731,13 +732,14 @@ export default function ProjectBankDetailPage() {
                         ))}
                       </select>
                       {record.status === "awarded" && !awardedProject && (
-                        <button
-                          type="button"
-                          onClick={() => handleCreateAwarded(record)}
+                        <ConfirmButton
+                          label={at.createAwardedButton}
+                          message={at.confirmCreateAwarded}
+                          confirmLabel={at.confirmRegisterYes}
+                          cancelLabel={at.confirmCancel}
+                          onConfirm={() => handleCreateAwarded(record)}
                           className="rounded-md bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800"
-                        >
-                          {at.createAwardedButton}
-                        </button>
+                        />
                       )}
                       {awardedProject && (
                         <Link
