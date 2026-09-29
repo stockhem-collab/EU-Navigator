@@ -9,6 +9,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useOrgConfig, OrgTextField } from "@/lib/hooks/useOrgConfig";
 import { orgUnits as seedOrgUnits } from "@/lib/data/users";
 import { OrgUnit } from "@/lib/types";
+import ConfirmButton from "@/components/ConfirmButton";
 
 function buildTree(units: OrgUnit[]): { unit: OrgUnit; depth: number }[] {
   const byParent = new Map<string | null, OrgUnit[]>();
@@ -72,15 +73,15 @@ export default function OrganisationSettingsPage() {
             <h1 className="text-2xl font-bold text-navy-900">{os.title}</h1>
             <p className="mt-2 text-sm text-navy-600">{os.subtitle}</p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm(os.confirmResetAll)) resetAll();
-            }}
+          <ConfirmButton
+            label={os.resetAll}
+            message={os.confirmResetAll}
+            confirmLabel={t.confirm.yesReset}
+            cancelLabel={t.confirm.cancel}
+            onConfirm={() => resetAll()}
+            danger
             className="shrink-0 rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-600 hover:bg-navy-50"
-          >
-            {os.resetAll}
-          </button>
+          />
         </div>
 
         <div className="mt-8">
@@ -123,18 +124,16 @@ export default function OrganisationSettingsPage() {
                   onChange={(e) => renameUnit(unit.id, e.target.value)}
                   className="flex-1 rounded-md border border-transparent px-2 py-1 text-sm text-navy-700 hover:border-navy-200 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const descendants = countDescendants(units, unit.id);
-                    const message =
-                      descendants > 0 ? os.confirmRemoveUnitCascade(unit.name, descendants) : os.confirmRemoveUnit(unit.name);
-                    if (window.confirm(message)) removeUnit(unit.id);
-                  }}
+                <ConfirmButton
+                  label={os.removeUnitLabel}
+                  ariaLabel={`${os.removeUnitLabel}: ${unit.name}`}
+                  message={countDescendants(units, unit.id) > 0 ? os.confirmRemoveUnitCascade(unit.name, countDescendants(units, unit.id)) : os.confirmRemoveUnit(unit.name)}
+                  confirmLabel={t.confirm.yesRemove}
+                  cancelLabel={t.confirm.cancel}
+                  onConfirm={() => removeUnit(unit.id)}
+                  danger
                   className="shrink-0 text-xs font-semibold text-navy-400 hover:text-red-600"
-                >
-                  {os.removeUnitLabel}
-                </button>
+                />
               </li>
             ))}
           </ul>

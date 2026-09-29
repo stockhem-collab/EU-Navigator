@@ -33,8 +33,8 @@ test("a saved project's application draft survives re-entering the workspace", a
 
   // Reset restores the AI suggestion, not the manual draft — asks for
   // confirmation first since it discards the edited text.
-  page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: /Återställ AI-förslag|Reset to AI suggestion/i }).first().click();
+  await page.getByRole("button", { name: "Ja, återställ" }).click();
   await expect(page.locator("textarea").first()).not.toHaveValue(testValue);
 });
 
@@ -69,8 +69,8 @@ test("a version can be saved and restored, and the application exports as .docx"
   // confirmation first since it overwrites the current draft.
   await textarea.fill("Något helt annat");
   await page.waitForTimeout(200);
-  page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: /Återställ till denna version|Restore this version/i }).click();
+  await page.getByRole("button", { name: "Ja, återställ versionen" }).click();
   await expect(textarea).toHaveValue(draftValue);
 
   const [download] = await Promise.all([

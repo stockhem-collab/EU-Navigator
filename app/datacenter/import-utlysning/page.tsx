@@ -13,6 +13,7 @@ import { extractCallDraft, slugifyCallId, ExtractionConfidence } from "@/lib/mat
 import { suggestTags } from "@/lib/matching/tagSuggestions";
 import { useTags } from "@/lib/hooks/useTags";
 import TagPicker from "@/components/TagPicker";
+import ConfirmButton from "@/components/ConfirmButton";
 import {
   ALL_ACTIVITY_TYPES,
   ALL_REGIONS,
@@ -776,16 +777,15 @@ export default function ImportUtlysningPage() {
                       {call.importedAt && ` · ${ci.importedAtLabel(new Date(call.importedAt).toLocaleDateString(lang === "sv" ? "sv-SE" : "en-US"))}`}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const title = lang === "sv" ? call.title_sv : call.title_en;
-                      if (window.confirm(ci.confirmRemoveImportedCall(title))) removeImportedCall(call.id);
-                    }}
+                  <ConfirmButton
+                    label={ci.removeButton}
+                    message={ci.confirmRemoveImportedCall(lang === "sv" ? call.title_sv : call.title_en)}
+                    confirmLabel={t.confirm.yesRemove}
+                    cancelLabel={t.confirm.cancel}
+                    onConfirm={() => removeImportedCall(call.id)}
+                    danger
                     className="text-xs font-semibold text-navy-400 hover:text-red-600"
-                  >
-                    {ci.removeButton}
-                  </button>
+                  />
                 </li>
               ))}
             </ul>

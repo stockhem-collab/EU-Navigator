@@ -27,6 +27,7 @@ import {
 import { computeBestMatchForEntry } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
 import { PROJECT_STATUS_ORDER, ProjectStatus } from "@/lib/types";
+import ConfirmButton from "@/components/ConfirmButton";
 
 // The one list of projects — what used to be split between Projektbank
 // (ideas) and Mina projekt (the same projects, filtered by status). Each
@@ -122,15 +123,15 @@ function ProjectsPageInner() {
               and collide with the still-stored, just-hidden entry. */}
           <CsvImportPanel onImport={addImported} existingIds={[...projectBank, ...deletedEntries].map((p) => p.id)} />
           {imported.length > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                if (window.confirm(pb.confirmClearImported)) clearImported();
-              }}
+            <ConfirmButton
+              label={`${pb.clearImported} (${imported.length})`}
+              message={pb.confirmClearImported}
+              confirmLabel={t.confirm.yesRemove}
+              cancelLabel={t.confirm.cancel}
+              onConfirm={() => clearImported()}
+              danger
               className="mt-2 text-xs font-semibold text-navy-400 hover:text-amber-700"
-            >
-              {pb.clearImported} ({imported.length})
-            </button>
+            />
           )}
         </div>
 
@@ -264,18 +265,16 @@ function ProjectsPageInner() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       {importedIds.has(p.id) && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const title = lang === "sv" ? p.title_sv : p.title_en;
-                            if (window.confirm(pb.confirmRemoveProject(title))) deleteEntry(p.id);
-                          }}
-                          aria-label={pb.removeImportedRow}
-                          title={pb.removeImportedRow}
+                        <ConfirmButton
+                          label="✕"
+                          ariaLabel={pb.removeImportedRow}
+                          message={pb.confirmRemoveProject(lang === "sv" ? p.title_sv : p.title_en)}
+                          confirmLabel={t.confirm.yesRemove}
+                          cancelLabel={t.confirm.cancel}
+                          onConfirm={() => deleteEntry(p.id)}
+                          danger
                           className="text-navy-300 hover:text-amber-700"
-                        >
-                          ✕
-                        </button>
+                        />
                       )}
                     </td>
                   </tr>

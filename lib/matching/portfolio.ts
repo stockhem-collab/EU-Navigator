@@ -87,7 +87,9 @@ export function projectToGrant(entry: ProjectBankEntry, match: MatchResult, appl
     callId: match.call.id,
     projectBankEntryId: entry.id,
     applicationId,
-    awardedAmountSEK: Math.round((match.estimatedFundingSEK[0] + match.estimatedFundingSEK[1]) / 2),
+    // The grant the application planned for — the same figure the
+    // workspace shows as "Beräknat EU-bidrag".
+    awardedAmountSEK: match.estimatedFundingSEK[1],
     commitments: [],
     reportingEvents: [
       {

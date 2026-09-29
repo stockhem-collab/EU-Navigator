@@ -111,7 +111,8 @@ export const projectBank: ProjectBankEntry[] = [
     department_sv: "VA-avdelningen",
     department_en: "Water & Sewage",
     owner: "Elin Svensson",
-    status: "assessing",
+    // Has an application with the funder (see data/applications.ts).
+    status: "funding-search",
     estimatedCostSEK: 42_000_000,
     periodStart: 2027,
     periodEnd: 2030,

@@ -27,6 +27,7 @@ import { buildReportDocx } from "@/lib/export/exportReport";
 import { downloadBlob } from "@/lib/export/exportApplication";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
 import { Grant, Commitment, ReportingEvent, ReportingEventStatus, ReportingPeriodicity } from "@/lib/types";
+import ConfirmButton from "@/components/ConfirmButton";
 
 export default function GrantPage() {
   const params = useParams<{ id: string }>();
@@ -133,9 +134,14 @@ export default function GrantPage() {
           <div className="flex-1">
             <p className="text-xs font-semibold uppercase text-navy-400">{ap.title}</p>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold text-navy-900">{lang === "sv" ? project.title_sv : project.title_en}</h1>
+              <h1 className="text-2xl font-bold text-navy-900">
+                {linkedEntry ? (lang === "sv" ? linkedEntry.title_sv : linkedEntry.title_en) : lang === "sv" ? project.title_sv : project.title_en}
+              </h1>
               <span className={`badge ${healthStyle(health)}`}>{healthLabel(health)}</span>
             </div>
+            {linkedEntry && (lang === "sv" ? linkedEntry.title_sv !== project.title_sv : linkedEntry.title_en !== project.title_en) && (
+              <p className="text-sm text-navy-500">{ap.euProjectName(lang === "sv" ? project.title_sv : project.title_en)}</p>
+            )}
             {call && <p className="text-sm text-navy-600">{lang === "sv" ? call.title_sv : call.title_en}</p>}
           </div>
         </div>
@@ -594,15 +600,15 @@ function ReportingEventCard({
                 <button type="button" onClick={() => downloadAttachment(a)} className="text-navy-700 hover:underline">
                   {a.fileName}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (window.confirm(ap.confirmRemoveReportAttachment(a.fileName))) removeAttachment(attachmentKey, a.id);
-                  }}
+                <ConfirmButton
+                  label={ap.reportAttachmentRemoveLabel}
+                  message={ap.confirmRemoveReportAttachment(a.fileName)}
+                  confirmLabel={t.confirm.yesRemove}
+                  cancelLabel={t.confirm.cancel}
+                  onConfirm={() => removeAttachment(attachmentKey, a.id)}
+                  danger
                   className="shrink-0 text-navy-400 hover:text-amber-700"
-                >
-                  {ap.reportAttachmentRemoveLabel}
-                </button>
+                />
               </li>
             ))}
           </ul>

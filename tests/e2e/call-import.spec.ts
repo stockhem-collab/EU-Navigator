@@ -59,8 +59,8 @@ test("saving an imported call makes it a first-class part of the catalogue", asy
   // Removable again from the import tool's own list — removal now asks for
   // confirmation first.
   await page.goto("/datacenter/import-utlysning");
-  page.once("dialog", (d) => d.accept());
   await page.locator("li", { hasText: title }).getByRole("button", { name: "Ta bort" }).click();
+  await page.getByRole("button", { name: "Ja, ta bort" }).click();
   await expect(page.getByText(title)).toHaveCount(0);
 });
 
@@ -98,8 +98,8 @@ test("an imported call participates in matching just like a seeded one", async (
 
   // Clean up so this doesn't leak into other tests sharing storage.
   await page.goto("/datacenter/import-utlysning");
-  page.once("dialog", (d) => d.accept());
   await page.locator("li", { hasText: title }).getByRole("button", { name: "Ta bort" }).click();
+  await page.getByRole("button", { name: "Ja, ta bort" }).click();
 });
 
 test("parsing fills the fields matching needs, and the form lists what's still missing", async ({ page }) => {
@@ -159,6 +159,20 @@ test("an imported call's deadline date, funding rate and criteria are saved and 
   await page.getByRole("button", { name: "SV", exact: true }).click();
 
   await page.goto("/datacenter/import-utlysning");
-  page.once("dialog", (d) => d.accept());
   await page.locator("li", { hasText: title }).getByRole("button", { name: "Ta bort" }).click();
+  await page.getByRole("button", { name: "Ja, ta bort" }).click();
+});
+
+test("Starta ansökan to an imported call opens the application, not the intake form", async ({ page }) => {
+  const title = `Direktlank ${Date.now()}`;
+  const slug = title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  await importSampleCall(page, title, "Deep link");
+
+  await page.goto(`/ansokan?project=pb-2&call=${slug}`);
+  await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
+  await expect(page.getByText(`AI-stödd ansökningsyta — ${title}`)).toBeVisible();
+
+  await page.goto("/datacenter/import-utlysning");
+  await page.locator("li", { hasText: title }).getByRole("button", { name: "Ta bort" }).click();
+  await page.getByRole("button", { name: "Ja, ta bort" }).click();
 });

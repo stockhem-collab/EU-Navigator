@@ -1,5 +1,6 @@
 import { ApplicationTemplateSection, FundingCall, FundingProgram, ProjectInput } from "@/lib/types";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
+import { textSignals } from "@/lib/matching/readiness";
 
 export interface ProjectLogicRow {
   label_sv: string;
@@ -119,7 +120,10 @@ export function generateProjectLogic(
   ];
 }
 
-export function generateReviewerNotes(project: ProjectInput, call: FundingCall): ReviewerNote[] {
+// `text` as for computeReadiness: the description plus the user's own
+// section text in the workspace.
+export function generateReviewerNotes(project: ProjectInput, call: FundingCall, text: string = project.description): ReviewerNote[] {
+  const signals = textSignals(text);
   const notes: ReviewerNote[] = [];
 
   if (call.requiresPartnership && !project.hasInternationalPartner) {
@@ -136,7 +140,7 @@ export function generateReviewerNotes(project: ProjectInput, call: FundingCall):
     });
   }
 
-  if (project.description.length < 120) {
+  if (signals.length < 120) {
     notes.push({
       type: "warning",
       text_sv: "Projektbeskrivningen är kort. Beskriv aktiviteten mer konkret och koppla den tydligt till förväntad effekt.",
@@ -144,11 +148,19 @@ export function generateReviewerNotes(project: ProjectInput, call: FundingCall):
     });
   }
 
-  notes.push({
-    type: "warning",
-    text_sv: "Indikator för förväntad effekt saknar mätbart utgångsvärde (baseline). Lägg till innan inlämning.",
-    text_en: "The expected-impact indicator lacks a measurable baseline. Add one before submission.",
-  });
+  if (!signals.baseline) {
+    notes.push({
+      type: "warning",
+      text_sv: "Indikator för förväntad effekt saknar mätbart utgångsvärde (baseline). Lägg till innan inlämning.",
+      text_en: "The expected-impact indicator lacks a measurable baseline. Add one before submission.",
+    });
+  } else {
+    notes.push({
+      type: "positive",
+      text_sv: "Ansökan anger ett utgångsvärde som effekten kan mätas mot.",
+      text_en: "The application states a baseline the effect can be measured against.",
+    });
+  }
 
   if (project.sector === "climate" || project.sector === "energy") {
     notes.push({
@@ -159,4 +171,11 @@ export function generateReviewerNotes(project: ProjectInput, call: FundingCall):
   }
 
   return notes;
+}
+
+/** The text the assessment reads in the workspace: the project description
+ * plus every section the user has written or edited. Unedited AI
+ * suggestions are left out — see computeReadiness. */
+export function assessedApplicationText(project: ProjectInput, editedSections: Record<string, string>): string {
+  return [project.description, ...Object.values(editedSections)].filter((t) => t && t.trim()).join("\n\n");
 }

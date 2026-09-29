@@ -5,6 +5,7 @@ import { ApplicationRecord, ApplicationStatus, ProjectStatus } from "@/lib/types
 import type { ProjectBankEdit } from "@/lib/hooks/useProjectBank";
 import { isActiveApplication, projectStatusFromApplications } from "@/lib/matching/applications";
 import { logActivity, notifyDataChanged } from "@/lib/hooks/useActivityLog";
+import { seedApplications } from "@/lib/data/applications";
 
 // The index of every application (ApplicationRecord) in this browser — which
 // project, which call, what status. Each record's draft text and saved
@@ -69,9 +70,11 @@ function migrateLegacyDrafts(records: ApplicationRecord[]): ApplicationRecord[] 
 export function readApplicationRecords(): ApplicationRecord[] {
   try {
     const raw = window.localStorage.getItem(RECORDS_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
+    // Nothing stored yet — start from the example applications.
+    const parsed = raw === null ? seedApplications : JSON.parse(raw);
     const records: ApplicationRecord[] = Array.isArray(parsed) ? parsed : [];
     const migrated = migrateLegacyDrafts(records);
+    if (raw === null) writeRecords([...records, ...migrated]);
     if (migrated.length === 0) return records;
     const next = [...records, ...migrated];
     writeRecords(next);

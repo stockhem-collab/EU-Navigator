@@ -16,6 +16,7 @@ import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import { Sector } from "@/lib/types";
+import ConfirmButton from "@/components/ConfirmButton";
 
 const SECTORS: Sector[] = ["energy", "climate", "digital", "social", "mobility", "education", "health", "research"];
 
@@ -54,15 +55,15 @@ export default function WatchSettingsPage() {
             <h1 className="text-2xl font-bold text-navy-900">{ws.title}</h1>
             <p className="mt-2 text-sm text-navy-600">{ws.subtitle}</p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm(ws.confirmResetAll)) resetAll();
-            }}
+          <ConfirmButton
+            label={ws.resetAll}
+            message={ws.confirmResetAll}
+            confirmLabel={t.confirm.yesReset}
+            cancelLabel={t.confirm.cancel}
+            onConfirm={() => resetAll()}
+            danger
             className="shrink-0 rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-600 hover:bg-navy-50"
-          >
-            {ws.resetAll}
-          </button>
+          />
         </div>
 
         <div className="mb-16 mt-8 space-y-6">

@@ -20,6 +20,7 @@ import { scoreMatch } from "@/lib/matching/scoreMatch";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
 import ProjectLifecycle from "@/components/ProjectLifecycle";
+import { computeReadiness } from "@/lib/matching/readiness";
 import ConfirmButton from "@/components/ConfirmButton";
 import LinkedReportingBadge from "@/components/LinkedReportingBadge";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
@@ -107,8 +108,28 @@ export default function ProjectBankDetailPage() {
     );
   }
 
-  const missing = lang === "sv" ? entry.missingFields_sv : entry.missingFields_en;
+  const storedMissing = lang === "sv" ? entry.missingFields_sv : entry.missingFields_en;
   const matches = computeMatchesForEntry(entry, fundingCalls);
+  // The same readiness measure as the application workspace, computed from
+  // the project as it is now against its best-matching call — so it moves
+  // when the project is edited, and reads the same as a new application to
+  // that call would start at.
+  const bestMatch = matches[0];
+  const readiness = bestMatch ? computeReadiness(projectBankEntryToProjectInput(entry), bestMatch) : null;
+  const readinessPct = readiness ? readiness.overall : entry.aiReadinessPct;
+  // What to add before applying: the project's own recorded gaps plus
+  // whatever the readiness measure still asks for, without repeats — the
+  // latter only while the project is still at the application stage.
+  const stillApplying = !["funded", "running", "completed"].includes(entry.status);
+  const missing = [
+    ...new Set([
+      ...storedMissing,
+      ...((stillApplying ? readiness?.dimensions : undefined)?.flatMap((d) => {
+        const action = lang === "sv" ? d.action_sv : d.action_en;
+        return action ? [action] : [];
+      }) ?? []),
+    ]),
+  ];
   const similar = computeSimilarProjects(projectBankEntryToProjectInput(entry), fundedProjects);
   const projectGrants = awardedProjectsAll.filter((a) => a.projectBankEntryId === entry.id).map(withSubmissions);
   const linkedAwardedProject = projectGrants[0];
@@ -132,7 +153,6 @@ export default function ProjectBankDetailPage() {
   };
 
   const handleDeleteApplication = (record: ApplicationRecord) => {
-    if (!window.confirm(at.confirmDelete)) return;
     deleteApplication(record.id);
     syncProjectStatus(entry.id, entry.status, updateEntry);
   };
@@ -401,8 +421,8 @@ export default function ProjectBankDetailPage() {
                 <ConfirmButton
                   label={pb.markAsAwardedButton}
                   message={pb.confirmMarkAsAwarded}
-                  confirmLabel={at.confirmRegisterYes}
-                  cancelLabel={at.confirmCancel}
+                  confirmLabel={t.confirm.yesRegister}
+                  cancelLabel={t.confirm.cancel}
                   onConfirm={handleMarkAsAwarded}
                   className="shrink-0 rounded-md bg-navy-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-700"
                 />
@@ -426,7 +446,14 @@ export default function ProjectBankDetailPage() {
               </div>
               <div>
                 <dt className="text-xs font-semibold uppercase text-navy-400">{pb.columnReadiness}</dt>
-                <dd className="mt-1 text-lg font-bold text-gold-600">{entry.aiReadinessPct}%</dd>
+                <dd className="mt-1 text-lg font-bold text-gold-600" data-testid="project-readiness">
+                  {readinessPct}%
+                </dd>
+                {bestMatch && (
+                  <dd className="mt-0.5 text-xs text-navy-400">
+                    {pb.readinessAgainst(lang === "sv" ? bestMatch.call.title_sv : bestMatch.call.title_en)}
+                  </dd>
+                )}
               </div>
               {entry.tags && entry.tags.length > 0 && (
                 <div className="sm:col-span-2">
@@ -453,6 +480,209 @@ export default function ProjectBankDetailPage() {
           </>
         )}
 
+        {missing.length > 0 && (
+          <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-6">
+            <h2 className="font-bold text-amber-900">{pb.detailMissingInfoTitle}</h2>
+            <p className="mt-1 text-sm text-amber-800">{pb.detailMissingInfoBody}</p>
+            <ul className="mt-4 space-y-1.5">
+              {missing.map((m) => (
+                <li key={m} className="text-sm text-amber-800">
+                  ⚠ {m}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <section className="mt-6" aria-labelledby="applications-title">
+          <h2 id="applications-title" className="text-lg font-bold text-navy-800">
+            {at.sectionTitle}
+          </h2>
+          <p className="mt-1 text-sm text-navy-500">{at.sectionHint}</p>
+          {applications.length === 0 ? (
+            <p className="mt-3 text-sm text-navy-500">{at.none}</p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {applications.map((record) => {
+                const call = fundingCalls.find((c) => c.id === record.callId);
+                const program = call ? findProgram(call.programId) : undefined;
+                const round = roundOf(record);
+                const awardedProject = record.awardedProjectId
+                  ? awardedProjectsAll.find((a) => a.id === record.awardedProjectId)
+                  : undefined;
+                const callTitle = call ? (lang === "sv" ? call.title_sv : call.title_en) : record.callId;
+                return (
+                  <li
+                    key={record.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-xs font-bold text-white">
+                        {program?.logoLetter ?? "?"}
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold uppercase text-navy-400">
+                          {program?.shortName}
+                          {round !== null && ` · ${at.roundLabel(round)}`}
+                        </p>
+                        <p className="font-semibold text-navy-800">{callTitle}</p>
+                        <p className="mt-0.5 flex items-center gap-2 text-xs text-navy-400">
+                          <ApplicationStatusBadge status={record.status} />
+                          {at.updatedAt(new Date(record.updatedAt).toLocaleDateString(lang === "sv" ? "sv-SE" : "en-US"))}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="sr-only" htmlFor={`status-${record.id}`}>
+                        {at.statusLabel}: {callTitle}
+                      </label>
+                      <select
+                        id={`status-${record.id}`}
+                        value={record.status}
+                        onChange={(e) => handleApplicationStatus(record, e.target.value as ApplicationStatus)}
+                        className="rounded-md border border-navy-200 px-2 py-1.5 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                      >
+                        {APPLICATION_STATUS_ORDER.map((st) => (
+                          <option key={st} value={st}>
+                            {at.statusLabels[st]}
+                          </option>
+                        ))}
+                      </select>
+                      {record.status === "awarded" && !awardedProject && (
+                        <ConfirmButton
+                          label={at.createAwardedButton}
+                          message={at.confirmCreateAwarded}
+                          confirmLabel={t.confirm.yesRegister}
+                          cancelLabel={t.confirm.cancel}
+                          onConfirm={() => handleCreateAwarded(record)}
+                          className="rounded-md bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800"
+                        />
+                      )}
+                      {awardedProject && (
+                        <Link
+                          href={`/stod/${awardedProject.id}`}
+                          className="text-sm font-semibold text-navy-700 hover:underline"
+                        >
+                          {at.viewAwardedLink}
+                        </Link>
+                      )}
+                      {call && (
+                        <Link
+                          href={applicationHref(record)}
+                          className="rounded-md bg-navy-800 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-navy-700"
+                        >
+                          {isActiveApplication(record) ? at.resume : at.open}
+                        </Link>
+                      )}
+                      <ConfirmButton
+                        label={at.deleteButton}
+                        ariaLabel={`${at.deleteButton}: ${callTitle}`}
+                        message={at.confirmDelete}
+                        confirmLabel={t.confirm.yesRemove}
+                        cancelLabel={t.confirm.cancel}
+                        onConfirm={() => handleDeleteApplication(record)}
+                        danger
+                        className="rounded-md px-2 py-1.5 text-sm text-navy-400 hover:bg-navy-50 hover:text-navy-700"
+                      />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
+        <section className="mt-6" aria-labelledby="grants-title">
+          <h2 id="grants-title" className="text-lg font-bold text-navy-800">
+            {pb.grantsSectionTitle}
+          </h2>
+          <p className="mt-1 text-sm text-navy-500">{pb.grantsSectionHint}</p>
+          {projectGrants.length === 0 ? (
+            <p className="mt-3 text-sm text-navy-500">{pb.grantsNone}</p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {projectGrants.map((grant) => {
+                const call = fundingCalls.find((c) => c.id === grant.callId);
+                const program = call ? findProgram(call.programId) : undefined;
+                return (
+                  <li
+                    key={grant.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-700 text-xs font-bold text-white">
+                        {program?.logoLetter ?? "?"}
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold uppercase text-navy-400">{program?.shortName}</p>
+                        <p className="font-semibold text-navy-800">{call ? (lang === "sv" ? call.title_sv : call.title_en) : grant.callId}</p>
+                        <p className="mt-0.5 text-xs text-navy-500">
+                          {t.grants.awardedAmount}: {fmtSEK(grant.awardedAmountSEK, lang)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <LinkedReportingBadge project={grant} />
+                      <Link
+                        href={`/stod/${grant.id}`}
+                        className="rounded-md bg-navy-800 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-navy-700"
+                      >
+                        {at.viewAwardedLink}
+                      </Link>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
+        <div className="mt-6 scroll-mt-24" id="matches">
+          <h2 className="text-lg font-bold text-navy-800">{pb.detailMatchesTitle}</h2>
+          {matches.length === 0 ? (
+            <p className="mt-2 text-sm text-navy-500">{pb.detailNoMatches}</p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {matches.map((match) => (
+                <div
+                  key={match.call.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-xs font-bold text-white">
+                      {match.program.logoLetter}
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-navy-400">{match.program.shortName}</p>
+                      <p className="font-semibold text-navy-800">
+                        {lang === "sv" ? match.call.title_sv : match.call.title_en}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`badge ${recommendationStyle(match.recommendation)}`}>{match.score}%</span>
+                    {(() => {
+                      // An application already in progress to this call is
+                      // resumed; otherwise a new one starts.
+                      const active = activeApplicationFor(match.call.id);
+                      return (
+                        <Link
+                          href={active ? applicationHref(active) : `/ansokan?project=${entry.id}&call=${match.call.id}`}
+                          className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
+                        >
+                          {active ? at.continueApplication : results.startApplication}
+                        </Link>
+                      );
+                    })()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Who, tasks and attachments come after the project's applications,
+            grants and matches — those are what people open the page for. */}
         <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.peopleAndSharingTitle}</h2>
@@ -630,15 +860,15 @@ export default function ProjectBankDetailPage() {
                   <div className="flex items-center gap-3 text-xs text-navy-400">
                     <span>{fmtFileSize(a.sizeBytes)}</span>
                     <span>{pb.attachmentUploadedAt(new Date(a.uploadedAt).toLocaleDateString(lang === "sv" ? "sv-SE" : "en-US"))}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (window.confirm(pb.confirmRemoveAttachment(a.fileName))) removeAttachment(`projectbank:${entry.id}`, a.id);
-                      }}
+                    <ConfirmButton
+                      label={pb.attachmentRemoveLabel}
+                      message={pb.confirmRemoveAttachment(a.fileName)}
+                      confirmLabel={t.confirm.yesRemove}
+                      cancelLabel={t.confirm.cancel}
+                      onConfirm={() => removeAttachment(`projectbank:${entry.id}`, a.id)}
+                      danger
                       className="font-medium text-navy-400 hover:text-amber-700"
-                    >
-                      {pb.attachmentRemoveLabel}
-                    </button>
+                    />
                   </div>
                 </li>
               ))}
@@ -661,205 +891,6 @@ export default function ProjectBankDetailPage() {
             />
           </label>
           {attachmentError && <p className="mt-2 text-xs text-amber-700">⚠ {attachmentError}</p>}
-        </div>
-
-        {missing.length > 0 && (
-          <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-6">
-            <h2 className="font-bold text-amber-900">{pb.detailMissingInfoTitle}</h2>
-            <p className="mt-1 text-sm text-amber-800">{pb.detailMissingInfoBody}</p>
-            <ul className="mt-4 space-y-1.5">
-              {missing.map((m) => (
-                <li key={m} className="text-sm text-amber-800">
-                  ⚠ {m}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <section className="mt-6" aria-labelledby="applications-title">
-          <h2 id="applications-title" className="text-lg font-bold text-navy-800">
-            {at.sectionTitle}
-          </h2>
-          <p className="mt-1 text-sm text-navy-500">{at.sectionHint}</p>
-          {applications.length === 0 ? (
-            <p className="mt-3 text-sm text-navy-500">{at.none}</p>
-          ) : (
-            <ul className="mt-4 space-y-3">
-              {applications.map((record) => {
-                const call = fundingCalls.find((c) => c.id === record.callId);
-                const program = call ? findProgram(call.programId) : undefined;
-                const round = roundOf(record);
-                const awardedProject = record.awardedProjectId
-                  ? awardedProjectsAll.find((a) => a.id === record.awardedProjectId)
-                  : undefined;
-                const callTitle = call ? (lang === "sv" ? call.title_sv : call.title_en) : record.callId;
-                return (
-                  <li
-                    key={record.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-xs font-bold text-white">
-                        {program?.logoLetter ?? "?"}
-                      </span>
-                      <div>
-                        <p className="text-xs font-semibold uppercase text-navy-400">
-                          {program?.shortName}
-                          {round !== null && ` · ${at.roundLabel(round)}`}
-                        </p>
-                        <p className="font-semibold text-navy-800">{callTitle}</p>
-                        <p className="mt-0.5 flex items-center gap-2 text-xs text-navy-400">
-                          <ApplicationStatusBadge status={record.status} />
-                          {at.updatedAt(new Date(record.updatedAt).toLocaleDateString(lang === "sv" ? "sv-SE" : "en-US"))}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <label className="sr-only" htmlFor={`status-${record.id}`}>
-                        {at.statusLabel}: {callTitle}
-                      </label>
-                      <select
-                        id={`status-${record.id}`}
-                        value={record.status}
-                        onChange={(e) => handleApplicationStatus(record, e.target.value as ApplicationStatus)}
-                        className="rounded-md border border-navy-200 px-2 py-1.5 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-                      >
-                        {APPLICATION_STATUS_ORDER.map((st) => (
-                          <option key={st} value={st}>
-                            {at.statusLabels[st]}
-                          </option>
-                        ))}
-                      </select>
-                      {record.status === "awarded" && !awardedProject && (
-                        <ConfirmButton
-                          label={at.createAwardedButton}
-                          message={at.confirmCreateAwarded}
-                          confirmLabel={at.confirmRegisterYes}
-                          cancelLabel={at.confirmCancel}
-                          onConfirm={() => handleCreateAwarded(record)}
-                          className="rounded-md bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800"
-                        />
-                      )}
-                      {awardedProject && (
-                        <Link
-                          href={`/stod/${awardedProject.id}`}
-                          className="text-sm font-semibold text-navy-700 hover:underline"
-                        >
-                          {at.viewAwardedLink}
-                        </Link>
-                      )}
-                      {call && (
-                        <Link
-                          href={applicationHref(record)}
-                          className="rounded-md bg-navy-800 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-navy-700"
-                        >
-                          {isActiveApplication(record) ? at.resume : at.open}
-                        </Link>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteApplication(record)}
-                        aria-label={`${at.deleteButton}: ${callTitle}`}
-                        className="rounded-md px-2 py-1.5 text-sm text-navy-400 hover:bg-navy-50 hover:text-navy-700"
-                      >
-                        {at.deleteButton}
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-
-        <section className="mt-6" aria-labelledby="grants-title">
-          <h2 id="grants-title" className="text-lg font-bold text-navy-800">
-            {pb.grantsSectionTitle}
-          </h2>
-          <p className="mt-1 text-sm text-navy-500">{pb.grantsSectionHint}</p>
-          {projectGrants.length === 0 ? (
-            <p className="mt-3 text-sm text-navy-500">{pb.grantsNone}</p>
-          ) : (
-            <ul className="mt-4 space-y-3">
-              {projectGrants.map((grant) => {
-                const call = fundingCalls.find((c) => c.id === grant.callId);
-                const program = call ? findProgram(call.programId) : undefined;
-                return (
-                  <li
-                    key={grant.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-700 text-xs font-bold text-white">
-                        {program?.logoLetter ?? "?"}
-                      </span>
-                      <div>
-                        <p className="text-xs font-semibold uppercase text-navy-400">{program?.shortName}</p>
-                        <p className="font-semibold text-navy-800">{call ? (lang === "sv" ? call.title_sv : call.title_en) : grant.callId}</p>
-                        <p className="mt-0.5 text-xs text-navy-500">
-                          {t.grants.awardedAmount}: {fmtSEK(grant.awardedAmountSEK, lang)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <LinkedReportingBadge project={grant} />
-                      <Link
-                        href={`/stod/${grant.id}`}
-                        className="rounded-md bg-navy-800 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-navy-700"
-                      >
-                        {at.viewAwardedLink}
-                      </Link>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-
-        <div className="mt-6">
-          <h2 className="text-lg font-bold text-navy-800">{pb.detailMatchesTitle}</h2>
-          {matches.length === 0 ? (
-            <p className="mt-2 text-sm text-navy-500">{pb.detailNoMatches}</p>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {matches.map((match) => (
-                <div
-                  key={match.call.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-xs font-bold text-white">
-                      {match.program.logoLetter}
-                    </span>
-                    <div>
-                      <p className="text-xs font-semibold uppercase text-navy-400">{match.program.shortName}</p>
-                      <p className="font-semibold text-navy-800">
-                        {lang === "sv" ? match.call.title_sv : match.call.title_en}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`badge ${recommendationStyle(match.recommendation)}`}>{match.score}%</span>
-                    {(() => {
-                      // An application already in progress to this call is
-                      // resumed; otherwise a new one starts.
-                      const active = activeApplicationFor(match.call.id);
-                      return (
-                        <Link
-                          href={active ? applicationHref(active) : `/ansokan?project=${entry.id}&call=${match.call.id}`}
-                          className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
-                        >
-                          {active ? at.continueApplication : results.startApplication}
-                        </Link>
-                      );
-                    })()}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="mb-16 mt-8">

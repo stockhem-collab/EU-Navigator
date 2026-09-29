@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { computeReadiness } from "../../lib/matching/readiness";
+import { computeReadiness, textSignals } from "../../lib/matching/readiness";
+import { analyzeSection } from "../../lib/matching/sectionCoach";
+import { assessedApplicationText, generateReviewerNotes } from "../../lib/matching/generateWorkspace";
 import { scoreMatch } from "../../lib/matching/scoreMatch";
 import { FundingCall, FundingProgram, ProjectInput } from "../../lib/types";
 
@@ -104,3 +106,51 @@ test.describe("computeReadiness", () => {
     expect(impact?.score).toBeGreaterThanOrEqual(80);
   });
 });
+
+// The assessment in the application workspace reads the application's own
+// text (description + the sections the user has written), not just the
+// intake description — so writing the application changes the assessment.
+test.describe("assessment of the application text", () => {
+  const written =
+    "Projektet minskar energianvändningen med 30 % (1200 MWh per år) och når 400 deltagare. " +
+    "Utgångsvärde 2025: 4000 MWh. Jämställdhet och tillgänglighet integreras i alla aktiviteter.";
+
+  test("readiness follows the text passed in, not only the project description", () => {
+    const match = scoreMatch(project, call, program);
+    const before = computeReadiness(project, match);
+    const after = computeReadiness(project, match, assessedApplicationText(project, { Effekter: written }));
+    expect(after.overall).toBeGreaterThan(before.overall);
+    for (const key of ["impact", "indicators", "horizontalPrinciples"]) {
+      expect(after.dimensions.find((d) => d.key === key)?.action_sv).toBeUndefined();
+    }
+  });
+
+  test("the text assessed is the description plus edited sections only", () => {
+    expect(assessedApplicationText(project, {})).toBe(project.description);
+    const text = assessedApplicationText(project, { Problem: "Egen text", Mål: "  " });
+    expect(text).toContain("Egen text");
+    expect(text).toContain(project.description);
+  });
+
+  test("the coach and the reviewer notes read the same text", () => {
+    const match = scoreMatch(project, call, program);
+    const text = assessedApplicationText(project, { Effekter: written });
+    expect(analyzeSection(project, match).impact).toBeLessThan(analyzeSection(project, match, text).impact);
+    const baselineWarning = (notes: ReturnType<typeof generateReviewerNotes>) =>
+      notes.some((n) => n.type === "warning" && n.text_sv.includes("utgångsvärde"));
+    expect(baselineWarning(generateReviewerNotes(project, call))).toBe(true);
+    expect(baselineWarning(generateReviewerNotes(project, call, text))).toBe(false);
+  });
+
+  test("textSignals recognises each kind of content", () => {
+    const signals = textSignals(written);
+    expect(signals).toMatchObject({ quantifiedEffect: true, indicator: true, baseline: true, horizontalPrinciples: true });
+    expect(textSignals("Vi ska göra något bra.")).toMatchObject({
+      quantifiedEffect: false,
+      indicator: false,
+      baseline: false,
+      horizontalPrinciples: false,
+    });
+  });
+});
+

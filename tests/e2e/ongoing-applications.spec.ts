@@ -5,9 +5,14 @@ import { test, expect } from "@playwright/test";
 // intake-form resubmission), and disappears again once the browser has no
 // application records at all (e.g. a fresh/incognito context).
 
+const applicationsSection = (page: import("@playwright/test").Page) =>
+  page.locator("section", { has: page.getByRole("heading", { name: "Ansökningar", exact: true }) });
+
 test("appears once a draft has edits and resumes straight into the workspace", async ({ page }) => {
   await page.goto("/oversikt");
-  await expect(page.getByText(/Inga pågående ansökningar|No ongoing applications/i)).toBeVisible();
+  // Only the seeded example application (pb-5, with the funder) to begin with.
+  await expect(applicationsSection(page).getByText("Nordiskt klimatsamarbete – dagvattenhantering")).toBeVisible();
+  await expect(applicationsSection(page).getByText("Cykelinfrastruktur city")).toHaveCount(0);
 
   // Start and edit an application for a saved Projektbank entry.
   await page.goto("/projekt/pb-4");
@@ -21,8 +26,9 @@ test("appears once a draft has edits and resumes straight into the workspace", a
   await page.waitForTimeout(200);
 
   await page.goto("/oversikt");
-  await expect(page.getByText(/Inga pågående ansökningar|No ongoing applications/i)).toHaveCount(0);
-  const resumeLink = page.getByRole("link", { name: /Fortsätt|Resume/i }).first();
+  const row = applicationsSection(page).locator("li", { hasText: "Cykelinfrastruktur city" });
+  await expect(row).toBeVisible();
+  const resumeLink = row.getByRole("link").first();
   await expect(resumeLink).toBeVisible();
 
   // Resuming lands directly in the workspace, not the intake form.

@@ -26,9 +26,10 @@ test("Inställningar subpages share a tab strip, and resetting asks for confirma
   await expect(page).toHaveURL(/\/installningar\/anvandare/);
 
   await page.goto("/installningar/organisation");
-  page.once("dialog", (d) => d.dismiss());
   await page.getByRole("button", { name: "Återställ allt till exempeldata" }).click();
-  // Dismissing the confirmation must leave the page's own content intact.
+  await expect(page.getByRole("button", { name: "Ja, återställ" })).toBeVisible();
+  await page.getByRole("button", { name: "Avbryt" }).click();
+  // Cancelling the confirmation must leave the page's own content intact.
   await expect(page.getByRole("heading", { name: "Organisationsstruktur" })).toBeVisible();
 });
 
@@ -73,14 +74,10 @@ test("leaving an unsaved ad-hoc draft asks for confirmation, and the AI-review b
   await page.getByRole("button", { name: "Starta ansökan" }).first().click();
 
   await page.locator("textarea").first().fill("En redigering som inte är sparad.");
-  let dialogSeen = false;
-  page.once("dialog", (d) => {
-    dialogSeen = true;
-    d.dismiss();
-  });
   await page.getByRole("button", { name: "← Tillbaka till matchningar" }).click();
-  await expect.poll(() => dialogSeen).toBe(true);
-  // Dismissing the dialog must keep the workspace open, draft intact.
+  await expect(page.getByText("Den här ansökan är inte sparad", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: "Avbryt" }).click();
+  // Cancelling must keep the workspace open, draft intact.
   await expect(page.locator("textarea").first()).toHaveValue("En redigering som inte är sparad.");
 
   await page.getByRole("tab", { name: "Bedömning" }).click();

@@ -27,8 +27,11 @@ test("Ansöka lists applications across projects, filtered by where they stand",
   await expect(list.locator("li")).toHaveCount(2);
   await expect(list.getByText("Cykelinfrastruktur city")).toBeVisible();
 
+  // Decided: the two seeded example applications whose grants are being
+  // reported on.
   await page.getByRole("tab", { name: "Beslut" }).click();
-  await expect(list.getByText("Inga ansökningar här.")).toBeVisible();
+  await expect(list.locator("li")).toHaveCount(2);
+  await expect(list.getByText("Energieffektivisering kommunala skolor")).toBeVisible();
 
   // Calls to apply to are further down on the same page.
   await expect(page.getByRole("heading", { name: "Hitta finansiering" })).toBeVisible();
