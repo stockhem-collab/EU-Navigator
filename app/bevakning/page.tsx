@@ -1,5 +1,6 @@
 "use client";
 
+import { callDeadlineMonths } from "@/lib/data/fundingCalls";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -58,7 +59,7 @@ export default function BevakningPage() {
   const rows = useMemo(
     () =>
       [...fundingCalls]
-        .sort((a, b) => a.deadlineMonthsFromNow - b.deadlineMonthsFromNow)
+        .sort((a, b) => callDeadlineMonths(a) - callDeadlineMonths(b))
         .map((call) => {
           const program = findProgram(call.programId);
           if (!program) return null;
@@ -224,7 +225,7 @@ function CallCard({
               call.status === "open" ? "bg-green-100 text-green-800" : "bg-navy-100 text-navy-600"
             }`}
           >
-            {bv.deadlineInMonths(call.deadlineMonthsFromNow)}
+            {bv.deadlineInMonths(callDeadlineMonths(call))}
           </span>
           <div className="mt-2 flex items-center justify-end gap-3">
             <button

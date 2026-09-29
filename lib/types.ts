@@ -10,7 +10,65 @@ export type Sector =
   | "health"
   | "research";
 
-export type GapCategory = "sector" | "keywords" | "tags" | "budget" | "partnership" | "duration";
+export type GapCategory =
+  | "sector"
+  | "keywords"
+  | "tags"
+  | "budget"
+  | "partnership"
+  | "duration"
+  | "eligibility"
+  | "geography"
+  | "activity"
+  | "targetGroup"
+  | "timing";
+
+// ---------------------------------------------------------------------------
+// Matching vocabulary — the structured facts about a project (and the calls
+// it's matched against) that decide whether a call is even open to it, or
+// what kind of work it funds, beyond thematic fit. Labels live in
+// lib/data/matchingVocabulary.ts.
+// ---------------------------------------------------------------------------
+
+/** What kind of work a project mainly is — the single biggest thing that
+ * separates EU programmes from each other (ERDF funds investment, ESF+
+ * funds people/skills, Horizon funds research), independent of sector. */
+export type ActivityType = "investment" | "competence" | "research" | "pilot" | "cooperation";
+
+/** Who a project's activities are aimed at. Only people-focused calls
+ * (ESF+, AMIF, Erasmus+ …) define these; for other calls it's ignored. */
+export type TargetGroup = "pupils" | "young" | "unemployed" | "newly-arrived" | "employees" | "elderly" | "disabilities";
+
+/** How far a project's partnership reaches. "international" = partners in
+ * at least one other country (2 countries in total), "consortium" = at
+ * least three countries — the usual Horizon Europe / Erasmus+ threshold. */
+export type PartnerLevel = "none" | "national" | "international" | "consortium";
+
+/** Swedish counties (län) — where the project is carried out. Regional
+ * programmes (Interreg's cross-border areas, ERDF's regional programmes)
+ * are only open to projects inside their own programme area. */
+export type SwedishRegion =
+  | "blekinge"
+  | "dalarna"
+  | "gotland"
+  | "gavleborg"
+  | "halland"
+  | "jamtland"
+  | "jonkoping"
+  | "kalmar"
+  | "kronoberg"
+  | "norrbotten"
+  | "skane"
+  | "stockholm"
+  | "sodermanland"
+  | "uppsala"
+  | "varmland"
+  | "vasterbotten"
+  | "vasternorrland"
+  | "vastmanland"
+  | "vastra-gotaland"
+  | "orebro"
+  | "ostergotland";
 
 // ---------------------------------------------------------------------------
 // Tags — a fixed, curated vocabulary shared between funding calls and
@@ -103,7 +161,13 @@ export interface FundingCall {
   title_sv: string;
   title_en: string;
   status: "open" | "upcoming";
+  /** Relative deadline — what the illustrative seed calls use. Read it via
+   * callDeadlineMonths(), which prefers deadlineDate when set. */
   deadlineMonthsFromNow: number;
+  /** The real application deadline (YYYY-MM-DD), for imported calls. A
+   * relative "months from now" goes stale the day after import; this
+   * doesn't. */
+  deadlineDate?: string;
   budgetTotalSEK: number;
   minGrantSEK: number;
   maxGrantSEK: number;
@@ -116,6 +180,22 @@ export interface FundingCall {
    * is additive. Datacenter tracks the split so it's visible how much of
    * the call catalogue still relies on free text for this check. */
   applicantTypes?: ApplicantType[];
+  /** The kinds of work this call funds (see ActivityType). Undefined = not
+   * classified; scoring treats it as unknown rather than a mismatch. */
+  activityTypes?: ActivityType[];
+  /** The people this call's activities must reach, for people-focused
+   * calls. Undefined = the call isn't aimed at a specific target group. */
+  targetGroups?: TargetGroup[];
+  /** The share of eligible costs this call's grant covers (0–1), when the
+   * call states it. Undefined = the programme's typicalCoFinancingRate. */
+  coFinancingRate?: number;
+  /** Minimum number of countries in the partnership, counting the
+   * applicant's own, when requiresPartnership is set (e.g. 3 for a Horizon
+   * Europe consortium). Undefined with requiresPartnership = 2. */
+  minPartnerCountries?: number;
+  /** The Swedish counties inside this call's programme area, for calls
+   * restricted to a region. Undefined = open to projects anywhere. */
+  eligibleRegions?: SwedishRegion[];
   priorities_sv: string[];
   priorities_en: string[];
   extraKeywords: string[]; // in addition to the programme's own keywords
@@ -470,6 +550,25 @@ export interface ProjectInput {
   hasInternationalPartner: boolean;
   /** See ProjectBankEntry.tags. */
   tags?: string[];
+  /** The fields below were added so matching can check eligibility and
+   * programme fit, not only theme. All optional: a project that doesn't
+   * state them (e.g. one bridged from the Projektbank) is scored as
+   * "unknown" on that signal, never as a mismatch. */
+  /** The applying organisation's type — prefilled from the organisation
+   * profile (Inställningar → Organisation) and checked against
+   * FundingCall.applicantTypes. */
+  applicantType?: ApplicantType;
+  activityType?: ActivityType;
+  /** Further sectors the project touches besides `sector`. */
+  secondarySectors?: Sector[];
+  targetGroups?: TargetGroup[];
+  /** The EU grant being applied for — as opposed to budgetSEK, the
+   * project's total cost. Undefined = estimated from budgetSEK and the
+   * programme's typical co-financing rate. */
+  requestedGrantSEK?: number;
+  region?: SwedishRegion;
+  /** Undefined = derived from hasInternationalPartner. */
+  partnerLevel?: PartnerLevel;
 }
 
 // ---------------------------------------------------------------------------

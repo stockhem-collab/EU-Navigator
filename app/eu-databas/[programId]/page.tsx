@@ -1,5 +1,6 @@
 "use client";
 
+import { callDeadlineMonths } from "@/lib/data/fundingCalls";
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, notFound } from "next/navigation";
@@ -23,7 +24,7 @@ export default function ProgramCallsPage() {
   const allCallsForProgram = fundingCalls.filter((c) => c.programId === program.id);
   const calls = allCallsForProgram
     .filter((c) => (query ? `${c.title_sv} ${c.title_en}`.toLowerCase().includes(query) : true))
-    .sort((a, b) => a.deadlineMonthsFromNow - b.deadlineMonthsFromNow);
+    .sort((a, b) => callDeadlineMonths(a) - callDeadlineMonths(b));
 
   return (
     <>
@@ -77,7 +78,7 @@ export default function ProgramCallsPage() {
                 </span>
               </div>
               <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-navy-500">
-                <span>{db.deadlineIn(call.deadlineMonthsFromNow)}</span>
+                <span>{db.deadlineIn(callDeadlineMonths(call))}</span>
                 <span>
                   {db.grantRangeLabel}: {fmtSEK(call.minGrantSEK, lang)}–{fmtSEK(call.maxGrantSEK, lang)}
                 </span>

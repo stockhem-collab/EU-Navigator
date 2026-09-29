@@ -15,7 +15,7 @@ import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { useAwardedProjects } from "@/lib/hooks/useAwardedProjects";
 import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
-import { findCall } from "@/lib/data/fundingCalls";
+import { findCall, callDeadlineMonths } from "@/lib/data/fundingCalls";
 import { nextActionableReport } from "@/lib/data/awardedProjects";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { CURRENT_USER_ID, isProjectRelevantToUser, orgUnits as seedOrgUnits } from "@/lib/data/users";
@@ -81,7 +81,10 @@ export default function OversiktPage() {
   }, [projectBank]);
 
   const upcomingDeadlines = useMemo(
-    () => [...fundingCalls].sort((a, b) => a.deadlineMonthsFromNow - b.deadlineMonthsFromNow).slice(0, 3),
+    () => [...fundingCalls]
+        .filter((c) => callDeadlineMonths(c) >= 0)
+        .sort((a, b) => callDeadlineMonths(a) - callDeadlineMonths(b))
+        .slice(0, 3),
     [fundingCalls]
   );
 
@@ -278,7 +281,7 @@ export default function OversiktPage() {
                         <p className="text-xs font-semibold uppercase text-navy-400">{program?.shortName}</p>
                         <p className="font-semibold text-navy-800">{lang === "sv" ? call.title_sv : call.title_en}</p>
                       </div>
-                      <span className="badge bg-navy-100 text-navy-600">{bv.deadlineInMonths(call.deadlineMonthsFromNow)}</span>
+                      <span className="badge bg-navy-100 text-navy-600">{bv.deadlineInMonths(callDeadlineMonths(call))}</span>
                     </div>
                   );
                 })}

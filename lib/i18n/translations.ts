@@ -93,12 +93,28 @@ export interface TranslationTree {
       fieldMunicipality: string;
       fieldMunicipalityPlaceholder: string;
       fieldPartnership: string;
+      fieldActivityType: string;
+      activityTypePlaceholder: string;
+      activityTypeHint: string;
+      fieldSecondarySectors: string;
+      fieldTargetGroups: string;
+      targetGroupsHint: string;
+      fieldRequestedGrant: string;
+      requestedGrantHint: string;
+      requestedGrantOverBudget: string;
+      fieldRegion: string;
+      regionPlaceholder: string;
+      fieldApplicantType: string;
+      applicantTypeFromProfile: string;
+      applicantTypeDefault: string;
       fieldTags: string;
       tagsHint: string;
       tagsSuggestedLabel: string;
       tagsAddAllLabel: string;
       tagsAddNewPlaceholder: string;
       tagsAddNewButton: string;
+      tagsNudge: (n: number) => string;
+      tagsNudgeButton: string;
       submit: string;
       fillExample: string;
       prefilledFromBank: string;
@@ -113,6 +129,8 @@ export interface TranslationTree {
       matchLabel: string;
       deadlineLabel: string;
       estFundingLabel: string;
+      viewCallDetails: string;
+      viewCallDetailsHint: string;
       recommendationProceed: string;
       recommendationConsider: string;
       recommendationLow: string;
@@ -289,7 +307,12 @@ export interface TranslationTree {
     deadlineIn: (months: number) => string;
     budgetLabel: string;
     grantRangeLabel: string;
+    fundingRateLabel: (pct: number) => string;
     eligibleApplicantsTitle: string;
+    activityTypesLabel: string;
+    targetGroupsLabel: string;
+    eligibleRegionsLabel: string;
+    minPartnerCountriesLabel: (n: number) => string;
     prioritiesTitle: string;
     evaluationCriteriaTitle: string;
     documentsTitle: string;
@@ -388,8 +411,35 @@ export interface TranslationTree {
     fieldEligibleSv: string;
     fieldEligibleEn: string;
     fieldApplicantTypes: string;
+    fieldActivityTypes: string;
+    fieldTargetGroups: string;
+    fieldTargetGroupsHint: string;
+    fieldEligibleRegions: string;
+    fieldEligibleRegionsHint: string;
+    fieldMinPartnerCountries: string;
+    fieldCoFinancing: string;
+    fieldCoFinancingHint: (programmePct: number | null) => string;
+    fieldCriteria: string;
+    fieldCriteriaHint: string;
+    criterionNamePlaceholder: string;
+    criterionPointsLabel: string;
+    addCriterion: string;
+    removeCriterion: string;
+    completenessTitle: string;
+    completenessIntro: string;
+    completenessAllGood: string;
+    missingApplicantTypes: string;
+    missingActivityTypes: string;
+    missingCriteria: string;
+    missingTags: string;
+    missingGrantRange: string;
+    missingDeadline: string;
+    deadlinePassed: string;
     fieldPriorities: string;
     fieldPrioritiesHint: string;
+    fieldPrioritiesSv: string;
+    fieldPrioritiesEn: string;
+    criterionNameEnPlaceholder: string;
     fieldTags: string;
     noTagsWarning: string;
     fieldPeriodicity: string;
@@ -861,18 +911,35 @@ export const translations: Record<Lang, TranslationTree> = {
         fieldDescriptionPlaceholder:
           "Beskriv vad ni vill genomföra, varför, och vilka aktiviteter som ingår (t.ex. solceller, styrsystem, ventilation, energilagring)...",
         fieldSector: "Huvudsakligt område",
-        fieldBudget: "Uppskattad budget (kr)",
+        fieldBudget: "Total projektbudget (kr)",
         fieldStartYear: "Startår",
         fieldEndYear: "Slutår",
         fieldMunicipality: "Kommun/organisation",
         fieldMunicipalityPlaceholder: "T.ex. Exempelstad kommun",
-        fieldPartnership: "Vi har (eller kan skaffa) en internationell partnerorganisation",
+        fieldPartnership: "Partnerskap (befintligt eller möjligt att skaffa)",
+        fieldActivityType: "Typ av insats",
+        activityTypePlaceholder: "Välj typ av insats…",
+        activityTypeHint: "Avgör vilka program som passar – t.ex. finansierar ERUF investeringar, ESF+ kompetensinsatser och Horisont Europa forskning.",
+        fieldSecondarySectors: "Övriga områden som projektet berör (valfritt)",
+        fieldTargetGroups: "Målgrupp (valfritt)",
+        targetGroupsHint: "Ange om projektet riktar sig till specifika personer – avgörande för bl.a. ESF+ och Erasmus+.",
+        fieldRequestedGrant: "Sökt EU-bidrag (kr, valfritt)",
+        requestedGrantHint: "Lämna tomt så uppskattas bidraget utifrån programmets typiska stödnivå.",
+        requestedGrantOverBudget: "Sökt bidrag kan inte vara större än totalbudgeten.",
+        fieldRegion: "Län där projektet genomförs",
+        regionPlaceholder: "Välj län…",
+        fieldApplicantType: "Sökande organisationstyp",
+        applicantTypeFromProfile: "Hämtat från organisationsprofilen. Styr vilka utlysningar ni är behöriga att söka.",
+        applicantTypeDefault: "Styr vilka utlysningar ni är behöriga att söka. Ange typen i organisationsprofilen så fylls den i automatiskt.",
         fieldTags: "Taggar (för säkrare matchning)",
         tagsHint: "Välj de taggar som beskriver projektet — taggar matchas exakt mot utlysningarnas teman och missar inte synonymer på samma sätt som fritextsökning.",
         tagsSuggestedLabel: "Förslag baserat på beskrivningen:",
         tagsAddAllLabel: "Lägg till alla",
         tagsAddNewPlaceholder: "Ny tagg som saknas…",
         tagsAddNewButton: "Lägg till ny tagg",
+        tagsNudge: (n) =>
+          `Inga taggar valda. Taggarna väger tungt i matchningen – ${n} ${n === 1 ? "tagg föreslås" : "taggar föreslås"} utifrån beskrivningen.`,
+        tagsNudgeButton: "Lägg till föreslagna",
         submit: "Hitta finansieringsmöjligheter",
         fillExample: "Fyll i exempel",
         prefilledFromBank: "Förifyllt från projektbanken — granska och komplettera innan ni fortsätter.",
@@ -893,6 +960,8 @@ export const translations: Record<Lang, TranslationTree> = {
         matchLabel: "matchning",
         deadlineLabel: "Nästa deadline",
         estFundingLabel: "Uppskattad EU-finansiering",
+        viewCallDetails: "Läs mer om utlysningen",
+        viewCallDetailsHint: "Öppnas i en ny flik",
         recommendationProceed: "GÅ VIDARE",
         recommendationConsider: "ÖVERVÄG",
         recommendationLow: "LÅG PRIORITET",
@@ -1089,10 +1158,15 @@ export const translations: Record<Lang, TranslationTree> = {
       statusOpen: "Öppen",
       closedProgrammeBadge: "Avslutat program",
       statusUpcoming: "Kommande",
-      deadlineIn: (m) => `Deadline om ${m} månader`,
+      deadlineIn: (m) => (m < 0 ? "Deadline har passerat" : `Deadline om ${m} månader`),
       budgetLabel: "Utlysningens totala budget",
       grantRangeLabel: "Bidragsstorlek",
+      fundingRateLabel: (pct) => `Stödnivå upp till ${pct} %`,
       eligibleApplicantsTitle: "Behöriga sökande",
+      activityTypesLabel: "Finansierar",
+      targetGroupsLabel: "Målgrupper",
+      eligibleRegionsLabel: "Programområde",
+      minPartnerCountriesLabel: (n) => `Kräver partner från minst ${n} länder.`,
       prioritiesTitle: "Prioriteringar",
       evaluationCriteriaTitle: "Bedömningskriterier",
       documentsTitle: "Dokument (AI-kontextpaket)",
@@ -1185,8 +1259,8 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldStatus: "Status",
       statusOpen: "Öppen",
       statusUpcoming: "Kommande",
-      fieldDeadline: "Deadline (månader från idag)",
-      fieldDeadlineHint: "Ange hur många månader bort utlysningens faktiska sista ansökningsdag ligger.",
+      fieldDeadline: "Sista ansökningsdag",
+      fieldDeadlineHint: "Utlysningens faktiska datum — används för att räkna ut tid kvar och om projektets start passar beslutet.",
       fieldBudget: "Total budget (SEK)",
       fieldMinGrant: "Lägsta bidrag (SEK)",
       fieldMaxGrant: "Högsta bidrag (SEK)",
@@ -1194,8 +1268,38 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldEligibleSv: "Behöriga sökande (svenska)",
       fieldEligibleEn: "Behöriga sökande (engelska)",
       fieldApplicantTypes: "Sökandekategorier",
+      fieldActivityTypes: "Typ av insats som finansieras",
+      fieldTargetGroups: "Målgrupper",
+      fieldTargetGroupsHint: "Bara för utlysningar som riktar sig till specifika personer (t.ex. ESF+). Lämna tomt annars.",
+      fieldEligibleRegions: "Programområde (län)",
+      fieldEligibleRegionsHint: "Bara för regionalt avgränsade utlysningar. Lämna tomt om hela Sverige kan söka.",
+      fieldMinPartnerCountries: "Minsta antal länder i partnerskapet",
+      fieldCoFinancing: "Stödnivå (% av stödberättigande kostnader)",
+      fieldCoFinancingHint: (pct) =>
+        pct === null
+          ? "Lämna tomt för att använda programmets typiska stödnivå."
+          : `Lämna tomt för att använda programmets typiska stödnivå (${pct} %).`,
+      fieldCriteria: "Bedömningskriterier",
+      fieldCriteriaHint: "Styr hur matchningen väger tematisk passform mot genomförbarhet. Utan kriterier används en standardfördelning (60/40). Utan engelskt namn visas det svenska.",
+      criterionNamePlaceholder: "Kriterium, t.ex. Relevans",
+      criterionPointsLabel: "Poäng",
+      addCriterion: "Lägg till kriterium",
+      removeCriterion: "Ta bort kriterium",
+      completenessTitle: "Underlag för matchning",
+      completenessIntro: "Följande saknas. Utlysningen kan sparas ändå, men matchningen blir mindre träffsäker:",
+      completenessAllGood: "Allt som matchningen använder är ifyllt.",
+      missingApplicantTypes: "Sökandekategorier – behörighet kan inte kontrolleras, bara fritexten visas",
+      missingActivityTypes: "Typ av insats – räknas som okänd (halva poängen) för alla projekt",
+      missingCriteria: "Bedömningskriterier – standardviktning 60/40 används",
+      missingTags: "Taggar – den viktigaste tematiska signalen saknas",
+      missingGrantRange: "Bidragsintervall – sökta belopp kan inte jämföras",
+      missingDeadline: "Sista ansökningsdag",
+      deadlinePassed: "Sista ansökningsdag har redan passerat – utlysningen kommer att visas som stängd i matchningen.",
       fieldPriorities: "Prioriteringar",
-      fieldPrioritiesHint: "En prioritering per rad.",
+      fieldPrioritiesHint: "En prioritering per rad. Lämnas den engelska tom används den svenska texten även på engelska.",
+      fieldPrioritiesSv: "Prioriteringar på svenska",
+      fieldPrioritiesEn: "Prioriteringar på engelska (valfritt)",
+      criterionNameEnPlaceholder: "Engelskt namn (valfritt)",
       fieldTags: "Taggar",
       noTagsWarning: "Utlysningen har inga taggar valda — matchningen mot projekt blir mindre träffsäker utan dem.",
       fieldPeriodicity: "Rapporteringsfrekvens",
@@ -1289,7 +1393,7 @@ export const translations: Record<Lang, TranslationTree> = {
         "I en skarp version skulle detta skickas som ett återkommande veckobrev till EU-samordnaren. Här visas samma information direkt i gränssnittet.",
       columnCall: "Utlysning",
       columnDeadline: "Deadline",
-      deadlineInMonths: (n) => `Deadline: ${n} mån`,
+      deadlineInMonths: (n) => (n < 0 ? "Deadline passerad" : `Deadline: ${n} mån`),
       matchingProjectsLabel: (n) => `${n} matchande projekt i portföljen`,
       noMatchingProjects: "Inga projekt i portföljen matchar denna utlysning ännu.",
       viewCall: "Visa utlysning",
@@ -1669,18 +1773,35 @@ export const translations: Record<Lang, TranslationTree> = {
         fieldDescriptionPlaceholder:
           "Describe what you want to do, why, and which activities are included (e.g. solar panels, control systems, ventilation, energy storage)...",
         fieldSector: "Primary area",
-        fieldBudget: "Estimated budget (SEK)",
+        fieldBudget: "Total project budget (SEK)",
         fieldStartYear: "Start year",
         fieldEndYear: "End year",
         fieldMunicipality: "Municipality / organisation",
         fieldMunicipalityPlaceholder: "E.g. Example City Municipality",
-        fieldPartnership: "We have (or can secure) an international partner organisation",
+        fieldPartnership: "Partnership (existing or possible to secure)",
+        fieldActivityType: "Type of activity",
+        activityTypePlaceholder: "Choose type of activity…",
+        activityTypeHint: "Decides which programmes fit — e.g. ERDF funds investment, ESF+ skills measures and Horizon Europe research.",
+        fieldSecondarySectors: "Other areas the project touches (optional)",
+        fieldTargetGroups: "Target group (optional)",
+        targetGroupsHint: "State whether the project is aimed at specific people — decisive for ESF+ and Erasmus+, among others.",
+        fieldRequestedGrant: "EU grant requested (SEK, optional)",
+        requestedGrantHint: "Leave empty to estimate the grant from the programme's typical co-financing rate.",
+        requestedGrantOverBudget: "The requested grant can't exceed the total budget.",
+        fieldRegion: "County where the project takes place",
+        regionPlaceholder: "Choose county…",
+        fieldApplicantType: "Applicant organisation type",
+        applicantTypeFromProfile: "Taken from the organisation profile. Decides which calls you're eligible for.",
+        applicantTypeDefault: "Decides which calls you're eligible for. Set the type in the organisation profile to have it filled in automatically.",
         fieldTags: "Tags (for more accurate matching)",
         tagsHint: "Pick the tags that describe the project — tags are matched exactly against the calls' themes, and don't miss synonyms the way free-text search does.",
         tagsSuggestedLabel: "Suggestions based on the description:",
         tagsAddAllLabel: "Add all",
         tagsAddNewPlaceholder: "New tag that's missing…",
         tagsAddNewButton: "Add new tag",
+        tagsNudge: (n) =>
+          `No tags selected. Tags carry a lot of weight in matching — ${n} ${n === 1 ? "tag is" : "tags are"} suggested from the description.`,
+        tagsNudgeButton: "Add suggested",
         submit: "Find funding opportunities",
         fillExample: "Fill example",
         prefilledFromBank: "Pre-filled from the project bank — review and complete before continuing.",
@@ -1701,6 +1822,8 @@ export const translations: Record<Lang, TranslationTree> = {
         matchLabel: "match",
         deadlineLabel: "Next deadline",
         estFundingLabel: "Estimated EU funding",
+        viewCallDetails: "Read more about the call",
+        viewCallDetailsHint: "Opens in a new tab",
         recommendationProceed: "PROCEED",
         recommendationConsider: "CONSIDER",
         recommendationLow: "LOW PRIORITY",
@@ -1895,10 +2018,15 @@ export const translations: Record<Lang, TranslationTree> = {
       statusOpen: "Open",
       closedProgrammeBadge: "Closed programme",
       statusUpcoming: "Upcoming",
-      deadlineIn: (m) => `Deadline in ${m} months`,
+      deadlineIn: (m) => (m < 0 ? "Deadline has passed" : `Deadline in ${m} months`),
       budgetLabel: "Call's total budget",
       grantRangeLabel: "Grant size",
+      fundingRateLabel: (pct) => `Funding rate up to ${pct}%`,
       eligibleApplicantsTitle: "Eligible applicants",
+      activityTypesLabel: "Funds",
+      targetGroupsLabel: "Target groups",
+      eligibleRegionsLabel: "Programme area",
+      minPartnerCountriesLabel: (n) => `Requires partners from at least ${n} countries.`,
       prioritiesTitle: "Priorities",
       evaluationCriteriaTitle: "Evaluation criteria",
       documentsTitle: "Documents (AI context package)",
@@ -1990,8 +2118,8 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldStatus: "Status",
       statusOpen: "Open",
       statusUpcoming: "Upcoming",
-      fieldDeadline: "Deadline (months from now)",
-      fieldDeadlineHint: "Enter how many months away the call's real application deadline is.",
+      fieldDeadline: "Application deadline",
+      fieldDeadlineHint: "The call's real date — used to work out time left and whether a project's start fits the decision.",
       fieldBudget: "Total budget (SEK)",
       fieldMinGrant: "Minimum grant (SEK)",
       fieldMaxGrant: "Maximum grant (SEK)",
@@ -1999,8 +2127,38 @@ export const translations: Record<Lang, TranslationTree> = {
       fieldEligibleSv: "Eligible applicants (Swedish)",
       fieldEligibleEn: "Eligible applicants (English)",
       fieldApplicantTypes: "Applicant categories",
+      fieldActivityTypes: "Type of activity funded",
+      fieldTargetGroups: "Target groups",
+      fieldTargetGroupsHint: "Only for calls aimed at specific people (e.g. ESF+). Leave empty otherwise.",
+      fieldEligibleRegions: "Programme area (counties)",
+      fieldEligibleRegionsHint: "Only for regionally limited calls. Leave empty if all of Sweden can apply.",
+      fieldMinPartnerCountries: "Minimum number of countries in the partnership",
+      fieldCoFinancing: "Funding rate (% of eligible costs)",
+      fieldCoFinancingHint: (pct) =>
+        pct === null
+          ? "Leave empty to use the programme's typical funding rate."
+          : `Leave empty to use the programme's typical funding rate (${pct}%).`,
+      fieldCriteria: "Evaluation criteria",
+      fieldCriteriaHint: "Decides how matching weighs thematic fit against feasibility. Without criteria a default split (60/40) is used. Without an English name, the Swedish one is shown.",
+      criterionNamePlaceholder: "Criterion, e.g. Relevance",
+      criterionPointsLabel: "Points",
+      addCriterion: "Add criterion",
+      removeCriterion: "Remove criterion",
+      completenessTitle: "Matching data",
+      completenessIntro: "The following is missing. The call can still be saved, but matching will be less accurate:",
+      completenessAllGood: "Everything matching uses is filled in.",
+      missingApplicantTypes: "Applicant categories — eligibility can't be checked, only the free text is shown",
+      missingActivityTypes: "Type of activity — counted as unknown (half points) for every project",
+      missingCriteria: "Evaluation criteria — the default 60/40 weighting is used",
+      missingTags: "Tags — the most important thematic signal is missing",
+      missingGrantRange: "Grant range — requested amounts can't be compared",
+      missingDeadline: "Application deadline",
+      deadlinePassed: "The application deadline has already passed — the call will show as closed in matching.",
       fieldPriorities: "Priorities",
-      fieldPrioritiesHint: "One priority per line.",
+      fieldPrioritiesHint: "One priority per line. If the English list is left empty, the Swedish text is shown in English too.",
+      fieldPrioritiesSv: "Priorities in Swedish",
+      fieldPrioritiesEn: "Priorities in English (optional)",
+      criterionNameEnPlaceholder: "English name (optional)",
       fieldTags: "Tags",
       noTagsWarning: "This call has no tags selected — matching against projects will be less accurate without them.",
       fieldPeriodicity: "Reporting frequency",
@@ -2094,7 +2252,7 @@ export const translations: Record<Lang, TranslationTree> = {
         "In a production version this would be sent as a recurring weekly digest to the EU coordinator. Here it's shown directly in the interface instead.",
       columnCall: "Call",
       columnDeadline: "Deadline",
-      deadlineInMonths: (n) => `Deadline: ${n} mo`,
+      deadlineInMonths: (n) => (n < 0 ? "Deadline passed" : `Deadline: ${n} mo`),
       matchingProjectsLabel: (n) => `${n} matching projects in the portfolio`,
       noMatchingProjects: "No projects in the portfolio match this call yet.",
       viewCall: "View call",

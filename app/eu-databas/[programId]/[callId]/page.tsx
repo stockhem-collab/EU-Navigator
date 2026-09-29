@@ -6,12 +6,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { applicantTypeLabel, documentTypeLabel } from "@/lib/data/fundingCalls";
+import { applicantTypeLabel, documentTypeLabel, callDeadlineMonths } from "@/lib/data/fundingCalls";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { fundedProjectsForProgram, computeProgramStats } from "@/lib/data/fundedProjects";
 import { topKeywords } from "@/lib/matching/patternAnalysis";
 import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
 import { fmtSEK } from "@/lib/format";
+import { activityTypeLabel, regionLabel, targetGroupLabel } from "@/lib/data/matchingVocabulary";
 
 export default function CallDetailPage() {
   const params = useParams<{ programId: string; callId: string }>();
@@ -85,7 +86,8 @@ export default function CallDetailPage() {
         <dl className="mt-6 grid gap-4 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-3">
           <div>
             <dt className="text-xs font-semibold uppercase text-navy-400">{db.deadlineLabel}</dt>
-            <dd className="mt-1 font-bold text-navy-900">{db.deadlineIn(call.deadlineMonthsFromNow)}</dd>
+            <dd className="mt-1 font-bold text-navy-900">{db.deadlineIn(callDeadlineMonths(call))}</dd>
+            {call.deadlineDate && <dd className="text-xs text-navy-500">{call.deadlineDate}</dd>}
           </div>
           <div>
             <dt className="text-xs font-semibold uppercase text-navy-400">{db.budgetLabel}</dt>
@@ -95,6 +97,9 @@ export default function CallDetailPage() {
             <dt className="text-xs font-semibold uppercase text-navy-400">{db.grantRangeLabel}</dt>
             <dd className="mt-1 font-bold text-navy-900">
               {fmtSEK(call.minGrantSEK, lang)}–{fmtSEK(call.maxGrantSEK, lang)}
+            </dd>
+            <dd className="text-xs text-navy-500">
+              {db.fundingRateLabel(Math.round((call.coFinancingRate ?? program.typicalCoFinancingRate) * 100))}
             </dd>
           </div>
         </dl>
@@ -113,6 +118,29 @@ export default function CallDetailPage() {
               ))}
             </div>
           )}
+          {call.requiresPartnership && (
+            <p className="mt-3 text-sm text-navy-700">{db.minPartnerCountriesLabel(call.minPartnerCountries ?? 2)}</p>
+          )}
+          {(
+            [
+              [db.activityTypesLabel, (call.activityTypes ?? []).map((a) => activityTypeLabel(a, lang))],
+              [db.targetGroupsLabel, (call.targetGroups ?? []).map((g) => targetGroupLabel(g, lang))],
+              [db.eligibleRegionsLabel, (call.eligibleRegions ?? []).map(regionLabel)],
+            ] as [string, string[]][]
+          )
+            .filter(([, values]) => values.length > 0)
+            .map(([label, values]) => (
+              <div key={label} className="mt-3">
+                <p className="text-xs font-semibold uppercase text-navy-400">{label}</p>
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {values.map((v) => (
+                    <span key={v} className="badge bg-navy-50 text-navy-700">
+                      {v}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
         </section>
 
         <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">

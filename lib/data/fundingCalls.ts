@@ -59,6 +59,7 @@ export const fundingCalls: FundingCall[] = [
     eligibleApplicants_sv: "Kommuner, regioner, kommunala bolag och offentliga myndigheter inom EU.",
     eligibleApplicants_en: "Municipalities, regions, municipal companies and public authorities within the EU.",
     applicantTypes: ["municipality", "region", "municipal-company", "national-authority"],
+    activityTypes: ["investment", "pilot"],
     priorities_sv: [
       "Mätbar minskning av energianvändning och utsläpp",
       "Skalbarhet och spridning till andra offentliga organisationer",
@@ -119,6 +120,7 @@ export const fundingCalls: FundingCall[] = [
     eligibleApplicants_sv: "Svenska kommuner, regioner och kommunala bolag.",
     eligibleApplicants_en: "Swedish municipalities, regions and municipal companies.",
     applicantTypes: ["municipality", "region", "municipal-company"],
+    activityTypes: ["investment", "pilot"],
     priorities_sv: [
       "Digitalisering av offentlig service",
       "Hållbar mobilitet och stadsutveckling",
@@ -160,6 +162,8 @@ export const fundingCalls: FundingCall[] = [
     eligibleApplicants_sv: "Kommuner, regioner och utbildningsanordnare i Sverige.",
     eligibleApplicants_en: "Municipalities, regions and training providers in Sweden.",
     applicantTypes: ["municipality", "region", "training-provider"],
+    activityTypes: ["competence"],
+    targetGroups: ["employees", "unemployed"],
     priorities_sv: ["Kompetensförsörjning inom välfärden", "Social inkludering", "Jämställd arbetsmarknad"],
     priorities_en: ["Skills supply in welfare services", "Social inclusion", "Gender-equal labour market"],
     extraKeywords: ["kompetenslyft", "upskilling"],
@@ -207,6 +211,9 @@ export const fundingCalls: FundingCall[] = [
     requiresPartnership: true,
     eligibleApplicants_sv: "Kommuner och regioner i minst två nordiska/baltiska länder gemensamt.",
     eligibleApplicants_en: "Municipalities and regions in at least two Nordic/Baltic countries jointly.",
+    applicantTypes: ["municipality", "region"],
+    activityTypes: ["cooperation", "pilot"],
+    minPartnerCountries: 2,
     priorities_sv: ["Gränsöverskridande klimatlösningar", "Gemensam kunskapsuppbyggnad"],
     priorities_en: ["Cross-border climate solutions", "Joint knowledge-building"],
     extraKeywords: ["norden", "nordic"],
@@ -236,6 +243,20 @@ export const fundingCalls: FundingCall[] = [
     requiresPartnership: true,
     eligibleApplicants_sv: "Konsortier med minst tre organisationer från tre olika EU-länder.",
     eligibleApplicants_en: "Consortia of at least three organisations from three different EU countries.",
+    // Any legal entity can take part in the consortium.
+    applicantTypes: [
+      "municipality",
+      "region",
+      "municipal-company",
+      "university",
+      "research-institute",
+      "sme",
+      "large-enterprise",
+      "ngo",
+      "national-authority",
+    ],
+    activityTypes: ["research", "pilot"],
+    minPartnerCountries: 3,
     priorities_sv: ["Hög innovationsgrad (TRL 5-7)", "Pilottestning i verklig miljö", "Konsortiets kompetensbredd"],
     priorities_en: ["High innovation level (TRL 5-7)", "Piloting in a real-world setting", "Breadth of consortium expertise"],
     extraKeywords: ["trl", "handläggning"],
@@ -300,6 +321,8 @@ export const fundingCalls: FundingCall[] = [
     requiresPartnership: false,
     eligibleApplicants_sv: "Offentliga myndigheter och kommuner inom EU/EES.",
     eligibleApplicants_en: "Public authorities and municipalities within the EU/EEA.",
+    applicantTypes: ["national-authority", "municipality", "region"],
+    activityTypes: ["pilot", "investment"],
     priorities_sv: ["Effektivare medborgarservice", "Ansvarsfull AI-användning", "Interoperabilitet"],
     priorities_en: ["More efficient citizen services", "Responsible use of AI", "Interoperability"],
     extraKeywords: ["kontaktcenter", "chatbot"],
@@ -330,6 +353,8 @@ export const fundingCalls: FundingCall[] = [
     requiresPartnership: false,
     eligibleApplicants_sv: "Kommuner, regioner och infrastrukturbolag inom EU.",
     eligibleApplicants_en: "Municipalities, regions and infrastructure companies within the EU.",
+    applicantTypes: ["municipality", "region", "municipal-company", "large-enterprise"],
+    activityTypes: ["investment"],
     priorities_sv: ["Gränsöverskridande energi-/transportnät", "Kapacitetsökning"],
     priorities_en: ["Cross-border energy/transport networks", "Capacity increase"],
     extraKeywords: [],
@@ -357,6 +382,10 @@ export const fundingCalls: FundingCall[] = [
     requiresPartnership: true,
     eligibleApplicants_sv: "Skolor och kommunala utbildningsförvaltningar inom EU.",
     eligibleApplicants_en: "Schools and municipal education departments within the EU.",
+    applicantTypes: ["municipality", "training-provider"],
+    activityTypes: ["competence", "cooperation"],
+    targetGroups: ["pupils", "employees"],
+    minPartnerCountries: 2,
     priorities_sv: ["Personalutbyte och kompetensutveckling", "Digital kompetens i skolan"],
     priorities_en: ["Staff exchange and professional development", "Digital competence in schools"],
     extraKeywords: [],
@@ -373,6 +402,23 @@ export const fundingCalls: FundingCall[] = [
     ],
   },
 ];
+
+/** Whole months from `now` until an ISO date (YYYY-MM-DD, counted to the
+ * end of that day) — negative once it has passed. Null for an invalid date. */
+export function monthsUntilDate(isoDate: string, now: Date = new Date()): number | null {
+  const deadline = new Date(`${isoDate}T23:59:59`);
+  if (Number.isNaN(deadline.getTime())) return null;
+  const days = (deadline.getTime() - now.getTime()) / 86_400_000;
+  return days < 0 ? Math.floor(days / 30.44) : Math.round(days / 30.44);
+}
+
+/** Months until the call's deadline — from its real deadlineDate when it
+ * has one (imported calls), otherwise the seed data's relative value.
+ * Negative once the deadline has passed. */
+export function callDeadlineMonths(call: FundingCall, now: Date = new Date()): number {
+  if (!call.deadlineDate) return call.deadlineMonthsFromNow;
+  return monthsUntilDate(call.deadlineDate, now) ?? call.deadlineMonthsFromNow;
+}
 
 export function findCall(id: string): FundingCall | undefined {
   return fundingCalls.find((c) => c.id === id);
