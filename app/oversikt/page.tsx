@@ -79,7 +79,11 @@ export default function OversiktPage() {
       return a.task.dueDate.localeCompare(b.task.dueDate);
     });
 
-  const unread = notifications.items.filter((n) => notifications.isUnread(n.id));
+  // Notifications about a project follow the toggle too; ones not about a
+  // single project (a new call, a document to update) always show.
+  const unread = notifications.items.filter(
+    (n) => notifications.isUnread(n.id) && (!n.projectId || inScope(projectBank.find((p) => p.id === n.projectId)))
+  );
 
   const stats = [
     { label: ov.statActiveApplications, value: applications.length, href: "/ansok", warn: false },

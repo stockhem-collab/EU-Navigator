@@ -36,3 +36,21 @@ test("on Ansöka it narrows the applications and the matched projects alike", as
   await expect(applications.getByText("Energieffektivisering kommunala skolor")).toBeVisible();
   await expect(findFunding.getByText("Kompetenslyft äldreomsorg")).toHaveCount(0);
 });
+
+test("it narrows the reporting too, under Rapportera and on Översikt", async ({ page }) => {
+  // pb-1's grant (LIFE) is the current user's; pb-3's (ESF+) is not.
+  await page.goto("/rapportera");
+  const main = page.locator("main");
+  await expect(main.getByText("Kompetenslyft äldreomsorg").first()).toBeVisible();
+  await toggle(page).check();
+  await expect(main.getByText("Kompetenslyft äldreomsorg")).toHaveCount(0);
+  await expect(main.getByText("Energieffektivisering kommunala skolor").first()).toBeVisible();
+
+  await page.goto("/oversikt");
+  await expect(toggle(page)).toBeChecked();
+  const reporting = page.locator("section", { has: page.getByRole("heading", { name: "Rapportering", exact: true }) });
+  await expect(reporting.getByText("Slutrapport")).toBeVisible();
+  await expect(reporting.getByText(/Kompetenslyft/i)).toHaveCount(0);
+  const unread = page.locator("section", { has: page.getByRole("heading", { name: "Olästa aviseringar" }) });
+  await expect(unread.getByText("Rapport returnerad för komplettering")).toHaveCount(0);
+});
