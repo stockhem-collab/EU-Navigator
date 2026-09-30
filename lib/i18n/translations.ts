@@ -22,7 +22,6 @@ export interface TranslationTree {
     errorNotConfigured: string;
     errorGeneric: string;
     logout: string;
-    loginLink: string;
     loggedInAs: (email: string) => string;
   };
   nav: {
@@ -896,7 +895,6 @@ export const translations: Record<Lang, TranslationTree> = {
       errorNotConfigured: "Inloggningen är inte konfigurerad — lösenordet (DEMO_PASSWORD) saknas i driftmiljön.",
       errorGeneric: "Något gick fel. Försök igen.",
       logout: "Logga ut",
-      loginLink: "Logga in",
       loggedInAs: (email) => `Inloggad som ${email}`,
     },
     nav: {
@@ -1921,7 +1919,6 @@ export const translations: Record<Lang, TranslationTree> = {
       errorNotConfigured: "Login isn't configured — the password (DEMO_PASSWORD) is missing in the hosting environment.",
       errorGeneric: "Something went wrong. Please try again.",
       logout: "Log out",
-      loginLink: "Log in",
       loggedInAs: (email) => `Logged in as ${email}`,
     },
     nav: {
