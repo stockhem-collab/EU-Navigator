@@ -24,7 +24,43 @@ export function projectBankEntryToProjectInput(entry: ProjectBankEntry): Project
     municipality: "Exempelstad",
     hasInternationalPartner: entry.hasInternationalPartner,
     tags: entry.tags,
+    ...projectMatchingFields(entry),
   };
+}
+
+/** Every matching field, set or explicitly unset — for an edit that must
+ * also clear a field the user emptied (see useProjectBank's updateEntry). */
+export function projectMatchingFieldsPatch(source: Parameters<typeof projectMatchingFields>[0]) {
+  const set = projectMatchingFields(source);
+  return {
+    applicantType: set.applicantType,
+    activityType: set.activityType,
+    secondarySectors: set.secondarySectors,
+    targetGroups: set.targetGroups,
+    region: set.region,
+    partnerLevel: set.partnerLevel,
+    requestedGrantSEK: set.requestedGrantSEK,
+  };
+}
+
+/** The optional matching fields, shared by ProjectInput and
+ * ProjectBankEntry — only the ones actually set, so an unset field stays
+ * absent rather than becoming an explicit undefined. */
+export function projectMatchingFields(
+  source: Pick<
+    ProjectInput,
+    "applicantType" | "activityType" | "secondarySectors" | "targetGroups" | "region" | "partnerLevel" | "requestedGrantSEK"
+  >
+): Partial<ProjectInput & ProjectBankEntry> {
+  const fields: Partial<ProjectInput & ProjectBankEntry> = {};
+  if (source.applicantType) fields.applicantType = source.applicantType;
+  if (source.activityType) fields.activityType = source.activityType;
+  if (source.secondarySectors && source.secondarySectors.length > 0) fields.secondarySectors = source.secondarySectors;
+  if (source.targetGroups && source.targetGroups.length > 0) fields.targetGroups = source.targetGroups;
+  if (source.region) fields.region = source.region;
+  if (source.partnerLevel) fields.partnerLevel = source.partnerLevel;
+  if (source.requestedGrantSEK && source.requestedGrantSEK > 0) fields.requestedGrantSEK = source.requestedGrantSEK;
+  return fields;
 }
 
 // The inverse of projectBankEntryToProjectInput above: turns an ad-hoc
@@ -51,6 +87,7 @@ export function projectInputToProjectBankEntry(project: ProjectInput, readiness:
     description_en: project.description,
     hasInternationalPartner: project.hasInternationalPartner,
     tags: project.tags,
+    ...projectMatchingFields(project),
     aiReadinessPct: readiness.overall,
     missingFields_sv: readiness.dimensions.flatMap((d) => (d.action_sv ? [d.action_sv] : [])),
     missingFields_en: readiness.dimensions.flatMap((d) => (d.action_en ? [d.action_en] : [])),
@@ -68,7 +105,12 @@ export function projectInputToProjectBankEntry(project: ProjectInput, readiness:
 // several awarded applications, each with its own grant and reporting.
 // Without an application (a seeded "approved" project that never had
 // application records) it falls back to the project-based id.
-export function projectToGrant(entry: ProjectBankEntry, match: MatchResult, applicationId?: string): Grant {
+export function projectToGrant(
+  entry: ProjectBankEntry,
+  match: MatchResult,
+  applicationId?: string,
+  awardedAmountSEK?: number
+): Grant {
   const requirement = match.call.reportingRequirements;
   const firstDeadlineMonths = requirement
     ? requirement.periodicity === "quarterly"
@@ -87,9 +129,9 @@ export function projectToGrant(entry: ProjectBankEntry, match: MatchResult, appl
     callId: match.call.id,
     projectBankEntryId: entry.id,
     applicationId,
-    // The grant the application planned for — the same figure the
-    // workspace shows as "Beräknat EU-bidrag".
-    awardedAmountSEK: match.estimatedFundingSEK[1],
+    // What was actually awarded, as confirmed when registering the grant;
+    // without it, the grant the match estimates.
+    awardedAmountSEK: awardedAmountSEK ?? match.estimatedFundingSEK[1],
     commitments: [],
     reportingEvents: [
       {

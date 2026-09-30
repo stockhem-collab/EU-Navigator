@@ -22,7 +22,6 @@ export interface TranslationTree {
     errorNotConfigured: string;
     errorGeneric: string;
     logout: string;
-    loginLink: string;
     loggedInAs: (email: string) => string;
   };
   nav: {
@@ -106,7 +105,10 @@ export interface TranslationTree {
   demo: {
     intake: {
       title: string;
+      titleExisting: string;
       subtitle: string;
+      saveProject: string;
+      saveProjectHint: string;
       fieldTitle: string;
       fieldTitlePlaceholder: string;
       fieldDescription: string;
@@ -216,6 +218,16 @@ export interface TranslationTree {
       versionSavedAt: (date: string) => string;
       backToPrevious: string;
       estEuShareNote: string;
+      eligibleBudget: string;
+      eligibleBudgetHint: string;
+      requestedGrant: string;
+      requestedGrantHint: (rate: string, max: string) => string;
+      ownFinancing: string;
+      ownFinancingShare: (share: string) => string;
+      budgetFromProject: string;
+      budgetResetToEstimate: string;
+      budgetIssuesTitle: string;
+      budgetNotSavedNote: string;
       notAssessedNote: string;
       signalQuantified: string;
       signalIndicator: string;
@@ -290,7 +302,6 @@ export interface TranslationTree {
     editSave: string;
     editSavedIndicator: string;
     editFieldTitle: string;
-    editFieldPartnership: string;
     plusOthers: (n: number) => string;
     peopleAndSharingTitle: string;
     assignedRolesTitle: string;
@@ -330,8 +341,24 @@ export interface TranslationTree {
     similarProjectsSharedLabel: string;
     back: string;
     importButton: string;
+    addProjectTitle: string;
+    addFormTitle: string;
+    addFormBody: string;
+    newProjectButton: string;
+    addImportTitle: string;
+    addImportBody: string;
+    newProjectTitle: string;
+    newProjectSubtitle: string;
+    saveAndFindFunding: string;
+    noProjectsYet: string;
     downloadTemplate: string;
     importHint: string;
+    importColumnsTitle: string;
+    importColumnsIntro: string;
+    importMultipleNote: string;
+    importFreeText: string;
+    importAmountNote: string;
+    importYearNote: string;
     clearImported: string;
     removeImportedRow: string;
     confirmRemoveProject: (title: string) => string;
@@ -793,6 +820,7 @@ export interface TranslationTree {
     confirmDelete: string;
     createAwardedButton: string;
     confirmCreateAwarded: string;
+    awardedAmountLabel: string;
     viewAwardedLink: string;
     updatedAt: (date: string) => string;
     roundLabel: (n: number) => string;
@@ -896,7 +924,6 @@ export const translations: Record<Lang, TranslationTree> = {
       errorNotConfigured: "Inloggningen är inte konfigurerad — lösenordet (DEMO_PASSWORD) saknas i driftmiljön.",
       errorGeneric: "Något gick fel. Försök igen.",
       logout: "Logga ut",
-      loginLink: "Logga in",
       loggedInAs: (email) => `Inloggad som ${email}`,
     },
     nav: {
@@ -1062,7 +1089,10 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     demo: {
       intake: {
-        title: "Ny ansökan – beskriv projektet",
+        title: "Nytt projekt – beskriv projektet",
+        titleExisting: "Projektet – granska och hitta finansiering",
+        saveProject: "Spara projektet",
+        saveProjectHint: "Sparar projektet under Projekt utan att söka finansiering nu — det matchas mot utlysningarna där också.",
         subtitle:
           "Beskriv projektet ni vill söka finansiering för, så matchas det mot EU-utlysningarna. Fyll i så mycket ni kan — matchningen blir bättre ju mer konkret beskrivningen är.",
         fieldTitle: "Projektnamn",
@@ -1185,7 +1215,17 @@ export const translations: Record<Lang, TranslationTree> = {
         confirmDeleteVersion: (name) => `Ta bort versionen "${name}"? Det går inte att ångra.`,
         versionSavedAt: (date) => `Sparad ${date}`,
         backToPrevious: "Tillbaka",
-        estEuShareNote: "Samma belopp som i matchningen: sökt belopp, eller utlysningens stödnivå av budgeten, högst utlysningens maxbelopp.",
+        estEuShareNote: "Förslaget är samma belopp som i matchningen: utlysningens stödnivå av den stödberättigade budgeten, högst utlysningens maxbelopp. Ändra det till det belopp ansökan faktiskt söker.",
+        eligibleBudget: "Stödberättigad budget (kr)",
+        eligibleBudgetHint: "De kostnader bidraget kan täcka enligt utlysningen — ofta lägre än projektets totala budget.",
+        requestedGrant: "Sökt belopp (kr)",
+        requestedGrantHint: (rate, max) => `Utlysningen finansierar upp till ${rate} av stödberättigade kostnader, högst ${max}.`,
+        ownFinancing: "Egen medfinansiering",
+        ownFinancingShare: (share) => `${share} av den totala budgeten`,
+        budgetFromProject: "Hämtat från projektet",
+        budgetResetToEstimate: "Återställ förslag",
+        budgetIssuesTitle: "Stämmer inte med utlysningen",
+        budgetNotSavedNote: "Beloppen sparas när ansökan sparas.",
         notAssessedNote: "Förslag — räknas in i bedömningen när du har skrivit eller redigerat texten.",
         signalQuantified: "Kvantifierad effekt",
         signalIndicator: "Indikator",
@@ -1266,7 +1306,6 @@ export const translations: Record<Lang, TranslationTree> = {
       editSave: "Spara ändringar",
       editSavedIndicator: "Sparat i din webbläsare",
       editFieldTitle: "Projektnamn",
-      editFieldPartnership: "Vi har (eller kan skaffa) en internationell partnerorganisation",
       plusOthers: (n) => `+${n} till`,
       peopleAndSharingTitle: "Vem ser och äger projektet",
       assignedRolesTitle: "Tilldelade roller",
@@ -1322,9 +1361,26 @@ export const translations: Record<Lang, TranslationTree> = {
       grantsSectionHint: "Varje beviljad ansökan får ett eget beviljat stöd med egen rapportering. Rapporterna hanteras under Rapportera.",
       grantsNone: "Inget beviljat stöd ännu. När en ansökan beviljas registrerar du stödet på ansökan ovan.",
       importButton: "Importera projekt (CSV)",
+      addProjectTitle: "Lägg till projekt",
+      addFormTitle: "Beskriv ett projekt",
+      addFormBody: "Fyll i formuläret – ett projekt i taget.",
+      newProjectButton: "+ Nytt projekt",
+      addImportTitle: "Importera från fil",
+      addImportBody: "Flera projekt på en gång, från Excel eller CSV.",
+      newProjectTitle: "Nytt projekt",
+      newProjectSubtitle:
+        "Beskriv projektet så sparas det under Projekt och matchas mot EU-utlysningarna. Fyll i så mycket ni kan — matchningen blir bättre ju mer konkret beskrivningen är.",
+      saveAndFindFunding: "Spara och hitta finansiering",
+      noProjectsYet: "Inga projekt ännu — lägg till det första.",
       downloadTemplate: "Ladda ner mall",
       importHint:
-        "Kolumner: Titel, Förvaltning, Ägare, Budget, Startår, Slutår, Sektor, Beskrivning, Internationell partner. Sparas i din webbläsare (ingen delning mellan användare i den här demon).",
+        "Mallen har samma fält som formuläret för nytt projekt. Bara Titel krävs. Sparas i din webbläsare (ingen delning mellan användare i den här demon).",
+      importColumnsTitle: "Kolumner och tillåtna värden",
+      importColumnsIntro: "Semikolon- eller kommaseparerad fil. Värden i listorna kan skrivas som nedan, med hela benämningen från formuläret eller på engelska.",
+      importMultipleNote: "flera värden separeras med komma",
+      importFreeText: "fritext",
+      importAmountNote: "belopp i kronor",
+      importYearNote: "årtal",
       clearImported: "Rensa importerade projekt",
       removeImportedRow: "Ta bort importerat projekt",
       confirmRemoveProject: (title) => `Ta bort projektet "${title}"? Det kan återställas senare under "Borttagna projekt".`,
@@ -1805,6 +1861,7 @@ export const translations: Record<Lang, TranslationTree> = {
       confirmDelete: "Ta bort ansökan med dess utkast och sparade versioner?",
       createAwardedButton: "Registrera beviljat stöd",
       confirmCreateAwarded: "Registrera beviljat stöd för den här ansökan? Då skapas rapporteringen för stödet under Rapportera.",
+      awardedAmountLabel: "Beviljat belopp (kr)",
       viewAwardedLink: "Visa beviljat stöd",
       updatedAt: (date) => `Uppdaterad ${date}`,
       roundLabel: (n) => `Ansökan ${n}`,
@@ -1921,7 +1978,6 @@ export const translations: Record<Lang, TranslationTree> = {
       errorNotConfigured: "Login isn't configured — the password (DEMO_PASSWORD) is missing in the hosting environment.",
       errorGeneric: "Something went wrong. Please try again.",
       logout: "Log out",
-      loginLink: "Log in",
       loggedInAs: (email) => `Logged in as ${email}`,
     },
     nav: {
@@ -2087,7 +2143,10 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     demo: {
       intake: {
-        title: "New application — describe the project",
+        title: "New project — describe the project",
+        titleExisting: "The project — review and find funding",
+        saveProject: "Save the project",
+        saveProjectHint: "Saves the project under Projects without looking for funding now — it's matched against the calls there too.",
         subtitle:
           "Describe the project you want funding for, and it's matched against the EU calls. Fill in as much as you can — the more concrete the description, the better the matching.",
         fieldTitle: "Project name",
@@ -2208,7 +2267,17 @@ export const translations: Record<Lang, TranslationTree> = {
         confirmDeleteVersion: (name) => `Delete the version "${name}"? This can't be undone.`,
         versionSavedAt: (date) => `Saved ${date}`,
         backToPrevious: "Back",
-        estEuShareNote: "The same amount as in the match: the grant requested, or the call's funding rate of the budget, at most the call's maximum.",
+        estEuShareNote: "The suggestion is the same amount as in the match: the call's funding rate of the eligible budget, at most the call's maximum. Change it to the amount the application actually requests.",
+        eligibleBudget: "Eligible budget (SEK)",
+        eligibleBudgetHint: "The costs the grant can cover under the call — often less than the project's total budget.",
+        requestedGrant: "Requested grant (SEK)",
+        requestedGrantHint: (rate, max) => `The call funds up to ${rate} of eligible costs, at most ${max}.`,
+        ownFinancing: "Own co-financing",
+        ownFinancingShare: (share) => `${share} of the total budget`,
+        budgetFromProject: "From the project",
+        budgetResetToEstimate: "Reset to suggestion",
+        budgetIssuesTitle: "Doesn't match the call",
+        budgetNotSavedNote: "The amounts are kept when the application is saved.",
         notAssessedNote: "Suggestion — counted in the assessment once you have written or edited the text.",
         signalQuantified: "Quantified effect",
         signalIndicator: "Indicator",
@@ -2287,7 +2356,6 @@ export const translations: Record<Lang, TranslationTree> = {
       editSave: "Save changes",
       editSavedIndicator: "Saved in your browser",
       editFieldTitle: "Project name",
-      editFieldPartnership: "We have (or can secure) an international partner organisation",
       plusOthers: (n) => `+${n} more`,
       peopleAndSharingTitle: "Who sees and owns the project",
       assignedRolesTitle: "Assigned roles",
@@ -2343,9 +2411,26 @@ export const translations: Record<Lang, TranslationTree> = {
       grantsSectionHint: "Each awarded application gets its own grant with its own reporting. Reports are handled under Report.",
       grantsNone: "No grant yet. When an application is awarded, register the grant on the application above.",
       importButton: "Import projects (CSV)",
+      addProjectTitle: "Add projects",
+      addFormTitle: "Describe a project",
+      addFormBody: "Fill in the form — one project at a time.",
+      newProjectButton: "+ New project",
+      addImportTitle: "Import from a file",
+      addImportBody: "Several projects at once, from Excel or CSV.",
+      newProjectTitle: "New project",
+      newProjectSubtitle:
+        "Describe the project and it's saved under Projects and matched against the EU calls. Fill in as much as you can — the more concrete the description, the better the matching.",
+      saveAndFindFunding: "Save and find funding",
+      noProjectsYet: "No projects yet — add the first one.",
       downloadTemplate: "Download template",
       importHint:
-        "Columns: Titel, Förvaltning, Ägare, Budget, Startår, Slutår, Sektor, Beskrivning, Internationell partner. Saved in your browser (not shared between users in this demo).",
+        "The template has the same fields as the new project form. Only Titel is required. Saved in your browser (not shared between users in this demo).",
+      importColumnsTitle: "Columns and allowed values",
+      importColumnsIntro: "Semicolon- or comma-separated file. Values from the lists can be written as below, with the form's full label, or in English.",
+      importMultipleNote: "separate several values with commas",
+      importFreeText: "free text",
+      importAmountNote: "amount in SEK",
+      importYearNote: "year",
       clearImported: "Clear imported projects",
       removeImportedRow: "Remove imported project",
       confirmRemoveProject: (title) => `Remove the project "${title}"? It can be restored later under "Deleted projects".`,
@@ -2824,6 +2909,7 @@ export const translations: Record<Lang, TranslationTree> = {
       confirmDelete: "Delete this application with its draft and saved versions?",
       createAwardedButton: "Register grant",
       confirmCreateAwarded: "Register the grant for this application? Its reporting is then set up under Report.",
+      awardedAmountLabel: "Amount awarded (SEK)",
       viewAwardedLink: "View grant",
       updatedAt: (date) => `Updated ${date}`,
       roundLabel: (n) => `Application ${n}`,

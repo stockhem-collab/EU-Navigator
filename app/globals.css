@@ -9,6 +9,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* Keeps a jump to #section clear of the sticky header, so the section's
+     own heading is in view — not hidden under the header. */
+  scroll-padding-top: 6rem;
 }
 
 body {

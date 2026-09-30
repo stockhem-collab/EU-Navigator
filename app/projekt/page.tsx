@@ -109,20 +109,38 @@ function ProjectsPageInner() {
             <h1 className="text-2xl font-bold text-navy-900">{pb.title}</h1>
             <p className="mt-2 max-w-2xl text-sm text-navy-600">{pb.subtitle}</p>
           </div>
-          <Link
-            href="/ansokan"
-            className="shrink-0 rounded-md bg-gold-500 px-4 py-2 text-sm font-semibold text-navy-900 shadow-sm transition hover:bg-gold-400"
-          >
-            {ov.describeNewProject}
-          </Link>
         </div>
 
-        <div className="mt-6">
-          {/* Includes soft-deleted ids too (not just the visible
-              `projectBank`) — otherwise re-importing the same CSV after
-              deleting its row would regenerate the exact same slugified id
-              and collide with the still-stored, just-hidden entry. */}
-          <CsvImportPanel onImport={addImported} existingIds={[...projectBank, ...deletedEntries].map((p) => p.id)} />
+        {/* The two ways a project gets into the system, side by side: the
+            form, one at a time, or a file, several at once. Applying for
+            funding starts from the header's "Ny ansökan" instead. */}
+        <section className="mt-6 rounded-xl border border-navy-100 bg-white p-4 sm:p-5" aria-labelledby="add-project-heading">
+          <h2 id="add-project-heading" className="text-sm font-semibold uppercase text-navy-400">
+            {pb.addProjectTitle}
+          </h2>
+          <div className="mt-3 grid gap-4 md:grid-cols-2">
+            <div className="flex flex-col rounded-lg border border-navy-100 p-4">
+              <h3 className="font-semibold text-navy-800">{pb.addFormTitle}</h3>
+              <p className="mt-1 text-sm text-navy-500">{pb.addFormBody}</p>
+              <div className="mt-3">
+                <Link
+                  href="/projekt/nytt"
+                  className="inline-block rounded-md bg-gold-500 px-4 py-2 text-sm font-semibold text-navy-900 shadow-sm transition hover:bg-gold-400"
+                >
+                  {pb.newProjectButton}
+                </Link>
+              </div>
+            </div>
+            <div className="rounded-lg border border-navy-100 p-4">
+              <h3 className="font-semibold text-navy-800">{pb.addImportTitle}</h3>
+              <p className="mb-3 mt-1 text-sm text-navy-500">{pb.addImportBody}</p>
+              {/* Includes soft-deleted ids too (not just the visible
+                  `projectBank`) — otherwise re-importing the same CSV after
+                  deleting its row would regenerate the exact same slugified id
+                  and collide with the still-stored, just-hidden entry. */}
+              <CsvImportPanel onImport={addImported} existingIds={[...projectBank, ...deletedEntries].map((p) => p.id)} />
+            </div>
+          </div>
           {imported.length > 0 && (
             <ConfirmButton
               label={`${pb.clearImported} (${imported.length})`}
@@ -131,10 +149,10 @@ function ProjectsPageInner() {
               cancelLabel={t.confirm.cancel}
               onConfirm={() => clearImported()}
               danger
-              className="mt-2 text-xs font-semibold text-navy-400 hover:text-amber-700"
+              className="mt-3 text-xs font-semibold text-navy-400 hover:text-amber-700"
             />
           )}
-        </div>
+        </section>
 
         {deletedEntries.length > 0 && (
           <section className="mt-6 rounded-xl border border-navy-100 bg-navy-50/50 p-4">
@@ -284,7 +302,10 @@ function ProjectsPageInner() {
               {visible.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-4 py-6 text-center text-sm text-navy-500">
-                    {pb.noProjectsMatch}
+                    {projectBank.length === 0 ? pb.noProjectsYet : pb.noProjectsMatch}
+                    <Link href="/projekt/nytt" className="ml-2 font-semibold text-navy-700 hover:underline">
+                      {pb.newProjectButton}
+                    </Link>
                   </td>
                 </tr>
               )}

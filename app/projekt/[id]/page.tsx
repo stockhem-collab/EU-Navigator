@@ -22,19 +22,29 @@ import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
 import ProjectLifecycle from "@/components/ProjectLifecycle";
 import { computeReadiness } from "@/lib/matching/readiness";
 import ConfirmButton from "@/components/ConfirmButton";
+import { readApplicationBudget } from "@/lib/hooks/useApplication";
+import { resolveApplicationBudget } from "@/lib/matching/applicationBudget";
 import LinkedReportingBadge from "@/components/LinkedReportingBadge";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { orgUnits as seedOrgUnits, projectRoleLabels, shareableUnits, unitDepth } from "@/lib/data/users";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
-import { computeMatchesForEntry, projectToGrant, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
+import {
+  computeMatchesForEntry,
+  projectToGrant,
+  projectBankEntryToProjectInput,
+  projectMatchingFieldsPatch,
+} from "@/lib/matching/portfolio";
 import { computeSimilarProjects } from "@/lib/matching/similarProjects";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
 import { APPLICATION_STATUS_ORDER, ApplicationRecord, ApplicationStatus, PROJECT_STATUS_ORDER, ProjectStatus, Sector } from "@/lib/types";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
 import { useTags } from "@/lib/hooks/useTags";
 import TagPicker from "@/components/TagPicker";
+import ProjectMatchingFields, { MatchingFieldsValue } from "@/components/projectbank/ProjectMatchingFields";
+import { applicantTypeLabel } from "@/lib/data/fundingCalls";
+import { activityTypeLabel, partnerLevelLabel, regionLabel, targetGroupLabel } from "@/lib/data/matchingVocabulary";
 
 const SECTORS: Sector[] = ["energy", "climate", "digital", "social", "mobility", "education", "health", "research"];
 const STATUSES: ProjectStatus[] = PROJECT_STATUS_ORDER;
@@ -50,7 +60,7 @@ interface EditDraft {
   periodEnd: number;
   sector: Sector;
   tags: string[];
-  hasInternationalPartner: boolean;
+  matching: MatchingFieldsValue;
 }
 
 export default function ProjectBankDetailPage() {
@@ -159,12 +169,23 @@ export default function ProjectBankDetailPage() {
 
   // An awarded application becomes an awarded project under the call it
   // was actually made to — not just the project's best match.
-  const handleCreateAwarded = (record: ApplicationRecord) => {
+  // The grant the application applied for — its own requested amount, or
+  // the estimate the workspace showed when none was set. Pre-fills the
+  // awarded amount, which the user confirms (or corrects) when registering.
+  const plannedGrantFor = (record: ApplicationRecord): number | undefined => {
+    const call = fundingCalls.find((c) => c.id === record.callId);
+    const program = call ? findProgram(call.programId) : undefined;
+    if (!call || !program) return undefined;
+    return resolveApplicationBudget(projectBankEntryToProjectInput(entry), { call, program }, readApplicationBudget(record.id))
+      .requestedGrantSEK;
+  };
+
+  const handleCreateAwarded = (record: ApplicationRecord, awardedAmountSEK?: number) => {
     const call = fundingCalls.find((c) => c.id === record.callId);
     const program = call ? findProgram(call.programId) : undefined;
     if (!call || !program) return;
     const match = scoreMatch(projectBankEntryToProjectInput(entry), call, program);
-    const awarded = projectToGrant(entry, match, record.id);
+    const awarded = projectToGrant(entry, match, record.id, awardedAmountSEK ?? plannedGrantFor(record));
     addGrant(awarded);
     updateApplication(record.id, { awardedProjectId: awarded.id });
     logActivity({ kind: "grant-registered", grantId: awarded.id, projectId: entry.id, callId: call.id });
@@ -205,6 +226,24 @@ export default function ProjectBankDetailPage() {
     if (sharing && unit) logActivity({ kind: "project-shared", projectId: entry.id, unitName: unit.name });
   };
 
+  // The matching fields the project states — only those set.
+  const intakeT = t.demo.intake;
+  const matchingDetails: { label: string; value: string }[] = [
+    entry.activityType && { label: intakeT.fieldActivityType, value: activityTypeLabel(entry.activityType, lang) },
+    entry.requestedGrantSEK && { label: intakeT.fieldRequestedGrant.replace(/\s*\(.*\)$/, ""), value: fmtSEK(entry.requestedGrantSEK, lang) },
+    entry.secondarySectors?.length && {
+      label: intakeT.fieldSecondarySectors.replace(/\s*\(.*\)$/, ""),
+      value: entry.secondarySectors.map((s) => sectorLabel(s, lang)).join(", "),
+    },
+    entry.targetGroups?.length && {
+      label: intakeT.fieldTargetGroups.replace(/\s*\(.*\)$/, ""),
+      value: entry.targetGroups.map((g) => targetGroupLabel(g, lang)).join(", "),
+    },
+    entry.region && { label: intakeT.fieldRegion, value: regionLabel(entry.region) },
+    entry.applicantType && { label: intakeT.fieldApplicantType, value: applicantTypeLabel(entry.applicantType, lang) },
+    entry.partnerLevel && { label: intakeT.fieldPartnership.replace(/\s*\(.*\)$/, ""), value: partnerLevelLabel(entry.partnerLevel, lang) },
+  ].filter((d): d is { label: string; value: string } => Boolean(d));
+
   const startEditing = () =>
     setDraft({
       title: lang === "sv" ? entry.title_sv : entry.title_en,
@@ -217,7 +256,16 @@ export default function ProjectBankDetailPage() {
       periodEnd: entry.periodEnd,
       sector: entry.sector,
       tags: entry.tags ?? [],
-      hasInternationalPartner: entry.hasInternationalPartner,
+      matching: {
+        applicantType: entry.applicantType,
+        activityType: entry.activityType,
+        secondarySectors: entry.secondarySectors,
+        targetGroups: entry.targetGroups,
+        region: entry.region,
+        partnerLevel: entry.partnerLevel,
+        requestedGrantSEK: entry.requestedGrantSEK,
+        hasInternationalPartner: entry.hasInternationalPartner,
+      },
     });
 
   const saveEdit = () => {
@@ -239,7 +287,12 @@ export default function ProjectBankDetailPage() {
       periodEnd: draft.periodEnd,
       sector: draft.sector,
       tags: draft.tags,
-      hasInternationalPartner: draft.hasInternationalPartner,
+      hasInternationalPartner: draft.matching.hasInternationalPartner,
+      ...projectMatchingFieldsPatch({
+        ...draft.matching,
+        // The main sector can't also be one of the others.
+        secondarySectors: draft.matching.secondarySectors?.filter((s) => s !== draft.sector),
+      }),
     });
     setDraft(null);
   };
@@ -365,14 +418,11 @@ export default function ProjectBankDetailPage() {
                   />
                 </div>
               </div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-navy-700 sm:col-span-2">
-                <input
-                  type="checkbox"
-                  checked={draft.hasInternationalPartner}
-                  onChange={(e) => setDraft({ ...draft, hasInternationalPartner: e.target.checked })}
-                />
-                {pb.editFieldPartnership}
-              </label>
+              <ProjectMatchingFields
+                value={draft.matching}
+                sector={draft.sector}
+                onChange={(matching) => setDraft({ ...draft, matching })}
+              />
             </div>
             <div className="mt-5 flex items-center gap-2">
               <button
@@ -455,6 +505,12 @@ export default function ProjectBankDetailPage() {
                   </dd>
                 )}
               </div>
+              {matchingDetails.map((d) => (
+                <div key={d.label}>
+                  <dt className="text-xs font-semibold uppercase text-navy-400">{d.label}</dt>
+                  <dd className="mt-1 text-sm font-semibold text-navy-900">{d.value}</dd>
+                </div>
+              ))}
               {entry.tags && entry.tags.length > 0 && (
                 <div className="sm:col-span-2">
                   <dt className="text-xs font-semibold uppercase text-navy-400">{t.demo.intake.fieldTags}</dt>
@@ -549,13 +605,10 @@ export default function ProjectBankDetailPage() {
                         ))}
                       </select>
                       {record.status === "awarded" && !awardedProject && (
-                        <ConfirmButton
-                          label={at.createAwardedButton}
-                          message={at.confirmCreateAwarded}
-                          confirmLabel={t.confirm.yesRegister}
-                          cancelLabel={t.confirm.cancel}
-                          onConfirm={() => handleCreateAwarded(record)}
-                          className="rounded-md bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800"
+                        <RegisterGrantButton
+                          recordId={record.id}
+                          plannedAmount={plannedGrantFor(record)}
+                          onConfirm={(amount) => handleCreateAwarded(record, amount)}
                         />
                       )}
                       {awardedProject && (
@@ -637,7 +690,7 @@ export default function ProjectBankDetailPage() {
           )}
         </section>
 
-        <div className="mt-6 scroll-mt-24" id="matches">
+        <div className="mt-6" id="matches">
           <h2 className="text-lg font-bold text-navy-800">{pb.detailMatchesTitle}</h2>
           {matches.length === 0 ? (
             <p className="mt-2 text-sm text-navy-500">{pb.detailNoMatches}</p>
@@ -924,5 +977,52 @@ export default function ProjectBankDetailPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+// "Registrera beviljat stöd", asking for the amount actually awarded —
+// pre-filled with what the application applied for, since the decision
+// often grants less.
+function RegisterGrantButton({
+  recordId,
+  plannedAmount,
+  onConfirm,
+}: {
+  recordId: string;
+  plannedAmount: number | undefined;
+  onConfirm: (amountSEK: number | undefined) => void;
+}) {
+  const { t, lang } = useLanguage();
+  const at = t.applications;
+  const [amount, setAmount] = useState<string>("");
+  const value = amount === "" ? plannedAmount : Number(amount);
+  const invalid = value !== undefined && (!Number.isFinite(value) || value <= 0);
+  const inputId = `awarded-amount-${recordId}`;
+  return (
+    <ConfirmButton
+      label={at.createAwardedButton}
+      message={at.confirmCreateAwarded}
+      confirmLabel={t.confirm.yesRegister}
+      cancelLabel={t.confirm.cancel}
+      onConfirm={() => onConfirm(value)}
+      confirmDisabled={invalid}
+      className="rounded-md bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800"
+    >
+      <label htmlFor={inputId} className="flex flex-wrap items-center gap-2 text-xs font-semibold text-navy-700">
+        {at.awardedAmountLabel}
+        <input
+          id={inputId}
+          type="number"
+          inputMode="numeric"
+          min={0}
+          step={100000}
+          value={amount}
+          placeholder={plannedAmount !== undefined ? String(plannedAmount) : undefined}
+          onChange={(e) => setAmount(e.target.value)}
+          className="w-36 rounded-md border border-navy-200 bg-white px-2 py-1 text-xs font-normal text-navy-800 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+        />
+        {value !== undefined && !invalid && <span className="font-normal text-navy-500">{fmtSEK(value, lang)}</span>}
+      </label>
+    </ConfirmButton>
   );
 }

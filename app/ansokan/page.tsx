@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -14,6 +14,7 @@ import { findProjectBankEntry } from "@/lib/data/projectBank";
 import { findAnyProjectBankEntry } from "@/lib/hooks/useProjectBank";
 import { computeMatches, scoreMatch } from "@/lib/matching/scoreMatch";
 import { projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
+import { useSaveProject } from "@/lib/hooks/useSaveProject";
 import { useFundingProfile } from "@/lib/hooks/useFundingProfile";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -78,6 +79,17 @@ function DemoPageInner() {
     return { name: "intake" };
   });
 
+  // Intake → results → workspace are all the same page, so switching step
+  // keeps the scroll position — e.g. submitting the long intake form would
+  // land at the bottom of the match list. Every step change starts at the top
+  // instead (but not the very first render, which the browser already handles).
+  const previousStepName = useRef(step.name);
+  useEffect(() => {
+    if (previousStepName.current === step.name) return;
+    previousStepName.current = step.name;
+    window.scrollTo({ top: 0 });
+  }, [step.name]);
+
   // Once mounted, the deep link is resolved again against what this
   // browser actually has: the project as saved (edits to a seeded project
   // live in localStorage overrides, which the seed-only guess above can't
@@ -117,6 +129,16 @@ function DemoPageInner() {
   // Översikt or a notification — "back" means back to where the user came
   // from, not to a match list they never saw.
   const deepLinked = Boolean(preselectedProjectId && preselectedCallId);
+  // "Spara projektet" on the intake form: a project described here becomes
+  // a new project under Projekt; one opened from Projekt (?project=) is
+  // updated. Either way the user lands on its page, which lists the calls
+  // it matches.
+  const { t } = useLanguage();
+  const saveProjectEntry = useSaveProject();
+  const saveProject = (project: ProjectInput) => {
+    router.push(`/projekt/${saveProjectEntry(project, preselectedProjectId)}`);
+  };
+
   const leaveWorkspace = () => {
     if (window.history.length > 1) router.back();
     else router.push(customerProjectId ? `/projekt/${customerProjectId}` : "/ansok");
@@ -125,7 +147,9 @@ function DemoPageInner() {
   return (
     <>
       <Header />
-      <main className="section min-h-[70vh]">
+      {/* data-project-loaded: set once a ?project= has been read from this
+          browser's storage — the form is re-filled with it at that point. */}
+      <main className="section min-h-[70vh]" data-project-loaded={resolved}>
         {step.name === "intake" && (
           <>
           {!preselectedProjectId && !step.project && <ExistingProjectPicker />}
@@ -133,6 +157,7 @@ function DemoPageInner() {
             key={storedProject ? "stored" : "seed"}
             initialProject={initialProject}
             draftProject={step.project}
+            secondary={{ label: t.demo.intake.saveProject, hint: t.demo.intake.saveProjectHint, onClick: saveProject }}
             onSubmit={(project) => {
               // Coming from a specific call in the EU database ("Hjälp mig
               // söka") locks the AI straight into that call's context on the

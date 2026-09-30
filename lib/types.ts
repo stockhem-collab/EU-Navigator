@@ -312,6 +312,19 @@ export interface ProjectBankEntry {
    * scoped to their organisation (the root unit) or a specific department.
    * Undefined/empty = not shared beyond its own assignees. */
   sharedWithUnitIds?: string[];
+  /** The matching fields a project is described with in the intake form
+   * (see ProjectInput) — stored so a saved or imported project is matched
+   * on the same terms as one just described. All optional: unset is
+   * scored as "unknown", never as a mismatch. */
+  applicantType?: ApplicantType;
+  activityType?: ActivityType;
+  secondarySectors?: Sector[];
+  targetGroups?: TargetGroup[];
+  region?: SwedishRegion;
+  /** Undefined = derived from hasInternationalPartner. */
+  partnerLevel?: PartnerLevel;
+  /** The EU grant the project plans to apply for, when known. */
+  requestedGrantSEK?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -648,6 +661,9 @@ export interface ApplicationVersion {
   /** Every section's fully resolved text at save time (project-logic row
    * label -> text), not just the user's overrides. */
   sectionDrafts: Record<string, string>;
+  /** The application's own amounts at save time (see ApplicationBudget).
+   * Absent on versions saved before applications had amounts of their own. */
+  budget?: { eligibleBudgetSEK?: number; requestedGrantSEK?: number };
 }
 
 /** Where one application stands — docs/DATA_MODEL.md §2.6. */

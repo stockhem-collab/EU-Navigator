@@ -86,9 +86,9 @@ export default function OversiktPage() {
   );
 
   const stats = [
-    { label: ov.statActiveApplications, value: applications.length, href: "/ansok", warn: false },
-    { label: ov.statReportsAttention, value: visibleReports.filter((x) => x.state === "attention").length, href: "/rapportera", warn: true },
-    { label: ov.statReportsUpcoming, value: visibleReports.filter((x) => x.state === "upcoming").length, href: "/rapportera", warn: false },
+    { label: ov.statActiveApplications, value: applications.length, href: "/ansok#applications", warn: false },
+    { label: ov.statReportsAttention, value: visibleReports.filter((x) => x.state === "attention").length, href: "/rapportera#attention", warn: true },
+    { label: ov.statReportsUpcoming, value: visibleReports.filter((x) => x.state === "upcoming").length, href: "/rapportera#upcoming", warn: false },
     { label: ov.statOpenTasks, value: openTasks.length, href: "#tasks-heading", warn: false },
     { label: ov.statUnread, value: unread.length, href: "#notifications-heading", warn: false },
   ];

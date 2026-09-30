@@ -28,3 +28,20 @@ export function projectStatusFromApplications(current: ProjectStatus, records: A
   if (records.some((r) => r.status === "awarded")) return "funded";
   return "funding-search";
 }
+
+/** The four figures Ansöka counts applications under — each one also a
+ * filter of its list (/ansok?filter=<group>). */
+export type ApplicationStatusGroup = "draft" | "withFunder" | "awarded" | "closed";
+
+export const APPLICATION_STATUS_GROUPS: Record<ApplicationStatusGroup, ApplicationStatus[]> = {
+  draft: ["draft"],
+  withFunder: ["submitted", "under-review"],
+  awarded: ["awarded"],
+  closed: ["rejected", "withdrawn"],
+};
+
+export function applicationStatusGroup(status: ApplicationStatus): ApplicationStatusGroup {
+  return (Object.keys(APPLICATION_STATUS_GROUPS) as ApplicationStatusGroup[]).find((g) =>
+    APPLICATION_STATUS_GROUPS[g].includes(status)
+  )!;
+}

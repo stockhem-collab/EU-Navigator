@@ -14,6 +14,14 @@ test("the start page is open, the rest of the system is not", async ({ page }) =
   await expect(page.getByRole("heading", { name: "Logga in" })).toBeVisible();
 });
 
+test("the start page offers one way in: the login form, above the fold on a phone too", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Logga in" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Logga in" })).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "Logga in" })).toBeInViewport();
+});
+
 test("a wrong password is refused", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("E-post").fill("anna@exempelstad.se");

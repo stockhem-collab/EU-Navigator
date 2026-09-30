@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { ActivityType, ApplicantType, PartnerLevel, ProjectInput, Sector, SwedishRegion } from "@/lib/types";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
@@ -93,15 +93,30 @@ interface Props {
    * Unlike initialProject, this never shows the "prefilled from Projektbanken"
    * banner, since it isn't from a saved project. */
   draftProject?: ProjectInput;
+  /** The main button's label; finding funding by default. */
+  submitLabel?: string;
+  /** A second action beside the main button — e.g. saving the project
+   * without going on to the matches. Runs after the same checks. */
+  secondary?: { label: string; hint?: string; onClick: (project: ProjectInput) => void };
+  /** Replaces the heading and intro, e.g. on /projekt/nytt. */
+  heading?: { title: string; subtitle: string };
 }
 
-export default function ProjectForm({ onSubmit, initialProject, draftProject }: Props) {
+export default function ProjectForm({
+  onSubmit,
+  initialProject,
+  draftProject,
+  submitLabel,
+  secondary,
+  heading,
+}: Props) {
   const { t, lang } = useLanguage();
   const [project, setProject] = useState<ProjectInput>(initialProject ?? draftProject ?? DEFAULT_PROJECT);
   const intake = t.demo.intake;
   const { all: allTags, addCustomTag } = useTags();
   const { config: orgConfig } = useOrgConfig();
 
+  const formRef = useRef<HTMLFormElement>(null);
   const fillExample = () => setProject(lang === "sv" ? EXAMPLE_SV : EXAMPLE_EN);
 
   const suggestedTags = useMemo(
@@ -131,8 +146,10 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject }: 
       )}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900">{intake.title}</h1>
-          <p className="mt-2 text-sm text-navy-600">{intake.subtitle}</p>
+          <h1 className="text-2xl font-bold text-navy-900">
+            {heading?.title ?? (initialProject ? intake.titleExisting : intake.title)}
+          </h1>
+          <p className="mt-2 text-sm text-navy-600">{heading?.subtitle ?? intake.subtitle}</p>
         </div>
         <button
           type="button"
@@ -144,6 +161,7 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject }: 
       </div>
 
       <form
+        ref={formRef}
         className="mt-8 space-y-6"
         onSubmit={(e) => {
           e.preventDefault();
@@ -417,12 +435,33 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject }: 
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="w-full rounded-md bg-navy-800 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-navy-700"
-        >
-          {intake.submit}
-        </button>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <button
+            type="submit"
+            className="flex-1 rounded-md bg-navy-800 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-navy-700"
+          >
+            {submitLabel ?? intake.submit}
+          </button>
+          {secondary && (
+            <button
+              type="button"
+              aria-describedby={secondary.hint ? "intake-secondary-hint" : undefined}
+              onClick={() => {
+                // Same required fields as the main button.
+                if (!formRef.current?.reportValidity() || requestedGrantTooHigh) return;
+                secondary.onClick({ ...project, applicantType });
+              }}
+              className="rounded-md border border-navy-300 bg-white px-6 py-3 text-sm font-semibold text-navy-800 transition hover:bg-navy-50"
+            >
+              {secondary.label}
+            </button>
+          )}
+        </div>
+        {secondary?.hint && (
+          <p id="intake-secondary-hint" className="-mt-3 text-xs text-navy-500">
+            {secondary.hint}
+          </p>
+        )}
       </form>
     </div>
   );

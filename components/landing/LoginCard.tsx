@@ -48,7 +48,7 @@ export default function LoginCard() {
       id="login"
       onSubmit={submit}
       aria-labelledby="login-title"
-      className="w-full scroll-mt-24 rounded-2xl bg-white p-6 text-navy-900 shadow-xl"
+      className="w-full rounded-2xl bg-white p-6 text-navy-900 shadow-xl"
     >
       <h2 id="login-title" className="text-xl font-bold">
         {l.title}
