@@ -193,6 +193,16 @@ export function latestOutcomeFor(project: Grant, indicatorSv: string): number | 
   return undefined;
 }
 
+/** Like latestOutcomeFor, with the report it came from — for judging it
+ * against what should have been reached by then (expectedShareAt). */
+export function latestOutcomeEventFor(project: Grant, indicatorSv: string): { value: number; eventId: string } | undefined {
+  for (let i = project.reportingEvents.length - 1; i >= 0; i--) {
+    const outcome = project.reportingEvents[i].outcomes.find((o) => o.indicator_sv === indicatorSv);
+    if (outcome) return { value: outcome.value, eventId: project.reportingEvents[i].id };
+  }
+  return undefined;
+}
+
 /** Every reported outturn for one indicator across the project's history,
  * in chronological order, each paired with the period label of the report
  * it came from — the series a trend chart needs, rather than just the
@@ -255,14 +265,14 @@ export type ReportingHealth = "good" | "attention" | "blocked";
  * any report is stuck awaiting a correction (the most urgent state —
  * takes priority regardless of how the numbers look), "attention" if the
  * latest known outturn for any commitment is meaningfully behind plan,
- * "good" otherwise. Same 90%-of-promised threshold already used for the
- * per-indicator deviation flag, just rolled up to one project-level
- * verdict for list views. */
+ * "good" otherwise. "Behind plan" is judged against what should have been
+ * reached by the report it came from (see expectedShareAt and
+ * isDeviation), the same rule the report form asks explanations by. */
 export function reportingHealth(project: Grant): ReportingHealth {
   if (project.reportingEvents.some((e) => e.status === "revision-requested")) return "blocked";
   const anyDeviates = project.commitments.some((c) => {
-    const latest = latestOutcomeFor(project, c.indicator_sv);
-    return latest !== undefined && latest < c.promisedValue * 0.9;
+    const latest = latestOutcomeEventFor(project, c.indicator_sv);
+    return latest !== undefined && isDeviation(latest.value, c.promisedValue, expectedShareAt(project, latest.eventId));
   });
   return anyDeviates ? "attention" : "good";
 }
@@ -277,4 +287,22 @@ export function reportState(event: ReportingEvent): ReportState {
   if (event.status === "revision-requested") return "attention";
   if (event.status === "upcoming") return event.deadlineMonthsFromNow < 0 ? "attention" : "upcoming";
   return "done";
+}
+
+/** How much of each commitment should be reached by a given report: the
+ * whole of it by the final report, and an even share per report before
+ * it. Without a final report in the plan (older seed grants, whose plan
+ * only runs as far as the next report), the whole commitment is the
+ * yardstick, as elsewhere. */
+export function expectedShareAt(project: Grant, eventId: string): number {
+  const core = project.reportingEvents.filter((e) => e.type === "interim" || e.type === "final");
+  const event = project.reportingEvents.find((e) => e.id === eventId);
+  if (!event || event.type !== "interim" || !core.some((e) => e.type === "final")) return 1;
+  return (core.findIndex((e) => e.id === eventId) + 1) / core.length;
+}
+
+/** An outcome counts as a deviation — one the report must explain — when
+ * it's more than 10 % behind what should have been reached by then. */
+export function isDeviation(value: number, promisedValue: number, expectedShare: number): boolean {
+  return value < promisedValue * expectedShare * 0.9;
 }

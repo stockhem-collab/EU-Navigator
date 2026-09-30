@@ -8,57 +8,72 @@ import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import {
   nextActionableReport,
-  latestOutcomeFor,
+  latestOutcomeEventFor,
   outcomeHistoryFor,
   isReportingComplete,
   reportingHealth,
   ReportingHealth,
   financialHistory,
-  cumulativeSpentThrough,
+  expectedShareAt,
+  isDeviation,
 } from "@/lib/data/grants";
+import { seedGrants } from "@/lib/data/grants";
 import { findCall } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { useReportingSubmissions, ReportingSubmission } from "@/lib/hooks/useReportingSubmissions";
+import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useGrants } from "@/lib/hooks/useGrants";
 import { useApplications } from "@/lib/hooks/useApplications";
-import { useAttachments, downloadAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/hooks/useAttachments";
-import { buildReportDocx } from "@/lib/export/exportReport";
+import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
+import { useAttachments } from "@/lib/hooks/useAttachments";
+import { buildGrantDocx, ReportContent } from "@/lib/export/exportReport";
 import { downloadBlob } from "@/lib/export/exportApplication";
-import { fmtSEK, fmtFileSize } from "@/lib/format";
-import { Grant, Commitment, ReportingEvent, ReportingEventStatus, ReportingPeriodicity } from "@/lib/types";
-import ConfirmButton from "@/components/ConfirmButton";
+import { formatReportDue } from "@/lib/matching/reportingSchedule";
+import { fmtSEK } from "@/lib/format";
+import { Grant, Commitment, ReportingEvent, ReportingPeriodicity } from "@/lib/types";
+import ReportCard, { documentAttachmentKey, reportAttachmentKey, requiredDocuments, statusStyle } from "@/components/grants/ReportCard";
+import CommitmentsEditor, { completeCommitments } from "@/components/grants/CommitmentsEditor";
 
+// A grant and its reporting, ordered from "what do I do now" to reference:
+// the key figures, the report to write next, how the project is doing
+// (commitments and finances together), every report in the plan, and last
+// the call's reporting requirements and the links to project and
+// application.
 export default function GrantPage() {
   const params = useParams<{ id: string }>();
   const { t, lang } = useLanguage();
   const ap = t.grants;
   const pb = t.projectBank;
-  const { withSubmissions, submitReport, submissionHistory, addSustainabilityEvent, setEventStatus } = useReportingSubmissions();
+  const {
+    withSubmissions,
+    submitReport,
+    submissionHistory,
+    addSustainabilityEvent,
+    setEventStatus,
+    statusChanges,
+    reportDraft,
+    updateReportDraft,
+  } = useReportingSubmissions();
   const { all: projectBank, updateEntry, hydrated: projectBankHydrated } = useProjectBank();
-  const { all: awardedProjects, hydrated: awardedProjectsHydrated } = useGrants();
+  const { all: grants, updateGrant, hydrated: grantsHydrated } = useGrants();
   const { records: applicationRecords } = useApplications();
+  const { users } = useUsersDirectory();
+  const { attachmentsFor } = useAttachments();
+  const [openReports, setOpenReports] = useState<string[]>([]);
 
-  // A project added via "Markera som beviljad" only exists in this
-  // browser's localStorage, unavailable during the server render — same
-  // "wait for hydrated before deciding not-found" pattern as the
-  // Projektbank detail page uses for CSV-imported entries.
-  const seedProject = awardedProjects.find((a) => a.id === params.id);
-
-  const project = seedProject ? withSubmissions(seedProject) : undefined;
-  const linkedEntry = project?.projectBankEntryId ? projectBank.find((p) => p.id === project.projectBankEntryId) : undefined;
-  // The application this grant was awarded on — recorded on the grant, or
-  // (for grants created before that) found via the application's own link.
-  const linkedApplication = project
-    ? applicationRecords.find((r) => r.id === project.applicationId || r.awardedProjectId === project.id)
+  // A grant registered from an application only exists in this browser's
+  // storage, unavailable during the server render — wait for it before
+  // deciding it doesn't exist.
+  const storedGrant = grants.find((a) => a.id === params.id);
+  const grant = storedGrant ? withSubmissions(storedGrant) : undefined;
+  const linkedEntry = grant?.projectBankEntryId ? projectBank.find((p) => p.id === grant.projectBankEntryId) : undefined;
+  const linkedApplication = grant
+    ? applicationRecords.find((r) => r.id === grant.applicationId || r.awardedProjectId === grant.id)
     : undefined;
-  const reportingComplete = project ? isReportingComplete(project) : false;
+  const reportingComplete = grant ? isReportingComplete(grant) : false;
 
-  // Keeps the originating Projektbank entry's status in sync with reality
-  // instead of requiring a manual "update status" click: an entry linked to
-  // an awarded project is, by definition, no longer just an "idea" — and
-  // once reporting is fully done, it's "completed" rather than left
-  // "running" forever.
+  // The project's status follows its reporting: running while it goes on,
+  // completed once it's done.
   useEffect(() => {
     if (!projectBankHydrated || !linkedEntry) return;
     if (reportingComplete && linkedEntry.status !== "completed") {
@@ -68,8 +83,8 @@ export default function GrantPage() {
     }
   }, [projectBankHydrated, linkedEntry, reportingComplete, updateEntry]);
 
-  if (!project) {
-    if (!awardedProjectsHydrated) return null;
+  if (!grant) {
+    if (!grantsHydrated) return null;
     return (
       <>
         <Header />
@@ -84,38 +99,65 @@ export default function GrantPage() {
     );
   }
 
-  const call = findCall(project.callId);
+  const call = findCall(grant.callId);
   const program = call ? findProgram(call.programId) : undefined;
   const reportingReq = call?.reportingRequirements;
-  const nextActionable = nextActionableReport(project);
-  const health = reportingHealth(project);
-  const hasSustainabilityEvent = project.reportingEvents.some((e) => e.type === "sustainability");
+  const nextActionable = nextActionableReport(grant);
+  const health = reportingHealth(grant);
+  const hasSustainabilityEvent = grant.reportingEvents.some((e) => e.type === "sustainability");
+  const seedGrant = seedGrants.find((g) => g.id === grant.id);
+  const totalSpent = financialHistory(grant).reduce((sum, h) => sum + h.spentThisPeriodSEK, 0);
 
   const periodicityLabel = (p: ReportingPeriodicity) =>
     p === "quarterly" ? ap.periodicityQuarterly : p === "biannual" ? ap.periodicityBiannual : ap.periodicityAnnual;
+  const healthStyle = (h: ReportingHealth) =>
+    h === "blocked" ? "bg-amber-100 text-amber-800" : h === "attention" ? "bg-gold-100 text-gold-800" : "bg-green-100 text-green-800";
+  const healthLabel = (h: ReportingHealth) =>
+    h === "blocked" ? ap.healthBlockedLabel : h === "attention" ? ap.healthAttentionLabel : ap.healthGoodLabel;
 
-  const statusStyle = (status: ReportingEventStatus) => {
-    if (status === "approved") return "bg-green-100 text-green-800";
-    if (status === "submitted") return "bg-navy-100 text-navy-700";
-    if (status === "revision-requested") return "bg-amber-100 text-amber-800";
-    return "bg-navy-50 text-navy-500";
+  // What a report says, for its export: the latest submission's text, or
+  // the draft being written.
+  const contentFor = (event: ReportingEvent): ReportContent => {
+    const draft = reportDraft(grant.id, event.id);
+    const latest = submissionHistory(grant.id, event.id).slice(-1)[0];
+    const note = lang === "sv" ? event.note_sv : event.note_en;
+    const sections = { ...(note ? { summary: note } : {}), ...(latest?.sections ?? {}), ...draft.sections };
+    const owner = users.find((u) => u.id === draft.ownerId);
+    return {
+      sections,
+      deviations: { ...(latest?.deviations ?? {}), ...draft.deviations },
+      documents: requiredDocuments(grant, event, lang).map((name, i) => {
+        const files = attachmentsFor(documentAttachmentKey(grant.id, event.id, i)).map((a) => a.fileName);
+        return { name, ready: Boolean(draft.checklist[name]) || files.length > 0, files };
+      }),
+      otherAttachments: attachmentsFor(reportAttachmentKey(grant.id, event.id)).map((a) => a.fileName),
+      ownerName: owner ? `${owner.firstName} ${owner.lastName}` : undefined,
+    };
   };
-  const statusLabel = (status: ReportingEventStatus) => {
-    if (status === "approved") return ap.reportStatusApproved;
-    if (status === "submitted") return ap.reportStatusSubmitted;
-    if (status === "revision-requested") return ap.reportStatusRevisionRequested;
-    return ap.reportStatusUpcoming;
+
+  const apiFor = (event: ReportingEvent) => ({
+    draft: reportDraft(grant.id, event.id),
+    updateDraft: (patch: Parameters<typeof updateReportDraft>[2]) => updateReportDraft(grant.id, event.id, patch),
+    history: submissionHistory(grant.id, event.id),
+    statusChanges: statusChanges(grant.id, event.id),
+    onSubmit: (
+      outcomes: Record<string, number>,
+      note: string,
+      spent: number | undefined,
+      content: { sections: Record<string, string>; deviations: Record<string, string> }
+    ) => submitReport(grant.id, event.id, outcomes, note, spent, content),
+    onSetStatus: (status: Parameters<typeof setEventStatus>[2]) => setEventStatus(grant.id, event.id, status),
+    contentFor: () => contentFor(event),
+    seedEvent: seedGrant?.reportingEvents.find((e) => e.id === event.id),
+  });
+
+  const handleExportAll = async () => {
+    const blob = await buildGrantDocx(grant, call, program, contentFor, lang);
+    downloadBlob(blob, `stod-${grant.id}.docx`);
   };
-  const healthStyle = (h: ReportingHealth) => {
-    if (h === "blocked") return "bg-amber-100 text-amber-800";
-    if (h === "attention") return "bg-gold-100 text-gold-800";
-    return "bg-green-100 text-green-800";
-  };
-  const healthLabel = (h: ReportingHealth) => {
-    if (h === "blocked") return ap.healthBlockedLabel;
-    if (h === "attention") return ap.healthAttentionLabel;
-    return ap.healthGoodLabel;
-  };
+
+  const projectName = linkedEntry ? (lang === "sv" ? linkedEntry.title_sv : linkedEntry.title_en) : lang === "sv" ? grant.title_sv : grant.title_en;
+  const grantName = lang === "sv" ? grant.title_sv : grant.title_en;
 
   return (
     <>
@@ -125,6 +167,7 @@ export default function GrantPage() {
           ← {ap.back}
         </Link>
 
+        {/* 1. Header and key figures */}
         <div className="mt-4 flex items-center gap-4">
           {program && (
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-base font-bold text-white">
@@ -134,144 +177,199 @@ export default function GrantPage() {
           <div className="flex-1">
             <p className="text-xs font-semibold uppercase text-navy-400">{ap.title}</p>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold text-navy-900">
-                {linkedEntry ? (lang === "sv" ? linkedEntry.title_sv : linkedEntry.title_en) : lang === "sv" ? project.title_sv : project.title_en}
-              </h1>
+              <h1 className="text-2xl font-bold text-navy-900">{projectName}</h1>
               <span className={`badge ${healthStyle(health)}`}>{healthLabel(health)}</span>
             </div>
-            {linkedEntry && (lang === "sv" ? linkedEntry.title_sv !== project.title_sv : linkedEntry.title_en !== project.title_en) && (
-              <p className="text-sm text-navy-500">{ap.euProjectName(lang === "sv" ? project.title_sv : project.title_en)}</p>
-            )}
+            {projectName !== grantName && <p className="text-sm text-navy-500">{ap.euProjectName(grantName)}</p>}
             {call && <p className="text-sm text-navy-600">{lang === "sv" ? call.title_sv : call.title_en}</p>}
           </div>
         </div>
 
-        {projectBankHydrated && linkedEntry && (
-          <div className="mt-4 rounded-md bg-navy-50 px-4 py-3">
-            <p className="text-xs text-navy-600">
-              {ap.linkedProjectBankLabel}:{" "}
-              <Link href={`/projekt/${linkedEntry.id}`} className="font-semibold text-navy-800 hover:underline">
-                {lang === "sv" ? linkedEntry.title_sv : linkedEntry.title_en}
-              </Link>
-            </p>
-            {linkedApplication && call && (
-              <p className="mt-1 text-xs text-navy-600">
-                {ap.linkedApplicationLabel}:{" "}
-                <Link
-                  href={`/ansokan?project=${linkedApplication.projectId}&call=${linkedApplication.callId}&application=${encodeURIComponent(linkedApplication.id)}`}
-                  className="font-semibold text-navy-800 hover:underline"
-                >
-                  {ap.openApplicationLink}
-                </Link>
-              </p>
-            )}
-            <p className="mt-1 text-xs text-navy-400">{ap.linkedProjectStatusAutoSyncNote}</p>
-          </div>
-        )}
-
-        <dl className="mt-6 grid gap-4 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-2">
+        <dl className="mt-6 grid gap-4 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-3">
           <div>
             <dt className="text-xs font-semibold uppercase text-navy-400">{ap.awardedAmount}</dt>
-            <dd className="mt-1 text-xl font-bold text-navy-900">{fmtSEK(project.awardedAmountSEK, lang)}</dd>
+            <dd className="mt-1 text-xl font-bold text-navy-900">{fmtSEK(grant.awardedAmountSEK, lang)}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold uppercase text-navy-400">{ap.spentLabel}</dt>
+            <dd className="mt-1 text-xl font-bold text-navy-900">{fmtSEK(totalSpent, lang)}</dd>
           </div>
           <div>
             <dt className="text-xs font-semibold uppercase text-navy-400">{ap.nextReportDueLabel}</dt>
-            <dd className="mt-1 text-xl font-bold text-navy-900">
-              {nextActionable
-                ? nextActionable.status === "revision-requested"
-                  ? ap.reportStatusRevisionRequested
-                  : ap.nextReportDue(nextActionable.deadlineMonthsFromNow)
-                : ap.reportingCompleteLabel}
+            <dd className="mt-1 text-base font-bold text-navy-900">
+              {nextActionable ? (
+                <>
+                  {lang === "sv" ? nextActionable.periodLabel_sv : nextActionable.periodLabel_en}
+                  <span className="block text-sm font-normal text-navy-600">
+                    {nextActionable.status === "revision-requested"
+                      ? ap.reportStatusRevisionRequested
+                      : ap.dueOn(formatReportDue(nextActionable, lang))}
+                  </span>
+                </>
+              ) : (
+                ap.reportingCompleteLabel
+              )}
             </dd>
           </div>
         </dl>
 
-        <FinancialSummaryCard project={project} />
+        {/* 2. The report to write now */}
+        <section id="next-report" className="mt-8" aria-labelledby="next-report-heading">
+          <h2 id="next-report-heading" className="text-lg font-bold text-navy-800">
+            {ap.nextReportTitle}
+          </h2>
+          {nextActionable ? (
+            <div className="mt-3">
+              <ReportCard grant={grant} event={nextActionable} working users={users} api={apiFor(nextActionable)} />
+            </div>
+          ) : (
+            <div className="mt-3 rounded-xl border border-dashed border-navy-200 p-4">
+              <p className="text-sm font-semibold text-navy-700">{ap.reportingCompleteLabel}</p>
+              {reportingComplete && !hasSustainabilityEvent && (
+                <>
+                  <p className="mt-1 text-sm text-navy-600">{ap.addSustainabilityHint}</p>
+                  <button
+                    type="button"
+                    onClick={() => addSustainabilityEvent(grant.id, 36)}
+                    className="mt-2 rounded-md border border-navy-200 bg-white px-3 py-2 text-xs font-semibold text-navy-700 hover:bg-navy-50"
+                  >
+                    {ap.addSustainabilityButton}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </section>
 
+        {/* 3. How it's going: commitments and finances together */}
+        <section id="follow-up" className="mt-10" aria-labelledby="follow-up-heading">
+          <h2 id="follow-up-heading" className="text-lg font-bold text-navy-800">
+            {ap.followUpTitle}
+          </h2>
+          <CommitmentsSection grant={grant} onSave={(commitments) => updateGrant(grant.id, { commitments })} />
+          <FinancialSummaryCard grant={grant} totalSpent={totalSpent} />
+        </section>
+
+        {/* 4. Every report in the plan */}
+        <section id="reports" className="mt-10" aria-labelledby="reports-heading">
+          <h2 id="reports-heading" className="text-lg font-bold text-navy-800">
+            {ap.allReportsTitle}
+          </h2>
+          <p className="mt-1 text-sm text-navy-500">{ap.allReportsHint}</p>
+          <ul className="mt-3 divide-y divide-navy-50 rounded-xl border border-navy-100 bg-white">
+            {grant.reportingEvents.map((event) => {
+              const isNext = event.id === nextActionable?.id;
+              const open = openReports.includes(event.id);
+              return (
+                <li key={event.id} className="px-4 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-semibold text-navy-800">{lang === "sv" ? event.periodLabel_sv : event.periodLabel_en}</h3>
+                      <p className="text-xs text-navy-500">{ap.dueOn(formatReportDue(event, lang))}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`badge ${statusStyle(event.status)}`}>
+                        {event.status === "approved"
+                          ? ap.reportStatusApproved
+                          : event.status === "submitted"
+                          ? ap.reportStatusSubmitted
+                          : event.status === "revision-requested"
+                          ? ap.reportStatusRevisionRequested
+                          : ap.reportStatusUpcoming}
+                      </span>
+                      {isNext ? (
+                        <a href="#next-report" className="text-xs font-semibold text-navy-600 hover:text-navy-900">
+                          {ap.seeNextReport}
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          aria-expanded={open}
+                          onClick={() => setOpenReports(open ? openReports.filter((id) => id !== event.id) : [...openReports, event.id])}
+                          className="text-xs font-semibold text-navy-600 hover:text-navy-900"
+                        >
+                          {open ? ap.hideDetails : ap.showDetails}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  {open && !isNext && (
+                    <div className="mt-3">
+                      <ReportCard grant={grant} event={event} working={false} users={users} api={apiFor(event)} />
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
+        {/* 5. Reference: the call's reporting requirements, in one place */}
         {reportingReq && (
-          <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
-            <h2 className="text-sm font-semibold uppercase text-navy-400">{ap.reportingRequirementsTitle}</h2>
+          <details className="mt-10 rounded-xl border border-navy-100 bg-white p-5">
+            <summary className="cursor-pointer text-sm font-semibold text-navy-800">{ap.reportingRequirementsTitle}</summary>
             <dl className="mt-3">
               <dt className="text-xs text-navy-400">{ap.periodicityLabel}</dt>
               <dd className="font-semibold text-navy-800">{periodicityLabel(reportingReq.periodicity)}</dd>
             </dl>
             <p className="mt-3 text-sm text-navy-600">{ap.interimReportsRequiredLabel(reportingReq.interimReportsRequired)}</p>
-            {reportingReq.requiresAuditAboveSEK !== null && project.awardedAmountSEK > reportingReq.requiresAuditAboveSEK && (
+            {reportingReq.requiresAuditAboveSEK !== null && grant.awardedAmountSEK > reportingReq.requiresAuditAboveSEK && (
               <p className="mt-3 text-sm text-navy-600">
                 {ap.auditRequiredAboveLabel} {fmtSEK(reportingReq.requiresAuditAboveSEK, lang)}
               </p>
             )}
             <div className="mt-4 grid gap-5 sm:grid-cols-2">
-              <div>
-                <p className="text-xs font-semibold uppercase text-navy-400">{ap.interimDocumentsLabel}</p>
-                <ul className="mt-1.5 space-y-1">
-                  {(lang === "sv" ? reportingReq.interimDocuments_sv : reportingReq.interimDocuments_en).map((d) => (
-                    <li key={d} className="text-sm text-navy-600">
-                      · {d}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase text-navy-400">{ap.finalReportDocumentsLabel}</p>
-                <ul className="mt-1.5 space-y-1">
-                  {(lang === "sv" ? reportingReq.finalReportDocuments_sv : reportingReq.finalReportDocuments_en).map((d) => (
-                    <li key={d} className="text-sm text-navy-600">
-                      · {d}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {project.commitments.length > 0 && (
-          <section className="mt-6">
-            <h2 className="text-lg font-bold text-navy-800">{ap.commitmentsTitle}</h2>
-            <div className="mt-4 space-y-3">
-              {project.commitments.map((c) => (
-                <CommitmentCard key={c.indicator_sv} commitment={c} project={project} />
+              {[
+                { label: ap.interimDocumentsLabel, docs: lang === "sv" ? reportingReq.interimDocuments_sv : reportingReq.interimDocuments_en },
+                { label: ap.finalReportDocumentsLabel, docs: lang === "sv" ? reportingReq.finalReportDocuments_sv : reportingReq.finalReportDocuments_en },
+              ].map((group) => (
+                <div key={group.label}>
+                  <p className="text-xs font-semibold uppercase text-navy-400">{group.label}</p>
+                  <ul className="mt-1.5 space-y-1">
+                    {group.docs.map((d) => (
+                      <li key={d} className="text-sm text-navy-600">
+                        · {d}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
             </div>
-          </section>
+          </details>
         )}
 
-        <section className="mb-16 mt-6">
-          <h2 className="text-lg font-bold text-navy-800">{ap.reportingTimelineTitle}</h2>
-          <p className="mt-1 text-sm text-navy-500">{ap.reportingTimelineHint}</p>
-          <div className="mt-4 space-y-3">
-            {project.reportingEvents.map((event) => (
-              <ReportingEventCard
-                key={event.id}
-                event={event}
-                seedEvent={seedProject?.reportingEvents.find((e) => e.id === event.id)}
-                project={project}
-                call={call}
-                program={program}
-                isNext={nextActionable?.id === event.id}
-                history={submissionHistory(project.id, event.id)}
-                statusStyle={statusStyle}
-                statusLabel={statusLabel}
-                onSubmit={(outcomes, note, spentThisPeriodSEK) =>
-                  submitReport(project.id, event.id, outcomes, note, spentThisPeriodSEK)
-                }
-                onSetStatus={(status) => setEventStatus(project.id, event.id, status)}
-              />
-            ))}
-          </div>
-          {isReportingComplete(project) && !hasSustainabilityEvent && (
-            <div className="mt-4 rounded-xl border border-dashed border-navy-200 p-4">
-              <p className="text-sm text-navy-600">{ap.addSustainabilityHint}</p>
-              <button
-                type="button"
-                onClick={() => addSustainabilityEvent(project.id, 36)}
-                className="mt-2 rounded-md border border-navy-200 bg-white px-3 py-2 text-xs font-semibold text-navy-700 hover:bg-navy-50"
-              >
-                {ap.addSustainabilityButton}
-              </button>
-            </div>
+        {/* 6. Links, and the whole grant as one document */}
+        <section className="mb-16 mt-6 rounded-xl bg-navy-50 px-4 py-3" aria-labelledby="links-heading">
+          <h2 id="links-heading" className="text-xs font-semibold uppercase text-navy-400">
+            {ap.linksTitle}
+          </h2>
+          {projectBankHydrated && linkedEntry && (
+            <p className="mt-1 text-xs text-navy-600">
+              {ap.linkedProjectBankLabel}:{" "}
+              <Link href={`/projekt/${linkedEntry.id}`} className="font-semibold text-navy-800 hover:underline">
+                {lang === "sv" ? linkedEntry.title_sv : linkedEntry.title_en}
+              </Link>
+            </p>
           )}
+          {linkedApplication && call && (
+            <p className="mt-1 text-xs text-navy-600">
+              {ap.linkedApplicationLabel}:{" "}
+              <Link
+                href={`/ansokan?project=${linkedApplication.projectId}&call=${linkedApplication.callId}&application=${encodeURIComponent(linkedApplication.id)}`}
+                className="font-semibold text-navy-800 hover:underline"
+              >
+                {ap.openApplicationLink}
+              </Link>
+            </p>
+          )}
+          {linkedEntry && <p className="mt-1 text-xs text-navy-400">{ap.linkedProjectStatusAutoSyncNote}</p>}
+          <button
+            type="button"
+            onClick={handleExportAll}
+            className="mt-3 rounded-md border border-navy-200 bg-white px-3 py-2 text-xs font-semibold text-navy-700 hover:bg-navy-100"
+          >
+            {ap.exportGrantButton}
+          </button>
         </section>
       </main>
       <Footer />
@@ -279,43 +377,93 @@ export default function GrantPage() {
   );
 }
 
-function CommitmentCard({ commitment: c, project }: { commitment: Commitment; project: Grant }) {
+// The commitments against their latest outcome, judged against what should
+// have been reached by the report it came from — and editable, since a
+// grant registered without them (or with the wrong ones) needs fixing.
+function CommitmentsSection({ grant, onSave }: { grant: Grant; onSave: (commitments: Commitment[]) => void }) {
+  const { t } = useLanguage();
+  const ap = t.grants;
+  const [editing, setEditing] = useState<Commitment[] | null>(null);
+
+  return (
+    <div className="mt-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold uppercase text-navy-400">{ap.commitmentsTitle}</h3>
+        {!editing && (
+          <button
+            type="button"
+            onClick={() => setEditing(grant.commitments)}
+            className="text-xs font-semibold text-navy-600 hover:text-navy-900"
+          >
+            {ap.commitmentsEdit}
+          </button>
+        )}
+      </div>
+      {editing ? (
+        <div className="mt-2 rounded-xl border border-navy-100 bg-white p-4">
+          <CommitmentsEditor value={editing} onChange={setEditing} idPrefix={`grant-${grant.id}`} />
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                onSave(completeCommitments(editing));
+                setEditing(null);
+              }}
+              className="rounded-md bg-navy-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-navy-700"
+            >
+              {ap.commitmentsSave}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(null)}
+              className="rounded-md border border-navy-200 px-3 py-1.5 text-xs font-semibold text-navy-600 hover:bg-navy-50"
+            >
+              {t.confirm.cancel}
+            </button>
+          </div>
+        </div>
+      ) : grant.commitments.length === 0 ? (
+        <p className="mt-2 rounded-xl border border-dashed border-navy-200 p-4 text-sm text-navy-600">{ap.commitmentsEmptyHint}</p>
+      ) : (
+        <div className="mt-2 space-y-3">
+          {grant.commitments.map((c) => (
+            <CommitmentCard key={c.indicator_sv} commitment={c} grant={grant} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CommitmentCard({ commitment: c, grant }: { commitment: Commitment; grant: Grant }) {
   const { t, lang } = useLanguage();
   const ap = t.grants;
-  const latest = latestOutcomeFor(project, c.indicator_sv);
-  const deviates = latest !== undefined && latest < c.promisedValue * 0.9;
+  const latest = latestOutcomeEventFor(grant, c.indicator_sv);
+  const deviates = latest !== undefined && isDeviation(latest.value, c.promisedValue, expectedShareAt(grant, latest.eventId));
   const unit = lang === "sv" ? c.unit_sv : c.unit_en;
   const fmt = (v: number) => v.toLocaleString(lang === "sv" ? "sv-SE" : "en-US");
-  const history = outcomeHistoryFor(project, c.indicator_sv);
+  const history = outcomeHistoryFor(grant, c.indicator_sv);
   const maxValue = Math.max(c.promisedValue, ...history.map((h) => h.value), 1);
   const targetPct = Math.min(100, (c.promisedValue / maxValue) * 100);
 
   return (
     <div className="rounded-xl border border-navy-100 bg-white p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="font-semibold text-navy-800">{lang === "sv" ? c.indicator_sv : c.indicator_en}</h3>
+        <h4 className="font-semibold text-navy-800">{lang === "sv" ? c.indicator_sv : c.indicator_en}</h4>
         <span
           className={`badge ${
             latest === undefined ? "bg-navy-50 text-navy-400" : deviates ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"
           }`}
         >
-          {latest !== undefined ? `${fmt(latest)} / ${fmt(c.promisedValue)} ${unit}` : ap.noLatestOutcome}
+          {latest !== undefined ? `${fmt(latest.value)} / ${fmt(c.promisedValue)} ${unit}` : ap.noLatestOutcome}
         </span>
       </div>
       <div className="mt-3 h-2 rounded-full bg-navy-100">
         <div
           className={`h-2 rounded-full ${latest === undefined ? "bg-navy-200" : deviates ? "bg-amber-500" : "bg-green-500"}`}
-          style={{ width: `${c.promisedValue > 0 ? Math.min(100, ((latest ?? 0) / c.promisedValue) * 100) : 0}%` }}
+          style={{ width: `${c.promisedValue > 0 ? Math.min(100, ((latest?.value ?? 0) / c.promisedValue) * 100) : 0}%` }}
         />
       </div>
-      <p className="mt-3 text-sm text-navy-600">
-        <span className="font-semibold">{ap.promised}: </span>
-        {fmt(c.promisedValue)} {unit}
-        {" · "}
-        <span className="font-semibold">{ap.reported}: </span>
-        {latest !== undefined ? `${fmt(latest)} ${unit}` : ap.noLatestOutcome}
-      </p>
-
       {history.length > 1 && (
         <div className="mt-4 border-t border-navy-50 pt-3">
           <p className="text-xs font-semibold uppercase text-navy-400">{ap.trendChartTitle}</p>
@@ -328,10 +476,7 @@ function CommitmentCard({ commitment: c, project }: { commitment: Commitment; pr
             <div className="flex h-full items-end gap-2">
               {history.map((h, i) => (
                 <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1" title={`${fmt(h.value)} ${unit}`}>
-                  <div
-                    className="w-full rounded-t bg-navy-600"
-                    style={{ height: `${Math.min(100, (h.value / maxValue) * 100)}%` }}
-                  />
+                  <div className="w-full rounded-t bg-navy-600" style={{ height: `${Math.min(100, (h.value / maxValue) * 100)}%` }} />
                   <span className="text-[10px] text-navy-400">{lang === "sv" ? h.periodLabel_sv : h.periodLabel_en}</span>
                 </div>
               ))}
@@ -343,27 +488,23 @@ function CommitmentCard({ commitment: c, project }: { commitment: Commitment; pr
   );
 }
 
-function FinancialSummaryCard({ project }: { project: Grant }) {
+// Spend against the grant, and — for a grant registered from an
+// application — against the budget it planned with.
+function FinancialSummaryCard({ grant, totalSpent }: { grant: Grant; totalSpent: number }) {
   const { t, lang } = useLanguage();
   const ap = t.grants;
-  const history = financialHistory(project);
-
-  // Nothing reported yet — nothing to show, same as the commitments
-  // section only rendering when there's actually something to render.
-  if (history.length === 0) return null;
-
-  const totalSpent = history.reduce((sum, h) => sum + h.spentThisPeriodSEK, 0);
-  const remaining = project.awardedAmountSEK - totalSpent;
-  const pct = project.awardedAmountSEK > 0 ? Math.min(100, (totalSpent / project.awardedAmountSEK) * 100) : 0;
+  const history = financialHistory(grant);
+  const remaining = grant.awardedAmountSEK - totalSpent;
+  const pct = grant.awardedAmountSEK > 0 ? Math.min(100, (totalSpent / grant.awardedAmountSEK) * 100) : 0;
   const maxSpend = Math.max(...history.map((h) => h.spentThisPeriodSEK), 1);
 
   return (
-    <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
-      <h2 className="text-sm font-semibold uppercase text-navy-400">{ap.financialSummaryTitle}</h2>
+    <div className="mt-4 rounded-xl border border-navy-100 bg-white p-6">
+      <h3 className="text-sm font-semibold uppercase text-navy-400">{ap.financialSummaryTitle}</h3>
       <div className="mt-3 flex items-center justify-between">
         <span className="text-sm text-navy-600">{ap.financialSpentLabel}</span>
         <span className="font-semibold text-navy-800">
-          {fmtSEK(totalSpent, lang)} / {fmtSEK(project.awardedAmountSEK, lang)}
+          {fmtSEK(totalSpent, lang)} / {fmtSEK(grant.awardedAmountSEK, lang)}
         </span>
       </div>
       <div className="mt-2 h-2 rounded-full bg-navy-100">
@@ -372,350 +513,31 @@ function FinancialSummaryCard({ project }: { project: Grant }) {
       <p className="mt-2 text-xs text-navy-500">
         {ap.financialRemainingLabel}: {fmtSEK(remaining, lang)}
       </p>
-
+      {grant.plannedBudget && (
+        <dl className="mt-4 grid gap-3 border-t border-navy-50 pt-3 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-xs text-navy-400">{ap.plannedBudgetLabel}</dt>
+            <dd className="font-semibold text-navy-800">{fmtSEK(grant.plannedBudget.totalBudgetSEK, lang)}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-navy-400">{ap.plannedOwnFinancingLabel}</dt>
+            <dd className="font-semibold text-navy-800">{fmtSEK(grant.plannedBudget.ownFinancingSEK, lang)}</dd>
+          </div>
+        </dl>
+      )}
       {history.length > 1 && (
         <div className="mt-4 border-t border-navy-50 pt-3">
           <p className="text-xs font-semibold uppercase text-navy-400">{ap.financialHistoryTitle}</p>
           <div className="mt-2 flex h-14 items-end gap-2">
             {history.map((h, i) => (
-              <div
-                key={i}
-                className="flex h-full flex-1 flex-col items-center justify-end gap-1"
-                title={fmtSEK(h.spentThisPeriodSEK, lang)}
-              >
-                <div
-                  className="w-full rounded-t bg-navy-600"
-                  style={{ height: `${Math.min(100, (h.spentThisPeriodSEK / maxSpend) * 100)}%` }}
-                />
+              <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1" title={fmtSEK(h.spentThisPeriodSEK, lang)}>
+                <div className="w-full rounded-t bg-navy-600" style={{ height: `${Math.min(100, (h.spentThisPeriodSEK / maxSpend) * 100)}%` }} />
                 <span className="text-[10px] text-navy-400">{lang === "sv" ? h.periodLabel_sv : h.periodLabel_en}</span>
               </div>
             ))}
           </div>
         </div>
       )}
-    </section>
-  );
-}
-
-function ReportingEventCard({
-  event,
-  seedEvent,
-  project,
-  call,
-  program,
-  isNext,
-  history,
-  statusStyle,
-  statusLabel,
-  onSubmit,
-  onSetStatus,
-}: {
-  event: ReportingEvent;
-  /** The same event as originally seeded, before any local correction is
-   * overlaid — the "before" state a resubmission needs to show as history,
-   * since it lives in static seed data rather than as a dated submission
-   * the app itself ever recorded. Undefined for an event with no seed
-   * counterpart (e.g. a locally-added sustainability follow-up). */
-  seedEvent: ReportingEvent | undefined;
-  project: Grant;
-  call: ReturnType<typeof findCall>;
-  program: ReturnType<typeof findProgram>;
-  isNext: boolean;
-  history: ReportingSubmission[];
-  statusStyle: (s: ReportingEventStatus) => string;
-  statusLabel: (s: ReportingEventStatus) => string;
-  onSubmit: (outcomes: Record<string, number>, note: string, spentThisPeriodSEK?: number) => void;
-  onSetStatus: (status: ReportingEventStatus) => void;
-}) {
-  const { t, lang } = useLanguage();
-  const ap = t.grants;
-  const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
-  const attachmentKey = `report:${project.id}:${event.id}`;
-  const [attachmentError, setAttachmentError] = useState<string | null>(null);
-  const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
-      project.commitments.map((c) => {
-        const existing = event.outcomes.find((o) => o.indicator_sv === c.indicator_sv);
-        return [c.indicator_sv, existing ? String(existing.value) : ""];
-      })
-    )
-  );
-  const [note, setNote] = useState(event.note_sv ?? event.note_en ?? "");
-  const [spentThisPeriod, setSpentThisPeriod] = useState(
-    event.financials ? String(event.financials.spentThisPeriodSEK) : ""
-  );
-  const [justSubmitted, setJustSubmitted] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-
-  const showForm = isNext && (event.status === "upcoming" || event.status === "revision-requested");
-  const fmt = (v: number) => v.toLocaleString(lang === "sv" ? "sv-SE" : "en-US");
-
-  // The seed data's own original outcome is never itself recorded as a
-  // dated submission — it's baked into the event, not written through
-  // submitReport. So the very first correction of a seeded event has no
-  // "before" entry in `history` to show as previous submissions unless we
-  // synthesize one here, with no real timestamp to mark it as such.
-  const fullHistory: ReportingSubmission[] =
-    history.length > 0 && seedEvent && seedEvent.outcomes.length > 0
-      ? [
-          {
-            outcomes: Object.fromEntries(seedEvent.outcomes.map((o) => [o.indicator_sv, o.value])),
-            note: seedEvent.note_sv ?? seedEvent.note_en ?? "",
-            spentThisPeriodSEK: seedEvent.financials?.spentThisPeriodSEK,
-            submittedAt: "",
-          },
-          ...history,
-        ]
-      : history;
-
-  const reportTypeLabel =
-    event.type === "final" ? ap.reportTypeFinal : event.type === "sustainability" ? ap.reportTypeSustainability : ap.reportTypeInterim;
-
-  const handleExport = async () => {
-    const blob = await buildReportDocx(project, event, call, program, lang);
-    downloadBlob(blob, `rapport-${project.id}-${event.id}.docx`);
-  };
-
-  return (
-    <div className="rounded-xl border border-navy-100 bg-white p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase text-navy-400">{reportTypeLabel}</p>
-          <h3 className="font-semibold text-navy-800">{lang === "sv" ? event.periodLabel_sv : event.periodLabel_en}</h3>
-        </div>
-        <div className="text-right">
-          {/* Editable rather than a plain badge — there's no reviewer role
-              in this demo to set "Godkänd"/"Komplettering begärd"
-              automatically, so it starts at whatever the seed data or a
-              submission gives it, and can be changed by hand from here. */}
-          <select
-            value={event.status}
-            onChange={(e) => onSetStatus(e.target.value as ReportingEventStatus)}
-            aria-label={ap.reportStatusEditLabel}
-            className={`badge cursor-pointer border-none focus:outline-none focus:ring-1 focus:ring-navy-500 ${statusStyle(event.status)}`}
-          >
-            <option value="upcoming">{ap.reportStatusUpcoming}</option>
-            <option value="submitted">{ap.reportStatusSubmitted}</option>
-            <option value="revision-requested">{ap.reportStatusRevisionRequested}</option>
-            <option value="approved">{ap.reportStatusApproved}</option>
-          </select>
-          {event.status === "upcoming" && (
-            <p className="mt-1 text-xs text-navy-500">
-              {event.deadlineMonthsFromNow >= 0
-                ? ap.reportDueInMonths(event.deadlineMonthsFromNow)
-                : ap.reportOverdueBy(Math.abs(event.deadlineMonthsFromNow))}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {call?.reportingRequirements &&
-        event.type !== "sustainability" &&
-        (event.status === "upcoming" || event.status === "revision-requested") && (
-          <div className="mt-3 rounded-md bg-navy-50 px-3 py-3">
-            <p className="text-xs font-semibold uppercase text-navy-400">
-              {event.type === "final" ? ap.finalReportDocumentsLabel : ap.interimDocumentsLabel}
-            </p>
-            <ul className="mt-1.5 space-y-1">
-              {(event.type === "final"
-                ? lang === "sv"
-                  ? call.reportingRequirements.finalReportDocuments_sv
-                  : call.reportingRequirements.finalReportDocuments_en
-                : lang === "sv"
-                ? call.reportingRequirements.interimDocuments_sv
-                : call.reportingRequirements.interimDocuments_en
-              ).map((d) => (
-                <li key={d} className="text-sm text-navy-700">
-                  · {d}
-                </li>
-              ))}
-            </ul>
-            {event.type === "final" &&
-              call.reportingRequirements.requiresAuditAboveSEK !== null &&
-              project.awardedAmountSEK > call.reportingRequirements.requiresAuditAboveSEK && (
-                <p className="mt-2 text-xs font-semibold text-amber-700">
-                  ⚠ {ap.auditRequiredAboveLabel} {fmtSEK(call.reportingRequirements.requiresAuditAboveSEK, lang)}
-                </p>
-              )}
-            {call.documents.some((d) => d.type === "reporting") && (
-              <Link
-                href={`/eu-databas/${call.programId}/${call.id}`}
-                className="mt-2 inline-block text-xs font-semibold text-navy-600 hover:text-navy-900"
-              >
-                {ap.viewReportingInstructionsLink}
-              </Link>
-            )}
-          </div>
-        )}
-
-      {event.outcomes.length > 0 && (
-        <ul className="mt-3 space-y-1 border-t border-navy-50 pt-3">
-          {event.outcomes.map((o) => {
-            const commitment = project.commitments.find((c) => c.indicator_sv === o.indicator_sv);
-            if (!commitment) return null;
-            return (
-              <li key={o.indicator_sv} className="flex items-center justify-between text-sm">
-                <span className="text-navy-600">{lang === "sv" ? commitment.indicator_sv : commitment.indicator_en}</span>
-                <span className="font-semibold text-navy-800">
-                  {fmt(o.value)} {lang === "sv" ? commitment.unit_sv : commitment.unit_en}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-      {event.outcomes.length === 0 && !showForm && (
-        <p className="mt-3 text-sm text-navy-500">{ap.noOutcomesYet}</p>
-      )}
-
-      {event.financials && (
-        <p className="mt-3 text-sm text-navy-600">
-          {ap.reportFinancialLine(fmtSEK(event.financials.spentThisPeriodSEK, lang))}
-        </p>
-      )}
-
-      {(event.note_sv || event.note_en) && (
-        <p className="mt-3 text-sm text-navy-500">
-          <span className="font-semibold">{ap.reportNoteLabel}: </span>
-          {lang === "sv" ? event.note_sv : event.note_en}
-        </p>
-      )}
-
-      {event.outcomes.length > 0 && (
-        <button
-          type="button"
-          onClick={handleExport}
-          className="mt-3 text-xs font-semibold text-navy-500 hover:text-navy-800"
-        >
-          {ap.exportReportButton}
-        </button>
-      )}
-
-      <div className="mt-3 border-t border-navy-50 pt-3">
-        <p className="text-xs font-semibold uppercase text-navy-400">{ap.reportAttachmentsLabel}</p>
-        {attachmentsFor(attachmentKey).length > 0 && (
-          <ul className="mt-1.5 space-y-1">
-            {attachmentsFor(attachmentKey).map((a) => (
-              <li key={a.id} className="flex items-center justify-between gap-2 text-xs">
-                <button type="button" onClick={() => downloadAttachment(a)} className="text-navy-700 hover:underline">
-                  {a.fileName}
-                </button>
-                <ConfirmButton
-                  label={ap.reportAttachmentRemoveLabel}
-                  message={ap.confirmRemoveReportAttachment(a.fileName)}
-                  confirmLabel={t.confirm.yesRemove}
-                  cancelLabel={t.confirm.cancel}
-                  onConfirm={() => removeAttachment(attachmentKey, a.id)}
-                  danger
-                  className="shrink-0 text-navy-400 hover:text-amber-700"
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-        <label className="mt-1.5 inline-block cursor-pointer text-xs font-semibold text-navy-500 hover:text-navy-800">
-          {ap.reportAttachmentUploadButton}
-          <input
-            type="file"
-            className="hidden"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              if (!file) return;
-              setAttachmentError(null);
-              const error = await addAttachment(attachmentKey, file);
-              if (error === "too-large") setAttachmentError(ap.reportAttachmentTooLarge(MAX_ATTACHMENT_BYTES / (1024 * 1024)));
-            }}
-          />
-        </label>
-        {attachmentError && <p className="mt-1 text-xs text-amber-700">⚠ {attachmentError}</p>}
-      </div>
-
-      {fullHistory.length > 1 && (
-        <div className="mt-3 border-t border-navy-50 pt-3">
-          <button
-            type="button"
-            onClick={() => setShowHistory((v) => !v)}
-            className="text-xs font-semibold text-navy-500 hover:text-navy-800"
-          >
-            {ap.reportHistoryToggle(fullHistory.length - 1)}
-          </button>
-          {showHistory && (
-            <ul className="mt-2 space-y-2">
-              {fullHistory.slice(0, -1).map((s, i) => (
-                <li key={i} className="rounded-md bg-navy-50 p-2 text-xs text-navy-600">
-                  <p className="font-semibold text-navy-700">
-                    {s.submittedAt
-                      ? ap.reportHistoryEntryLabel(new Date(s.submittedAt).toLocaleString(lang === "sv" ? "sv-SE" : "en-US"))
-                      : ap.reportHistoryOriginalLabel}
-                  </p>
-                  {Object.entries(s.outcomes).map(([indicator, value]) => (
-                    <p key={indicator}>
-                      {indicator}: {value}
-                    </p>
-                  ))}
-                  {s.spentThisPeriodSEK !== undefined && (
-                    <p>{ap.reportFinancialLine(fmtSEK(s.spentThisPeriodSEK, lang))}</p>
-                  )}
-                  {s.note && <p className="mt-1 italic">{s.note}</p>}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
-      {showForm && (
-        <div className="mt-4 space-y-3 border-t border-navy-50 pt-4">
-          <p className="text-sm font-semibold text-navy-800">{ap.reportFormTitle}</p>
-          {project.commitments.map((c) => (
-            <div key={c.indicator_sv} className="flex items-center gap-3">
-              <label className="flex-1 text-sm text-navy-700">{lang === "sv" ? c.indicator_sv : c.indicator_en}</label>
-              <input
-                type="number"
-                value={values[c.indicator_sv]}
-                onChange={(e) => setValues({ ...values, [c.indicator_sv]: e.target.value })}
-                placeholder="0"
-                className="w-28 rounded-md border border-navy-200 px-2 py-1.5 text-right text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-              />
-              <span className="w-16 shrink-0 text-xs text-navy-400">{lang === "sv" ? c.unit_sv : c.unit_en}</span>
-            </div>
-          ))}
-          <div className="flex items-center gap-3">
-            <label className="flex-1 text-sm text-navy-700">{ap.reportFormFinancialLabel}</label>
-            <input
-              type="number"
-              value={spentThisPeriod}
-              onChange={(e) => setSpentThisPeriod(e.target.value)}
-              placeholder="0"
-              className="w-32 rounded-md border border-navy-200 px-2 py-1.5 text-right text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-navy-700">{ap.reportFormNoteLabel}</label>
-            <textarea
-              rows={2}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder={ap.reportFormNotePlaceholder}
-              className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              const outcomes = Object.fromEntries(Object.entries(values).map(([k, v]) => [k, Number(v) || 0]));
-              const spentValue = spentThisPeriod.trim() ? Number(spentThisPeriod) : undefined;
-              onSubmit(outcomes, note, spentValue);
-              setJustSubmitted(true);
-            }}
-            className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
-          >
-            {event.status === "revision-requested" ? ap.reportFormCorrectButton : ap.reportFormSubmitButton}
-          </button>
-        </div>
-      )}
-      {justSubmitted && <p className="mt-3 text-xs text-navy-400">{ap.reportSubmittedIndicator}</p>}
     </div>
   );
 }

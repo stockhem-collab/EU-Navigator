@@ -22,7 +22,9 @@ test("marking a funded project as awarded creates real reporting tracking and sy
   await page.getByRole("button", { name: "Ja, registrera" }).click();
 
   await expect(page).toHaveURL(/\/stod\/ap-pb-2/);
-  await expect(page.getByRole("heading", { name: "Lägesrapport 1" })).toBeVisible();
+  // The whole plan is scheduled, the first report next.
+  await expect(page.locator("#next-report").getByRole("heading", { name: /Lägesrapport 1/ })).toBeVisible();
+  await expect(page.locator("#reports").getByRole("heading", { name: "Slutrapport" })).toBeVisible();
   await expect(page.getByRole("link", { name: "AI-baserad medborgarservice", exact: false }).first()).toBeVisible();
 
   // The originating entry's status is now kept in sync automatically —

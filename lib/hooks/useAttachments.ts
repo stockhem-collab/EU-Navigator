@@ -51,13 +51,22 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
+const CHANGED_EVENT = "eu-navigator-attachments-changed";
+
 export function useAttachments() {
   const [state, setState] = useState<AttachmentsState>({});
   const [hydrated, setHydrated] = useState(false);
 
+  // Several parts of a page can use this hook at once (a report's checklist
+  // and its other attachments, the export) — each change is written from
+  // what's stored, not from one instance's copy, and every instance is
+  // told to re-read, so none of them can overwrite another's file.
   useEffect(() => {
     setState(read());
     setHydrated(true);
+    const sync = () => setState(read());
+    window.addEventListener(CHANGED_EVENT, sync);
+    return () => window.removeEventListener(CHANGED_EVENT, sync);
   }, []);
 
   const attachmentsFor = useCallback((key: string): Attachment[] => state[key] ?? [], [state]);
@@ -75,20 +84,20 @@ export function useAttachments() {
       uploadedAt: new Date().toISOString(),
       dataUrl,
     };
-    setState((prev) => {
-      const next = { ...prev, [key]: [...(prev[key] ?? []), attachment] };
-      write(next);
-      return next;
-    });
+    const stored = read();
+    const next = { ...stored, [key]: [...(stored[key] ?? []), attachment] };
+    write(next);
+    setState(next);
+    window.dispatchEvent(new Event(CHANGED_EVENT));
     return null;
   }, []);
 
   const removeAttachment = useCallback((key: string, id: string) => {
-    setState((prev) => {
-      const next = { ...prev, [key]: (prev[key] ?? []).filter((a) => a.id !== id) };
-      write(next);
-      return next;
-    });
+    const stored = read();
+    const next = { ...stored, [key]: (stored[key] ?? []).filter((a) => a.id !== id) };
+    write(next);
+    setState(next);
+    window.dispatchEvent(new Event(CHANGED_EVENT));
   }, []);
 
   return { hydrated, attachmentsFor, addAttachment, removeAttachment };

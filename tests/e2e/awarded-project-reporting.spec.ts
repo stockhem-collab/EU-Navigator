@@ -8,20 +8,16 @@ import { test, expect } from "@playwright/test";
 test("an awarded project's reporting timeline and requirements are visible", async ({ page }) => {
   await page.goto("/stod/ap-1");
 
-  await expect(page.getByText("Rapporteringskrav för utlysningen")).toBeVisible();
+  // The call's requirements are reference, folded at the end of the page.
+  await page.getByText("Rapporteringskrav för utlysningen").click();
   await expect(page.getByText("Årsvis")).toBeVisible();
 
-  // The status badge is an editable <select> (see the reporting-status
-  // review), so its current value is checked directly rather than via
-  // getByText — every card's select renders all four option labels in the
-  // DOM, which would otherwise match ambiguously.
-  await expect(page.getByRole("heading", { name: "Lägesrapport 2027" })).toBeVisible();
-  const report2027 = page.locator("div.rounded-xl", { hasText: "Lägesrapport 2027" });
-  await expect(report2027.locator("select").first()).toHaveValue("approved");
-  await expect(page.getByRole("heading", { name: "Lägesrapport 2028" })).toBeVisible();
-  const report2028 = page.locator("div.rounded-xl", { hasText: "Lägesrapport 2028" });
-  await expect(report2028.locator("select").first()).toHaveValue("submitted");
-  await expect(page.getByRole("heading", { name: "Slutrapport" })).toBeVisible();
+  // Every report in the plan, with its status.
+  const reports = page.locator("#reports");
+  await expect(reports.locator("li", { hasText: "Lägesrapport 2027" }).getByText("Godkänd")).toBeVisible();
+  await expect(reports.locator("li", { hasText: "Lägesrapport 2028" }).getByText("Inlämnad")).toBeVisible();
+  // The final report is the one to write now, at the top.
+  await expect(page.locator("#next-report").getByRole("heading", { name: "Slutrapport" })).toBeVisible();
 });
 
 test("submitting the next upcoming report updates the commitment summary and moves the project into closure", async ({
@@ -33,12 +29,13 @@ test("submitting the next upcoming report updates the commitment summary and mov
   await inputs.nth(0).fill("1500");
   await inputs.nth(1).fill("20");
   await inputs.nth(2).fill("5");
-  await page.locator("textarea").fill("Alla mål uppnådda.");
+  await page.getByLabel("Sammanfattning").fill("Alla mål uppnådda.");
   await page.getByRole("button", { name: "Markera som inlämnad" }).click();
+  await page.getByRole("button", { name: "Lämna in ändå" }).click();
 
   // The commitment summary now reflects the just-submitted final report.
   await expect(page.getByText("1 500 / 1 500 personer")).toBeVisible();
-  await expect(page.getByText("All rapportering avslutad.")).toBeVisible();
+  await expect(page.locator("#next-report").getByText("All rapportering avslutad.")).toBeVisible();
 
   // The reporting badge on the Projekt list reflects the same local submission
   // — folded into the project's own status row (see LinkedReportingBadge),
@@ -65,8 +62,11 @@ test("a financial summary is shown once spend has been reported, and updates whe
   await inputs.nth(2).fill("5");
   await inputs.nth(3).fill("13000000");
   await page.getByRole("button", { name: "Markera som inlämnad" }).click();
+  await page.getByRole("button", { name: "Lämna in ändå" }).click();
 
-  await expect(page.getByText("Förbrukat denna period: 13 mnkr")).toBeVisible();
+  const final = page.locator("#reports li", { hasText: "Slutrapport" });
+  await final.getByRole("button", { name: "Visa" }).click();
+  await expect(final.getByText("Förbrukat denna period: 13 mnkr")).toBeVisible();
   await expect(page.getByText("31,4 mnkr / 42,4 mnkr")).toBeVisible();
 });
 

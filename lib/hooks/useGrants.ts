@@ -11,6 +11,20 @@ import { notifyDataChanged } from "@/lib/hooks/useActivityLog";
 // new Grant to. The storage key predates the rename and is kept so existing
 // data still loads.
 const STORAGE_KEY = "eu-navigator-added-awarded-projects";
+// Edits to a grant after it's registered (today: its commitments), for
+// seeded and added grants alike — an overlay, like useProjectBank's.
+const OVERRIDES_KEY = "eu-navigator-grant-overrides";
+export type GrantEdit = Partial<Pick<Grant, "commitments">>;
+
+function readOverrides(): Record<string, GrantEdit> {
+  try {
+    const raw = window.localStorage.getItem(OVERRIDES_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 
 function readAdded(): Grant[] {
   try {
@@ -35,24 +49,38 @@ function writeAdded(list: Grant[]) {
 
 export function useGrants() {
   const [added, setAdded] = useState<Grant[]>([]);
+  const [overrides, setOverrides] = useState<Record<string, GrantEdit>>({});
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setAdded(readAdded());
+    setOverrides(readOverrides());
     setHydrated(true);
   }, []);
 
+  // Written straight away, not from a state updater: registering a grant
+  // navigates to it right after.
   const addGrant = useCallback((project: Grant) => {
-    setAdded((prev) => {
-      const next = [...prev, project];
-      writeAdded(next);
-      return next;
-    });
+    const next = [...readAdded(), project];
+    writeAdded(next);
+    setAdded(next);
   }, []);
 
-  const all: Grant[] = [...seedGrants, ...added];
+  const updateGrant = useCallback((id: string, patch: GrantEdit) => {
+    const stored = readOverrides();
+    const next = { ...stored, [id]: { ...stored[id], ...patch } };
+    try {
+      window.localStorage.setItem(OVERRIDES_KEY, JSON.stringify(next));
+    } catch {
+      // localStorage unavailable — the edit stays in-memory for this session.
+    }
+    setOverrides(next);
+    notifyDataChanged();
+  }, []);
 
-  return { all, added, addGrant, hydrated };
+  const all: Grant[] = [...seedGrants, ...added].map((g) => (overrides[g.id] ? { ...g, ...overrides[g.id] } : g));
+
+  return { all, added, addGrant, updateGrant, hydrated };
 }
 
 /** Seed-or-added lookup by id, for the rare spot that needs one outside a

@@ -615,6 +615,52 @@ export interface TranslationTree {
     financialHistoryTitle: string;
     reportFormFinancialLabel: string;
     reportFinancialLine: (amount: string) => string;
+    nextReportTitle: string;
+    followUpTitle: string;
+    allReportsTitle: string;
+    allReportsHint: string;
+    linksTitle: string;
+    exportGrantButton: string;
+    spentLabel: string;
+    reportOwnerLabel: string;
+    reportOwnerNone: string;
+    checklistHint: string;
+    checklistAttach: string;
+    submitAnyway: string;
+    deviationLabel: string;
+    deviationRequiredError: string;
+    sectionsTitle: string;
+    reportDraftSaved: string;
+    otherAttachmentsLabel: string;
+    funderResponseLabel: string;
+    markApproved: string;
+    markRevisionRequested: string;
+    changeResponse: string;
+    eventLogTitle: string;
+    eventLogSubmitted: string;
+    revisionNotice: string;
+    upcomingLaterNote: string;
+    commitmentsEdit: string;
+    commitmentsSave: string;
+    commitmentsEmptyHint: string;
+    commitmentsNone: string;
+    commitmentIndicatorLabel: string;
+    commitmentValueLabel: string;
+    commitmentUnitLabel: string;
+    commitmentRemove: string;
+    commitmentAdd: string;
+    commitmentsAtRegistrationTitle: string;
+    commitmentsAtRegistrationHint: string;
+    plannedBudgetLabel: string;
+    plannedOwnFinancingLabel: string;
+    seeNextReport: string;
+    showDetails: string;
+    hideDetails: string;
+    dueOn: (date: string) => string;
+    checklistMissingConfirm: (n: number) => string;
+    expectedByNow: (value: string) => string;
+    eventLogStatus: (status: string) => string;
+    reportOwnerShort: (name: string) => string;
   };
   bevakning: {
     title: string;
@@ -1644,6 +1690,52 @@ export const translations: Record<Lang, TranslationTree> = {
       financialHistoryTitle: "Förbrukning per rapport",
       reportFormFinancialLabel: "Förbrukat denna period (kr, valfritt)",
       reportFinancialLine: (amount) => `Förbrukat denna period: ${amount}`,
+      nextReportTitle: "Nästa rapport",
+      followUpTitle: "Uppföljning",
+      allReportsTitle: "Alla rapporteringstillfällen",
+      allReportsHint: "Hela rapporteringsplanen, med datum. Öppna en rapport för att se vad som rapporterades och finansiärens besked.",
+      linksTitle: "Kopplingar",
+      exportGrantButton: "Exportera hela stödet (.docx)",
+      spentLabel: "Förbrukat hittills",
+      reportOwnerLabel: "Ansvarig",
+      reportOwnerNone: "Ingen utsedd",
+      checklistHint: "Bocka av underlaget när det är klart, eller bifoga filen direkt.",
+      checklistAttach: "Bifoga fil",
+      submitAnyway: "Lämna in ändå",
+      deviationLabel: "Förklara avvikelsen och vilka åtgärder ni vidtar",
+      deviationRequiredError: "Förklara varje indikator som ligger efter plan innan rapporten lämnas in.",
+      sectionsTitle: "Rapportens text",
+      reportDraftSaved: "Sparas automatiskt medan du skriver.",
+      otherAttachmentsLabel: "Övriga bilagor",
+      funderResponseLabel: "Finansiärens besked",
+      markApproved: "Godkänd",
+      markRevisionRequested: "Komplettering begärd",
+      changeResponse: "Ändra besked",
+      eventLogTitle: "Händelser",
+      eventLogSubmitted: "Inlämnad",
+      revisionNotice: "Finansiären har begärt komplettering — rätta rapporten och skicka in den igen.",
+      upcomingLaterNote: "Skrivs när den blir nästa rapport.",
+      commitmentsEdit: "Redigera åtaganden",
+      commitmentsSave: "Spara åtaganden",
+      commitmentsEmptyHint: "Inga åtaganden registrerade. Lägg till det ansökan lovade (Redigera åtaganden), så följs de upp i varje rapport.",
+      commitmentsNone: "Inga åtaganden än.",
+      commitmentIndicatorLabel: "Indikator",
+      commitmentValueLabel: "Mål",
+      commitmentUnitLabel: "Enhet",
+      commitmentRemove: "Ta bort",
+      commitmentAdd: "Lägg till åtagande",
+      commitmentsAtRegistrationTitle: "Åtaganden att följa upp",
+      commitmentsAtRegistrationHint: "Förslag utifrån vad ansökan lovade — justera, ta bort eller lägg till.",
+      plannedBudgetLabel: "Total projektbudget (enligt ansökan)",
+      plannedOwnFinancingLabel: "Planerad egen medfinansiering",
+      seeNextReport: "Se Nästa rapport ovan",
+      showDetails: "Visa",
+      hideDetails: "Dölj",
+      dueOn: (date) => `Förfaller ${date}`,
+      checklistMissingConfirm: (n) => `${n} ${n === 1 ? "underlag är inte klart" : "underlag är inte klara"}. Lämna in ändå?`,
+      expectedByNow: (value) => `Förväntat vid denna rapport: ${value}`,
+      eventLogStatus: (status) => `Besked: ${status}`,
+      reportOwnerShort: (name) => `Ansvarig: ${name}`,
     },
     bevakning: {
       title: "Hitta finansiering",
@@ -2693,6 +2785,52 @@ export const translations: Record<Lang, TranslationTree> = {
       financialHistoryTitle: "Spend per report",
       reportFormFinancialLabel: "Spent this period (SEK, optional)",
       reportFinancialLine: (amount) => `Spent this period: ${amount}`,
+      nextReportTitle: "Next report",
+      followUpTitle: "Follow-up",
+      allReportsTitle: "All reports",
+      allReportsHint: "The whole reporting plan, with dates. Open a report to see what was reported and the funder's response.",
+      linksTitle: "Links",
+      exportGrantButton: "Export the whole grant (.docx)",
+      spentLabel: "Spent to date",
+      reportOwnerLabel: "Responsible",
+      reportOwnerNone: "Not assigned",
+      checklistHint: "Tick a document when it's ready, or attach the file directly.",
+      checklistAttach: "Attach file",
+      submitAnyway: "Submit anyway",
+      deviationLabel: "Explain the deviation and the measures you're taking",
+      deviationRequiredError: "Explain every indicator that is behind plan before submitting the report.",
+      sectionsTitle: "The report's text",
+      reportDraftSaved: "Saved automatically as you type.",
+      otherAttachmentsLabel: "Other attachments",
+      funderResponseLabel: "The funder's response",
+      markApproved: "Approved",
+      markRevisionRequested: "Revision requested",
+      changeResponse: "Change response",
+      eventLogTitle: "History",
+      eventLogSubmitted: "Submitted",
+      revisionNotice: "The funder has asked for a revision — correct the report and submit it again.",
+      upcomingLaterNote: "Written when it becomes the next report.",
+      commitmentsEdit: "Edit commitments",
+      commitmentsSave: "Save commitments",
+      commitmentsEmptyHint: "No commitments registered. Add what the application promised (Edit commitments), and they're followed up in every report.",
+      commitmentsNone: "No commitments yet.",
+      commitmentIndicatorLabel: "Indicator",
+      commitmentValueLabel: "Target",
+      commitmentUnitLabel: "Unit",
+      commitmentRemove: "Remove",
+      commitmentAdd: "Add commitment",
+      commitmentsAtRegistrationTitle: "Commitments to follow up",
+      commitmentsAtRegistrationHint: "Suggested from what the application promised — adjust, remove or add.",
+      plannedBudgetLabel: "Total project budget (as applied)",
+      plannedOwnFinancingLabel: "Planned own co-financing",
+      seeNextReport: "See Next report above",
+      showDetails: "Show",
+      hideDetails: "Hide",
+      dueOn: (date) => `Due ${date}`,
+      checklistMissingConfirm: (n) => `${n} ${n === 1 ? "document isn't" : "documents aren't"} ready. Submit anyway?`,
+      expectedByNow: (value) => `Expected by this report: ${value}`,
+      eventLogStatus: (status) => `Response: ${status}`,
+      reportOwnerShort: (name) => `Responsible: ${name}`,
     },
     bevakning: {
       title: "Find funding",

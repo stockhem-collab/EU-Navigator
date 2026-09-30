@@ -17,6 +17,7 @@ import { findCall } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { CURRENT_USER_ID, isProjectRelevantToUser, orgUnits as seedOrgUnits } from "@/lib/data/users";
 import { fmtSEK } from "@/lib/format";
+import { formatReportDue } from "@/lib/matching/reportingSchedule";
 import { Grant, ProjectBankEntry, ReportingEvent } from "@/lib/types";
 import { useOnlyMineAndShared } from "@/lib/hooks/useOnlyMineAndShared";
 
@@ -29,7 +30,7 @@ export default function ReportPage() {
   const r = t.report;
   const ap = t.grants;
   const { all: grants, hydrated } = useGrants();
-  const { withSubmissions, hydrated: submissionsHydrated } = useReportingSubmissions();
+  const { withSubmissions, reportDraft, hydrated: submissionsHydrated } = useReportingSubmissions();
   const { all: projectBank } = useProjectBank();
   const { users } = useUsersDirectory();
   const { config: orgConfig } = useOrgConfig();
@@ -60,6 +61,11 @@ export default function ReportPage() {
   const done = reports.filter((x) => reportState(x.event) === "done").sort((a, b) => -byDeadline(a, b));
 
   const ready = hydrated && submissionsHydrated;
+  // Who is responsible for each report, as set on the report itself.
+  const ownerOf = (grant: Grant, event: ReportingEvent) => {
+    const user = users.find((u) => u.id === reportDraft(grant.id, event.id).ownerId);
+    return user ? `${user.firstName} ${user.lastName}` : undefined;
+  };
 
   return (
     <>
@@ -113,7 +119,7 @@ export default function ReportPage() {
               ) : (
                 <ul className="mt-3 space-y-2">
                   {attention.map((x) => (
-                    <ReportRow key={x.event.id} grant={x.grant} event={x.event} projectBank={projectBank} />
+                    <ReportRow key={x.event.id} grant={x.grant} event={x.event} projectBank={projectBank} ownerName={ownerOf(x.grant, x.event)} />
                   ))}
                 </ul>
               )}
@@ -128,7 +134,7 @@ export default function ReportPage() {
               ) : (
                 <ul className="mt-3 space-y-2">
                   {upcoming.map((x) => (
-                    <ReportRow key={x.event.id} grant={x.grant} event={x.event} projectBank={projectBank} />
+                    <ReportRow key={x.event.id} grant={x.grant} event={x.event} projectBank={projectBank} ownerName={ownerOf(x.grant, x.event)} />
                   ))}
                 </ul>
               )}
@@ -147,7 +153,7 @@ export default function ReportPage() {
                 {showDone && (
                   <ul className="mt-3 space-y-2">
                     {done.map((x) => (
-                      <ReportRow key={x.event.id} grant={x.grant} event={x.event} projectBank={projectBank} />
+                      <ReportRow key={x.event.id} grant={x.grant} event={x.event} projectBank={projectBank} ownerName={ownerOf(x.grant, x.event)} />
                     ))}
                   </ul>
                 )}
@@ -194,7 +200,17 @@ export default function ReportPage() {
   );
 }
 
-function ReportRow({ grant, event, projectBank }: { grant: Grant; event: ReportingEvent; projectBank: ProjectBankEntry[] }) {
+function ReportRow({
+  grant,
+  event,
+  projectBank,
+  ownerName,
+}: {
+  grant: Grant;
+  event: ReportingEvent;
+  projectBank: ProjectBankEntry[];
+  ownerName?: string;
+}) {
   const { t, lang } = useLanguage();
   const r = t.report;
   const ap = t.grants;
@@ -238,6 +254,10 @@ function ReportRow({ grant, event, projectBank }: { grant: Grant; event: Reporti
             <span className="ml-2 text-xs font-normal text-navy-400">{typeLabel}</span>
           </p>
           {call && <p className="text-xs text-navy-500">{lang === "sv" ? call.title_sv : call.title_en}</p>}
+          <p className="text-xs text-navy-500">
+            {ap.dueOn(formatReportDue(event, lang))}
+            {ownerName && ` · ${ap.reportOwnerShort(ownerName)}`}
+          </p>
         </div>
       </div>
       <div className="flex items-center gap-2">
