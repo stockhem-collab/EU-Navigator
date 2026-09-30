@@ -13,12 +13,8 @@ import { findProgram } from "@/lib/data/fundingPrograms";
 import { findProjectBankEntry } from "@/lib/data/projectBank";
 import { findAnyProjectBankEntry } from "@/lib/hooks/useProjectBank";
 import { computeMatches, scoreMatch } from "@/lib/matching/scoreMatch";
-import {
-  projectBankEntryToProjectInput,
-  projectInputToProjectBankEntry,
-  projectMatchingFieldsPatch,
-} from "@/lib/matching/portfolio";
-import { computeReadiness } from "@/lib/matching/readiness";
+import { projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
+import { useSaveProject } from "@/lib/hooks/useSaveProject";
 import { useFundingProfile } from "@/lib/hooks/useFundingProfile";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -47,7 +43,6 @@ function DemoPageInner() {
   const preselectedProjectId = searchParams.get("project");
   const requestedApplicationId = searchParams.get("application");
   const { profile: fundingProfile, hydrated: profileHydrated } = useFundingProfile();
-  const { addImported, updateEntry } = useProjectBank();
   const { all: fundingCalls, hydrated: callsHydrated } = useFundingCalls();
 
   // Starts as whatever the URL said, but can also become persisted mid-session
@@ -138,29 +133,10 @@ function DemoPageInner() {
   // a new project under Projekt; one opened from Projekt (?project=) is
   // updated. Either way the user lands on its page, which lists the calls
   // it matches.
+  const { t } = useLanguage();
+  const saveProjectEntry = useSaveProject();
   const saveProject = (project: ProjectInput) => {
-    if (preselectedProjectId) {
-      updateEntry(preselectedProjectId, {
-        title_sv: project.title,
-        title_en: project.title,
-        description_sv: project.description,
-        description_en: project.description,
-        sector: project.sector,
-        estimatedCostSEK: project.budgetSEK,
-        periodStart: project.startYear,
-        periodEnd: project.endYear,
-        hasInternationalPartner: project.hasInternationalPartner,
-        tags: project.tags,
-        ...projectMatchingFieldsPatch(project),
-      });
-      router.push(`/projekt/${preselectedProjectId}`);
-      return;
-    }
-    const best = computeMatches(project, fundingCalls, fundingProfile)[0];
-    const readiness = best ? computeReadiness(project, best) : { overall: 0, dimensions: [] };
-    const entry = projectInputToProjectBankEntry(project, readiness);
-    addImported([entry]);
-    router.push(`/projekt/${entry.id}`);
+    router.push(`/projekt/${saveProjectEntry(project, preselectedProjectId)}`);
   };
 
   const leaveWorkspace = () => {
@@ -181,7 +157,7 @@ function DemoPageInner() {
             key={storedProject ? "stored" : "seed"}
             initialProject={initialProject}
             draftProject={step.project}
-            onSave={saveProject}
+            secondary={{ label: t.demo.intake.saveProject, hint: t.demo.intake.saveProjectHint, onClick: saveProject }}
             onSubmit={(project) => {
               // Coming from a specific call in the EU database ("Hjälp mig
               // söka") locks the AI straight into that call's context on the

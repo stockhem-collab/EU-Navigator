@@ -65,3 +65,34 @@ test("the CSV template's fields are imported onto the project", async ({ page })
   await expect(page.getByText("Halland")).toBeVisible();
   await expect(page.getByText("Konsortium med partner från minst tre länder")).toBeVisible();
 });
+
+// Under Projekt, projects are added — by the form or by a file — side by
+// side; applying for funding starts from the header's "Ny ansökan".
+test("Projekt adds projects: '+ Nytt projekt' opens the form with saving first", async ({ page }) => {
+  await page.goto("/projekt");
+  const add = page.locator("section", { has: page.getByRole("heading", { name: "Lägg till projekt" }) });
+  await expect(add.getByRole("button", { name: "Importera projekt (CSV)" })).toBeVisible();
+  // No second "Ny ansökan" on the page itself — only the header's.
+  await expect(page.locator("main").getByRole("link", { name: "Ny ansökan" })).toHaveCount(0);
+
+  await add.getByRole("link", { name: "+ Nytt projekt" }).click();
+  await expect(page).toHaveURL(/\/projekt\/nytt$/);
+  await expect(page.getByRole("heading", { name: "Nytt projekt", exact: true })).toBeVisible();
+  // Not the "is it already here?" box — this is where a new one is added.
+  await expect(page.getByText("Finns projektet redan?")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Fyll i exempel" }).click();
+  const title = `Nytt från Projekt ${Date.now()}`;
+  await page.getByLabel("Projektnamn").fill(title);
+  await page.getByRole("button", { name: "Spara projektet" }).click();
+  await expect(page).toHaveURL(/\/projekt\/manual-[^#]+$/);
+  await expect(page.getByRole("heading", { name: title })).toBeVisible();
+});
+
+test("'Spara och hitta finansiering' saves and shows the project's matches", async ({ page }) => {
+  await page.goto("/projekt/nytt");
+  await page.getByRole("button", { name: "Fyll i exempel" }).click();
+  await page.getByRole("button", { name: "Spara och hitta finansiering" }).click();
+  await expect(page).toHaveURL(/\/projekt\/manual-.+#matches$/);
+  await expect(page.getByRole("heading", { name: "Matchningar mot öppna och kommande utlysningar" })).toBeInViewport();
+});

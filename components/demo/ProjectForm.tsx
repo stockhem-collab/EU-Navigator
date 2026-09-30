@@ -93,12 +93,23 @@ interface Props {
    * Unlike initialProject, this never shows the "prefilled from Projektbanken"
    * banner, since it isn't from a saved project. */
   draftProject?: ProjectInput;
-  /** Saves the project under Projekt without going on to the matches — a
-   * new project is created, a prefilled one (initialProject) updated. */
-  onSave?: (project: ProjectInput) => void;
+  /** The main button's label; finding funding by default. */
+  submitLabel?: string;
+  /** A second action beside the main button — e.g. saving the project
+   * without going on to the matches. Runs after the same checks. */
+  secondary?: { label: string; hint?: string; onClick: (project: ProjectInput) => void };
+  /** Replaces the heading and intro, e.g. on /projekt/nytt. */
+  heading?: { title: string; subtitle: string };
 }
 
-export default function ProjectForm({ onSubmit, initialProject, draftProject, onSave }: Props) {
+export default function ProjectForm({
+  onSubmit,
+  initialProject,
+  draftProject,
+  submitLabel,
+  secondary,
+  heading,
+}: Props) {
   const { t, lang } = useLanguage();
   const [project, setProject] = useState<ProjectInput>(initialProject ?? draftProject ?? DEFAULT_PROJECT);
   const intake = t.demo.intake;
@@ -135,8 +146,10 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject, on
       )}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900">{initialProject ? intake.titleExisting : intake.title}</h1>
-          <p className="mt-2 text-sm text-navy-600">{intake.subtitle}</p>
+          <h1 className="text-2xl font-bold text-navy-900">
+            {heading?.title ?? (initialProject ? intake.titleExisting : intake.title)}
+          </h1>
+          <p className="mt-2 text-sm text-navy-600">{heading?.subtitle ?? intake.subtitle}</p>
         </div>
         <button
           type="button"
@@ -427,26 +440,26 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject, on
             type="submit"
             className="flex-1 rounded-md bg-navy-800 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-navy-700"
           >
-            {intake.submit}
+            {submitLabel ?? intake.submit}
           </button>
-          {onSave && (
+          {secondary && (
             <button
               type="button"
-              aria-describedby="intake-save-hint"
+              aria-describedby={secondary.hint ? "intake-secondary-hint" : undefined}
               onClick={() => {
-                // Same required fields as finding funding.
+                // Same required fields as the main button.
                 if (!formRef.current?.reportValidity() || requestedGrantTooHigh) return;
-                onSave({ ...project, applicantType });
+                secondary.onClick({ ...project, applicantType });
               }}
               className="rounded-md border border-navy-300 bg-white px-6 py-3 text-sm font-semibold text-navy-800 transition hover:bg-navy-50"
             >
-              {intake.saveProject}
+              {secondary.label}
             </button>
           )}
         </div>
-        {onSave && (
-          <p id="intake-save-hint" className="-mt-3 text-xs text-navy-500">
-            {intake.saveProjectHint}
+        {secondary?.hint && (
+          <p id="intake-secondary-hint" className="-mt-3 text-xs text-navy-500">
+            {secondary.hint}
           </p>
         )}
       </form>

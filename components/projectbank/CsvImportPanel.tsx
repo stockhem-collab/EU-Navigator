@@ -56,7 +56,8 @@ export default function CsvImportPanel({ onImport, existingIds }: Props) {
   };
 
   return (
-    <div className="rounded-xl border border-navy-100 bg-white p-4">
+    // Sits in the "Importera från fil" card of Projekt's "Lägg till projekt".
+    <div>
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"

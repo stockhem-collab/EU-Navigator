@@ -341,6 +341,16 @@ export interface TranslationTree {
     similarProjectsSharedLabel: string;
     back: string;
     importButton: string;
+    addProjectTitle: string;
+    addFormTitle: string;
+    addFormBody: string;
+    newProjectButton: string;
+    addImportTitle: string;
+    addImportBody: string;
+    newProjectTitle: string;
+    newProjectSubtitle: string;
+    saveAndFindFunding: string;
+    noProjectsYet: string;
     downloadTemplate: string;
     importHint: string;
     importColumnsTitle: string;
@@ -1351,6 +1361,17 @@ export const translations: Record<Lang, TranslationTree> = {
       grantsSectionHint: "Varje beviljad ansökan får ett eget beviljat stöd med egen rapportering. Rapporterna hanteras under Rapportera.",
       grantsNone: "Inget beviljat stöd ännu. När en ansökan beviljas registrerar du stödet på ansökan ovan.",
       importButton: "Importera projekt (CSV)",
+      addProjectTitle: "Lägg till projekt",
+      addFormTitle: "Beskriv ett projekt",
+      addFormBody: "Fyll i formuläret – ett projekt i taget.",
+      newProjectButton: "+ Nytt projekt",
+      addImportTitle: "Importera från fil",
+      addImportBody: "Flera projekt på en gång, från Excel eller CSV.",
+      newProjectTitle: "Nytt projekt",
+      newProjectSubtitle:
+        "Beskriv projektet så sparas det under Projekt och matchas mot EU-utlysningarna. Fyll i så mycket ni kan — matchningen blir bättre ju mer konkret beskrivningen är.",
+      saveAndFindFunding: "Spara och hitta finansiering",
+      noProjectsYet: "Inga projekt ännu — lägg till det första.",
       downloadTemplate: "Ladda ner mall",
       importHint:
         "Mallen har samma fält som formuläret för nytt projekt. Bara Titel krävs. Sparas i din webbläsare (ingen delning mellan användare i den här demon).",
@@ -2390,6 +2411,17 @@ export const translations: Record<Lang, TranslationTree> = {
       grantsSectionHint: "Each awarded application gets its own grant with its own reporting. Reports are handled under Report.",
       grantsNone: "No grant yet. When an application is awarded, register the grant on the application above.",
       importButton: "Import projects (CSV)",
+      addProjectTitle: "Add projects",
+      addFormTitle: "Describe a project",
+      addFormBody: "Fill in the form — one project at a time.",
+      newProjectButton: "+ New project",
+      addImportTitle: "Import from a file",
+      addImportBody: "Several projects at once, from Excel or CSV.",
+      newProjectTitle: "New project",
+      newProjectSubtitle:
+        "Describe the project and it's saved under Projects and matched against the EU calls. Fill in as much as you can — the more concrete the description, the better the matching.",
+      saveAndFindFunding: "Save and find funding",
+      noProjectsYet: "No projects yet — add the first one.",
       downloadTemplate: "Download template",
       importHint:
         "The template has the same fields as the new project form. Only Titel is required. Saved in your browser (not shared between users in this demo).",
