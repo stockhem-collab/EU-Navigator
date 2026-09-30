@@ -1003,10 +1003,10 @@ export const translations: Record<Lang, TranslationTree> = {
       quickLinksTitle: "Alla delar av systemet",
     },
     hero: {
-      eyebrow: "Kommunens operativsystem för extern finansiering",
-      title: "Från kommunens behov till finansierat projekt",
+      eyebrow: "Operativsystemet för extern finansiering",
+      title: "Från behov till finansierat projekt",
       subtitle:
-        "EU Navigator kopplar samman kommunens investeringsplaner med EU:s finansieringsmöjligheter — automatiskt, kontinuerligt och med AI-driven matchning och ansökningsstöd.",
+        "EU Navigator kopplar samman organisationens planer och projektidéer med EU:s finansieringsmöjligheter — för kommuner, regioner, myndigheter, lärosäten, företag och föreningar. Automatiskt, kontinuerligt och med AI-driven matchning och ansökningsstöd.",
       ctaPrimary: "Starta ansökan",
       ctaSecondary: "Så fungerar det",
       stat1Label: "Identifierad finansieringspotential",
@@ -1019,11 +1019,11 @@ export const translations: Record<Lang, TranslationTree> = {
     problem: {
       title: "Problemet är inte brist på pengar — det är brist på överblick",
       body:
-        "EU:s finansieringsmöjligheter är utspridda över Funding & Tenders Portal, nationella portaler och programspecifika webbplatser. De flesta kommuner saknar ett sätt att systematiskt matcha sina egna planer mot de möjligheter som faktiskt finns.",
+        "EU:s finansieringsmöjligheter är utspridda över Funding & Tenders Portal, nationella portaler och programspecifika webbplatser. De flesta organisationer saknar ett sätt att systematiskt matcha sina egna planer mot de möjligheter som faktiskt finns.",
       before: {
         label: "Idag",
         steps: [
-          "Idé uppstår i en förvaltning",
+          "Idé uppstår i verksamheten",
           "Någon googlar eller frågar EU-samordnaren",
           "Utlysning hittas – kanske",
           "Manuell bedömning och Excel-mall",
@@ -1034,7 +1034,7 @@ export const translations: Record<Lang, TranslationTree> = {
       after: {
         label: "Med EU Navigator",
         steps: [
-          "Kommunen beskriver vad den vill göra",
+          "Organisationen beskriver vad den vill göra",
           "AI matchar mot relevanta EU-program",
           "Matchning rankas och förklaras",
           "AI-stödd ansökan med inbyggd granskning",
@@ -1049,7 +1049,7 @@ export const translations: Record<Lang, TranslationTree> = {
       steps: [
         {
           title: "1. Planera",
-          desc: "Kommunen matar in sin investerings-, verksamhets- eller klimatplan. AI läser materialet och identifierar potentiellt finansieringsbara initiativ.",
+          desc: "Organisationen matar in sin investerings-, verksamhets- eller klimatplan. AI läser materialet och identifierar potentiellt finansieringsbara initiativ.",
         },
         {
           title: "2. Hitta",
@@ -1076,7 +1076,7 @@ export const translations: Record<Lang, TranslationTree> = {
     radar: {
       title: "EU Funding Radar",
       body:
-        "Kommunen behöver inte ens söka aktivt. Systemet känner till era strategier, budget och projektportfölj — och meddelar er proaktivt när en ny utlysning matchar.",
+        "Organisationen behöver inte ens söka aktivt. Systemet känner till era strategier, budget och projektportfölj — och meddelar er proaktivt när en ny utlysning matchar.",
       example: "4 nya finansieringsmöjligheter hittade denna vecka",
     },
     personas: {
@@ -1084,7 +1084,7 @@ export const translations: Record<Lang, TranslationTree> = {
       subtitle: "Samma system, olika vyer beroende på roll.",
       items: [
         {
-          role: "Ekonomi- och kommundirektör",
+          role: "Ekonomichef och ledning",
           need: "Vill se den totala finansieringspotentialen i portföljen — inte enskilda ansökningar.",
         },
         {
@@ -1102,23 +1102,23 @@ export const translations: Record<Lang, TranslationTree> = {
       ],
     },
     pricing: {
-      title: "En kommunal SaaS, inte betalt per ansökan",
+      title: "En tjänst för hela organisationen, inte betalt per ansökan",
       tiers: [
         {
           name: "Basic",
           price: "100–200 tkr/år",
-          desc: "Bevakning av utlysningar + AI-matchning mot kommunens projektportfölj.",
+          desc: "Bevakning av utlysningar + AI-matchning mot organisationens projektportfölj.",
         },
         {
           name: "Professional",
           price: "250–500 tkr/år",
-          desc: "Basic + AI-stödd ansökan, projektportfölj och samarbetsyta mellan förvaltningar.",
+          desc: "Basic + AI-stödd ansökan, projektportfölj och samarbetsyta mellan avdelningar.",
           highlighted: true,
         },
         {
           name: "Enterprise",
           price: "500 tkr–1+ mnkr/år",
-          desc: "Hela kommunkoncernen: projektstyrning, rapportering och integrationer mot ekonomisystem.",
+          desc: "Hela koncernen eller organisationen: projektstyrning, rapportering och integrationer mot ekonomisystem.",
         },
       ],
     },
@@ -2103,9 +2103,9 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     hero: {
       eyebrow: "The operating system for external funding",
-      title: "From municipal need to funded project",
+      title: "From need to funded project",
       subtitle:
-        "EU Navigator connects a municipality's investment plans with EU funding opportunities — automatically, continuously, with AI-driven matching and application support.",
+        "EU Navigator connects your organisation's plans and project ideas with EU funding opportunities — for municipalities, regions, public authorities, universities, companies and associations. Automatically, continuously, with AI-driven matching and application support.",
       ctaPrimary: "Start an application",
       ctaSecondary: "How it works",
       stat1Label: "Identified funding potential",
@@ -2118,11 +2118,11 @@ export const translations: Record<Lang, TranslationTree> = {
     problem: {
       title: "The problem isn't a lack of money — it's a lack of overview",
       body:
-        "EU funding is scattered across the Funding & Tenders Portal, national portals and programme-specific websites. Most municipalities have no systematic way to match their own plans against what's actually available.",
+        "EU funding is scattered across the Funding & Tenders Portal, national portals and programme-specific websites. Most organisations have no systematic way to match their own plans against what's actually available.",
       before: {
         label: "Today",
         steps: [
-          "An idea comes up in a department",
+          "An idea comes up in the organisation",
           "Someone googles it or asks the EU coordinator",
           "A call is found — maybe",
           "Manual assessment in a spreadsheet",
@@ -2133,7 +2133,7 @@ export const translations: Record<Lang, TranslationTree> = {
       after: {
         label: "With EU Navigator",
         steps: [
-          "The municipality describes what it wants to do",
+          "The organisation describes what it wants to do",
           "AI matches it against relevant EU programmes",
           "Matches are ranked and explained",
           "AI-assisted application with built-in review",
@@ -2148,7 +2148,7 @@ export const translations: Record<Lang, TranslationTree> = {
       steps: [
         {
           title: "1. Plan",
-          desc: "The municipality feeds in its investment, operational or climate plan. AI reads the material and identifies initiatives that could plausibly be funded.",
+          desc: "The organisation feeds in its investment, operational or climate plan. AI reads the material and identifies initiatives that could plausibly be funded.",
         },
         {
           title: "2. Find",
@@ -2175,7 +2175,7 @@ export const translations: Record<Lang, TranslationTree> = {
     radar: {
       title: "EU Funding Radar",
       body:
-        "The municipality doesn't even need to search actively. The system already knows your strategies, budget and project portfolio — and proactively tells you when a new call matches.",
+        "The organisation doesn't even need to search actively. The system already knows your strategies, budget and project portfolio — and proactively tells you when a new call matches.",
       example: "4 new funding opportunities found this week",
     },
     personas: {
@@ -2183,7 +2183,7 @@ export const translations: Record<Lang, TranslationTree> = {
       subtitle: "Same system, different views depending on role.",
       items: [
         {
-          role: "CFO / municipal director",
+          role: "CFO and management",
           need: "Wants to see the total funding potential across the portfolio — not individual applications.",
         },
         {
@@ -2201,23 +2201,23 @@ export const translations: Record<Lang, TranslationTree> = {
       ],
     },
     pricing: {
-      title: "A municipal SaaS, not paid per application",
+      title: "A service for the whole organisation, not paid per application",
       tiers: [
         {
           name: "Basic",
           price: "SEK 100–200k / year",
-          desc: "Monitoring of calls + AI matching against the municipality's project portfolio.",
+          desc: "Monitoring of calls + AI matching against the organisation's project portfolio.",
         },
         {
           name: "Professional",
           price: "SEK 250–500k / year",
-          desc: "Basic + AI-assisted applications, project portfolio and cross-department collaboration space.",
+          desc: "Basic + AI-assisted applications, project portfolio and a collaboration space across departments.",
           highlighted: true,
         },
         {
           name: "Enterprise",
           price: "SEK 500k–1M+ / year",
-          desc: "The whole municipal group: project governance, reporting and integrations with financial systems.",
+          desc: "The whole group or organisation: project governance, reporting and integrations with financial systems.",
         },
       ],
     },
