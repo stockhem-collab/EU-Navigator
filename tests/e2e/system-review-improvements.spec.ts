@@ -15,6 +15,8 @@ test("the active nav link is visually marked, and the homepage links to every se
     "page"
   );
 
+  // The start page is only seen logged out (logged in, it leads on to Översikt).
+  await page.context().clearCookies();
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Alla delar av systemet" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Datacenter" }).first()).toBeVisible();

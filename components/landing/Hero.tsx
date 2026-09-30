@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { Suspense } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import LoginCard from "@/components/landing/LoginCard";
 
 export default function Hero() {
   const { t } = useLanguage();
@@ -14,7 +15,8 @@ export default function Hero() {
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-navy-800 to-navy-900 text-white">
-      <div className="mx-auto max-w-6xl px-6 py-24 md:py-32">
+      <div className="mx-auto grid max-w-6xl items-start gap-12 px-6 py-24 md:py-32 lg:grid-cols-[1fr_380px]">
+        <div>
         <p className="badge bg-gold-400/20 text-gold-200">{t.hero.eyebrow}</p>
         <h1 className="mt-6 max-w-3xl text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">
           {t.hero.title}
@@ -22,12 +24,12 @@ export default function Hero() {
         <p className="mt-6 max-w-2xl text-lg text-navy-200">{t.hero.subtitle}</p>
 
         <div className="mt-10 flex flex-wrap gap-4">
-          <Link
-            href="/ansokan"
+          <a
+            href="#login"
             className="rounded-md bg-gold-500 px-6 py-3 text-sm font-semibold text-navy-900 shadow-lg transition hover:bg-gold-400"
           >
-            {t.hero.ctaPrimary}
-          </Link>
+            {t.login.loginLink}
+          </a>
           <a
             href="#workflow"
             className="rounded-md border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
@@ -44,6 +46,10 @@ export default function Hero() {
             </div>
           ))}
         </dl>
+        </div>
+        <Suspense fallback={null}>
+          <LoginCard />
+        </Suspense>
       </div>
     </section>
   );

@@ -70,7 +70,9 @@ test("Ny ansökan offers an existing project instead of describing it again", as
   await page.goto("/ansokan");
   await page.getByLabel("Finns projektet redan?").selectOption("pb-4");
   await page.getByRole("button", { name: "Till projektets matchningar" }).click();
-  await expect(page).toHaveURL(/\/projekt\/pb-4#matches/);
+  // A client-side navigation: under a full parallel run the dev server may
+  // still be compiling the project page, which takes longer than the default.
+  await expect(page).toHaveURL(/\/projekt\/pb-4#matches/, { timeout: 20_000 });
   await expect(page.getByRole("heading", { name: "Matchningar mot öppna och kommande utlysningar" })).toBeVisible();
 });
 

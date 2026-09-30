@@ -120,7 +120,23 @@ finansiering"* → `/rapportera`.
   calls change constantly; wiring this to the live EU Funding & Tenders
   Portal API is the natural next step there).
 
-No login, no backend, no database — everything runs client-side. The
+## Login
+
+The system is locked behind a simple login on the start page: e-mail plus
+one shared demo password, checked on the server (`app/api/login`). A
+signed, httpOnly session cookie (8 hours, or 30 days with "Kom ihåg mig")
+is required on every page except the start page (`middleware.ts`); a
+logged-in visitor to the start page goes straight to Översikt, and after
+logging in the user lands on the page they were trying to open. It is only
+a lock: it doesn't tell users apart ("mina projekt" still follows the
+example user), and the data still lives in each browser.
+
+**Set `DEMO_PASSWORD` in the hosting environment** (Vercel → Project →
+Settings → Environment Variables). Without it, login is refused in
+production with a message saying so; the dev server and the tests use
+`demo`. Changing the password logs everyone out.
+
+No backend, no database — everything runs client-side. The
 matching, gap analysis, readiness score and Application Coach are all
 transparent, deterministic functions (`lib/matching/`) rather than live
 LLM calls, so the demo is fast, free to run, and always reproducible.
@@ -164,9 +180,11 @@ Next.js, free tier is enough for a demo):
 1. Push this repository to GitHub (already done if you're reading this from
    the repo).
 2. Go to https://vercel.com/new and "Import" this GitHub repository.
-3. Leave all settings at their defaults (Vercel auto-detects Next.js) and
-   click **Deploy**.
-4. After ~1 minute you'll get a URL like `https://eu-navigator-xxxx.vercel.app`.
+3. Under Environment Variables, add `DEMO_PASSWORD` (the shared login
+   password — see Login above).
+4. Leave all other settings at their defaults (Vercel auto-detects
+   Next.js) and click **Deploy**.
+5. After ~1 minute you'll get a URL like `https://eu-navigator-xxxx.vercel.app`.
    Paste that URL into APV App.
 
 Every subsequent push to this branch (or your default branch, once merged)
