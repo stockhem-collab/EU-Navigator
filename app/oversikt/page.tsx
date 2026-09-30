@@ -107,12 +107,6 @@ export default function OversiktPage() {
               <input type="checkbox" checked={onlyMineAndShared} onChange={(e) => setOnlyMineAndShared(e.target.checked)} />
               {ap.onlyMineAndSharedToggle}
             </label>
-            <Link
-              href="/ansokan"
-              className="rounded-md bg-gold-500 px-4 py-2 text-sm font-semibold text-navy-900 shadow-sm transition hover:bg-gold-400"
-            >
-              + {ov.describeNewProject}
-            </Link>
           </div>
         </div>
 
