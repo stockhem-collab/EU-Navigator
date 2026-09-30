@@ -13,12 +13,23 @@ test("correcting a revision-requested report shows the original outcome as repor
   const numberInputs = page.locator('input[type="number"]');
   await expect(numberInputs.nth(0)).toHaveValue("140");
   await numberInputs.nth(0).fill("180");
+  // Both indicators are behind plan: the report can't go in unexplained.
   await page.getByRole("button", { name: "Skicka in korrigering" }).click();
+  await expect(page.getByText("Förklara varje indikator som ligger efter plan")).toBeVisible();
+  const explanations = page.getByLabel("Förklara avvikelsen och vilka åtgärder ni vidtar");
+  await explanations.nth(0).fill("Två utbildningsomgångar flyttades till hösten.");
+  await explanations.nth(1).fill("Effekten syns först när alla utbildningar är klara.");
+  await page.getByRole("button", { name: "Skicka in korrigering" }).click();
+  await page.getByRole("button", { name: "Lämna in ändå" }).click();
 
-  await expect(page.getByText("Tidigare inlämningar (1)")).toBeVisible();
-  await expect(page.getByText("180 personer")).toBeVisible();
+  // The corrected report now waits for the funder again; its history is in
+  // the list of all reports.
+  const row = page.locator("#reports li", { hasText: "Delrapport Q1 2027" });
+  await row.getByRole("button", { name: "Visa" }).click();
+  await expect(row.getByText("Tidigare inlämningar (1)")).toBeVisible();
+  await expect(row.getByText("180 personer")).toBeVisible();
 
-  await page.getByRole("button", { name: /Tidigare inlämningar/ }).click();
+  await row.getByRole("button", { name: /Tidigare inlämningar/ }).click();
   await expect(page.getByText("Ursprunglig rapport")).toBeVisible();
   await expect(page.getByText("Antal utbildade medarbetare: 140")).toBeVisible();
 });
@@ -31,11 +42,12 @@ test("completing all reporting unlocks a voluntary sustainability follow-up", as
   await inputs.nth(1).fill("20");
   await inputs.nth(2).fill("5");
   await page.getByRole("button", { name: "Markera som inlämnad" }).click();
+  await page.getByRole("button", { name: "Lämna in ändå" }).click();
 
   await expect(page.getByRole("button", { name: "Lägg till hållbarhetsuppföljning" })).toBeVisible();
   await page.getByRole("button", { name: "Lägg till hållbarhetsuppföljning" }).click();
 
-  await expect(page.getByRole("heading", { name: "Hållbarhetsuppföljning" })).toBeVisible();
+  await expect(page.locator("#next-report").getByRole("heading", { name: "Hållbarhetsuppföljning" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Lägg till hållbarhetsuppföljning" })).toHaveCount(0);
 });
 

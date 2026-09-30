@@ -134,7 +134,10 @@ test("a saved application version exports independently of later edits to the li
 test("a document can be attached to a specific reporting event", async ({ page }) => {
   await page.goto("/stod/ap-1");
 
-  const reportCard = page.locator("div.rounded-xl", { hasText: "Lägesrapport 2027" });
+  // Past reports are listed folded; opening one shows its attachments.
+  const row = page.locator("#reports li", { hasText: "Lägesrapport 2027" });
+  await row.getByRole("button", { name: "Visa" }).click();
+  const reportCard = row.getByTestId("report-ap-1-report-1");
   await reportCard.locator('input[type="file"]').setInputFiles({
     name: "evidence.txt",
     mimeType: "text/plain",

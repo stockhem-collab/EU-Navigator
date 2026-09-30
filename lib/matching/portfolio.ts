@@ -1,4 +1,5 @@
 import {
+  Commitment,
   Grant,
   FundingCall,
   FundingProgram,
@@ -8,6 +9,7 @@ import {
   ReadinessBreakdown,
 } from "@/lib/types";
 import { computeMatches, scoreMatch } from "@/lib/matching/scoreMatch";
+import { buildReportingSchedule } from "@/lib/matching/reportingSchedule";
 
 // Bridges the project bank (the municipality's own portfolio) to the
 // matching engine, so the portfolio can show a "best match" per project
@@ -96,10 +98,10 @@ export function projectInputToProjectBankEntry(project: ProjectInput, readiness:
 
 // Turns an awarded application into a Grant ("beviljat stöd") — carrying
 // over the project's own title and the call the application was made to
-// (match.call). Commitments and the reporting timeline start
-// empty/minimal: there's no real commitment-capture step in the
-// application flow yet to seed them from honestly, so a single upcoming
-// report is the honest starting point rather than fabricating figures.
+// (match.call), the commitments confirmed at registration (suggested from
+// what the application promised), the budget it planned with, and the
+// whole reporting schedule the call's periodicity gives over the project's
+// period, each report with a real due date.
 //
 // The id is unique per application, not per project: a project can have
 // several awarded applications, each with its own grant and reporting.
@@ -108,17 +110,15 @@ export function projectInputToProjectBankEntry(project: ProjectInput, readiness:
 export function projectToGrant(
   entry: ProjectBankEntry,
   match: MatchResult,
-  applicationId?: string,
-  awardedAmountSEK?: number
+  options: {
+    applicationId?: string;
+    awardedAmountSEK?: number;
+    commitments?: Commitment[];
+    plannedBudget?: Grant["plannedBudget"];
+    now?: Date;
+  } = {}
 ): Grant {
-  const requirement = match.call.reportingRequirements;
-  const firstDeadlineMonths = requirement
-    ? requirement.periodicity === "quarterly"
-      ? 3
-      : requirement.periodicity === "biannual"
-      ? 6
-      : 12
-    : 6;
+  const { applicationId, awardedAmountSEK, commitments = [], plannedBudget, now = new Date() } = options;
   const id = applicationId
     ? `ap-${entry.id}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`
     : `ap-${entry.id}`;
@@ -132,18 +132,17 @@ export function projectToGrant(
     // What was actually awarded, as confirmed when registering the grant;
     // without it, the grant the match estimates.
     awardedAmountSEK: awardedAmountSEK ?? match.estimatedFundingSEK[1],
-    commitments: [],
-    reportingEvents: [
-      {
-        id: `${id}-report-1`,
-        type: "interim",
-        periodLabel_sv: "Lägesrapport 1",
-        periodLabel_en: "Progress report 1",
-        deadlineMonthsFromNow: firstDeadlineMonths,
-        status: "upcoming",
-        outcomes: [],
-      },
-    ],
+    ...(plannedBudget ? { plannedBudget } : {}),
+    commitments,
+    reportingEvents: buildReportingSchedule({
+      idPrefix: id,
+      periodStart: entry.periodStart,
+      periodEnd: entry.periodEnd,
+      // Calls that don't state their reporting cycle: yearly, the most
+      // common one in EU programmes.
+      periodicity: match.call.reportingRequirements?.periodicity ?? "annual",
+      now,
+    }),
   };
 }
 

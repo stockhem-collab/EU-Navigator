@@ -84,6 +84,13 @@ export function readApplicationBudget(applicationId: string): ApplicationBudget 
   return readDraft(applicationId).budget;
 }
 
+/** The sections a stored application's user has written or edited
+ * (label -> text) — e.g. to suggest the grant's commitments from what the
+ * application promised. */
+export function readApplicationSections(applicationId: string): Record<string, string> {
+  return readDraft(applicationId).sectionDrafts;
+}
+
 /**
  * Persists the editable project-logic draft — and named saved versions of
  * it — for one application (ApplicationRecord). The client-only stand-in

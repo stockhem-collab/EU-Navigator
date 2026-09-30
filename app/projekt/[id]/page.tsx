@@ -22,7 +22,10 @@ import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
 import ProjectLifecycle from "@/components/ProjectLifecycle";
 import { computeReadiness } from "@/lib/matching/readiness";
 import ConfirmButton from "@/components/ConfirmButton";
-import { readApplicationBudget } from "@/lib/hooks/useApplication";
+import { readApplicationBudget, readApplicationSections } from "@/lib/hooks/useApplication";
+import { extractCommitments } from "@/lib/matching/reportingSchedule";
+import { generateProjectLogic } from "@/lib/matching/generateWorkspace";
+import CommitmentsEditor, { completeCommitments } from "@/components/grants/CommitmentsEditor";
 import { resolveApplicationBudget } from "@/lib/matching/applicationBudget";
 import LinkedReportingBadge from "@/components/LinkedReportingBadge";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
@@ -38,7 +41,7 @@ import {
 } from "@/lib/matching/portfolio";
 import { computeSimilarProjects } from "@/lib/matching/similarProjects";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
-import { APPLICATION_STATUS_ORDER, ApplicationRecord, ApplicationStatus, PROJECT_STATUS_ORDER, ProjectStatus, Sector } from "@/lib/types";
+import { APPLICATION_STATUS_ORDER, ApplicationRecord, Commitment, ApplicationStatus, PROJECT_STATUS_ORDER, ProjectStatus, Sector } from "@/lib/types";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
 import { useTags } from "@/lib/hooks/useTags";
 import TagPicker from "@/components/TagPicker";
@@ -180,12 +183,37 @@ export default function ProjectBankDetailPage() {
       .requestedGrantSEK;
   };
 
-  const handleCreateAwarded = (record: ApplicationRecord, awardedAmountSEK?: number) => {
+  // What the application promised, as suggested commitments: every
+  // quantified statement in its text — the sections as the user left them
+  // (edited, or the workspace's suggestion) and the project description.
+  const suggestedCommitmentsFor = (record: ApplicationRecord): Commitment[] => {
+    const call = fundingCalls.find((c) => c.id === record.callId);
+    const program = call ? findProgram(call.programId) : undefined;
+    const project = projectBankEntryToProjectInput(entry);
+    if (!call || !program) return extractCommitments(project.description);
+    const sections = readApplicationSections(record.id);
+    const logic = generateProjectLogic(project, call, program);
+    return extractCommitments([project.description, ...logic.map((row) => sections[row.label_sv] ?? row.content_sv)].join("\n"));
+  };
+
+  const handleCreateAwarded = (record: ApplicationRecord, awardedAmountSEK: number | undefined, commitments: Commitment[]) => {
     const call = fundingCalls.find((c) => c.id === record.callId);
     const program = call ? findProgram(call.programId) : undefined;
     if (!call || !program) return;
-    const match = scoreMatch(projectBankEntryToProjectInput(entry), call, program);
-    const awarded = projectToGrant(entry, match, record.id, awardedAmountSEK ?? plannedGrantFor(record));
+    const project = projectBankEntryToProjectInput(entry);
+    const match = scoreMatch(project, call, program);
+    const amount = awardedAmountSEK ?? plannedGrantFor(record);
+    const budget = resolveApplicationBudget(project, { call, program }, readApplicationBudget(record.id));
+    const awarded = projectToGrant(entry, match, {
+      applicationId: record.id,
+      awardedAmountSEK: amount,
+      commitments,
+      plannedBudget: {
+        totalBudgetSEK: budget.totalBudgetSEK,
+        eligibleBudgetSEK: budget.eligibleBudgetSEK,
+        ownFinancingSEK: Math.max(0, budget.totalBudgetSEK - (amount ?? budget.requestedGrantSEK)),
+      },
+    });
     addGrant(awarded);
     updateApplication(record.id, { awardedProjectId: awarded.id });
     logActivity({ kind: "grant-registered", grantId: awarded.id, projectId: entry.id, callId: call.id });
@@ -210,7 +238,9 @@ export default function ProjectBankDetailPage() {
   const handleMarkAsAwarded = () => {
     const bestMatch = matches[0];
     if (!bestMatch) return;
-    const awarded = projectToGrant(entry, bestMatch);
+    const awarded = projectToGrant(entry, bestMatch, {
+      commitments: extractCommitments(lang === "sv" ? entry.description_sv : entry.description_en),
+    });
     addGrant(awarded);
     logActivity({ kind: "grant-registered", grantId: awarded.id, projectId: entry.id, callId: bestMatch.call.id });
     updateEntry(entry.id, { status: "running" });
@@ -608,7 +638,8 @@ export default function ProjectBankDetailPage() {
                         <RegisterGrantButton
                           recordId={record.id}
                           plannedAmount={plannedGrantFor(record)}
-                          onConfirm={(amount) => handleCreateAwarded(record, amount)}
+                          suggestCommitments={() => suggestedCommitmentsFor(record)}
+                          onConfirm={(amount, commitments) => handleCreateAwarded(record, amount, commitments)}
                         />
                       )}
                       {awardedProject && (
@@ -982,19 +1013,23 @@ export default function ProjectBankDetailPage() {
 
 // "Registrera beviljat stöd", asking for the amount actually awarded —
 // pre-filled with what the application applied for, since the decision
-// often grants less.
+// often grants less — and the commitments the grant is followed up
+// against, suggested from what the application promised.
 function RegisterGrantButton({
   recordId,
   plannedAmount,
+  suggestCommitments,
   onConfirm,
 }: {
   recordId: string;
   plannedAmount: number | undefined;
-  onConfirm: (amountSEK: number | undefined) => void;
+  suggestCommitments: () => Commitment[];
+  onConfirm: (amountSEK: number | undefined, commitments: Commitment[]) => void;
 }) {
   const { t, lang } = useLanguage();
   const at = t.applications;
   const [amount, setAmount] = useState<string>("");
+  const [commitments, setCommitments] = useState<Commitment[]>(suggestCommitments);
   const value = amount === "" ? plannedAmount : Number(amount);
   const invalid = value !== undefined && (!Number.isFinite(value) || value <= 0);
   const inputId = `awarded-amount-${recordId}`;
@@ -1004,7 +1039,7 @@ function RegisterGrantButton({
       message={at.confirmCreateAwarded}
       confirmLabel={t.confirm.yesRegister}
       cancelLabel={t.confirm.cancel}
-      onConfirm={() => onConfirm(value)}
+      onConfirm={() => onConfirm(value, completeCommitments(commitments))}
       confirmDisabled={invalid}
       className="rounded-md bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800"
     >
@@ -1023,6 +1058,11 @@ function RegisterGrantButton({
         />
         {value !== undefined && !invalid && <span className="font-normal text-navy-500">{fmtSEK(value, lang)}</span>}
       </label>
+      <div className="basis-full rounded-md border border-navy-100 bg-white p-3">
+        <p className="text-xs font-semibold text-navy-700">{t.grants.commitmentsAtRegistrationTitle}</p>
+        <p className="mb-2 mt-0.5 text-xs text-navy-500">{t.grants.commitmentsAtRegistrationHint}</p>
+        <CommitmentsEditor value={commitments} onChange={setCommitments} idPrefix={`register-${recordId}`} />
+      </div>
     </ConfirmButton>
   );
 }

@@ -465,6 +465,10 @@ export interface ReportingEvent {
   /** Same "relative to today" convention as FundingCall's own
    * deadlineMonthsFromNow — negative once the deadline has passed. */
   deadlineMonthsFromNow: number;
+  /** The real due date (YYYY-MM-DD), for reports scheduled when a grant is
+   * registered — deadlineMonthsFromNow is then kept in step with it (see
+   * withCurrentDeadline). Seed reports only have the relative form. */
+  deadlineDate?: string;
   status: ReportingEventStatus;
   /** Populated once status is "submitted" or later; empty for "upcoming". */
   outcomes: ReportingOutcome[];
@@ -495,6 +499,13 @@ export interface Grant {
    * had their own records. */
   applicationId?: string;
   awardedAmountSEK: number;
+  /** The budget the application planned with, when the grant was
+   * registered from one — the follow-up compares what's spent with it. */
+  plannedBudget?: {
+    totalBudgetSEK: number;
+    eligibleBudgetSEK: number;
+    ownFinancingSEK: number;
+  };
   commitments: Commitment[];
   /** Chronological — interim reports followed by the closing final report.
    * A "sustainability" event, added on demand once the final report is in,
