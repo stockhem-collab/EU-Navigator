@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { applicationStatusGroup } from "@/lib/matching/applications";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -32,12 +33,21 @@ function useNowStamp(): string | null {
   return stamp;
 }
 
-function StatTile({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="rounded-xl border border-navy-100 bg-white p-5">
+// A figure, and — when there's a list behind it — a shortcut to that list,
+// here or elsewhere, like the figures on Översikt and Rapportera. Figures
+// that only state a fact (last sync, coverage) aren't links.
+function StatTile({ label, value, href }: { label: string; value: string | number; href?: string }) {
+  const content = (
+    <>
       <p className="text-2xl font-extrabold text-navy-900">{value}</p>
       <p className="mt-1 text-sm text-navy-500">{label}</p>
-    </div>
+    </>
+  );
+  if (!href) return <div className="rounded-xl border border-navy-100 bg-white p-5">{content}</div>;
+  return (
+    <Link href={href} className="rounded-xl border border-navy-100 bg-white p-5 transition hover:border-navy-300 hover:shadow-sm">
+      {content}
+    </Link>
   );
 }
 
@@ -153,11 +163,16 @@ export default function DatacenterPage() {
               <h3 className="text-sm font-semibold uppercase text-navy-400">{dc.applicationsByStatusTitle}</h3>
               <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {APPLICATION_STATUS_ORDER.map((status) => (
-                  <li key={status} className="flex items-center justify-between gap-2 rounded-md border border-navy-100 px-3 py-2">
-                    <ApplicationStatusBadge status={status} />
-                    <span className="text-lg font-extrabold text-navy-900">
-                      {applicationRecords.filter((r) => r.status === status).length}
-                    </span>
+                  <li key={status}>
+                    <Link
+                      href={`/ansok?filter=${applicationStatusGroup(status)}#applications`}
+                      className="flex items-center justify-between gap-2 rounded-md border border-navy-100 px-3 py-2 transition hover:border-navy-300"
+                    >
+                      <ApplicationStatusBadge status={status} />
+                      <span className="text-lg font-extrabold text-navy-900">
+                        {applicationRecords.filter((r) => r.status === status).length}
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -166,22 +181,22 @@ export default function DatacenterPage() {
         </section>
 
         <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          <StatTile label={dc.statProjectIdeas} value={projectBank.length} />
-          <StatTile label={dc.statActiveProjects} value={activeProjects.length} />
-          <StatTile label={dc.statPrograms} value={fundingPrograms.length} />
-          <StatTile label={dc.statCalls} value={fundingCalls.length} />
-          <StatTile label={dc.statOpenCalls} value={openCalls.length} />
-          <StatTile label={dc.statUpcomingCalls} value={upcomingCalls.length} />
-          <StatTile label={dc.statReferenceProjects} value={fundedProjects.length} />
-          <StatTile label={dc.statDocuments} value={docs.length} />
-          <StatTile label={dc.statDocumentsNeedUpdate} value={docsNeedingUpdate.length} />
+          <StatTile label={dc.statProjectIdeas} value={projectBank.length} href="/projekt" />
+          <StatTile label={dc.statActiveProjects} value={activeProjects.length} href="/projekt" />
+          <StatTile label={dc.statPrograms} value={fundingPrograms.length} href="/eu-databas" />
+          <StatTile label={dc.statCalls} value={fundingCalls.length} href="/eu-databas" />
+          <StatTile label={dc.statOpenCalls} value={openCalls.length} href="/eu-databas" />
+          <StatTile label={dc.statUpcomingCalls} value={upcomingCalls.length} href="/eu-databas" />
+          <StatTile label={dc.statReferenceProjects} value={fundedProjects.length} href="/referensprojekt" />
+          <StatTile label={dc.statDocuments} value={docs.length} href="/eu-databas" />
+          <StatTile label={dc.statDocumentsNeedUpdate} value={docsNeedingUpdate.length} href="#documents-needing-update" />
           <StatTile label={dc.statLastSync} value={lastSync ?? "…"} />
-          <StatTile label={dc.statUpcomingReports} value={upcomingReportsCount} />
-          <StatTile label={dc.statReportsNeedingRevision} value={reportsNeedingRevisionCount} />
+          <StatTile label={dc.statUpcomingReports} value={upcomingReportsCount} href="/rapportera#upcoming" />
+          <StatTile label={dc.statReportsNeedingRevision} value={reportsNeedingRevisionCount} href="#reporting-attention" />
           <StatTile label={dc.statStructuredEligibility} value={`${callsWithStructuredEligibility} / ${fundingCalls.length}`} />
         </div>
 
-        <section className="mt-10">
+        <section id="documents-needing-update" className="mt-10">
           <h2 className="text-lg font-bold text-navy-800">{dc.documentsNeedingUpdateTitle}</h2>
           <div className="mt-4 overflow-hidden rounded-xl border border-navy-100 bg-white">
             <ul className="divide-y divide-navy-50">
@@ -211,7 +226,7 @@ export default function DatacenterPage() {
           </div>
         </section>
 
-        <section className="mt-10">
+        <section id="reporting-attention" className="mt-10">
           <h2 className="text-lg font-bold text-navy-800">{dc.reportingAttentionTitle}</h2>
           <p className="mt-1 text-sm text-navy-500">{dc.reportingAttentionBody}</p>
           <div className="mt-4 overflow-hidden rounded-xl border border-navy-100 bg-white">

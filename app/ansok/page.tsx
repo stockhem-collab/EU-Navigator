@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -16,15 +17,30 @@ import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { callDeadlineMonths } from "@/lib/data/fundingCalls";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { CURRENT_USER_ID, isProjectRelevantToUser, orgUnits as seedOrgUnits } from "@/lib/data/users";
-import { isActiveApplication } from "@/lib/matching/applications";
+import { APPLICATION_STATUS_GROUPS, ApplicationStatusGroup, isActiveApplication } from "@/lib/matching/applications";
 import { ApplicationRecord } from "@/lib/types";
 import { useOnlyMineAndShared } from "@/lib/hooks/useOnlyMineAndShared";
 
-type Filter = "active" | "decided" | "all";
+// The tabs (in progress / decided / all) and, narrower, the four figures
+// above them — each figure filters the list to just what it counts.
+type Filter = "active" | "decided" | "all" | ApplicationStatusGroup;
+
+function isFilter(value: string | null): value is Filter {
+  return value === "active" || value === "decided" || value === "all" || (value !== null && value in APPLICATION_STATUS_GROUPS);
+}
 
 // Ansöka: every application across every project, by where it stands, and
 // below it the calls worth applying to next (formerly Bevakning).
 export default function ApplyPage() {
+  return (
+    <Suspense fallback={null}>
+      <ApplyPageInner />
+    </Suspense>
+  );
+}
+
+function ApplyPageInner() {
+  const searchParams = useSearchParams();
   const { t, lang } = useLanguage();
   const a = t.apply;
   const at = t.applications;
@@ -36,7 +52,10 @@ export default function ApplyPage() {
   const { config: orgConfig } = useOrgConfig();
   const currentUser = users.find((u) => u.id === CURRENT_USER_ID);
   const orgUnitsAll = orgConfig.units ?? seedOrgUnits;
-  const [filter, setFilter] = useState<Filter>("active");
+  // ?filter=… (e.g. from Datacenter's application figures) opens the list
+  // filtered that way.
+  const initialFilter = searchParams.get("filter");
+  const [filter, setFilter] = useState<Filter>(isFilter(initialFilter) ? initialFilter : "active");
   const [onlyMineAndShared, setOnlyMineAndShared] = useOnlyMineAndShared();
 
   // Only applications whose project and call still exist.
@@ -57,18 +76,25 @@ export default function ApplyPage() {
   );
 
   const count = (pred: (r: ApplicationRecord) => boolean) => rows.filter((r) => pred(r.record)).length;
-  const stats = [
-    { label: a.statActive, value: count((r) => r.status === "draft") },
-    { label: a.statWithFunder, value: count((r) => r.status === "submitted" || r.status === "under-review") },
-    { label: a.statAwarded, value: count((r) => r.status === "awarded") },
-    { label: a.statClosed, value: count((r) => r.status === "rejected" || r.status === "withdrawn") },
+  const inGroup = (group: ApplicationStatusGroup) => (r: ApplicationRecord) => APPLICATION_STATUS_GROUPS[group].includes(r.status);
+  const stats: { key: ApplicationStatusGroup; label: string; value: number }[] = [
+    { key: "draft", label: a.statActive, value: count(inGroup("draft")) },
+    { key: "withFunder", label: a.statWithFunder, value: count(inGroup("withFunder")) },
+    { key: "awarded", label: a.statAwarded, value: count(inGroup("awarded")) },
+    { key: "closed", label: a.statClosed, value: count(inGroup("closed")) },
   ];
 
   // In progress: soonest deadline first. Decided / all: most recently
   // touched first.
   const visible = rows
     .filter((r) =>
-      filter === "all" ? true : filter === "active" ? isActiveApplication(r.record) : !isActiveApplication(r.record)
+      filter === "all"
+        ? true
+        : filter === "active"
+        ? isActiveApplication(r.record)
+        : filter === "decided"
+        ? !isActiveApplication(r.record)
+        : inGroup(filter)(r.record)
     )
     .sort((x, y) =>
       filter === "active"
@@ -109,7 +135,7 @@ export default function ApplyPage() {
           {t.grants.onlyMineAndSharedToggle}
         </label>
 
-        <section className="mt-8" aria-labelledby="applications-heading">
+        <section id="applications" className="mt-8" aria-labelledby="applications-heading">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 id="applications-heading" className="text-lg font-bold text-navy-800">
               {a.myApplicationsTitle}
@@ -117,12 +143,24 @@ export default function ApplyPage() {
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {stats.map((st) => (
-              <div key={st.label} className="rounded-xl border border-navy-100 bg-white p-4">
-                <p className="text-2xl font-extrabold text-navy-900">{hydrated ? st.value : "…"}</p>
-                <p className="text-xs text-navy-500">{st.label}</p>
-              </div>
-            ))}
+            {stats.map((st) => {
+              const active = filter === st.key;
+              return (
+                <button
+                  key={st.key}
+                  type="button"
+                  aria-pressed={active}
+                  // A second click goes back to the default list.
+                  onClick={() => setFilter(active ? "active" : st.key)}
+                  className={`rounded-xl border p-4 text-left transition ${
+                    active ? "border-navy-800 bg-navy-800 text-white" : "border-navy-100 bg-white hover:border-navy-300 hover:shadow-sm"
+                  }`}
+                >
+                  <p className={`text-2xl font-extrabold ${active ? "text-white" : "text-navy-900"}`}>{hydrated ? st.value : "…"}</p>
+                  <p className={`text-xs ${active ? "text-navy-200" : "text-navy-500"}`}>{st.label}</p>
+                </button>
+              );
+            })}
           </div>
 
           <div role="tablist" aria-label={a.myApplicationsTitle} className="mt-4 flex gap-2">

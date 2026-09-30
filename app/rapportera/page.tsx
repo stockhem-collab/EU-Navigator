@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -37,6 +37,10 @@ export default function ReportPage() {
   const orgUnitsAll = orgConfig.units ?? seedOrgUnits;
   const [onlyMineAndShared, setOnlyMineAndShared] = useOnlyMineAndShared();
   const [showDone, setShowDone] = useState(false);
+  // Arriving at #done (e.g. from Översikt or Datacenter) unfolds that list.
+  useEffect(() => {
+    if (window.location.hash === "#done") setShowDone(true);
+  }, []);
 
   const visibleGrants = useMemo(
     () =>
@@ -72,20 +76,26 @@ export default function ReportPage() {
           </label>
         </div>
 
+        {/* Each figure is a shortcut to its own list below, as on Översikt. */}
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: r.statAttention, value: attention.length, warn: attention.length > 0 },
-            { label: r.statUpcoming, value: upcoming.length, warn: false },
-            { label: r.statDone, value: done.length, warn: false },
-            { label: r.statGrants, value: visibleGrants.length, warn: false },
+            { label: r.statAttention, value: attention.length, warn: attention.length > 0, href: "#attention" },
+            { label: r.statUpcoming, value: upcoming.length, warn: false, href: "#upcoming" },
+            // The done list is folded away — its shortcut unfolds it.
+            { label: r.statDone, value: done.length, warn: false, href: "#done", onClick: () => setShowDone(true) },
+            { label: r.statGrants, value: visibleGrants.length, warn: false, href: "#grants" },
           ].map((st) => (
-            <div
+            <a
               key={st.label}
-              className={`rounded-xl border p-4 ${st.warn ? "border-amber-200 bg-amber-50" : "border-navy-100 bg-white"}`}
+              href={st.href}
+              onClick={st.onClick}
+              className={`rounded-xl border p-4 transition hover:shadow-sm ${
+                st.warn ? "border-amber-200 bg-amber-50 hover:border-amber-300" : "border-navy-100 bg-white hover:border-navy-300"
+              }`}
             >
               <p className={`text-2xl font-extrabold ${st.warn ? "text-amber-800" : "text-navy-900"}`}>{ready ? st.value : "…"}</p>
               <p className="text-xs text-navy-500">{st.label}</p>
-            </div>
+            </a>
           ))}
         </div>
 
@@ -93,7 +103,7 @@ export default function ReportPage() {
           <p className="mt-8 rounded-xl border border-dashed border-navy-200 p-6 text-center text-sm text-navy-500">{r.noGrants}</p>
         ) : (
           <>
-            <section className="mt-8" aria-labelledby="attention-heading">
+            <section id="attention" className="mt-8" aria-labelledby="attention-heading">
               <h2 id="attention-heading" className="text-lg font-bold text-navy-800">
                 {r.attentionTitle}
               </h2>
@@ -109,7 +119,7 @@ export default function ReportPage() {
               )}
             </section>
 
-            <section className="mt-8" aria-labelledby="upcoming-heading">
+            <section id="upcoming" className="mt-8" aria-labelledby="upcoming-heading">
               <h2 id="upcoming-heading" className="text-lg font-bold text-navy-800">
                 {r.upcomingTitle}
               </h2>
@@ -125,7 +135,7 @@ export default function ReportPage() {
             </section>
 
             {done.length > 0 && (
-              <section className="mt-8">
+              <section id="done" className="mt-8">
                 <button
                   type="button"
                   onClick={() => setShowDone((v) => !v)}
@@ -144,7 +154,7 @@ export default function ReportPage() {
               </section>
             )}
 
-            <section className="mb-16 mt-12 border-t border-navy-100 pt-8" aria-labelledby="grants-heading">
+            <section id="grants" className="mb-16 mt-12 border-t border-navy-100 pt-8" aria-labelledby="grants-heading">
               <h2 id="grants-heading" className="text-lg font-bold text-navy-800">
                 {r.grantsTitle}
               </h2>

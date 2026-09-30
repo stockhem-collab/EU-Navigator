@@ -647,7 +647,7 @@ export default function ProjectBankDetailPage() {
           )}
         </section>
 
-        <div className="mt-6 scroll-mt-24" id="matches">
+        <div className="mt-6" id="matches">
           <h2 className="text-lg font-bold text-navy-800">{pb.detailMatchesTitle}</h2>
           {matches.length === 0 ? (
             <p className="mt-2 text-sm text-navy-500">{pb.detailNoMatches}</p>
