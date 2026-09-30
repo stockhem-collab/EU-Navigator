@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -18,6 +18,7 @@ import { findProgram } from "@/lib/data/fundingPrograms";
 import { CURRENT_USER_ID, isProjectRelevantToUser, orgUnits as seedOrgUnits } from "@/lib/data/users";
 import { isActiveApplication } from "@/lib/matching/applications";
 import { ApplicationRecord } from "@/lib/types";
+import { useOnlyMineAndShared } from "@/lib/hooks/useOnlyMineAndShared";
 
 type Filter = "active" | "decided" | "all";
 
@@ -36,7 +37,7 @@ export default function ApplyPage() {
   const currentUser = users.find((u) => u.id === CURRENT_USER_ID);
   const orgUnitsAll = orgConfig.units ?? seedOrgUnits;
   const [filter, setFilter] = useState<Filter>("active");
-  const [onlyMineAndShared, setOnlyMineAndShared] = useState(false);
+  const [onlyMineAndShared, setOnlyMineAndShared] = useOnlyMineAndShared();
 
   // Only applications whose project and call still exist.
   const rows = records
@@ -48,6 +49,12 @@ export default function ApplyPage() {
     })
     .filter((r): r is NonNullable<typeof r> => r !== null)
     .filter((r) => !onlyMineAndShared || isProjectRelevantToUser(r.entry, currentUser, orgUnitsAll));
+
+  // Hitta finansiering matches the same set of projects.
+  const matchedProjects = useMemo(
+    () => (onlyMineAndShared ? projectBank.filter((p) => isProjectRelevantToUser(p, currentUser, orgUnitsAll)) : projectBank),
+    [onlyMineAndShared, projectBank, currentUser, orgUnitsAll]
+  );
 
   const count = (pred: (r: ApplicationRecord) => boolean) => rows.filter((r) => pred(r.record)).length;
   const stats = [
@@ -94,15 +101,19 @@ export default function ApplyPage() {
           </Link>
         </div>
 
+        {/* Applies to the whole page — the applications and the projects
+            matched under Hitta finansiering — and is remembered across
+            Översikt, Projekt, Ansöka and Rapportera. */}
+        <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-navy-700">
+          <input type="checkbox" checked={onlyMineAndShared} onChange={(e) => setOnlyMineAndShared(e.target.checked)} />
+          {t.grants.onlyMineAndSharedToggle}
+        </label>
+
         <section className="mt-8" aria-labelledby="applications-heading">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 id="applications-heading" className="text-lg font-bold text-navy-800">
               {a.myApplicationsTitle}
             </h2>
-            <label className="flex items-center gap-2 text-sm font-semibold text-navy-700">
-              <input type="checkbox" checked={onlyMineAndShared} onChange={(e) => setOnlyMineAndShared(e.target.checked)} />
-              {t.grants.onlyMineAndSharedToggle}
-            </label>
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -204,7 +215,7 @@ export default function ApplyPage() {
             </Link>
           </div>
           <div className="mt-2">
-            <FundingOpportunities />
+            <FundingOpportunities projects={matchedProjects} />
           </div>
         </section>
       </main>

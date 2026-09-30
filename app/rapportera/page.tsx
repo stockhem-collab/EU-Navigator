@@ -18,6 +18,7 @@ import { findProgram } from "@/lib/data/fundingPrograms";
 import { CURRENT_USER_ID, isProjectRelevantToUser, orgUnits as seedOrgUnits } from "@/lib/data/users";
 import { fmtSEK } from "@/lib/format";
 import { Grant, ProjectBankEntry, ReportingEvent } from "@/lib/types";
+import { useOnlyMineAndShared } from "@/lib/hooks/useOnlyMineAndShared";
 
 // Rapportera: every report due on every grant, across projects — what
 // needs action now, what's coming, and what's done — plus the grants
@@ -34,7 +35,7 @@ export default function ReportPage() {
   const { config: orgConfig } = useOrgConfig();
   const currentUser = users.find((u) => u.id === CURRENT_USER_ID);
   const orgUnitsAll = orgConfig.units ?? seedOrgUnits;
-  const [onlyMineAndShared, setOnlyMineAndShared] = useState(false);
+  const [onlyMineAndShared, setOnlyMineAndShared] = useOnlyMineAndShared();
   const [showDone, setShowDone] = useState(false);
 
   const visibleGrants = useMemo(

@@ -28,6 +28,7 @@ import { computeBestMatchForEntry } from "@/lib/matching/portfolio";
 import { fmtSEK } from "@/lib/format";
 import { PROJECT_STATUS_ORDER, ProjectStatus } from "@/lib/types";
 import ConfirmButton from "@/components/ConfirmButton";
+import { useOnlyMineAndShared } from "@/lib/hooks/useOnlyMineAndShared";
 
 // The one list of projects — what used to be split between Projektbank
 // (ideas) and Mina projekt (the same projects, filtered by status). Each
@@ -69,7 +70,7 @@ function ProjectsPageInner() {
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">(
     isProjectStatus(initialStatus) ? initialStatus : "all"
   );
-  const [onlyMineAndShared, setOnlyMineAndShared] = useState(false);
+  const [onlyMineAndShared, setOnlyMineAndShared] = useOnlyMineAndShared();
   const [search, setSearch] = useState("");
 
   const rows = useMemo(
