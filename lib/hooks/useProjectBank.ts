@@ -98,12 +98,12 @@ export function useProjectBank() {
     setHydrated(true);
   }, []);
 
+  // Written straight away, like updateEntry below: the caller may navigate
+  // to the new project right after.
   const addImported = useCallback((entries: ProjectBankEntry[]) => {
-    setImported((prev) => {
-      const next = [...prev, ...entries];
-      writeImported(next);
-      return next;
-    });
+    const next = [...readImported(), ...entries];
+    writeImported(next);
+    setImported(next);
   }, []);
 
   const deleteEntry = useCallback((id: string) => {
@@ -135,12 +135,17 @@ export function useProjectBank() {
     });
   }, [imported]);
 
+  // A field set to undefined in `patch` clears it — stored as null, since
+  // JSON drops undefined and the entry's own value would show through.
   const updateEntry = useCallback((id: string, patch: ProjectBankEdit) => {
-    setOverrides((prev) => {
-      const next = { ...prev, [id]: { ...prev[id], ...patch } };
-      writeOverrides(next);
-      return next;
-    });
+    const cleared = Object.fromEntries(Object.entries(patch).map(([k, v]) => [k, v === undefined ? null : v]));
+    // Written straight away, not from inside a state updater: a caller may
+    // navigate right after (e.g. saving from the project form), and the
+    // next page reads storage before this page would render again.
+    const stored = readOverrides();
+    const next = { ...stored, [id]: { ...stored[id], ...cleared } as ProjectBankEdit };
+    writeOverrides(next);
+    setOverrides(next);
   }, []);
 
   // Stored statuses can predate the lifecycle-only ProjectStatus (see
@@ -148,7 +153,14 @@ export function useProjectBank() {
   // storage, so nothing is rewritten behind the user's back.
   const withOverrides = useCallback(
     (entry: ProjectBankEntry): ProjectBankEntry => {
-      const merged = overrides[entry.id] ? { ...entry, ...overrides[entry.id] } : entry;
+      const override = overrides[entry.id];
+      let merged = entry;
+      if (override) {
+        merged = { ...entry, ...override };
+        for (const [key, value] of Object.entries(override)) {
+          if (value === null) delete (merged as unknown as Record<string, unknown>)[key];
+        }
+      }
       const status = normalizeProjectStatus(merged.status);
       return status === merged.status ? merged : { ...merged, status };
     },

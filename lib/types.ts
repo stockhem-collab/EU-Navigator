@@ -312,6 +312,19 @@ export interface ProjectBankEntry {
    * scoped to their organisation (the root unit) or a specific department.
    * Undefined/empty = not shared beyond its own assignees. */
   sharedWithUnitIds?: string[];
+  /** The matching fields a project is described with in the intake form
+   * (see ProjectInput) — stored so a saved or imported project is matched
+   * on the same terms as one just described. All optional: unset is
+   * scored as "unknown", never as a mismatch. */
+  applicantType?: ApplicantType;
+  activityType?: ActivityType;
+  secondarySectors?: Sector[];
+  targetGroups?: TargetGroup[];
+  region?: SwedishRegion;
+  /** Undefined = derived from hasInternationalPartner. */
+  partnerLevel?: PartnerLevel;
+  /** The EU grant the project plans to apply for, when known. */
+  requestedGrantSEK?: number;
 }
 
 // ---------------------------------------------------------------------------

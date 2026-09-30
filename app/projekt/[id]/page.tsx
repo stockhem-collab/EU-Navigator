@@ -30,13 +30,21 @@ import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { orgUnits as seedOrgUnits, projectRoleLabels, shareableUnits, unitDepth } from "@/lib/data/users";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
-import { computeMatchesForEntry, projectToGrant, projectBankEntryToProjectInput } from "@/lib/matching/portfolio";
+import {
+  computeMatchesForEntry,
+  projectToGrant,
+  projectBankEntryToProjectInput,
+  projectMatchingFieldsPatch,
+} from "@/lib/matching/portfolio";
 import { computeSimilarProjects } from "@/lib/matching/similarProjects";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
 import { APPLICATION_STATUS_ORDER, ApplicationRecord, ApplicationStatus, PROJECT_STATUS_ORDER, ProjectStatus, Sector } from "@/lib/types";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
 import { useTags } from "@/lib/hooks/useTags";
 import TagPicker from "@/components/TagPicker";
+import ProjectMatchingFields, { MatchingFieldsValue } from "@/components/projectbank/ProjectMatchingFields";
+import { applicantTypeLabel } from "@/lib/data/fundingCalls";
+import { activityTypeLabel, partnerLevelLabel, regionLabel, targetGroupLabel } from "@/lib/data/matchingVocabulary";
 
 const SECTORS: Sector[] = ["energy", "climate", "digital", "social", "mobility", "education", "health", "research"];
 const STATUSES: ProjectStatus[] = PROJECT_STATUS_ORDER;
@@ -52,7 +60,7 @@ interface EditDraft {
   periodEnd: number;
   sector: Sector;
   tags: string[];
-  hasInternationalPartner: boolean;
+  matching: MatchingFieldsValue;
 }
 
 export default function ProjectBankDetailPage() {
@@ -218,6 +226,24 @@ export default function ProjectBankDetailPage() {
     if (sharing && unit) logActivity({ kind: "project-shared", projectId: entry.id, unitName: unit.name });
   };
 
+  // The matching fields the project states — only those set.
+  const intakeT = t.demo.intake;
+  const matchingDetails: { label: string; value: string }[] = [
+    entry.activityType && { label: intakeT.fieldActivityType, value: activityTypeLabel(entry.activityType, lang) },
+    entry.requestedGrantSEK && { label: intakeT.fieldRequestedGrant.replace(/\s*\(.*\)$/, ""), value: fmtSEK(entry.requestedGrantSEK, lang) },
+    entry.secondarySectors?.length && {
+      label: intakeT.fieldSecondarySectors.replace(/\s*\(.*\)$/, ""),
+      value: entry.secondarySectors.map((s) => sectorLabel(s, lang)).join(", "),
+    },
+    entry.targetGroups?.length && {
+      label: intakeT.fieldTargetGroups.replace(/\s*\(.*\)$/, ""),
+      value: entry.targetGroups.map((g) => targetGroupLabel(g, lang)).join(", "),
+    },
+    entry.region && { label: intakeT.fieldRegion, value: regionLabel(entry.region) },
+    entry.applicantType && { label: intakeT.fieldApplicantType, value: applicantTypeLabel(entry.applicantType, lang) },
+    entry.partnerLevel && { label: intakeT.fieldPartnership.replace(/\s*\(.*\)$/, ""), value: partnerLevelLabel(entry.partnerLevel, lang) },
+  ].filter((d): d is { label: string; value: string } => Boolean(d));
+
   const startEditing = () =>
     setDraft({
       title: lang === "sv" ? entry.title_sv : entry.title_en,
@@ -230,7 +256,16 @@ export default function ProjectBankDetailPage() {
       periodEnd: entry.periodEnd,
       sector: entry.sector,
       tags: entry.tags ?? [],
-      hasInternationalPartner: entry.hasInternationalPartner,
+      matching: {
+        applicantType: entry.applicantType,
+        activityType: entry.activityType,
+        secondarySectors: entry.secondarySectors,
+        targetGroups: entry.targetGroups,
+        region: entry.region,
+        partnerLevel: entry.partnerLevel,
+        requestedGrantSEK: entry.requestedGrantSEK,
+        hasInternationalPartner: entry.hasInternationalPartner,
+      },
     });
 
   const saveEdit = () => {
@@ -252,7 +287,12 @@ export default function ProjectBankDetailPage() {
       periodEnd: draft.periodEnd,
       sector: draft.sector,
       tags: draft.tags,
-      hasInternationalPartner: draft.hasInternationalPartner,
+      hasInternationalPartner: draft.matching.hasInternationalPartner,
+      ...projectMatchingFieldsPatch({
+        ...draft.matching,
+        // The main sector can't also be one of the others.
+        secondarySectors: draft.matching.secondarySectors?.filter((s) => s !== draft.sector),
+      }),
     });
     setDraft(null);
   };
@@ -378,14 +418,11 @@ export default function ProjectBankDetailPage() {
                   />
                 </div>
               </div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-navy-700 sm:col-span-2">
-                <input
-                  type="checkbox"
-                  checked={draft.hasInternationalPartner}
-                  onChange={(e) => setDraft({ ...draft, hasInternationalPartner: e.target.checked })}
-                />
-                {pb.editFieldPartnership}
-              </label>
+              <ProjectMatchingFields
+                value={draft.matching}
+                sector={draft.sector}
+                onChange={(matching) => setDraft({ ...draft, matching })}
+              />
             </div>
             <div className="mt-5 flex items-center gap-2">
               <button
@@ -468,6 +505,12 @@ export default function ProjectBankDetailPage() {
                   </dd>
                 )}
               </div>
+              {matchingDetails.map((d) => (
+                <div key={d.label}>
+                  <dt className="text-xs font-semibold uppercase text-navy-400">{d.label}</dt>
+                  <dd className="mt-1 text-sm font-semibold text-navy-900">{d.value}</dd>
+                </div>
+              ))}
               {entry.tags && entry.tags.length > 0 && (
                 <div className="sm:col-span-2">
                   <dt className="text-xs font-semibold uppercase text-navy-400">{t.demo.intake.fieldTags}</dt>

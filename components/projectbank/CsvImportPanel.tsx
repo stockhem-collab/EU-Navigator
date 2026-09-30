@@ -3,7 +3,19 @@
 import { useRef, useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { ProjectBankEntry } from "@/lib/types";
-import { CSV_TEMPLATE, parseProjectsCsv } from "@/lib/matching/projectIntake";
+import { CSV_COLUMNS, CSV_TEMPLATE, CSV_VOCABULARIES, CsvColumnKey, parseProjectsCsv } from "@/lib/matching/projectIntake";
+
+// Which list each list-valued column takes its values from.
+const COLUMN_VOCABULARY: Partial<Record<CsvColumnKey, { displayValues: string[] }>> = {
+  sector: CSV_VOCABULARIES.sector,
+  secondarySectors: CSV_VOCABULARIES.sector,
+  activityType: CSV_VOCABULARIES.activityType,
+  targetGroups: CSV_VOCABULARIES.targetGroup,
+  region: CSV_VOCABULARIES.region,
+  applicantType: CSV_VOCABULARIES.applicantType,
+  partnership: CSV_VOCABULARIES.partnerLevel,
+  tags: CSV_VOCABULARIES.tag,
+};
 
 interface Props {
   onImport: (entries: ProjectBankEntry[]) => void;
@@ -20,7 +32,8 @@ export default function CsvImportPanel({ onImport, existingIds }: Props) {
   const [result, setResult] = useState<{ count: number; errors: string[] } | null>(null);
 
   const downloadTemplate = () => {
-    const blob = new Blob([CSV_TEMPLATE], { type: "text/csv;charset=utf-8;" });
+    // The byte-order mark makes Excel read the file as UTF-8 (å, ä, ö).
+    const blob = new Blob(["\uFEFF" + CSV_TEMPLATE], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -72,6 +85,32 @@ export default function CsvImportPanel({ onImport, existingIds }: Props) {
         />
       </div>
       <p className="mt-2 text-xs text-navy-400">{pb.importHint}</p>
+      <details className="mt-2 text-xs text-navy-600">
+        <summary className="cursor-pointer font-semibold text-navy-700">{pb.importColumnsTitle}</summary>
+        <p className="mt-2 text-navy-500">{pb.importColumnsIntro}</p>
+        <dl className="mt-2 grid gap-x-4 gap-y-1.5 sm:grid-cols-[max-content_1fr]">
+          {CSV_COLUMNS.map((col) => {
+            const vocab = COLUMN_VOCABULARY[col.key];
+            const note =
+              col.key === "budget" || col.key === "requestedGrant"
+                ? pb.importAmountNote
+                : col.key === "start" || col.key === "end"
+                ? pb.importYearNote
+                : vocab
+                ? vocab.displayValues.join(" · ")
+                : pb.importFreeText;
+            return (
+              <div key={col.key} className="contents">
+                <dt className="font-semibold text-navy-700">{col.header}</dt>
+                <dd className="text-navy-500">
+                  {note}
+                  {col.multiple && <span className="italic"> ({pb.importMultipleNote})</span>}
+                </dd>
+              </div>
+            );
+          })}
+        </dl>
+      </details>
 
       {result && (
         <div className="mt-3 rounded-md bg-navy-50 p-3 text-sm">

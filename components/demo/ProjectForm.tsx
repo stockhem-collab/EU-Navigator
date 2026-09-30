@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { ActivityType, ApplicantType, PartnerLevel, ProjectInput, Sector, SwedishRegion } from "@/lib/types";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
@@ -93,15 +93,19 @@ interface Props {
    * Unlike initialProject, this never shows the "prefilled from Projektbanken"
    * banner, since it isn't from a saved project. */
   draftProject?: ProjectInput;
+  /** Saves the project under Projekt without going on to the matches — a
+   * new project is created, a prefilled one (initialProject) updated. */
+  onSave?: (project: ProjectInput) => void;
 }
 
-export default function ProjectForm({ onSubmit, initialProject, draftProject }: Props) {
+export default function ProjectForm({ onSubmit, initialProject, draftProject, onSave }: Props) {
   const { t, lang } = useLanguage();
   const [project, setProject] = useState<ProjectInput>(initialProject ?? draftProject ?? DEFAULT_PROJECT);
   const intake = t.demo.intake;
   const { all: allTags, addCustomTag } = useTags();
   const { config: orgConfig } = useOrgConfig();
 
+  const formRef = useRef<HTMLFormElement>(null);
   const fillExample = () => setProject(lang === "sv" ? EXAMPLE_SV : EXAMPLE_EN);
 
   const suggestedTags = useMemo(
@@ -131,7 +135,7 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject }: 
       )}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-navy-900">{intake.title}</h1>
+          <h1 className="text-2xl font-bold text-navy-900">{initialProject ? intake.titleExisting : intake.title}</h1>
           <p className="mt-2 text-sm text-navy-600">{intake.subtitle}</p>
         </div>
         <button
@@ -144,6 +148,7 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject }: 
       </div>
 
       <form
+        ref={formRef}
         className="mt-8 space-y-6"
         onSubmit={(e) => {
           e.preventDefault();
@@ -417,12 +422,33 @@ export default function ProjectForm({ onSubmit, initialProject, draftProject }: 
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="w-full rounded-md bg-navy-800 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-navy-700"
-        >
-          {intake.submit}
-        </button>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <button
+            type="submit"
+            className="flex-1 rounded-md bg-navy-800 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-navy-700"
+          >
+            {intake.submit}
+          </button>
+          {onSave && (
+            <button
+              type="button"
+              aria-describedby="intake-save-hint"
+              onClick={() => {
+                // Same required fields as finding funding.
+                if (!formRef.current?.reportValidity() || requestedGrantTooHigh) return;
+                onSave({ ...project, applicantType });
+              }}
+              className="rounded-md border border-navy-300 bg-white px-6 py-3 text-sm font-semibold text-navy-800 transition hover:bg-navy-50"
+            >
+              {intake.saveProject}
+            </button>
+          )}
+        </div>
+        {onSave && (
+          <p id="intake-save-hint" className="-mt-3 text-xs text-navy-500">
+            {intake.saveProjectHint}
+          </p>
+        )}
       </form>
     </div>
   );

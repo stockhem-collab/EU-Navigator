@@ -105,7 +105,10 @@ export interface TranslationTree {
   demo: {
     intake: {
       title: string;
+      titleExisting: string;
       subtitle: string;
+      saveProject: string;
+      saveProjectHint: string;
       fieldTitle: string;
       fieldTitlePlaceholder: string;
       fieldDescription: string;
@@ -299,7 +302,6 @@ export interface TranslationTree {
     editSave: string;
     editSavedIndicator: string;
     editFieldTitle: string;
-    editFieldPartnership: string;
     plusOthers: (n: number) => string;
     peopleAndSharingTitle: string;
     assignedRolesTitle: string;
@@ -341,6 +343,12 @@ export interface TranslationTree {
     importButton: string;
     downloadTemplate: string;
     importHint: string;
+    importColumnsTitle: string;
+    importColumnsIntro: string;
+    importMultipleNote: string;
+    importFreeText: string;
+    importAmountNote: string;
+    importYearNote: string;
     clearImported: string;
     removeImportedRow: string;
     confirmRemoveProject: (title: string) => string;
@@ -1071,7 +1079,10 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     demo: {
       intake: {
-        title: "Ny ansökan – beskriv projektet",
+        title: "Nytt projekt – beskriv projektet",
+        titleExisting: "Projektet – granska och hitta finansiering",
+        saveProject: "Spara projektet",
+        saveProjectHint: "Sparar projektet under Projekt utan att söka finansiering nu — det matchas mot utlysningarna där också.",
         subtitle:
           "Beskriv projektet ni vill söka finansiering för, så matchas det mot EU-utlysningarna. Fyll i så mycket ni kan — matchningen blir bättre ju mer konkret beskrivningen är.",
         fieldTitle: "Projektnamn",
@@ -1285,7 +1296,6 @@ export const translations: Record<Lang, TranslationTree> = {
       editSave: "Spara ändringar",
       editSavedIndicator: "Sparat i din webbläsare",
       editFieldTitle: "Projektnamn",
-      editFieldPartnership: "Vi har (eller kan skaffa) en internationell partnerorganisation",
       plusOthers: (n) => `+${n} till`,
       peopleAndSharingTitle: "Vem ser och äger projektet",
       assignedRolesTitle: "Tilldelade roller",
@@ -1343,7 +1353,13 @@ export const translations: Record<Lang, TranslationTree> = {
       importButton: "Importera projekt (CSV)",
       downloadTemplate: "Ladda ner mall",
       importHint:
-        "Kolumner: Titel, Förvaltning, Ägare, Budget, Startår, Slutår, Sektor, Beskrivning, Internationell partner. Sparas i din webbläsare (ingen delning mellan användare i den här demon).",
+        "Mallen har samma fält som formuläret för nytt projekt. Bara Titel krävs. Sparas i din webbläsare (ingen delning mellan användare i den här demon).",
+      importColumnsTitle: "Kolumner och tillåtna värden",
+      importColumnsIntro: "Semikolon- eller kommaseparerad fil. Värden i listorna kan skrivas som nedan, med hela benämningen från formuläret eller på engelska.",
+      importMultipleNote: "flera värden separeras med komma",
+      importFreeText: "fritext",
+      importAmountNote: "belopp i kronor",
+      importYearNote: "årtal",
       clearImported: "Rensa importerade projekt",
       removeImportedRow: "Ta bort importerat projekt",
       confirmRemoveProject: (title) => `Ta bort projektet "${title}"? Det kan återställas senare under "Borttagna projekt".`,
@@ -2106,7 +2122,10 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     demo: {
       intake: {
-        title: "New application — describe the project",
+        title: "New project — describe the project",
+        titleExisting: "The project — review and find funding",
+        saveProject: "Save the project",
+        saveProjectHint: "Saves the project under Projects without looking for funding now — it's matched against the calls there too.",
         subtitle:
           "Describe the project you want funding for, and it's matched against the EU calls. Fill in as much as you can — the more concrete the description, the better the matching.",
         fieldTitle: "Project name",
@@ -2316,7 +2335,6 @@ export const translations: Record<Lang, TranslationTree> = {
       editSave: "Save changes",
       editSavedIndicator: "Saved in your browser",
       editFieldTitle: "Project name",
-      editFieldPartnership: "We have (or can secure) an international partner organisation",
       plusOthers: (n) => `+${n} more`,
       peopleAndSharingTitle: "Who sees and owns the project",
       assignedRolesTitle: "Assigned roles",
@@ -2374,7 +2392,13 @@ export const translations: Record<Lang, TranslationTree> = {
       importButton: "Import projects (CSV)",
       downloadTemplate: "Download template",
       importHint:
-        "Columns: Titel, Förvaltning, Ägare, Budget, Startår, Slutår, Sektor, Beskrivning, Internationell partner. Saved in your browser (not shared between users in this demo).",
+        "The template has the same fields as the new project form. Only Titel is required. Saved in your browser (not shared between users in this demo).",
+      importColumnsTitle: "Columns and allowed values",
+      importColumnsIntro: "Semicolon- or comma-separated file. Values from the lists can be written as below, with the form's full label, or in English.",
+      importMultipleNote: "separate several values with commas",
+      importFreeText: "free text",
+      importAmountNote: "amount in SEK",
+      importYearNote: "year",
       clearImported: "Clear imported projects",
       removeImportedRow: "Remove imported project",
       confirmRemoveProject: (title) => `Remove the project "${title}"? It can be restored later under "Deleted projects".`,
