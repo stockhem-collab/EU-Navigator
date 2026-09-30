@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -77,6 +77,17 @@ function DemoPageInner() {
     }
     return { name: "intake" };
   });
+
+  // Intake → results → workspace are all the same page, so switching step
+  // keeps the scroll position — e.g. submitting the long intake form would
+  // land at the bottom of the match list. Every step change starts at the top
+  // instead (but not the very first render, which the browser already handles).
+  const previousStepName = useRef(step.name);
+  useEffect(() => {
+    if (previousStepName.current === step.name) return;
+    previousStepName.current = step.name;
+    window.scrollTo({ top: 0 });
+  }, [step.name]);
 
   // Once mounted, the deep link is resolved again against what this
   // browser actually has: the project as saved (edits to a seeded project
