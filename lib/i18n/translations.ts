@@ -845,7 +845,6 @@ export interface TranslationTree {
     latestNotificationsTitle: string;
     latestNotificationsNone: string;
     sectionStatusBreakdown: string;
-    describeNewProject: string;
     ongoingApplicationsResume: string;
     ongoingApplicationsUpdatedAt: (date: string) => string;
     ongoingApplicationsVersions: (n: number) => string;
@@ -1916,7 +1915,7 @@ export const translations: Record<Lang, TranslationTree> = {
       statOpenTasks: "Öppna uppgifter",
       statUnread: "Olästa aviseringar",
       myApplicationsTitle: "Ansökningar",
-      myApplicationsNone: "Inga pågående ansökningar. Starta en ny, eller hitta en utlysning under Ansöka.",
+      myApplicationsNone: "Inga pågående ansökningar. Starta en med Ny ansökan högst upp, eller hitta en utlysning under Ansöka.",
       viewAllApplications: "Alla ansökningar under Ansöka →",
       myReportsTitle: "Rapportering",
       myReportsNone: "Ingen rapportering att göra just nu.",
@@ -1924,7 +1923,6 @@ export const translations: Record<Lang, TranslationTree> = {
       latestNotificationsTitle: "Olästa aviseringar",
       latestNotificationsNone: "Inga olästa aviseringar.",
       sectionStatusBreakdown: "Projekt per status",
-      describeNewProject: "Ny ansökan",
       ongoingApplicationsResume: "Fortsätt",
       ongoingApplicationsUpdatedAt: (date) => `Senast redigerad ${date}`,
       ongoingApplicationsVersions: (n) => (n === 1 ? "1 sparad version" : `${n} sparade versioner`),
@@ -1981,7 +1979,7 @@ export const translations: Record<Lang, TranslationTree> = {
       columnDeadline: "Deadline",
       columnUpdated: "Uppdaterad",
       noApplications: "Inga ansökningar här.",
-      noApplicationsHint: "Starta en ny ansökan, eller välj en utlysning under Hitta finansiering nedan.",
+      noApplicationsHint: "Starta en med Ny ansökan högst upp, eller välj en utlysning under Hitta finansiering nedan.",
       registerGrant: "Registrera beviljat stöd",
       findFundingTitle: "Hitta finansiering",
       browseEuDatabase: "Bläddra i hela EU-databasen →",
@@ -3010,7 +3008,7 @@ export const translations: Record<Lang, TranslationTree> = {
       statOpenTasks: "Open tasks",
       statUnread: "Unread notifications",
       myApplicationsTitle: "Applications",
-      myApplicationsNone: "No applications in progress. Start a new one, or find a call under Apply.",
+      myApplicationsNone: "No applications in progress. Start one with New application at the top, or find a call under Apply.",
       viewAllApplications: "All applications under Apply →",
       myReportsTitle: "Reporting",
       myReportsNone: "No reporting to do right now.",
@@ -3018,7 +3016,6 @@ export const translations: Record<Lang, TranslationTree> = {
       latestNotificationsTitle: "Unread notifications",
       latestNotificationsNone: "No unread notifications.",
       sectionStatusBreakdown: "Projects by status",
-      describeNewProject: "New application",
       ongoingApplicationsResume: "Continue",
       ongoingApplicationsUpdatedAt: (date) => `Last edited ${date}`,
       ongoingApplicationsVersions: (n) => (n === 1 ? "1 saved version" : `${n} saved versions`),
@@ -3075,7 +3072,7 @@ export const translations: Record<Lang, TranslationTree> = {
       columnDeadline: "Deadline",
       columnUpdated: "Updated",
       noApplications: "No applications here.",
-      noApplicationsHint: "Start a new application, or pick a call under Find funding below.",
+      noApplicationsHint: "Start one with New application at the top, or pick a call under Find funding below.",
       registerGrant: "Register grant",
       findFundingTitle: "Find funding",
       browseEuDatabase: "Browse the whole EU database →",

@@ -119,12 +119,6 @@ function ApplyPageInner() {
             <h1 className="text-2xl font-bold text-navy-900">{a.title}</h1>
             <p className="mt-2 text-sm text-navy-600">{a.subtitle}</p>
           </div>
-          <Link
-            href="/ansokan"
-            className="shrink-0 rounded-md bg-gold-500 px-4 py-2 text-sm font-semibold text-navy-900 shadow-sm transition hover:bg-gold-400"
-          >
-            + {t.nav.demo}
-          </Link>
         </div>
 
         {/* Applies to the whole page — the applications and the projects
