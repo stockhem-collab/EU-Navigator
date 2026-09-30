@@ -2,6 +2,7 @@ import type { Paragraph as ParagraphType } from "docx";
 import { Lang, MatchResult, ProjectInput } from "@/lib/types";
 import { ProjectLogicRow } from "@/lib/matching/generateWorkspace";
 import { fmtSEK } from "@/lib/format";
+import { ResolvedApplicationBudget } from "@/lib/matching/applicationBudget";
 
 // Exports the application as a real .docx file, structured around the
 // call's own applicationTemplate when it has one (see lib/types.ts) — so
@@ -21,6 +22,7 @@ export async function buildApplicationDocx(
   match: MatchResult,
   logic: ProjectLogicRow[],
   sectionDrafts: Record<string, string>,
+  budget: ResolvedApplicationBudget,
   lang: Lang
 ): Promise<Blob> {
   // Loaded on demand rather than statically imported — docx is a sizable
@@ -62,22 +64,19 @@ export async function buildApplicationDocx(
     children.push(new Paragraph({ text: "" }));
   }
 
-  const estEu = match.estimatedFundingSEK[1];
-  const coFinancing = Math.max(0, project.budgetSEK - estEu);
-  children.push(new Paragraph({ text: lang === "sv" ? "Budget" : "Budget", heading: HeadingLevel.HEADING_1 }));
+  // The application's own amounts — what it actually applies for, not the
+  // match's estimate, unless no amount was set.
+  const line = (sv: string, en: string, amount: number) =>
+    new Paragraph({ text: `${lang === "sv" ? sv : en}: ${fmtSEK(amount, lang)}` });
+  children.push(new Paragraph({ text: "Budget", heading: HeadingLevel.HEADING_1 }));
+  children.push(line("Total budget", "Total budget", budget.totalBudgetSEK));
+  children.push(line("Stödberättigad budget", "Eligible budget", budget.eligibleBudgetSEK));
   children.push(
-    new Paragraph({ text: `${lang === "sv" ? "Total budget" : "Total budget"}: ${fmtSEK(project.budgetSEK, lang)}` })
+    budget.requestedIsEstimate
+      ? line("Beräknat EU-bidrag", "Estimated EU contribution", budget.requestedGrantSEK)
+      : line("Sökt belopp", "Requested grant", budget.requestedGrantSEK)
   );
-  children.push(
-    new Paragraph({
-      text: `${lang === "sv" ? "Uppskattat EU-bidrag" : "Estimated EU contribution"}: ${fmtSEK(estEu, lang)}`,
-    })
-  );
-  children.push(
-    new Paragraph({
-      text: `${lang === "sv" ? "Uppskattad medfinansiering" : "Estimated co-financing"}: ${fmtSEK(coFinancing, lang)}`,
-    })
-  );
+  children.push(line("Egen medfinansiering", "Own co-financing", budget.ownFinancingSEK));
 
   const doc = new Document({ sections: [{ children }] });
   return Packer.toBlob(doc);

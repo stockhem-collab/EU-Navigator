@@ -215,6 +215,16 @@ export interface TranslationTree {
       versionSavedAt: (date: string) => string;
       backToPrevious: string;
       estEuShareNote: string;
+      eligibleBudget: string;
+      eligibleBudgetHint: string;
+      requestedGrant: string;
+      requestedGrantHint: (rate: string, max: string) => string;
+      ownFinancing: string;
+      ownFinancingShare: (share: string) => string;
+      budgetFromProject: string;
+      budgetResetToEstimate: string;
+      budgetIssuesTitle: string;
+      budgetNotSavedNote: string;
       notAssessedNote: string;
       signalQuantified: string;
       signalIndicator: string;
@@ -792,6 +802,7 @@ export interface TranslationTree {
     confirmDelete: string;
     createAwardedButton: string;
     confirmCreateAwarded: string;
+    awardedAmountLabel: string;
     viewAwardedLink: string;
     updatedAt: (date: string) => string;
     roundLabel: (n: number) => string;
@@ -1183,7 +1194,17 @@ export const translations: Record<Lang, TranslationTree> = {
         confirmDeleteVersion: (name) => `Ta bort versionen "${name}"? Det går inte att ångra.`,
         versionSavedAt: (date) => `Sparad ${date}`,
         backToPrevious: "Tillbaka",
-        estEuShareNote: "Samma belopp som i matchningen: sökt belopp, eller utlysningens stödnivå av budgeten, högst utlysningens maxbelopp.",
+        estEuShareNote: "Förslaget är samma belopp som i matchningen: utlysningens stödnivå av den stödberättigade budgeten, högst utlysningens maxbelopp. Ändra det till det belopp ansökan faktiskt söker.",
+        eligibleBudget: "Stödberättigad budget (kr)",
+        eligibleBudgetHint: "De kostnader bidraget kan täcka enligt utlysningen — ofta lägre än projektets totala budget.",
+        requestedGrant: "Sökt belopp (kr)",
+        requestedGrantHint: (rate, max) => `Utlysningen finansierar upp till ${rate} av stödberättigade kostnader, högst ${max}.`,
+        ownFinancing: "Egen medfinansiering",
+        ownFinancingShare: (share) => `${share} av den totala budgeten`,
+        budgetFromProject: "Hämtat från projektet",
+        budgetResetToEstimate: "Återställ förslag",
+        budgetIssuesTitle: "Stämmer inte med utlysningen",
+        budgetNotSavedNote: "Beloppen sparas när ansökan sparas.",
         notAssessedNote: "Förslag — räknas in i bedömningen när du har skrivit eller redigerat texten.",
         signalQuantified: "Kvantifierad effekt",
         signalIndicator: "Indikator",
@@ -1803,6 +1824,7 @@ export const translations: Record<Lang, TranslationTree> = {
       confirmDelete: "Ta bort ansökan med dess utkast och sparade versioner?",
       createAwardedButton: "Registrera beviljat stöd",
       confirmCreateAwarded: "Registrera beviljat stöd för den här ansökan? Då skapas rapporteringen för stödet under Rapportera.",
+      awardedAmountLabel: "Beviljat belopp (kr)",
       viewAwardedLink: "Visa beviljat stöd",
       updatedAt: (date) => `Uppdaterad ${date}`,
       roundLabel: (n) => `Ansökan ${n}`,
@@ -2205,7 +2227,17 @@ export const translations: Record<Lang, TranslationTree> = {
         confirmDeleteVersion: (name) => `Delete the version "${name}"? This can't be undone.`,
         versionSavedAt: (date) => `Saved ${date}`,
         backToPrevious: "Back",
-        estEuShareNote: "The same amount as in the match: the grant requested, or the call's funding rate of the budget, at most the call's maximum.",
+        estEuShareNote: "The suggestion is the same amount as in the match: the call's funding rate of the eligible budget, at most the call's maximum. Change it to the amount the application actually requests.",
+        eligibleBudget: "Eligible budget (SEK)",
+        eligibleBudgetHint: "The costs the grant can cover under the call — often less than the project's total budget.",
+        requestedGrant: "Requested grant (SEK)",
+        requestedGrantHint: (rate, max) => `The call funds up to ${rate} of eligible costs, at most ${max}.`,
+        ownFinancing: "Own co-financing",
+        ownFinancingShare: (share) => `${share} of the total budget`,
+        budgetFromProject: "From the project",
+        budgetResetToEstimate: "Reset to suggestion",
+        budgetIssuesTitle: "Doesn't match the call",
+        budgetNotSavedNote: "The amounts are kept when the application is saved.",
         notAssessedNote: "Suggestion — counted in the assessment once you have written or edited the text.",
         signalQuantified: "Quantified effect",
         signalIndicator: "Indicator",
@@ -2821,6 +2853,7 @@ export const translations: Record<Lang, TranslationTree> = {
       confirmDelete: "Delete this application with its draft and saved versions?",
       createAwardedButton: "Register grant",
       confirmCreateAwarded: "Register the grant for this application? Its reporting is then set up under Report.",
+      awardedAmountLabel: "Amount awarded (SEK)",
       viewAwardedLink: "View grant",
       updatedAt: (date) => `Updated ${date}`,
       roundLabel: (n) => `Application ${n}`,

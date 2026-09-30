@@ -13,10 +13,18 @@ import { analyzeSection } from "@/lib/matching/sectionCoach";
 import { useApplication, seedApplicationDraft } from "@/lib/hooks/useApplication";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { syncProjectStatus, useApplications } from "@/lib/hooks/useApplications";
-import { APPLICATION_STATUS_ORDER, ApplicationStatus } from "@/lib/types";
+import { APPLICATION_STATUS_ORDER, ApplicationStatus, ApplicationVersion } from "@/lib/types";
 import { projectInputToProjectBankEntry } from "@/lib/matching/portfolio";
 import { buildApplicationDocx, downloadBlob } from "@/lib/export/exportApplication";
 import { fmtSEK } from "@/lib/format";
+import { scoreMatch } from "@/lib/matching/scoreMatch";
+import { useFundingProfile } from "@/lib/hooks/useFundingProfile";
+import {
+  applicationBudgetIssues,
+  hasApplicationBudget,
+  projectForApplication,
+  resolveApplicationBudget,
+} from "@/lib/matching/applicationBudget";
 
 interface Props {
   project: ProjectInput;
@@ -65,7 +73,6 @@ export default function ApplicationWorkspace({
   const [tab, setTab] = useState<Tab>("application");
 
   const logic = generateProjectLogic(project, match.call, match.program);
-  const gap = computeGapAnalysis(match);
 
   // Editable draft of the AI-generated project logic. Persisted per (project,
   // call) when the project was saved in the Projektbank — see useApplication.
@@ -77,6 +84,8 @@ export default function ApplicationWorkspace({
     saveVersion,
     restoreVersion,
     deleteVersion,
+    budget,
+    setBudget,
     isPersisted,
     applicationId,
     record,
@@ -84,12 +93,28 @@ export default function ApplicationWorkspace({
     hydrated: draftLoaded,
   } = useApplication(customerProjectId, match.call.id, requestedApplicationId);
 
+  // The amounts this application states (eligible budget, requested grant)
+  // replace the project's own in the match's budget fit, so the score and
+  // the assessment are about what's actually applied for. Without any set,
+  // the match stays as it was computed for the project.
+  const { profile: fundingProfile } = useFundingProfile();
+  const scoredMatch = useMemo(
+    () =>
+      hasApplicationBudget(budget)
+        ? scoreMatch(projectForApplication(project, budget), match.call, match.program, fundingProfile)
+        : match,
+    [budget, project, match, fundingProfile]
+  );
+  const gap = computeGapAnalysis(scoredMatch);
+  const budgetFigures = resolveApplicationBudget(project, match, budget);
+  const budgetIssues = applicationBudgetIssues(budgetFigures, match, fundingProfile.coFinancingCap);
+
   // The assessment reads what the application actually says — the project
   // description plus every section the user has written or edited — and
   // is recomputed on every keystroke (see assessedApplicationText).
   const assessedText = useMemo(() => assessedApplicationText(project, sectionDrafts), [project, sectionDrafts]);
-  const readiness = useMemo(() => computeReadiness(project, match, assessedText), [project, match, assessedText]);
-  const coach = useMemo(() => analyzeSection(project, match, assessedText), [project, match, assessedText]);
+  const readiness = useMemo(() => computeReadiness(project, scoredMatch, assessedText), [project, scoredMatch, assessedText]);
+  const coach = useMemo(() => analyzeSection(project, scoredMatch, assessedText), [project, scoredMatch, assessedText]);
   const notes = useMemo(() => generateReviewerNotes(project, match.call, assessedText), [project, match.call, assessedText]);
 
   // Readiness as it was when this application was opened, so the effect of
@@ -165,11 +190,6 @@ export default function ApplicationWorkspace({
   };
   const [versionName, setVersionName] = useState("");
 
-  // The grant this application plans for — the same figure the match's
-  // budget line states (requested, or the call's rate of the budget, capped
-  // at the call's maximum), not the midpoint of a range.
-  const estEu = match.estimatedFundingSEK[1];
-  const coFinancing = Math.max(0, project.budgetSEK - estEu);
   const callTitle = lang === "sv" ? match.call.title_sv : match.call.title_en;
   const hasCallTemplate = Boolean(match.call.applicationTemplate && match.call.applicationTemplate.length > 0);
 
@@ -181,7 +201,7 @@ export default function ApplicationWorkspace({
 
   const handleExport = async () => {
     const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
-    const blob = await buildApplicationDocx(project, match, logic, resolved, lang);
+    const blob = await buildApplicationDocx(project, match, logic, resolved, budgetFigures, lang);
     downloadBlob(blob, `ansokan-${match.call.id}.docx`);
   };
 
@@ -195,14 +215,14 @@ export default function ApplicationWorkspace({
     const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
     const entry = projectInputToProjectBankEntry(project, readiness);
     addImported([entry]);
-    seedApplicationDraft(entry.id, match.call.id, resolved);
+    seedApplicationDraft(entry.id, match.call.id, resolved, budget);
     onSavedAsProject?.(entry.id);
   };
 
   // An ad-hoc, unpersisted draft's edits live only in this component's
   // state (see useApplication) — leaving without a warning would silently
   // discard everything typed so far.
-  const hasUnsavedDraft = !isPersisted && Object.keys(sectionDrafts).length > 0;
+  const hasUnsavedDraft = !isPersisted && (Object.keys(sectionDrafts).length > 0 || hasApplicationBudget(budget));
 
   const handleSaveVersion = (name: string) => {
     if (!name.trim()) return;
@@ -215,9 +235,10 @@ export default function ApplicationWorkspace({
   // the live draft has since become — falling back to the current display
   // text only for a row saveVersion wouldn't have seen yet (a call template
   // that gained a section after this version was saved).
-  const handleExportVersion = async (version: { name: string; sectionDrafts: Record<string, string> }) => {
+  const handleExportVersion = async (version: ApplicationVersion) => {
     const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, version.sectionDrafts[row.label_sv] ?? resolveSection(row)]));
-    const blob = await buildApplicationDocx(project, match, logic, resolved, lang);
+    const versionBudget = version.budget ? resolveApplicationBudget(project, match, version.budget) : budgetFigures;
+    const blob = await buildApplicationDocx(project, match, logic, resolved, versionBudget, lang);
     downloadBlob(blob, `ansokan-${match.call.id}-${version.name.toLowerCase().replace(/\s+/g, "-")}.docx`);
   };
 
@@ -446,23 +467,68 @@ export default function ApplicationWorkspace({
                 </div>
               </section>
 
-              <section className="mt-8">
-                <h2 className="text-lg font-bold text-navy-800">{ws.budgetTitle}</h2>
-                <dl className="mt-4 grid gap-4 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-3">
-                  <div>
-                    <dt className="text-xs font-semibold uppercase text-navy-400">{ws.totalBudget}</dt>
-                    <dd className="mt-1 text-xl font-bold text-navy-900">{fmtSEK(project.budgetSEK, lang)}</dd>
+              <section className="mt-8" aria-labelledby="budget-title">
+                <h2 id="budget-title" className="text-lg font-bold text-navy-800">{ws.budgetTitle}</h2>
+                <div className="mt-4 rounded-xl border border-navy-100 bg-white p-6">
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-navy-400">{ws.totalBudget}</p>
+                      <p className="mt-1 text-xl font-bold text-navy-900">{fmtSEK(budgetFigures.totalBudgetSEK, lang)}</p>
+                      <p className="mt-1 text-xs text-navy-400">{ws.budgetFromProject}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-navy-400">{ws.ownFinancing}</p>
+                      <p className="mt-1 text-xl font-bold text-navy-700" data-testid="own-financing">
+                        {fmtSEK(budgetFigures.ownFinancingSEK, lang)}
+                      </p>
+                      {budgetFigures.totalBudgetSEK > 0 && (
+                        <p className="mt-1 text-xs text-navy-400">
+                          {ws.ownFinancingShare(
+                            `${Math.round((budgetFigures.ownFinancingSEK / budgetFigures.totalBudgetSEK) * 100)} %`
+                          )}
+                        </p>
+                      )}
+                    </div>
+                    <BudgetAmountField
+                      id="application-eligible-budget"
+                      label={ws.eligibleBudget}
+                      hint={ws.eligibleBudgetHint}
+                      value={budget.eligibleBudgetSEK}
+                      placeholder={budgetFigures.totalBudgetSEK}
+                      lang={lang}
+                      resetLabel={ws.budgetResetToEstimate}
+                      onChange={(value) => setBudget({ eligibleBudgetSEK: value })}
+                    />
+                    <BudgetAmountField
+                      id="application-requested-grant"
+                      label={ws.requestedGrant}
+                      hint={ws.requestedGrantHint(
+                        `${Math.round(budgetFigures.fundingRate * 100)} %`,
+                        fmtSEK(match.call.maxGrantSEK, lang)
+                      )}
+                      value={budget.requestedGrantSEK}
+                      placeholder={budgetFigures.requestedGrantSEK}
+                      lang={lang}
+                      resetLabel={ws.budgetResetToEstimate}
+                      emphasis
+                      onChange={(value) => setBudget({ requestedGrantSEK: value })}
+                    />
                   </div>
-                  <div>
-                    <dt className="text-xs font-semibold uppercase text-navy-400">{ws.estEuShare}</dt>
-                    <dd className="mt-1 text-xl font-bold text-green-700">{fmtSEK(estEu, lang)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs font-semibold uppercase text-navy-400">{ws.coFinancing}</dt>
-                    <dd className="mt-1 text-xl font-bold text-navy-700">{fmtSEK(coFinancing, lang)}</dd>
-                  </div>
-                  <p className="text-xs text-navy-400 sm:col-span-3">{ws.estEuShareNote}</p>
-                </dl>
+                  {budgetIssues.length > 0 && (
+                    <div className="mt-5 rounded-md border border-amber-200 bg-amber-50 p-3" role="status" data-testid="budget-issues">
+                      <p className="text-xs font-semibold uppercase text-amber-800">{ws.budgetIssuesTitle}</p>
+                      <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-amber-900">
+                        {budgetIssues.map((issue) => (
+                          <li key={issue.key}>{lang === "sv" ? issue.text_sv : issue.text_en}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <p className="mt-4 text-xs text-navy-400">{ws.estEuShareNote}</p>
+                  {!isPersisted && hasApplicationBudget(budget) && (
+                    <p className="mt-1 text-xs text-navy-400">{ws.budgetNotSavedNote}</p>
+                  )}
+                </div>
               </section>
 
               <section className="mb-16 mt-8">
@@ -740,6 +806,63 @@ function ScoreTile({ label, value }: { label: string; value: number }) {
     <div className="rounded-lg border border-navy-100 p-3 text-center">
       <p className={`text-2xl font-extrabold ${color}`}>{value}/10</p>
       <p className="mt-1 text-xs text-navy-500">{label}</p>
+    </div>
+  );
+}
+
+// An amount in whole kronor, shown with its mnkr reading beside it. Empty
+// means "not set in the application": the placeholder is the suggestion used
+// instead (the project's budget, or the match's estimated grant).
+function BudgetAmountField({
+  id,
+  label,
+  hint,
+  value,
+  placeholder,
+  lang,
+  resetLabel,
+  emphasis = false,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  hint: string;
+  value: number | undefined;
+  placeholder: number;
+  lang: "sv" | "en";
+  resetLabel: string;
+  emphasis?: boolean;
+  onChange: (value: number | undefined) => void;
+}) {
+  const shown = value ?? placeholder;
+  return (
+    <div>
+      <label htmlFor={id} className="block text-xs font-semibold uppercase text-navy-400">
+        {label}
+      </label>
+      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <input
+          id={id}
+          type="number"
+          inputMode="numeric"
+          min={0}
+          step={100000}
+          value={value ?? ""}
+          placeholder={String(placeholder)}
+          aria-describedby={`${id}-hint`}
+          onChange={(e) => onChange(e.target.value === "" ? undefined : Number(e.target.value))}
+          className="w-40 rounded-md border border-navy-200 px-3 py-2 text-sm text-navy-800 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+        />
+        <span className={`text-xl font-bold ${emphasis ? "text-green-700" : "text-navy-900"}`}>{fmtSEK(shown, lang)}</span>
+        {value !== undefined && (
+          <button type="button" onClick={() => onChange(undefined)} className="text-xs font-medium text-navy-400 hover:text-navy-700">
+            {resetLabel}
+          </button>
+        )}
+      </div>
+      <p id={`${id}-hint`} className="mt-1 text-xs text-navy-400">
+        {hint}
+      </p>
     </div>
   );
 }

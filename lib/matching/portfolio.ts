@@ -68,7 +68,12 @@ export function projectInputToProjectBankEntry(project: ProjectInput, readiness:
 // several awarded applications, each with its own grant and reporting.
 // Without an application (a seeded "approved" project that never had
 // application records) it falls back to the project-based id.
-export function projectToGrant(entry: ProjectBankEntry, match: MatchResult, applicationId?: string): Grant {
+export function projectToGrant(
+  entry: ProjectBankEntry,
+  match: MatchResult,
+  applicationId?: string,
+  awardedAmountSEK?: number
+): Grant {
   const requirement = match.call.reportingRequirements;
   const firstDeadlineMonths = requirement
     ? requirement.periodicity === "quarterly"
@@ -87,9 +92,9 @@ export function projectToGrant(entry: ProjectBankEntry, match: MatchResult, appl
     callId: match.call.id,
     projectBankEntryId: entry.id,
     applicationId,
-    // The grant the application planned for — the same figure the
-    // workspace shows as "Beräknat EU-bidrag".
-    awardedAmountSEK: match.estimatedFundingSEK[1],
+    // What was actually awarded, as confirmed when registering the grant;
+    // without it, the grant the match estimates.
+    awardedAmountSEK: awardedAmountSEK ?? match.estimatedFundingSEK[1],
     commitments: [],
     reportingEvents: [
       {

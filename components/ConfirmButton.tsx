@@ -16,6 +16,8 @@ export default function ConfirmButton({
   skipConfirm = false,
   danger = false,
   ariaLabel,
+  children,
+  confirmDisabled = false,
 }: {
   label: React.ReactNode;
   message: string;
@@ -30,6 +32,9 @@ export default function ConfirmButton({
    * something). */
   danger?: boolean;
   ariaLabel?: string;
+  /** Extra fields shown with the question — e.g. an amount to confirm. */
+  children?: React.ReactNode;
+  confirmDisabled?: boolean;
 }) {
   const [asking, setAsking] = useState(false);
   const confirmRef = useRef<HTMLButtonElement>(null);
@@ -54,14 +59,16 @@ export default function ConfirmButton({
   return (
     <div role="group" aria-label={ariaLabel ?? (typeof label === "string" ? label : undefined)} className="flex basis-full flex-wrap items-center gap-2 rounded-md border border-navy-200 bg-navy-50 px-3 py-2">
       <p className="text-xs text-navy-700">{message}</p>
+      {children}
       <button
         ref={confirmRef}
         type="button"
+        disabled={confirmDisabled}
         onClick={() => {
           setAsking(false);
           onConfirm();
         }}
-        className={`rounded-md px-3 py-1.5 text-xs font-semibold text-white ${
+        className={`rounded-md px-3 py-1.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 ${
           danger ? "bg-amber-700 hover:bg-amber-800" : "bg-green-700 hover:bg-green-800"
         }`}
       >

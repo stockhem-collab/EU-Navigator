@@ -648,6 +648,9 @@ export interface ApplicationVersion {
   /** Every section's fully resolved text at save time (project-logic row
    * label -> text), not just the user's overrides. */
   sectionDrafts: Record<string, string>;
+  /** The application's own amounts at save time (see ApplicationBudget).
+   * Absent on versions saved before applications had amounts of their own. */
+  budget?: { eligibleBudgetSEK?: number; requestedGrantSEK?: number };
 }
 
 /** Where one application stands — docs/DATA_MODEL.md §2.6. */

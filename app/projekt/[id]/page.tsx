@@ -22,6 +22,8 @@ import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
 import ProjectLifecycle from "@/components/ProjectLifecycle";
 import { computeReadiness } from "@/lib/matching/readiness";
 import ConfirmButton from "@/components/ConfirmButton";
+import { readApplicationBudget } from "@/lib/hooks/useApplication";
+import { resolveApplicationBudget } from "@/lib/matching/applicationBudget";
 import LinkedReportingBadge from "@/components/LinkedReportingBadge";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
@@ -159,12 +161,23 @@ export default function ProjectBankDetailPage() {
 
   // An awarded application becomes an awarded project under the call it
   // was actually made to — not just the project's best match.
-  const handleCreateAwarded = (record: ApplicationRecord) => {
+  // The grant the application applied for — its own requested amount, or
+  // the estimate the workspace showed when none was set. Pre-fills the
+  // awarded amount, which the user confirms (or corrects) when registering.
+  const plannedGrantFor = (record: ApplicationRecord): number | undefined => {
+    const call = fundingCalls.find((c) => c.id === record.callId);
+    const program = call ? findProgram(call.programId) : undefined;
+    if (!call || !program) return undefined;
+    return resolveApplicationBudget(projectBankEntryToProjectInput(entry), { call, program }, readApplicationBudget(record.id))
+      .requestedGrantSEK;
+  };
+
+  const handleCreateAwarded = (record: ApplicationRecord, awardedAmountSEK?: number) => {
     const call = fundingCalls.find((c) => c.id === record.callId);
     const program = call ? findProgram(call.programId) : undefined;
     if (!call || !program) return;
     const match = scoreMatch(projectBankEntryToProjectInput(entry), call, program);
-    const awarded = projectToGrant(entry, match, record.id);
+    const awarded = projectToGrant(entry, match, record.id, awardedAmountSEK ?? plannedGrantFor(record));
     addGrant(awarded);
     updateApplication(record.id, { awardedProjectId: awarded.id });
     logActivity({ kind: "grant-registered", grantId: awarded.id, projectId: entry.id, callId: call.id });
@@ -549,13 +562,10 @@ export default function ProjectBankDetailPage() {
                         ))}
                       </select>
                       {record.status === "awarded" && !awardedProject && (
-                        <ConfirmButton
-                          label={at.createAwardedButton}
-                          message={at.confirmCreateAwarded}
-                          confirmLabel={t.confirm.yesRegister}
-                          cancelLabel={t.confirm.cancel}
-                          onConfirm={() => handleCreateAwarded(record)}
-                          className="rounded-md bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800"
+                        <RegisterGrantButton
+                          recordId={record.id}
+                          plannedAmount={plannedGrantFor(record)}
+                          onConfirm={(amount) => handleCreateAwarded(record, amount)}
                         />
                       )}
                       {awardedProject && (
@@ -924,5 +934,52 @@ export default function ProjectBankDetailPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+// "Registrera beviljat stöd", asking for the amount actually awarded —
+// pre-filled with what the application applied for, since the decision
+// often grants less.
+function RegisterGrantButton({
+  recordId,
+  plannedAmount,
+  onConfirm,
+}: {
+  recordId: string;
+  plannedAmount: number | undefined;
+  onConfirm: (amountSEK: number | undefined) => void;
+}) {
+  const { t, lang } = useLanguage();
+  const at = t.applications;
+  const [amount, setAmount] = useState<string>("");
+  const value = amount === "" ? plannedAmount : Number(amount);
+  const invalid = value !== undefined && (!Number.isFinite(value) || value <= 0);
+  const inputId = `awarded-amount-${recordId}`;
+  return (
+    <ConfirmButton
+      label={at.createAwardedButton}
+      message={at.confirmCreateAwarded}
+      confirmLabel={t.confirm.yesRegister}
+      cancelLabel={t.confirm.cancel}
+      onConfirm={() => onConfirm(value)}
+      confirmDisabled={invalid}
+      className="rounded-md bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800"
+    >
+      <label htmlFor={inputId} className="flex flex-wrap items-center gap-2 text-xs font-semibold text-navy-700">
+        {at.awardedAmountLabel}
+        <input
+          id={inputId}
+          type="number"
+          inputMode="numeric"
+          min={0}
+          step={100000}
+          value={amount}
+          placeholder={plannedAmount !== undefined ? String(plannedAmount) : undefined}
+          onChange={(e) => setAmount(e.target.value)}
+          className="w-36 rounded-md border border-navy-200 bg-white px-2 py-1 text-xs font-normal text-navy-800 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+        />
+        {value !== undefined && !invalid && <span className="font-normal text-navy-500">{fmtSEK(value, lang)}</span>}
+      </label>
+    </ConfirmButton>
   );
 }

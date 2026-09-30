@@ -11,6 +11,7 @@ import {
   readApplicationRecords,
   touchApplicationRecord,
 } from "@/lib/hooks/useApplications";
+import { ApplicationBudget, sanitizeApplicationBudget } from "@/lib/matching/applicationBudget";
 
 interface ApplicationDraft {
   /** Project-logic row label (Swedish label, used as a stable key) -> the
@@ -23,9 +24,12 @@ interface ApplicationDraft {
    * see ApplicationVersion. Separate from the live sectionDrafts above,
    * which keep autosaving as the user types. */
   versions: ApplicationVersion[];
+  /** The eligible budget and grant this application states, when set —
+   * see ApplicationBudget. Empty = the project's figures. */
+  budget: ApplicationBudget;
 }
 
-const EMPTY_DRAFT: ApplicationDraft = { sectionDrafts: {}, updatedAt: "", versions: [] };
+const EMPTY_DRAFT: ApplicationDraft = { sectionDrafts: {}, updatedAt: "", versions: [], budget: {} };
 
 function storageKey(applicationId: string) {
   return `${DRAFT_KEY_PREFIX}${applicationId}`;
@@ -40,6 +44,7 @@ function readDraft(applicationId: string): ApplicationDraft {
       sectionDrafts: parsed?.sectionDrafts && typeof parsed.sectionDrafts === "object" ? parsed.sectionDrafts : {},
       updatedAt: typeof parsed?.updatedAt === "string" ? parsed.updatedAt : "",
       versions: Array.isArray(parsed?.versions) ? parsed.versions : [],
+      budget: sanitizeApplicationBudget(parsed?.budget),
     };
   } catch {
     return EMPTY_DRAFT;
@@ -62,10 +67,21 @@ function writeDraft(applicationId: string, draft: ApplicationDraft) {
  * caller adopts this customerProjectId — reads it back via readDraft as if
  * it had been there all along. Without this, the switch from unpersisted
  * to persisted would silently drop everything the user had already typed. */
-export function seedApplicationDraft(customerProjectId: string, callId: string, sectionDrafts: Record<string, string>) {
+export function seedApplicationDraft(
+  customerProjectId: string,
+  callId: string,
+  sectionDrafts: Record<string, string>,
+  budget: ApplicationBudget = {}
+) {
   const id = defaultApplicationId(customerProjectId, callId);
-  writeDraft(id, { sectionDrafts, updatedAt: new Date().toISOString(), versions: [] });
+  writeDraft(id, { sectionDrafts, updatedAt: new Date().toISOString(), versions: [], budget });
   touchApplicationRecord(id, customerProjectId, callId);
+}
+
+/** The amounts a stored application states — e.g. to pre-fill the awarded
+ * amount when its grant is registered. Empty when none were set. */
+export function readApplicationBudget(applicationId: string): ApplicationBudget {
+  return readDraft(applicationId).budget;
 }
 
 /**
@@ -173,6 +189,17 @@ export function useApplication(customerProjectId: string | null, callId: string,
     [commit]
   );
 
+  /** Sets (or, with undefined, clears) the application's own amounts. */
+  const setBudget = useCallback(
+    (patch: ApplicationBudget) =>
+      commit((prev) => ({
+        ...prev,
+        budget: sanitizeApplicationBudget({ ...prev.budget, ...patch }),
+        updatedAt: new Date().toISOString(),
+      })),
+    [commit]
+  );
+
   // Saves a named, immutable snapshot of the application as it reads right
   // now. `resolvedSections` is every section's *displayed* text (AI
   // suggestion or override alike) — the caller resolves this, since the
@@ -188,6 +215,7 @@ export function useApplication(customerProjectId: string | null, callId: string,
         name,
         createdAt: new Date().toISOString(),
         sectionDrafts: resolvedSections,
+        budget: { ...draftRef.current.budget },
       };
       commit((prev) => ({ ...prev, versions: [...prev.versions, version] }));
     },
@@ -201,7 +229,13 @@ export function useApplication(customerProjectId: string | null, callId: string,
       commit((prev) => {
         const version = prev.versions.find((v) => v.id === id);
         if (!version) return prev;
-        return { ...prev, sectionDrafts: { ...version.sectionDrafts }, updatedAt: new Date().toISOString() };
+        return {
+          ...prev,
+          sectionDrafts: { ...version.sectionDrafts },
+          // Older versions didn't save amounts — restoring one leaves them.
+          budget: version.budget ? sanitizeApplicationBudget(version.budget) : prev.budget,
+          updatedAt: new Date().toISOString(),
+        };
       }),
     [commit]
   );
@@ -229,6 +263,8 @@ export function useApplication(customerProjectId: string | null, callId: string,
   return {
     sectionDrafts: draft.sectionDrafts,
     versions: draft.versions,
+    budget: draft.budget,
+    setBudget,
     setSection,
     resetSection,
     saveVersion,
