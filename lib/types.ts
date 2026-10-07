@@ -90,6 +90,26 @@ export interface Tag {
 }
 
 // ---------------------------------------------------------------------------
+// Fund themes — the 13 themes eufonder.se's "Hitta EU-finansiering" groups
+// EU funding by. A fund belongs to several themes; Kunskapsbanken groups
+// funds and calls by them (lib/data/fundThemes.ts holds the labels).
+// ---------------------------------------------------------------------------
+export type FundTheme =
+  | "digitalisering"
+  | "forskning-innovation"
+  | "industri"
+  | "kompetens-entreprenorskap"
+  | "landsbygd-hav-fiske"
+  | "migration-integration"
+  | "miljo-klimat"
+  | "risker-kriser"
+  | "samarbete-lander"
+  | "social-inkludering"
+  | "sakerhet-granskontroll"
+  | "transport-resande"
+  | "turism";
+
+// ---------------------------------------------------------------------------
 // Level 1: Programme / fund — permanent, slow-changing information.
 // ---------------------------------------------------------------------------
 export interface FundingProgram {
@@ -108,6 +128,12 @@ export interface FundingProgram {
   /** "active" = currently open to new applications; "legacy" = closed programme
    * from the 2014-2020 period, kept for its historical reference projects. */
   status: "active" | "legacy";
+  /** The eufonder.se themes this fund finances projects within. */
+  themes: FundTheme[];
+  /** "shared" = managed in Sweden (eufonder.se's "Fonder som finansierar
+   * projekt inom …"); "direct" = applied for directly with the Commission
+   * or another body (its "Fler alternativ"). */
+  management: "shared" | "direct";
 }
 
 // ---------------------------------------------------------------------------
@@ -203,6 +229,10 @@ export interface FundingCall {
    * primary thematic-fit signal in scoreMatch, ahead of the free-text
    * keyword overlap above. */
   tags: string[];
+  /** This call's own eufonder.se themes, when they differ from its
+   * programme's. Undefined = inherits the programme's themes — read it via
+   * callThemes(). */
+  themes?: FundTheme[];
   evaluationCriteria: EvaluationCriterion[];
   documents: FundingDocument[];
   /** This call's own application-form structure, when known — see
