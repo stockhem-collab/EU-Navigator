@@ -413,6 +413,13 @@ export interface TranslationTree {
     backToProgram: string;
     backToPrograms: string;
     noCallsForProgram: string;
+    themeFilterLabel: string;
+    allThemes: string;
+    themesLabel: string;
+    sharedFundsTitle: (theme: string) => string;
+    sharedFundsHint: string;
+    directFundsTitle: string;
+    directFundsHint: string;
   };
   referenceProjects: {
     title: string;
@@ -1486,6 +1493,13 @@ export const translations: Record<Lang, TranslationTree> = {
       backToProgram: "Tillbaka till programmet",
       backToPrograms: "Tillbaka till EU-databasen",
       noCallsForProgram: "Inga aktuella utlysningar inom detta program just nu.",
+      themeFilterLabel: "Tema",
+      allThemes: "Alla teman",
+      themesLabel: "Teman",
+      sharedFundsTitle: (theme) => `Fonder som finansierar projekt inom ${theme.toLowerCase()}`,
+      sharedFundsHint: "Förvaltas i Sverige.",
+      directFundsTitle: "Fler alternativ",
+      directFundsHint: "EU-program som söks direkt hos EU-kommissionen eller via en annan myndighet.",
     },
     referenceProjects: {
       title: "Beviljade referensprojekt",
@@ -2587,6 +2601,13 @@ export const translations: Record<Lang, TranslationTree> = {
       backToProgram: "Back to the programme",
       backToPrograms: "Back to the EU database",
       noCallsForProgram: "No active calls under this programme right now.",
+      themeFilterLabel: "Theme",
+      allThemes: "All themes",
+      themesLabel: "Themes",
+      sharedFundsTitle: (theme) => `Funds financing projects in ${theme.toLowerCase()}`,
+      sharedFundsHint: "Managed in Sweden.",
+      directFundsTitle: "More options",
+      directFundsHint: "EU programmes applied for directly with the European Commission or through another agency.",
     },
     referenceProjects: {
       title: "Awarded reference projects",

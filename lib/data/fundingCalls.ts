@@ -133,6 +133,7 @@ export const fundingCalls: FundingCall[] = [
     ],
     extraKeywords: ["smart city", "medborgarservice", "citizen service"],
     tags: ["digitalisering", "medborgarservice", "gron-stadsutveckling", "regional-konkurrenskraft", "infrastruktur"],
+    themes: ["digitalisering", "miljo-klimat"],
     evaluationCriteria: [
       { name_sv: "Regional relevans", name_en: "Regional relevance", maxPoints: 25 },
       { name_sv: "Effekt", name_en: "Impact", maxPoints: 25 },
@@ -168,6 +169,7 @@ export const fundingCalls: FundingCall[] = [
     priorities_en: ["Skills supply in welfare services", "Social inclusion", "Gender-equal labour market"],
     extraKeywords: ["kompetenslyft", "upskilling"],
     tags: ["utbildning-kompetens", "halso-sjukvard", "socialtjanst-inkludering", "jamstalldhet", "arbetsmarknad"],
+    themes: ["kompetens-entreprenorskap", "social-inkludering"],
     evaluationCriteria: [
       { name_sv: "Behovsanalys", name_en: "Needs analysis", maxPoints: 20 },
       { name_sv: "Effekt för målgruppen", name_en: "Impact on target group", maxPoints: 35 },
@@ -218,6 +220,7 @@ export const fundingCalls: FundingCall[] = [
     priorities_en: ["Cross-border climate solutions", "Joint knowledge-building"],
     extraKeywords: ["norden", "nordic"],
     tags: ["gransoverskridande", "klimatatgarder", "ostersjosamarbete", "natverk-samverkan", "konsortiesamarbete"],
+    themes: ["miljo-klimat", "samarbete-lander"],
     evaluationCriteria: [
       { name_sv: "Partnerskapets kvalitet", name_en: "Partnership quality", maxPoints: 25 },
       { name_sv: "Gränsöverskridande mervärde", name_en: "Cross-border added value", maxPoints: 30 },
@@ -261,6 +264,7 @@ export const fundingCalls: FundingCall[] = [
     priorities_en: ["High innovation level (TRL 5-7)", "Piloting in a real-world setting", "Breadth of consortium expertise"],
     extraKeywords: ["trl", "handläggning"],
     tags: ["forskning-innovation", "ai-artificiell-intelligens", "pilotprojekt-trl", "konsortiesamarbete", "digitalisering"],
+    themes: ["forskning-innovation", "digitalisering"],
     evaluationCriteria: [
       { name_sv: "Excellens", name_en: "Excellence", maxPoints: 35 },
       { name_sv: "Effekt", name_en: "Impact", maxPoints: 35 },
@@ -359,6 +363,7 @@ export const fundingCalls: FundingCall[] = [
     priorities_en: ["Cross-border energy/transport networks", "Capacity increase"],
     extraKeywords: [],
     tags: ["laddinfrastruktur", "energinat", "infrastruktur", "gransoverskridande", "kapacitetsokning"],
+    themes: ["transport-resande"],
     evaluationCriteria: [
       { name_sv: "EU-mervärde", name_en: "EU added value", maxPoints: 30 },
       { name_sv: "Mognadsgrad", name_en: "Maturity", maxPoints: 30 },

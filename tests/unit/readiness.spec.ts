@@ -25,6 +25,8 @@ const program: FundingProgram = {
   typicalCoFinancingRate: 0.6,
   typicalDurationYears: [2, 4],
   status: "active",
+  themes: [],
+  management: "direct",
 };
 
 const call: FundingCall = {

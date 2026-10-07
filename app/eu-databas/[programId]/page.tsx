@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findProgram } from "@/lib/data/fundingPrograms";
+import { fundThemeLabel } from "@/lib/data/fundThemes";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { fmtSEK } from "@/lib/format";
 
@@ -45,6 +46,21 @@ export default function ProgramCallsPage() {
             </p>
           </div>
         </div>
+
+        {program.themes.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold uppercase text-navy-400">{db.themesLabel}</span>
+            {program.themes.map((th) => (
+              <Link
+                key={th}
+                href={`/eu-databas?tema=${th}`}
+                className="rounded-full border border-navy-200 px-3 py-1 text-xs font-semibold text-navy-600 hover:bg-navy-50"
+              >
+                {fundThemeLabel(th, lang)}
+              </Link>
+            ))}
+          </div>
+        )}
 
         {allCallsForProgram.length > 1 && (
           <input

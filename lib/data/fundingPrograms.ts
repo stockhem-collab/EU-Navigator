@@ -29,6 +29,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.75,
     typicalDurationYears: [1, 3],
     status: "active",
+    themes: ["digitalisering", "forskning-innovation", "kompetens-entreprenorskap", "migration-integration", "risker-kriser", "samarbete-lander", "social-inkludering", "sakerhet-granskontroll"],
+    management: "shared",
   },
   {
     id: "erasmus",
@@ -46,6 +48,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.8,
     typicalDurationYears: [1, 3],
     status: "active",
+    themes: ["kompetens-entreprenorskap", "samarbete-lander"],
+    management: "direct",
   },
   {
     id: "eui",
@@ -63,6 +67,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.8,
     typicalDurationYears: [2, 3],
     status: "active",
+    themes: ["miljo-klimat", "transport-resande"],
+    management: "direct",
   },
   {
     id: "erdf",
@@ -80,6 +86,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.4,
     typicalDurationYears: [1, 3],
     status: "active",
+    themes: ["digitalisering", "forskning-innovation", "industri", "kompetens-entreprenorskap", "miljo-klimat", "risker-kriser", "transport-resande", "turism"],
+    management: "shared",
   },
   {
     id: "esf",
@@ -97,6 +105,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.5,
     typicalDurationYears: [1, 3],
     status: "active",
+    themes: ["digitalisering", "forskning-innovation", "industri", "kompetens-entreprenorskap", "migration-integration", "risker-kriser", "social-inkludering"],
+    management: "shared",
   },
   {
     id: "havs-fiskeri",
@@ -114,6 +124,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.5,
     typicalDurationYears: [1, 3],
     status: "active",
+    themes: ["digitalisering", "forskning-innovation", "landsbygd-hav-fiske", "miljo-klimat"],
+    management: "shared",
   },
   {
     id: "horizon",
@@ -131,6 +143,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.7,
     typicalDurationYears: [3, 4],
     status: "active",
+    themes: ["forskning-innovation"],
+    management: "direct",
   },
   {
     id: "horizon2020",
@@ -148,6 +162,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.8,
     typicalDurationYears: [2, 4],
     status: "legacy",
+    themes: ["forskning-innovation"],
+    management: "direct",
   },
   {
     id: "interreg-baltic-sea",
@@ -165,6 +181,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.65,
     typicalDurationYears: [2, 3],
     status: "active",
+    themes: ["digitalisering", "forskning-innovation", "kompetens-entreprenorskap", "miljo-klimat", "samarbete-lander", "transport-resande", "turism"],
+    management: "shared",
   },
   {
     id: "interreg-central-baltic",
@@ -182,6 +200,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.6,
     typicalDurationYears: [2, 3],
     status: "active",
+    themes: ["digitalisering", "forskning-innovation", "kompetens-entreprenorskap", "miljo-klimat", "samarbete-lander", "transport-resande", "turism"],
+    management: "shared",
   },
   {
     id: "interreg-north-sea",
@@ -199,6 +219,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.6,
     typicalDurationYears: [2, 4],
     status: "active",
+    themes: ["digitalisering", "forskning-innovation", "kompetens-entreprenorskap", "miljo-klimat", "samarbete-lander", "transport-resande", "turism"],
+    management: "shared",
   },
   {
     id: "interreg-europe",
@@ -216,6 +238,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.8,
     typicalDurationYears: [3, 4],
     status: "active",
+    themes: ["digitalisering", "forskning-innovation", "kompetens-entreprenorskap", "miljo-klimat", "samarbete-lander", "transport-resande", "turism"],
+    management: "shared",
   },
   {
     id: "digital-europe",
@@ -233,6 +257,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.5,
     typicalDurationYears: [1, 3],
     status: "active",
+    themes: ["digitalisering"],
+    management: "direct",
   },
   {
     id: "cef",
@@ -250,6 +276,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.3,
     typicalDurationYears: [2, 4],
     status: "active",
+    themes: ["digitalisering", "industri", "samarbete-lander", "transport-resande"],
+    management: "direct",
   },
   {
     id: "life",
@@ -267,6 +295,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.6,
     typicalDurationYears: [2, 4],
     status: "active",
+    themes: ["miljo-klimat"],
+    management: "direct",
   },
   {
     id: "kreativa-europa",
@@ -284,6 +314,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.6,
     typicalDurationYears: [1, 3],
     status: "active",
+    themes: ["samarbete-lander"],
+    management: "direct",
   },
   {
     id: "urbact",
@@ -301,6 +333,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.8,
     typicalDurationYears: [2, 3],
     status: "active",
+    themes: ["samarbete-lander"],
+    management: "direct",
   },
   {
     id: "landsbygdsprogrammet",
@@ -318,6 +352,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.5,
     typicalDurationYears: [1, 3],
     status: "active",
+    themes: ["digitalisering", "forskning-innovation", "kompetens-entreprenorskap", "landsbygd-hav-fiske", "miljo-klimat", "turism"],
+    management: "shared",
   },
   {
     id: "fp7",
@@ -333,6 +369,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.75,
     typicalDurationYears: [2, 4],
     status: "legacy",
+    themes: ["forskning-innovation"],
+    management: "direct",
   },
   {
     id: "iee",
@@ -348,6 +386,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.75,
     typicalDurationYears: [2, 3],
     status: "legacy",
+    themes: ["miljo-klimat"],
+    management: "direct",
   },
   {
     id: "jpi-urban-europe",
@@ -365,6 +405,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.5,
     typicalDurationYears: [2, 3],
     status: "active",
+    themes: ["forskning-innovation", "miljo-klimat"],
+    management: "direct",
   },
   {
     id: "driving-urban-transitions",
@@ -382,6 +424,8 @@ export const fundingPrograms: FundingProgram[] = [
     typicalCoFinancingRate: 0.5,
     typicalDurationYears: [2, 3],
     status: "active",
+    themes: ["forskning-innovation", "miljo-klimat"],
+    management: "direct",
   },
 ];
 
