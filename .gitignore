@@ -30,3 +30,7 @@ next-env.d.ts
 /blob-report/
 /tests/.auth/
 /playwright/.cache/
+
+# raw data downloads (folder kept via .gitkeep)
+/data/raw/*
+!/data/raw/.gitkeep
