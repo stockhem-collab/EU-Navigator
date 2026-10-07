@@ -695,6 +695,7 @@ export interface TranslationTree {
     orgNamePlaceholder: string;
     registryTitle: string;
     orgNumberLabel: string;
+    vatNumberLabel: string;
     orgTypeLabel: string;
     countryLabel: string;
     websiteLabel: string;
@@ -706,6 +707,10 @@ export interface TranslationTree {
     addUnitPlaceholder: string;
     addUnitButton: string;
     removeUnitLabel: string;
+    unitPicPlaceholder: string;
+    applyPreset: (name: string) => string;
+    confirmApplyPreset: (name: string) => string;
+    yesApplyPreset: string;
     confirmRemoveUnit: (name: string) => string;
     confirmRemoveUnitCascade: (name: string, count: number) => string;
     resetAll: string;
@@ -1772,6 +1777,7 @@ export const translations: Record<Lang, TranslationTree> = {
       orgNamePlaceholder: "T.ex. Exempelstad kommun",
       registryTitle: "Grunduppgifter",
       orgNumberLabel: "Organisationsnummer",
+      vatNumberLabel: "Momsregistreringsnummer",
       orgTypeLabel: "Organisationsform",
       countryLabel: "Land",
       websiteLabel: "Webbplats",
@@ -1783,6 +1789,11 @@ export const translations: Record<Lang, TranslationTree> = {
       addUnitPlaceholder: "Namn på ny enhet",
       addUnitButton: "+ Lägg till enhet",
       removeUnitLabel: "Ta bort",
+      unitPicPlaceholder: "Eget PIC",
+      applyPreset: (name) => `Fyll i ${name}s uppgifter`,
+      confirmApplyPreset: (name) =>
+        `Fylla i grunduppgifter och PIC-nummer för ${name}? Befintliga grunduppgifter skrivs över och enheter med egna PIC-nummer läggs till.`,
+      yesApplyPreset: "Ja, fyll i",
       confirmRemoveUnit: (name) => `Ta bort enheten "${name}"?`,
       confirmRemoveUnitCascade: (name, count) =>
         `Ta bort enheten "${name}"? Detta tar även bort ${count} underliggande ${count === 1 ? "enhet" : "enheter"}.`,
@@ -2865,6 +2876,7 @@ export const translations: Record<Lang, TranslationTree> = {
       orgNamePlaceholder: "E.g. Example City Municipality",
       registryTitle: "Registry info",
       orgNumberLabel: "Organisation number",
+      vatNumberLabel: "VAT number",
       orgTypeLabel: "Organisation type",
       countryLabel: "Country",
       websiteLabel: "Website",
@@ -2876,6 +2888,11 @@ export const translations: Record<Lang, TranslationTree> = {
       addUnitPlaceholder: "New unit name",
       addUnitButton: "+ Add unit",
       removeUnitLabel: "Remove",
+      unitPicPlaceholder: "Own PIC",
+      applyPreset: (name) => `Fill in ${name}'s details`,
+      confirmApplyPreset: (name) =>
+        `Fill in registry details and PIC numbers for ${name}? Existing registry details are overwritten and units with their own PIC are added.`,
+      yesApplyPreset: "Yes, fill in",
       confirmRemoveUnit: (name) => `Remove the unit "${name}"?`,
       confirmRemoveUnitCascade: (name, count) =>
         `Remove the unit "${name}"? This will also remove its ${count} sub-unit${count === 1 ? "" : "s"}.`,

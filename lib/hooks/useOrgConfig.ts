@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { OrgUnit } from "@/lib/types";
 import { orgUnits as seedOrgUnits } from "@/lib/data/users";
+import { OrgPreset } from "@/lib/data/orgPresets";
 
 // Lets a user actually configure "their" organisation instead of only
 // reading a disclaimer that says it's configurable. Overrides the seeded
@@ -13,11 +14,12 @@ const STORAGE_KEY = "eu-navigator-org-config";
 
 /** Simple string fields on the organisation's registry info. null = use the
  * seeded example's value. */
-export type OrgTextField = "orgNumber" | "orgType" | "country" | "website" | "pic" | "contactName" | "contactEmail";
+export type OrgTextField = "orgNumber" | "vatNumber" | "orgType" | "country" | "website" | "pic" | "contactName" | "contactEmail";
 
 export interface OrgConfig {
   organisationName: string | null; // null = use the seeded example's name
   orgNumber: string | null;
+  vatNumber: string | null;
   orgType: string | null;
   country: string | null;
   website: string | null;
@@ -30,6 +32,7 @@ export interface OrgConfig {
 const EMPTY: OrgConfig = {
   organisationName: null,
   orgNumber: null,
+  vatNumber: null,
   orgType: null,
   country: null,
   website: null,
@@ -39,7 +42,7 @@ const EMPTY: OrgConfig = {
   units: null,
 };
 
-const orgTextFields: OrgTextField[] = ["orgNumber", "orgType", "country", "website", "pic", "contactName", "contactEmail"];
+const orgTextFields: OrgTextField[] = ["orgNumber", "vatNumber", "orgType", "country", "website", "pic", "contactName", "contactEmail"];
 
 function nullableString(v: unknown): string | null {
   return typeof v === "string" ? v : null;
@@ -121,6 +124,44 @@ export function useOrgConfig() {
     [update]
   );
 
+  const setUnitPic = useCallback(
+    (id: string, pic: string) =>
+      update((prev) => {
+        const units = prev.units ?? seedOrgUnits;
+        return { ...prev, units: units.map((u) => (u.id === id ? { ...u, pic: pic.trim() || undefined } : u)) };
+      }),
+    [update]
+  );
+
+  // Fills in a real organisation's registry details. The root unit is renamed
+  // in place (keeping its id, so users and shares that point at it still
+  // resolve) and the preset's units are added under it, skipping any that
+  // already exist by name so applying twice doesn't duplicate them.
+  const applyPreset = useCallback(
+    (preset: OrgPreset) =>
+      update((prev) => {
+        const units = prev.units ?? seedOrgUnits;
+        const root = units.find((u) => u.parentId === null);
+        const renamed = units.map((u) => (u.id === root?.id ? { ...u, name: preset.organisationName, pic: preset.pic } : u));
+        const existing = new Set(renamed.map((u) => u.name));
+        const added = preset.units
+          .filter((p) => !existing.has(p.name))
+          .map((p) => ({ id: newUnitId(), name: p.name, parentId: root?.id ?? null, pic: p.pic }));
+        return {
+          ...prev,
+          organisationName: preset.organisationName,
+          orgNumber: preset.orgNumber,
+          vatNumber: preset.vatNumber,
+          orgType: preset.orgType,
+          country: preset.country,
+          website: preset.website,
+          pic: preset.pic,
+          units: [...renamed, ...added],
+        };
+      }),
+    [update]
+  );
+
   const removeUnit = useCallback(
     (id: string) =>
       update((prev) => {
@@ -155,7 +196,9 @@ export function useOrgConfig() {
     setOrgField,
     addUnit,
     renameUnit,
+    setUnitPic,
     removeUnit,
+    applyPreset,
     resetAll,
   };
 }

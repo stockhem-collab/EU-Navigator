@@ -525,6 +525,9 @@ export interface OrgUnit {
   id: string;
   name: string;
   parentId: string | null;
+  /** The unit's own PIC, when it is registered separately in the EU
+   * Funding & Tenders Portal (e.g. a school with its own Erasmus+ PIC). */
+  pic?: string;
 }
 
 /** Organisation-level role — coarse access to the organisation's own data,
