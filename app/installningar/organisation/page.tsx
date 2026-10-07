@@ -8,6 +8,7 @@ import SettingsTabs from "@/components/settings/SettingsTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useOrgConfig, OrgTextField } from "@/lib/hooks/useOrgConfig";
 import { orgUnits as seedOrgUnits } from "@/lib/data/users";
+import { uppsalaPreset } from "@/lib/data/orgPresets";
 import { OrgUnit } from "@/lib/types";
 import ConfirmButton from "@/components/ConfirmButton";
 
@@ -39,7 +40,7 @@ function countDescendants(units: OrgUnit[], id: string): number {
 export default function OrganisationSettingsPage() {
   const { t } = useLanguage();
   const os = t.orgSettings;
-  const { config, hydrated, setOrganisationName, setOrgField, addUnit, renameUnit, removeUnit, resetAll } = useOrgConfig();
+  const { config, hydrated, setOrganisationName, setOrgField, addUnit, renameUnit, setUnitPic, removeUnit, applyPreset, resetAll } = useOrgConfig();
   const [newUnitName, setNewUnitName] = useState("");
   const [newUnitParent, setNewUnitParent] = useState<string>("");
 
@@ -51,6 +52,7 @@ export default function OrganisationSettingsPage() {
 
   const registryFields: { field: OrgTextField; label: string; placeholder: string }[] = [
     { field: "orgNumber", label: os.orgNumberLabel, placeholder: "212000-0142" },
+    { field: "vatNumber", label: os.vatNumberLabel, placeholder: "SE212000014201" },
     { field: "orgType", label: os.orgTypeLabel, placeholder: "Kommun" },
     { field: "country", label: os.countryLabel, placeholder: "Sverige" },
     { field: "website", label: os.websiteLabel, placeholder: "https://www.exempelstad.se" },
@@ -73,6 +75,15 @@ export default function OrganisationSettingsPage() {
             <h1 className="text-2xl font-bold text-navy-900">{os.title}</h1>
             <p className="mt-2 text-sm text-navy-600">{os.subtitle}</p>
           </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+          <ConfirmButton
+            label={os.applyPreset(uppsalaPreset.organisationName)}
+            message={os.confirmApplyPreset(uppsalaPreset.organisationName)}
+            confirmLabel={os.yesApplyPreset}
+            cancelLabel={t.confirm.cancel}
+            onConfirm={() => applyPreset(uppsalaPreset)}
+            className="shrink-0 rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-600 hover:bg-navy-50"
+          />
           <ConfirmButton
             label={os.resetAll}
             message={os.confirmResetAll}
@@ -82,6 +93,7 @@ export default function OrganisationSettingsPage() {
             danger
             className="shrink-0 rounded-md border border-navy-200 px-3 py-2 text-xs font-semibold text-navy-600 hover:bg-navy-50"
           />
+          </div>
         </div>
 
         <div className="mt-8">
@@ -123,6 +135,14 @@ export default function OrganisationSettingsPage() {
                   value={unit.name}
                   onChange={(e) => renameUnit(unit.id, e.target.value)}
                   className="flex-1 rounded-md border border-transparent px-2 py-1 text-sm text-navy-700 hover:border-navy-200 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                />
+                <input
+                  value={unit.pic ?? ""}
+                  onChange={(e) => setUnitPic(unit.id, e.target.value)}
+                  placeholder={os.unitPicPlaceholder}
+                  aria-label={`${os.unitPicPlaceholder}: ${unit.name}`}
+                  inputMode="numeric"
+                  className="w-28 shrink-0 rounded-md border border-transparent px-2 py-1 text-xs text-navy-500 hover:border-navy-200 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
                 />
                 <ConfirmButton
                   label={os.removeUnitLabel}
