@@ -444,6 +444,8 @@ export interface TranslationTree {
     roleOwner: string;
     rolePartner: string;
     periodLegacyBadge: string;
+    sourceExampleBadge: string;
+    sourceExampleTooltip: string;
     noBudgetDisclosed: string;
     indicatorTargetLabel: string;
   };
@@ -1525,6 +1527,8 @@ export const translations: Record<Lang, TranslationTree> = {
       roleOwner: "Projektägare",
       rolePartner: "Projektpartner",
       periodLegacyBadge: "Avslutat 2014–2020",
+      sourceExampleBadge: "Källa: Exempel",
+      sourceExampleTooltip: "Exempeldata: en annan kommuns verkliga projekt med bytt namn",
       noBudgetDisclosed: "Ej redovisad",
       indicatorTargetLabel: "mål",
     },
@@ -2633,6 +2637,8 @@ export const translations: Record<Lang, TranslationTree> = {
       roleOwner: "Project owner",
       rolePartner: "Project partner",
       periodLegacyBadge: "Closed 2014-2020",
+      sourceExampleBadge: "Source: Example",
+      sourceExampleTooltip: "Example data: another municipality's real projects, renamed",
       noBudgetDisclosed: "Not disclosed",
       indicatorTargetLabel: "target",
     },

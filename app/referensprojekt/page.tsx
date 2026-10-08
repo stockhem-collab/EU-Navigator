@@ -107,9 +107,16 @@ function ReferenceProjectsInner() {
               <div key={project.id} className="flex flex-col rounded-xl border border-navy-100 bg-white p-6">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <p className="text-xs font-semibold uppercase text-navy-400">{program?.shortName ?? project.fundName}</p>
-                  {project.period === "2014-2020" && (
-                    <span className="badge bg-navy-100 text-navy-500">{rp.periodLegacyBadge}</span>
-                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {project.source === "example" && (
+                      <span className="badge bg-gold-100 text-navy-700" title={rp.sourceExampleTooltip}>
+                        {rp.sourceExampleBadge}
+                      </span>
+                    )}
+                    {project.period === "2014-2020" && (
+                      <span className="badge bg-navy-100 text-navy-500">{rp.periodLegacyBadge}</span>
+                    )}
+                  </div>
                 </div>
                 <h3 className="mt-1 font-bold text-navy-900">{project.title}</h3>
                 <p className="mt-2 whitespace-pre-line text-sm text-navy-600">

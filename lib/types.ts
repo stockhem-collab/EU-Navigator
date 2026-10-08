@@ -389,8 +389,15 @@ export interface ProjectIndicator {
  * sync job would populate this from the source system. */
 export type FundedProjectStatus = "signed" | "ongoing" | "closed" | "terminated";
 
+/** Where a reference project comes from. "example" is the built-in
+ * example dataset: another municipality's real projects, renamed to
+ * Exempelstad. Imported sources (Kohesio, Keep.eu, CORDIS) get their own
+ * values when they are added. */
+export type FundedProjectSource = "example";
+
 export interface FundedProject {
   id: string;
+  source: FundedProjectSource;
   title: string;
   organisation: string;
   theme_sv: string;
