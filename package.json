@@ -15,7 +15,9 @@
     "import:keep-eu": "tsx scripts/import/keep-eu.ts",
     "import:cordis": "tsx scripts/import/cordis.ts",
     "import:esf": "tsx scripts/import/esf.ts",
-    "import:all": "npm run import:kohesio && npm run import:keep-eu && npm run import:cordis && npm run import:esf"
+    "import:all": "npm run import:kohesio && npm run import:keep-eu && npm run import:cordis && npm run import:esf",
+    "history:uppsala": "tsx scripts/import/uppsala-history.ts",
+    "history:peers": "tsx scripts/import/peers.ts"
   },
   "dependencies": {
     "docx": "^9.7.1",
