@@ -31,11 +31,11 @@ test("an applicant type the call doesn't accept moves it out of the recommended 
   await page.getByLabel("Sökande organisationstyp").selectOption("sme");
   await page.locator('button[type="submit"]').click();
 
-  // Every seeded call except Horizon Europe excludes SMEs, and Horizon
-  // needs a three-country consortium this project lacks — so nothing is
-  // recommended and the full list is shown as lower-relevance matches.
-  await expect(page.getByRole("heading", { name: /Rekommenderade matchningar/i })).toHaveCount(0);
-  await expect(page.getByText(/Inga starka matchningar hittades/)).toBeVisible();
+  // Every seeded call except Horizon Europe excludes SMEs, so the LIFE call
+  // moves to the lower-relevance matches. (Calls from the call list state
+  // no structured applicant types, so they can still be recommended.)
+  const showLower = page.getByRole("button", { name: /Visa fler \/ lägre matchning/ });
+  if (await showLower.isVisible()) await showLower.click();
   const lifeCard = page.locator("div.rounded-xl", { has: page.getByRole("heading", { name: /LIFE – Klimatåtgärder/ }) });
   await expect(lifeCard.getByText(/Er organisationstyp \(sme\) kan inte söka/)).toBeVisible();
   await expect(lifeCard.getByText("LÅG PRIORITET")).toBeVisible();

@@ -189,6 +189,7 @@ function DemoPageInner() {
         {step.name === "results" && (
           <MatchResults
             matches={step.matches}
+            project={step.project}
             onBack={() => setStep({ name: "intake", project: step.project })}
             onSelect={(match) => setStep({ name: "workspace", project: step.project, match })}
           />

@@ -181,12 +181,48 @@ export type ApplicantType =
   | "national-authority"
   | "research-institute";
 
+/** The status a call list states for a call, finer than FundingCall.status:
+ * "planned" = in the funder's published plan, "upcoming" = announced in a
+ * work programme with dates, "expected" = assumed from earlier years'
+ * pattern, not yet announced. All three are "upcoming" in status. */
+export type CallSourceStatus = "open" | "planned" | "upcoming" | "expected";
+
+/** A call's opening or closing date as the source gives it: a day
+ * (YYYY-MM-DD) or only a month (YYYY-MM), possibly preliminary. */
+export interface CallDate {
+  date: string;
+  preliminary: boolean;
+}
+
 export interface FundingCall {
   id: string;
   programId: string;
   title_sv: string;
   title_en: string;
   status: "open" | "upcoming";
+  /** The finer status from the call list, for calls read from
+   * data/utlysningar.csv. Undefined = only `status` is known. */
+  sourceStatus?: CallSourceStatus;
+  /** When the call opens, when known. */
+  opens?: CallDate;
+  /** The closing date as the source gives it — deadlineDate holds the same
+   * date as a day (the month's last day for a month-only date). */
+  closes?: CallDate;
+  /** False when the source states no grant range: minGrantSEK and
+   * maxGrantSEK are then 0 and mean "not stated", and the budget check
+   * scores the call as unknown. Undefined = stated. */
+  grantRangeStated?: boolean;
+  /** The grant range as published, when it was in euro — minGrantSEK and
+   * maxGrantSEK are converted at the yearly average rate in `rate`. */
+  originalGrantRange?: { min: number | null; max: number | null; currency: "EUR"; rate: number; rateYear: number };
+  /** The app themes (sectors) this call is about, when the call states
+   * them. Undefined = the programme's sectors. */
+  sectors?: Sector[];
+  /** The call's page at the funder. */
+  link?: string;
+  description_sv?: string;
+  /** Our own note on the call (from the call list's Kommentar column). */
+  comment_sv?: string;
   /** Relative deadline — what the illustrative seed calls use. Read it via
    * callDeadlineMonths(), which prefers deadlineDate when set. */
   deadlineMonthsFromNow: number;
@@ -249,8 +285,10 @@ export interface FundingCall {
    * real call documents). "assisted-import" marks a call added through
    * Datacenter's utlysningsimport tool: its fields started as a rule-based
    * reading of pasted call text and were reviewed and edited by a person
-   * before saving — never auto-published from the extraction alone. */
-  extractionSource?: "manual" | "assisted-import";
+   * before saving — never auto-published from the extraction alone.
+   * "call-list" marks a call read from data/utlysningar.csv, the
+   * hand-kept list of real calls (lib/data/callList.ts). */
+  extractionSource?: "manual" | "assisted-import" | "call-list";
   /** ISO date the call was added via the import tool. Undefined for every
    * hand-authored seed call. */
   importedAt?: string;

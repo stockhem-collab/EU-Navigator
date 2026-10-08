@@ -40,6 +40,9 @@ import {
   projectMatchingFieldsPatch,
 } from "@/lib/matching/portfolio";
 import { computeSimilarProjects } from "@/lib/matching/similarProjects";
+import ImportedSimilarProjects from "@/components/imported/ImportedSimilarProjects";
+import AmountBenchmark, { useAmountBenchmarks } from "@/components/imported/AmountBenchmark";
+import CallStatusBadge from "@/components/calls/CallStatusBadge";
 import { fmtSEK, fmtFileSize } from "@/lib/format";
 import { APPLICATION_STATUS_ORDER, ApplicationRecord, Commitment, ApplicationStatus, PROJECT_STATUS_ORDER, ProjectStatus, Sector } from "@/lib/types";
 import { suggestTags } from "@/lib/matching/tagSuggestions";
@@ -92,6 +95,12 @@ export default function ProjectBankDetailPage() {
   const { tasksFor, addTask, toggleTask, editTask, removeTask } = useProjectTasks();
   const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
   const entry = all.find((p) => p.id === params.id);
+  // What projects in each call's programme and this project's theme have
+  // actually been granted (imported data), for the match list.
+  const benchmarks = useAmountBenchmarks(
+    entry?.sector,
+    fundingCalls.map((c) => c.programId)
+  );
   const assignedUsers = entry ? users.filter((u) => u.projectRoles.some((r) => r.projectId === entry.id)) : [];
   const [draft, setDraft] = useState<EditDraft | null>(null);
   const [newTaskText, setNewTaskText] = useState("");
@@ -737,10 +746,18 @@ export default function ProjectBankDetailPage() {
                       {match.program.logoLetter}
                     </span>
                     <div>
-                      <p className="text-xs font-semibold uppercase text-navy-400">{match.program.shortName}</p>
+                      <p className="text-xs font-semibold uppercase text-navy-400">
+                        {match.program.shortName}
+                        {match.call.status === "upcoming" && (
+                          <span className="ml-2 normal-case">
+                            <CallStatusBadge call={match.call} />
+                          </span>
+                        )}
+                      </p>
                       <p className="font-semibold text-navy-800">
                         {lang === "sv" ? match.call.title_sv : match.call.title_en}
                       </p>
+                      <AmountBenchmark stats={benchmarks[match.call.programId]} />
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -1014,6 +1031,7 @@ export default function ProjectBankDetailPage() {
               ))}
             </div>
           )}
+          <ImportedSimilarProjects project={projectBankEntryToProjectInput(entry)} />
         </div>
       </main>
       <Footer />

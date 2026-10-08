@@ -1,0 +1,951 @@
+[
+  {
+    "id": "horizon-miss-2026-04-cit-01",
+    "programId": "horizon",
+    "title_sv": "Energieffektiv kollektivtrafik kompletterad med delad mobilitet (HORIZON-MISS-2026-04-CIT-01)",
+    "title_en": "Energieffektiv kollektivtrafik kompletterad med delad mobilitet (HORIZON-MISS-2026-04-CIT-01)",
+    "status": "open",
+    "sourceStatus": "open",
+    "opens": {
+      "date": "2026-02-04",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2026-10-08",
+      "preliminary": false
+    },
+    "deadlineDate": "2026-10-08",
+    "deadlineMonthsFromNow": 0,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 54264500,
+    "originalGrantRange": {
+      "min": null,
+      "max": 5000000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2026
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [],
+    "themes": [
+      "transport-resande"
+    ],
+    "sectors": [
+      "mobility"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-01",
+    "description_sv": "Demonstration av energieffektiv stads- och förortstrafik ihop med delade mobilitetstjänster. 10 MEUR totalt, cirka 2 projekt.",
+    "comment_sv": "Innovationsåtgärd: 100 % för offentliga ideella organisationer, 70 % för företag. Stänger om sex dagar – visa som exempel, inte som realistisk ansökan.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "horizon-miss-2026-04-cit-02",
+    "programId": "horizon",
+    "title_sv": "Lågtemperaturvärme i flerbostadshus (HORIZON-MISS-2026-04-CIT-02)",
+    "title_en": "Lågtemperaturvärme i flerbostadshus (HORIZON-MISS-2026-04-CIT-02)",
+    "status": "open",
+    "sourceStatus": "open",
+    "opens": {
+      "date": "2026-02-04",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2026-10-08",
+      "preliminary": false
+    },
+    "deadlineDate": "2026-10-08",
+    "deadlineMonthsFromNow": 0,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 21705800,
+    "originalGrantRange": {
+      "min": null,
+      "max": 2000000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2026
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "energy"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-02",
+    "description_sv": "Omställning till lågtemperaturlösningar för uppvärmning i flerbostadshus. 6 MEUR totalt, cirka 3 projekt.",
+    "comment_sv": "Relevant för Uppsalahem om bolagen räknas in.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "horizon-miss-2026-04-cit-neb-b4p-ccri-03",
+    "programId": "horizon",
+    "title_sv": "Cirkulära affärsmodeller i byggsektorn (HORIZON-MISS-2026-04-CIT-NEB-B4P-CCRI-03)",
+    "title_en": "Cirkulära affärsmodeller i byggsektorn (HORIZON-MISS-2026-04-CIT-NEB-B4P-CCRI-03)",
+    "status": "open",
+    "sourceStatus": "open",
+    "opens": {
+      "date": "2026-02-04",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2026-10-08",
+      "preliminary": false
+    },
+    "deadlineDate": "2026-10-08",
+    "deadlineMonthsFromNow": 0,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 20620510,
+    "originalGrantRange": {
+      "min": null,
+      "max": 1900000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2026
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "cirkular-ekonomi",
+      "skolor-byggnader"
+    ],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "climate"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-neb-b4p-ccri-03",
+    "description_sv": "Cirkulär ekonomi i byggande, från enskilda byggnader till stadsnivå. 9,5 MEUR totalt, upp till 5 projekt.",
+    "comment_sv": "Passar idén om cirkulärt byggande. Nästa liknande ämne är cirkulär logistik 2027.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "driving-urban-transitions-utlysning-2026",
+    "programId": "driving-urban-transitions",
+    "title_sv": "Driving Urban Transitions – utlysning 2026",
+    "title_en": "Driving Urban Transitions – utlysning 2026",
+    "status": "open",
+    "sourceStatus": "open",
+    "opens": {
+      "date": "2026-09-01",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2026-11-17",
+      "preliminary": false
+    },
+    "deadlineDate": "2026-11-17",
+    "deadlineMonthsFromNow": 1,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": true,
+    "eligibleApplicants_sv": "Konsortier med forskare, offentliga organisationer, företag och civilsamhälle; minst tre partner från tre deltagande länder.",
+    "eligibleApplicants_en": "Konsortier med forskare, offentliga organisationer, företag och civilsamhälle; minst tre partner från tre deltagande länder.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "stadsomstallning-klimatneutral"
+    ],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "climate"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://www.energimyndigheten.se/utlysningar/driving-urban-transitions-hallbar-urban-omstallning-inom-europeiskt-partnerskap",
+    "description_sv": "Forsknings- och innovationsprojekt om stadsomställning: energipositiva stadsdelar, cirkulär stadsekonomi och 15-minutersstaden. Svensk budget cirka 53 MSEK. Steg 2 stänger 2027-04-15.",
+    "comment_sv": "Datum för steg 1. Stödnivå följer respektive svensk finansiär.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "a1-kompetensutveckling-for-yrkesverksamma-ostra-mellansverig",
+    "programId": "esf",
+    "title_sv": "A1 Kompetensutveckling för yrkesverksamma – Östra Mellansverige",
+    "title_en": "A1 Kompetensutveckling för yrkesverksamma – Östra Mellansverige",
+    "status": "upcoming",
+    "sourceStatus": "planned",
+    "opens": {
+      "date": "2026-12-15",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-03-15",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-03-15",
+    "deadlineMonthsFromNow": 5,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Privat, offentlig och idéburen sektor i Östra Mellansverige.",
+    "eligibleApplicants_en": "Privat, offentlig och idéburen sektor i Östra Mellansverige.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "utbildning-kompetens"
+    ],
+    "themes": [
+      "kompetens-entreprenorskap"
+    ],
+    "sectors": [
+      "education"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://www.esf.se/utlysningar/utlysningsplan/",
+    "description_sv": "Kompetensutveckling för anställda inom ramen för regionens prioriteringar, bland annat strategisk kompetensförsörjning utifrån arbetsgivares behov.",
+    "comment_sv": "Preliminär enligt ESF-rådets utlysningsplan. Budget ej angiven.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "a2-intrade-pa-arbetsmarknaden-ostra-mellansverige",
+    "programId": "esf",
+    "title_sv": "A2 Inträde på arbetsmarknaden – Östra Mellansverige",
+    "title_en": "A2 Inträde på arbetsmarknaden – Östra Mellansverige",
+    "status": "upcoming",
+    "sourceStatus": "planned",
+    "opens": {
+      "date": "2026-12-15",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-03-15",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-03-15",
+    "deadlineMonthsFromNow": 5,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Privat, offentlig och idéburen sektor i Östra Mellansverige.",
+    "eligibleApplicants_en": "Privat, offentlig och idéburen sektor i Östra Mellansverige.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [],
+    "themes": [
+      "social-inkludering"
+    ],
+    "sectors": [
+      "social"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://www.esf.se/utlysningar/utlysningsplan/",
+    "description_sv": "Insatser för personer som står långt från arbetsmarknaden, bland annat stödstrukturer, aktörssamverkan och unga.",
+    "comment_sv": "Passar idén Vägar till jobb för unga och nyanlända. Preliminär, budget ej angiven.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "horizon-miss-2027-04-cit-01",
+    "programId": "horizon",
+    "title_sv": "Innovativa mikronät i stadsmiljö (HORIZON-MISS-2027-04-CIT-01)",
+    "title_en": "Innovativa mikronät i stadsmiljö (HORIZON-MISS-2027-04-CIT-01)",
+    "status": "upcoming",
+    "sourceStatus": "upcoming",
+    "opens": {
+      "date": "2027-02-09",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-10-07",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-10-07",
+    "deadlineMonthsFromNow": 12,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 24961670,
+    "originalGrantRange": {
+      "min": null,
+      "max": 2300000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2027
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "migration-integration"
+    ],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "energy"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
+    "description_sv": "Mikronät för bättre integration och effektivitet i städers energisystem. 7 MEUR totalt, cirka 3 projekt.",
+    "comment_sv": "Datum enligt arbetsprogrammet 2026–2027.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "horizon-miss-2027-04-cit-02",
+    "programId": "horizon",
+    "title_sv": "Vätgasstäder (HORIZON-MISS-2027-04-CIT-02)",
+    "title_en": "Vätgasstäder (HORIZON-MISS-2027-04-CIT-02)",
+    "status": "upcoming",
+    "sourceStatus": "upcoming",
+    "opens": {
+      "date": "2027-02-09",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-10-07",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-10-07",
+    "deadlineMonthsFromNow": 12,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 54264500,
+    "originalGrantRange": {
+      "min": null,
+      "max": 5000000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2027
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "energy"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
+    "description_sv": "Vätgas i stadens energi- och transportsystem. 5 MEUR, 1 projekt.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "horizon-miss-2027-04-cit-03",
+    "programId": "horizon",
+    "title_sv": "Klimattåliga resenoder för hållbart resande (HORIZON-MISS-2027-04-CIT-03)",
+    "title_en": "Klimattåliga resenoder för hållbart resande (HORIZON-MISS-2027-04-CIT-03)",
+    "status": "upcoming",
+    "sourceStatus": "upcoming",
+    "opens": {
+      "date": "2027-02-09",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-10-07",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-10-07",
+    "deadlineMonthsFromNow": 12,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 48838050,
+    "originalGrantRange": {
+      "min": null,
+      "max": 4500000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2027
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [],
+    "themes": [
+      "transport-resande"
+    ],
+    "sectors": [
+      "mobility"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
+    "description_sv": "Inkluderande och klimattåliga bytespunkter som flyttar resor till kollektivtrafik och delad mobilitet. 9 MEUR totalt, cirka 2 projekt.",
+    "comment_sv": "Kan kopplas till spårvägen i mål och budget.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "horizon-miss-2027-04-cit-ccri-04",
+    "programId": "horizon",
+    "title_sv": "Cirkulär logistik i städer (HORIZON-MISS-2027-04-CIT-CCRI-04)",
+    "title_en": "Cirkulär logistik i städer (HORIZON-MISS-2027-04-CIT-CCRI-04)",
+    "status": "upcoming",
+    "sourceStatus": "upcoming",
+    "opens": {
+      "date": "2027-02-09",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-10-07",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-10-07",
+    "deadlineMonthsFromNow": 12,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 27132250,
+    "originalGrantRange": {
+      "min": null,
+      "max": 2500000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2027
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "climate"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
+    "description_sv": "Cirkulära logistiklösningar i städer, till exempel för byggmaterial och återbruk. 7,5 MEUR totalt, cirka 3 projekt.",
+    "comment_sv": "Realistisk nästa chans för idén om cirkulärt byggande.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "horizon-miss-2027-04-cit-05",
+    "programId": "horizon",
+    "title_sv": "Förkommersiell upphandling för klimatneutrala städer (HORIZON-MISS-2027-04-CIT-05)",
+    "title_en": "Förkommersiell upphandling för klimatneutrala städer (HORIZON-MISS-2027-04-CIT-05)",
+    "status": "upcoming",
+    "sourceStatus": "upcoming",
+    "opens": {
+      "date": "2027-02-09",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-10-07",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-10-07",
+    "deadlineMonthsFromNow": 12,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 75970300,
+    "maxGrantSEK": 130234800,
+    "originalGrantRange": {
+      "min": 7000000,
+      "max": 12000000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2027
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget. Upphandlande organisationer i centrum.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget. Upphandlande organisationer i centrum.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "climate"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
+    "description_sv": "Städer upphandlar gemensamt utveckling av nya lösningar (PCP). Cirka 3 projekt.",
+    "comment_sv": "Beloppsspannet är osäkert tolkat ur källan. Stödnivå för PCP behöver kontrolleras.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "horizon-miss-2027-07-clima-cit-neb-01",
+    "programId": "horizon",
+    "title_sv": "Urban natur – restaurering av stadens ekosystem (HORIZON-MISS-2027-07-CLIMA-CIT-NEB-01)",
+    "title_en": "Urban natur – restaurering av stadens ekosystem (HORIZON-MISS-2027-07-CLIMA-CIT-NEB-01)",
+    "status": "upcoming",
+    "sourceStatus": "upcoming",
+    "opens": {
+      "date": "2027-02-09",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-09-22",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-09-22",
+    "deadlineMonthsFromNow": 11,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 27132250,
+    "originalGrantRange": {
+      "min": null,
+      "max": 2500000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2027
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "climate"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
+    "description_sv": "Restaurering av ekosystem i staden, längs transportstråk och i bebyggd miljö. 10 MEUR totalt, upp till 4 projekt.",
+    "comment_sv": "Passar idén om klimatanpassning mot skyfall och värmebölja.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "horizon-miss-2027-07-clima-cit-ccri-02",
+    "programId": "horizon",
+    "title_sv": "Innovativ avloppsvattenhantering i klimatförändringens spår (HORIZON-MISS-2027-07-CLIMA-CIT-CCRI-02)",
+    "title_en": "Innovativ avloppsvattenhantering i klimatförändringens spår (HORIZON-MISS-2027-07-CLIMA-CIT-CCRI-02)",
+    "status": "upcoming",
+    "sourceStatus": "upcoming",
+    "opens": {
+      "date": "2027-02-09",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-09-22",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-09-22",
+    "deadlineMonthsFromNow": 11,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 34729280,
+    "originalGrantRange": {
+      "min": null,
+      "max": 3200000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2027
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "cirkular-ekonomi"
+    ],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "climate"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
+    "description_sv": "Behandling och återvinning av avloppsvatten i städer och regioner. 9,5 MEUR totalt, cirka 3 projekt.",
+    "comment_sv": "Relevant för Uppsala Vatten och Avfall om bolagen räknas in.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "horizon-miss-2027-01-clima-01",
+    "programId": "horizon",
+    "title_sv": "Gränsöverskridande klimatresiliens (HORIZON-MISS-2027-01-CLIMA-01)",
+    "title_en": "Gränsöverskridande klimatresiliens (HORIZON-MISS-2027-01-CLIMA-01)",
+    "status": "upcoming",
+    "sourceStatus": "upcoming",
+    "opens": {
+      "date": "2027-02-09",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-09-21",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-09-21",
+    "deadlineMonthsFromNow": 11,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 108529000,
+    "maxGrantSEK": 162793500,
+    "originalGrantRange": {
+      "min": 10000000,
+      "max": 15000000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2027
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "gransoverskridande"
+    ],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "climate"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
+    "description_sv": "Demonstration av transformativa lösningar för klimatresiliens över nationsgränser. Upp till 5 projekt.",
+    "comment_sv": "Stora projekt; kommunen passar som demonstrationsort i ett konsortium.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "horizon-miss-2027-01-clima-02",
+    "programId": "horizon",
+    "title_sv": "AI för klimatresiliens på regional och lokal nivå (HORIZON-MISS-2027-01-CLIMA-02)",
+    "title_en": "AI för klimatresiliens på regional och lokal nivå (HORIZON-MISS-2027-01-CLIMA-02)",
+    "status": "upcoming",
+    "sourceStatus": "upcoming",
+    "opens": {
+      "date": "2027-02-09",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-09-21",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-09-21",
+    "deadlineMonthsFromNow": 11,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 8139675,
+    "originalGrantRange": {
+      "min": null,
+      "max": 750000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2027
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "forskning-innovation",
+      "ai-artificiell-intelligens"
+    ],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "climate"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
+    "description_sv": "Forskning och tillämpning av AI för klimatanpassning i regioner och kommuner. 3 MEUR totalt, upp till 4 projekt.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "horizon-hlth-2027-01-envhlth-missclima-03",
+    "programId": "horizon",
+    "title_sv": "Verktyg för hälsans anpassning till klimatförändringar (HORIZON-HLTH-2027-01-ENVHLTH-MISSCLIMA-03)",
+    "title_en": "Verktyg för hälsans anpassning till klimatförändringar (HORIZON-HLTH-2027-01-ENVHLTH-MISSCLIMA-03)",
+    "status": "upcoming",
+    "sourceStatus": "upcoming",
+    "opens": {
+      "date": "2027-02-10",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-04-13",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-04-13",
+    "deadlineMonthsFromNow": 6,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 43411600,
+    "maxGrantSEK": 54264500,
+    "originalGrantRange": {
+      "min": 4000000,
+      "max": 5000000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2027
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "eligibleApplicants_en": "Juridiska personer i EU och associerade länder; normalt konsortium med minst tre organisationer från tre länder. Kontrollera ämnestextens krav på städer i uppdraget.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [],
+    "themes": [
+      "risker-kriser"
+    ],
+    "sectors": [
+      "health"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
+    "description_sv": "Verktyg och teknik som skyddar hälsan vid klimatförändringar, till exempel värmeböljor. Upp till 4 projekt.",
+    "comment_sv": "Kan stödja idén om klimatanpassning med fokus på äldre.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "life-2027-klimatanpassning-standardprojekt-prel",
+    "programId": "life",
+    "title_sv": "LIFE 2027 – Klimatanpassning, standardprojekt (prel.)",
+    "title_en": "LIFE 2027 – Klimatanpassning, standardprojekt (prel.)",
+    "status": "upcoming",
+    "sourceStatus": "expected",
+    "opens": {
+      "date": "2027-04",
+      "preliminary": true
+    },
+    "closes": {
+      "date": "2027-09",
+      "preliminary": true
+    },
+    "deadlineDate": "2027-09-30",
+    "deadlineMonthsFromNow": 12,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Offentliga, privata och ideella organisationer i EU och LIFE-associerade länder.",
+    "eligibleApplicants_en": "Offentliga, privata och ideella organisationer i EU och LIFE-associerade länder.",
+    "coFinancingRate": 0.6,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "infrastruktur"
+    ],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "climate"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://cinea.ec.europa.eu/funding-opportunities/calls-proposals/climate-change-adaptation-0_en",
+    "description_sv": "Naturbaserade lösningar, riskbedömning, vattenhantering och resiliens i infrastruktur. 2026 års utlysning hade 28 MEUR och stängde 2026-09-22.",
+    "comment_sv": "Datum antagna utifrån 2026 års mönster; bekräftas när utlysningen publiceras.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "life-2027-begransning-av-klimatforandringar-standardprojekt-",
+    "programId": "life",
+    "title_sv": "LIFE 2027 – Begränsning av klimatförändringar, standardprojekt (prel.)",
+    "title_en": "LIFE 2027 – Begränsning av klimatförändringar, standardprojekt (prel.)",
+    "status": "upcoming",
+    "sourceStatus": "expected",
+    "opens": {
+      "date": "2027-04",
+      "preliminary": true
+    },
+    "closes": {
+      "date": "2027-09",
+      "preliminary": true
+    },
+    "deadlineDate": "2027-09-30",
+    "deadlineMonthsFromNow": 12,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Offentliga, privata och ideella organisationer i EU och LIFE-associerade länder.",
+    "eligibleApplicants_en": "Offentliga, privata och ideella organisationer i EU och LIFE-associerade länder.",
+    "coFinancingRate": 0.6,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "fornybar-energi"
+    ],
+    "themes": [
+      "transport-resande"
+    ],
+    "sectors": [
+      "mobility"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://cinea.ec.europa.eu/funding-opportunities/calls-proposals/climate-change-adaptation-0_en",
+    "description_sv": "Bland annat nollutsläppsmobilitet och förnybar energi. 2026 års utlysning hade 28 MEUR.",
+    "comment_sv": "Passar idén om fossilfria transporter och arbetsmaskiner. Datum preliminära.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "life-2027-cirkular-ekonomi-och-livskvalitet-standardprojekt-",
+    "programId": "life",
+    "title_sv": "LIFE 2027 – Cirkulär ekonomi och livskvalitet, standardprojekt (prel.)",
+    "title_en": "LIFE 2027 – Cirkulär ekonomi och livskvalitet, standardprojekt (prel.)",
+    "status": "upcoming",
+    "sourceStatus": "expected",
+    "opens": {
+      "date": "2027-04",
+      "preliminary": true
+    },
+    "closes": {
+      "date": "2027-09",
+      "preliminary": true
+    },
+    "deadlineDate": "2027-09-30",
+    "deadlineMonthsFromNow": 12,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Offentliga, privata och ideella organisationer i EU och LIFE-associerade länder.",
+    "eligibleApplicants_en": "Offentliga, privata och ideella organisationer i EU och LIFE-associerade länder.",
+    "coFinancingRate": 0.6,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "cirkular-ekonomi"
+    ],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "climate"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/life/wp-call/2026/call-fiche_life-2026-sap-env_en.pdf",
+    "description_sv": "Cirkulär ekonomi och minskade föroreningar. 2026 års utlysning för cirkulär ekonomi och nollförorening hade 79 MEUR.",
+    "comment_sv": "Kan passa både cirkulärt byggande och matsvinn i offentliga kök. Datum preliminära.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "life-2027-ren-energiomstallning-prel",
+    "programId": "life",
+    "title_sv": "LIFE 2027 – Ren energiomställning (prel.)",
+    "title_en": "LIFE 2027 – Ren energiomställning (prel.)",
+    "status": "upcoming",
+    "sourceStatus": "expected",
+    "opens": {
+      "date": "2027-04",
+      "preliminary": true
+    },
+    "closes": {
+      "date": "2027-09",
+      "preliminary": true
+    },
+    "deadlineDate": "2027-09-30",
+    "deadlineMonthsFromNow": 12,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Offentliga, privata och ideella organisationer i EU och LIFE-associerade länder.",
+    "eligibleApplicants_en": "Offentliga, privata och ideella organisationer i EU och LIFE-associerade länder.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "energieffektivisering",
+      "fornybar-energi"
+    ],
+    "themes": [
+      "miljo-klimat"
+    ],
+    "sectors": [
+      "energy"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://cinea.ec.europa.eu/news-events/news/life-calls-proposals-2026-eu6015-million-greener-more-competitive-europe-2026-04-22_en",
+    "description_sv": "Kapacitetsuppbyggnad och marknadsinsatser för energieffektivisering och förnybar energi. 2026 års budget var 85,5 MEUR.",
+    "comment_sv": "Stödnivå och datum bekräftas när utlysningen publiceras.",
+    "extractionSource": "call-list"
+  }
+]

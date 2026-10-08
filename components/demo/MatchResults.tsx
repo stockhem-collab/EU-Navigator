@@ -3,19 +3,30 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { MatchResult } from "@/lib/types";
+import { MatchResult, ProjectInput } from "@/lib/types";
+import type { AmountStats } from "@/lib/imported/types";
 import { fmtSEK } from "@/lib/format";
+import AmountBenchmark, { useAmountBenchmarks } from "@/components/imported/AmountBenchmark";
+import ImportedSimilarProjects from "@/components/imported/ImportedSimilarProjects";
+import CallStatusBadge, { CallDates } from "@/components/calls/CallStatusBadge";
 
 interface Props {
   matches: MatchResult[];
+  /** The project matched — for the amount benchmarks and the similar
+   * projects from the imported data. */
+  project?: ProjectInput;
   onSelect: (match: MatchResult) => void;
   onBack: () => void;
 }
 
-export default function MatchResults({ matches, onSelect, onBack }: Props) {
+export default function MatchResults({ matches, project, onSelect, onBack }: Props) {
   const { t } = useLanguage();
   const results = t.demo.results;
   const [showLowRelevance, setShowLowRelevance] = useState(false);
+  const benchmarks = useAmountBenchmarks(
+    project?.sector,
+    matches.map((m) => m.call.programId)
+  );
 
   // The scoring engine already classifies every match into proceed/consider
   // ("recommendation" !== "low") vs. genuinely low relevance — reusing that
@@ -43,7 +54,7 @@ export default function MatchResults({ matches, onSelect, onBack }: Props) {
           <h2 className="text-sm font-semibold uppercase text-navy-400">{results.recommendedSectionTitle}</h2>
           <div className="mt-3 space-y-5">
             {recommended.map((match) => (
-              <MatchCard key={match.call.id} match={match} onSelect={onSelect} />
+              <MatchCard key={match.call.id} match={match} benchmark={benchmarks[match.call.programId]} onSelect={onSelect} />
             ))}
           </div>
         </div>
@@ -60,7 +71,7 @@ export default function MatchResults({ matches, onSelect, onBack }: Props) {
           )}
           <div className="mt-3 space-y-5">
             {lowRelevance.map((match) => (
-              <MatchCard key={match.call.id} match={match} onSelect={onSelect} />
+              <MatchCard key={match.call.id} match={match} benchmark={benchmarks[match.call.programId]} onSelect={onSelect} />
             ))}
           </div>
         </div>
@@ -75,11 +86,21 @@ export default function MatchResults({ matches, onSelect, onBack }: Props) {
           {showLowRelevance ? results.hideLowRelevanceButton : results.showLowRelevanceButton(lowRelevance.length)}
         </button>
       )}
+
+      {project && <ImportedSimilarProjects project={project} />}
     </div>
   );
 }
 
-function MatchCard({ match, onSelect }: { match: MatchResult; onSelect: (match: MatchResult) => void }) {
+function MatchCard({
+  match,
+  benchmark,
+  onSelect,
+}: {
+  match: MatchResult;
+  benchmark?: AmountStats;
+  onSelect: (match: MatchResult) => void;
+}) {
   const { t, lang } = useLanguage();
   const results = t.demo.results;
 
@@ -108,7 +129,14 @@ function MatchCard({ match, onSelect }: { match: MatchResult; onSelect: (match: 
             {match.program.logoLetter}
           </span>
           <div>
-            <p className="text-xs font-semibold uppercase text-navy-400">{match.program.shortName}</p>
+            <p className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase text-navy-400">
+              {match.program.shortName}
+              {match.call.status === "upcoming" && (
+                <span className="normal-case">
+                  <CallStatusBadge call={match.call} />
+                </span>
+              )}
+            </p>
             <h2 className="font-bold text-navy-900">
               <Link
                 href={callHref}
@@ -129,6 +157,11 @@ function MatchCard({ match, onSelect }: { match: MatchResult; onSelect: (match: 
             >
               {results.viewCallDetails} ↗<span className="sr-only"> ({results.viewCallDetailsHint})</span>
             </Link>
+            {match.call.status === "upcoming" && (
+              <p className="mt-1 text-xs text-navy-500">
+                <CallDates call={match.call} />
+              </p>
+            )}
           </div>
         </div>
         <div className="text-right">
@@ -155,6 +188,12 @@ function MatchCard({ match, onSelect }: { match: MatchResult; onSelect: (match: 
           </li>
         ))}
       </ul>
+
+      {benchmark && (
+        <div className="mt-4 border-t border-navy-50 pt-4">
+          <AmountBenchmark stats={benchmark} />
+        </div>
+      )}
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-navy-50 pt-4">
         <div className="flex items-center gap-6 text-sm">

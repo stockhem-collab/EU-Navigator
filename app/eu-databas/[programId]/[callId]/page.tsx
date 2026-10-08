@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { applicantTypeLabel, documentTypeLabel, callDeadlineMonths } from "@/lib/data/fundingCalls";
+import CallStatusBadge, { CallDates, GrantRangeText } from "@/components/calls/CallStatusBadge";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { fundedProjectsForProgram, computeProgramStats } from "@/lib/data/fundedProjects";
 import { topKeywords } from "@/lib/matching/patternAnalysis";
@@ -66,11 +67,7 @@ export default function CallDetailPage() {
             )}
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
-            <span
-              className={`badge ${call.status === "open" ? "bg-green-100 text-green-800" : "bg-navy-100 text-navy-600"}`}
-            >
-              {call.status === "open" ? db.statusOpen : db.statusUpcoming}
-            </span>
+            <CallStatusBadge call={call} />
             <button
               type="button"
               onClick={() => toggleCall(call.id)}
@@ -87,22 +84,47 @@ export default function CallDetailPage() {
           <div>
             <dt className="text-xs font-semibold uppercase text-navy-400">{db.deadlineLabel}</dt>
             <dd className="mt-1 font-bold text-navy-900">{db.deadlineIn(callDeadlineMonths(call))}</dd>
-            {call.deadlineDate && <dd className="text-xs text-navy-500">{call.deadlineDate}</dd>}
+            {call.opens || call.closes ? (
+              <dd className="text-xs text-navy-500">
+                <CallDates call={call} />
+              </dd>
+            ) : (
+              call.deadlineDate && <dd className="text-xs text-navy-500">{call.deadlineDate}</dd>
+            )}
           </div>
           <div>
             <dt className="text-xs font-semibold uppercase text-navy-400">{db.budgetLabel}</dt>
-            <dd className="mt-1 font-bold text-navy-900">{fmtSEK(call.budgetTotalSEK, lang)}</dd>
+            <dd className="mt-1 font-bold text-navy-900">
+              {call.budgetTotalSEK > 0 ? fmtSEK(call.budgetTotalSEK, lang) : t.imported.grantNotStated}
+            </dd>
           </div>
           <div>
             <dt className="text-xs font-semibold uppercase text-navy-400">{db.grantRangeLabel}</dt>
             <dd className="mt-1 font-bold text-navy-900">
-              {fmtSEK(call.minGrantSEK, lang)}–{fmtSEK(call.maxGrantSEK, lang)}
+              <GrantRangeText call={call} />
             </dd>
             <dd className="text-xs text-navy-500">
               {db.fundingRateLabel(Math.round((call.coFinancingRate ?? program.typicalCoFinancingRate) * 100))}
             </dd>
           </div>
         </dl>
+
+        {(call.description_sv || call.comment_sv || call.link) && (
+          <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6" data-testid="call-list-details">
+            <h2 className="text-sm font-semibold uppercase text-navy-400">{t.imported.callFromList}</h2>
+            {call.description_sv && <p className="mt-2 text-sm text-navy-700">{call.description_sv}</p>}
+            {call.comment_sv && (
+              <p className="mt-2 text-sm text-navy-600">
+                <span className="font-semibold">{t.imported.callComment}:</span> {call.comment_sv}
+              </p>
+            )}
+            {call.link && (
+              <a href={call.link} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-sm font-semibold text-navy-600 hover:text-navy-900">
+                {t.imported.callSourceLink} ↗
+              </a>
+            )}
+          </section>
+        )}
 
         <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
           <h2 className="text-sm font-semibold uppercase text-navy-400">{db.eligibleApplicantsTitle}</h2>

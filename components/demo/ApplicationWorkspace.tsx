@@ -504,7 +504,7 @@ export default function ApplicationWorkspace({
                       label={ws.requestedGrant}
                       hint={ws.requestedGrantHint(
                         `${Math.round(budgetFigures.fundingRate * 100)} %`,
-                        fmtSEK(match.call.maxGrantSEK, lang)
+                        match.call.grantRangeStated === false ? t.imported.grantNotStated : fmtSEK(match.call.maxGrantSEK, lang)
                       )}
                       value={budget.requestedGrantSEK}
                       placeholder={budgetFigures.requestedGrantSEK}

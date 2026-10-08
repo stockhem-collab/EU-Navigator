@@ -1,4 +1,5 @@
 import { ApplicantType, DocumentType, FundingCall, Lang } from "@/lib/types";
+import { callListCalls } from "@/lib/data/callList";
 
 const APPLICANT_TYPE_LABELS: Record<ApplicantType, { sv: string; en: string }> = {
   municipality: { sv: "Kommun", en: "Municipality" },
@@ -44,7 +45,7 @@ export function documentTypeLabel(type: DocumentType, lang: Lang): string {
 // Level 2 (utlysning) + embedded level 3 (dokument). This is the AI's
 // actual "context package" per call — everything scoring, the application
 // coach and reporting are meant to be grounded in. Illustrative demo data.
-export const fundingCalls: FundingCall[] = [
+const seedCalls: FundingCall[] = [
   {
     id: "life-2027-climate-schools",
     programId: "life",
@@ -408,6 +409,10 @@ export const fundingCalls: FundingCall[] = [
   },
 ];
 
+/** The seed calls above plus the real calls from data/utlysningar.csv
+ * (lib/data/callList.ts). */
+export const fundingCalls: FundingCall[] = [...seedCalls, ...callListCalls];
+
 /** Whole months from `now` until an ISO date (YYYY-MM-DD, counted to the
  * end of that day) — negative once it has passed. Null for an invalid date. */
 export function monthsUntilDate(isoDate: string, now: Date = new Date()): number | null {
@@ -423,6 +428,11 @@ export function monthsUntilDate(isoDate: string, now: Date = new Date()): number
 export function callDeadlineMonths(call: FundingCall, now: Date = new Date()): number {
   if (!call.deadlineDate) return call.deadlineMonthsFromNow;
   return monthsUntilDate(call.deadlineDate, now) ?? call.deadlineMonthsFromNow;
+}
+
+/** The call's largest grant, or no limit when the call doesn't state one. */
+export function callMaxGrantSEK(call: FundingCall): number {
+  return call.grantRangeStated === false ? Number.POSITIVE_INFINITY : call.maxGrantSEK;
 }
 
 export function findCall(id: string): FundingCall | undefined {

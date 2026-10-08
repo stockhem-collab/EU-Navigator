@@ -6,10 +6,11 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 // Kunskapsbanken groups the two reference sections — the EU call catalogue
 // and funded reference projects — under one main tab; this strip moves
-// between them.
-const TABS: { href: string; labelKey: "euDatabase" | "referenceProjects" }[] = [
-  { href: "/eu-databas", labelKey: "euDatabase" },
-  { href: "/referensprojekt", labelKey: "referenceProjects" },
+// between them, and to the organisation's own EU history.
+const TABS: { href: string; label: (t: ReturnType<typeof useLanguage>["t"]) => string }[] = [
+  { href: "/eu-databas", label: (t) => t.nav.euDatabase },
+  { href: "/referensprojekt", label: (t) => t.nav.referenceProjects },
+  { href: "/historik", label: (t) => t.imported.historyTab },
 ];
 
 export default function KnowledgeTabs() {
@@ -30,7 +31,7 @@ export default function KnowledgeTabs() {
               active ? "bg-navy-800 text-white" : "border border-navy-200 text-navy-600 hover:bg-navy-50"
             }`}
           >
-            {t.nav[tab.labelKey]}
+            {tab.label(t)}
           </Link>
         );
       })}
