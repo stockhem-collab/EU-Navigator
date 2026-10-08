@@ -34,3 +34,7 @@ next-env.d.ts
 # raw data downloads (folder kept via .gitkeep)
 /data/raw/*
 !/data/raw/.gitkeep
+
+# generated import output (npm run import:all), rebuilt from data/raw/
+/lib/data/generated/*
+!/lib/data/generated/.gitkeep
