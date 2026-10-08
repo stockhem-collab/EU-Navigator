@@ -7,7 +7,7 @@ import { FundedProject } from "@/lib/types";
 // actual EU-funded projects across both the 2021-2027 and 2014-2020
 // programme periods. Budget/funding figures are as published by the
 // city; a small number of projects did not publish a figure (null).
-export const fundedProjects: FundedProject[] = [
+const exampleProjects: Omit<FundedProject, "source">[] = [
   {
     id: "ai-driven-atervinning",
     title: `AI-driven återvinning`,
@@ -2085,6 +2085,10 @@ Genom nätverk, plattformar och samverkan ska sammanlagt 500 företag
     euFundingSEK: null,
   },
 ];
+
+// Marked as source "example" so the UI can label them as such, next to
+// projects imported from real sources.
+export const fundedProjects: FundedProject[] = exampleProjects.map((p) => ({ ...p, source: "example" }));
 
 export function fundedProjectsForProgram(programId: string): FundedProject[] {
   return fundedProjects.filter((r) => r.programId === programId);

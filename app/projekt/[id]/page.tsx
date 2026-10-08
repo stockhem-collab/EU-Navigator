@@ -993,7 +993,17 @@ export default function ProjectBankDetailPage() {
                       </p>
                       <p className="font-semibold text-navy-800">{project.title}</p>
                     </div>
-                    <span className="badge bg-navy-100 text-navy-700">{similarityPct}%</span>
+                    <div className="flex flex-wrap gap-2">
+                      {project.source === "example" && (
+                        <span
+                          className="badge bg-gold-100 text-navy-700"
+                          title={t.referenceProjects.sourceExampleTooltip}
+                        >
+                          {t.referenceProjects.sourceExampleBadge}
+                        </span>
+                      )}
+                      <span className="badge bg-navy-100 text-navy-700">{similarityPct}%</span>
+                    </div>
                   </div>
                   {sharedKeywords.length > 0 && (
                     <p className="mt-2 text-xs text-navy-400">
