@@ -1,6 +1,7 @@
 "use client";
 
 import { callDeadlineMonths } from "@/lib/data/fundingCalls";
+import CallStatusBadge, { CallDates, GrantRangeText } from "@/components/calls/CallStatusBadge";
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -81,11 +82,7 @@ function EuDatabaseInner() {
               <h2 className="font-bold text-navy-900">{lang === "sv" ? program.name_sv : program.name}</h2>
               {program.status === "legacy" && <span className="badge bg-navy-100 text-navy-500">{db.closedProgrammeBadge}</span>}
               {singleCall && (
-                <span
-                  className={`badge ${singleCall.status === "open" ? "bg-green-100 text-green-800" : "bg-navy-100 text-navy-600"}`}
-                >
-                  {singleCall.status === "open" ? db.statusOpen : db.statusUpcoming}
-                </span>
+                <CallStatusBadge call={singleCall} />
               )}
             </div>
             <p className="mt-1 text-sm text-navy-600">{lang === "sv" ? program.description_sv : program.description_en}</p>
@@ -100,8 +97,9 @@ function EuDatabaseInner() {
         {singleCall ? (
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-xs font-semibold text-navy-400">
             <span>{db.deadlineIn(callDeadlineMonths(singleCall))}</span>
+            <CallDates call={singleCall} />
             <span>
-              {db.grantRangeLabel}: {fmtSEK(singleCall.minGrantSEK, lang)}–{fmtSEK(singleCall.maxGrantSEK, lang)}
+              {db.grantRangeLabel}: <GrantRangeText call={singleCall} />
             </span>
             <span>{db.documentsCount(docCount)}</span>
           </div>

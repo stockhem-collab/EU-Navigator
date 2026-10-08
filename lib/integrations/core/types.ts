@@ -65,6 +65,10 @@ export interface ImportedFundedProject {
   sourceUrl: string | null;
   /** Free-form source facts worth keeping (themes, topics, mission flags). */
   tags?: string[];
+  /** The cohesion-policy category of intervention (Kohesio, ESF+), when the
+   * source gives it. Codes are only unique within a period: 2014–2020 uses
+   * 1–123, 2021–2027 uses 1–182 with other meanings. */
+  interventionCategory?: { code: string; label: string | null } | null;
 }
 
 export interface ImportedOrganisation {

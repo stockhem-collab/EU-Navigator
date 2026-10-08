@@ -18,7 +18,7 @@ const NAV_LINKS: { href: string; labelKey: NavKey; also?: string[] }[] = [
   { href: "/projekt", labelKey: "projects" },
   { href: "/ansok", labelKey: "apply", also: ["/ansokan"] },
   { href: "/rapportera", labelKey: "report", also: ["/stod"] },
-  { href: "/eu-databas", labelKey: "knowledgeBank", also: ["/referensprojekt"] },
+  { href: "/eu-databas", labelKey: "knowledgeBank", also: ["/referensprojekt", "/historik"] },
   { href: "/datacenter", labelKey: "datacenter" },
 ];
 

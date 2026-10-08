@@ -1,5 +1,6 @@
 import { MatchResult, ProjectInput } from "@/lib/types";
 import type { CoFinancingCap } from "@/lib/hooks/useFundingProfile";
+import { callMaxGrantSEK } from "@/lib/data/fundingCalls";
 
 // The amounts one application states — as opposed to the project's own
 // estimated cost. EU calls ask for two figures: the eligible budget (the
@@ -68,7 +69,7 @@ export function resolveApplicationBudget(
   const maxGrantByRateSEK = Math.round(eligibleBudgetSEK * fundingRate);
   // Unset, it's the same estimate as the match's: what was asked for in the
   // project, at most the funding rate of the budget and the call's maximum.
-  const estimate = Math.min(project.requestedGrantSEK ?? maxGrantByRateSEK, maxGrantByRateSEK, match.call.maxGrantSEK);
+  const estimate = Math.min(project.requestedGrantSEK ?? maxGrantByRateSEK, maxGrantByRateSEK, callMaxGrantSEK(match.call));
   const requestedGrantSEK = budget.requestedGrantSEK ?? estimate;
   return {
     totalBudgetSEK,
@@ -142,7 +143,7 @@ export function applicationBudgetIssues(
       text_en: `The requested grant is below the call's minimum grant (${mnkr(call.minGrantSEK, "en")}).`,
     });
   }
-  if (requestedGrantSEK > call.maxGrantSEK) {
+  if (call.grantRangeStated !== false && requestedGrantSEK > call.maxGrantSEK) {
     issues.push({
       key: "aboveCallMax",
       text_sv: `Sökt belopp är högre än utlysningens största bidrag (${mnkr(call.maxGrantSEK, "sv")}).`,

@@ -1,6 +1,7 @@
 "use client";
 
 import { callDeadlineMonths } from "@/lib/data/fundingCalls";
+import CallStatusBadge, { CallDates, GrantRangeText } from "@/components/calls/CallStatusBadge";
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, notFound } from "next/navigation";
@@ -85,18 +86,13 @@ export default function ProgramCallsPage() {
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <h2 className="font-bold text-navy-900">{lang === "sv" ? call.title_sv : call.title_en}</h2>
-                <span
-                  className={`badge ${
-                    call.status === "open" ? "bg-green-100 text-green-800" : "bg-navy-100 text-navy-600"
-                  }`}
-                >
-                  {call.status === "open" ? db.statusOpen : db.statusUpcoming}
-                </span>
+                <CallStatusBadge call={call} />
               </div>
               <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-navy-500">
                 <span>{db.deadlineIn(callDeadlineMonths(call))}</span>
+                <CallDates call={call} />
                 <span>
-                  {db.grantRangeLabel}: {fmtSEK(call.minGrantSEK, lang)}–{fmtSEK(call.maxGrantSEK, lang)}
+                  {db.grantRangeLabel}: <GrantRangeText call={call} />
                 </span>
                 <span>{db.documentsCount(call.documents.length)}</span>
               </div>

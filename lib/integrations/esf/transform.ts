@@ -161,6 +161,7 @@ export function transformEsf(
         clean(row[COL.objective]) && `Specifikt mål ${clean(row[COL.objective])}`,
         clean(row[COL.intervention]) && `Interventionsområde ${clean(row[COL.intervention])}`,
       ].filter((t): t is string => !!t),
+      interventionCategory: clean(row[COL.intervention]) ? { code: clean(row[COL.intervention])!, label: null } : null,
     });
 
     const name = clean(row[COL.beneficiary]);

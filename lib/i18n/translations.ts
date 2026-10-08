@@ -1,6 +1,8 @@
 import { ApplicationStatus, Lang } from "@/lib/types";
+import { ImportedTexts, importedEn, importedSv } from "./importedTexts";
 
 export interface TranslationTree {
+  imported: ImportedTexts;
   confirm: {
     yesRemove: string;
     yesReset: string;
@@ -962,6 +964,7 @@ export interface TranslationTree {
 
 export const translations: Record<Lang, TranslationTree> = {
   sv: {
+    imported: importedSv,
     confirm: {
       yesRemove: "Ja, ta bort",
       yesReset: "Ja, återställ",
@@ -2076,6 +2079,7 @@ export const translations: Record<Lang, TranslationTree> = {
     },
   },
   en: {
+    imported: importedEn,
     confirm: {
       yesRemove: "Yes, remove",
       yesReset: "Yes, reset",

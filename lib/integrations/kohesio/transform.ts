@@ -107,6 +107,7 @@ export function transformKohesio(rows: KohesioRow[]): TransformResult {
       tags: [fundCode, clean(row.Policy_Objective_Label), clean(row.Category_Label)].filter(
         (t): t is string => !!t,
       ),
+      interventionCategory: interventionCategory(row.Category_Of_Intervention, row.Category_Label),
     });
 
     const beneficiaryName = clean(row.Beneficiary_Name);
@@ -147,4 +148,10 @@ export function transformKohesio(rows: KohesioRow[]): TransformResult {
   }
 
   return { projects, organisations: organisations.values(), partners, skipped: skipped.counts };
+}
+
+/** "117.0" → "117"; Kohesio writes the category code as a float. */
+function interventionCategory(code: string | undefined, label: string | undefined) {
+  const c = clean(code)?.replace(/\.0+$/, "");
+  return c ? { code: c, label: clean(label) } : null;
 }

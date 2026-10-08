@@ -1,6 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // The imported reference data is read from disk on the server
+  // (lib/imported/server.ts); make sure the files ship with those routes.
+  experimental: {
+    outputFileTracingIncludes: {
+      "/api/referensprojekt": ["./data/app/**", "./data/vaxelkurs.csv"],
+      "/api/liknande-projekt": ["./data/app/**", "./data/vaxelkurs.csv"],
+      "/api/belopp": ["./data/app/**", "./data/vaxelkurs.csv"],
+      "/historik": ["./data/app/**", "./data/vaxelkurs.csv"],
+    },
+  },
   // Old addresses from before the Projekt / Ansöka / Rapportera structure,
   // kept working for bookmarks and shared links. Query strings carry over.
   async redirects() {

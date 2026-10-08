@@ -8,7 +8,7 @@ import {
 } from "@/lib/types";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { tagLabel } from "@/lib/data/tags";
-import { applicantTypeLabel, callDeadlineMonths } from "@/lib/data/fundingCalls";
+import { applicantTypeLabel, callDeadlineMonths, callMaxGrantSEK } from "@/lib/data/fundingCalls";
 import {
   activityTypeShortLabel,
   partnerCountryCount,
@@ -34,7 +34,8 @@ function keywordOverlapCount(project: ProjectInput, program: FundingProgram, cal
   return allKeywords.filter((kw) => kw.split(/\s+/).every((part) => projectWords.has(part.toLowerCase())));
 }
 
-function budgetFit(requestedGrantSEK: number, call: FundingCall): "in-range" | "partial" | "off" {
+function budgetFit(requestedGrantSEK: number, call: FundingCall): "in-range" | "partial" | "off" | "unknown" {
+  if (call.grantRangeStated === false) return "unknown";
   const { minGrantSEK, maxGrantSEK } = call;
   if (requestedGrantSEK >= minGrantSEK && requestedGrantSEK <= maxGrantSEK) return "in-range";
   const lower = minGrantSEK * 0.4;
@@ -197,10 +198,13 @@ export function scoreMatch(
   // Sector alignment (max 20) — the primary sector gets full credit, a
   // secondary one partial, since a project that merely touches a
   // programme's sector is a weaker fit than one centred on it.
-  const sectorMatch = program.sectors.includes(project.sector);
+  // A call that states its own themes (the call list's Tema column) is
+  // matched on those rather than on everything its programme covers.
+  const callSectors = call.sectors ?? program.sectors;
+  const sectorMatch = callSectors.includes(project.sector);
   const secondaryMatch = sectorMatch
     ? undefined
-    : (project.secondarySectors ?? []).find((s) => program.sectors.includes(s));
+    : (project.secondarySectors ?? []).find((s) => callSectors.includes(s));
   if (sectorMatch) {
     thematicScore += 20;
     rationale.push({
@@ -356,7 +360,16 @@ export function scoreMatch(
 
   // Budget fit (max 20 of the implementation bucket)
   const fit = budgetFit(requestedGrant, call);
-  if (fit === "in-range") {
+  if (fit === "unknown") {
+    // No range to compare with: half the points, as for other unknowns.
+    implementationScore += 10;
+    rationale.push({
+      type: "neutral",
+      category: "budget",
+      text_sv: `${grantDescription_sv} – utlysningen anger inget bidragsintervall än`,
+      text_en: `${grantDescription_en} — the call doesn't state a grant range yet`,
+    });
+  } else if (fit === "in-range") {
     implementationScore += 20;
     rationale.push({
       type: "positive",
@@ -513,7 +526,7 @@ export function scoreMatch(
 
   // Never more than the grant asked for, what the programme typically
   // co-finances, or the call's own maximum grant.
-  const fundingUpper = Math.min(requestedGrant, maxGrantByRate, call.maxGrantSEK);
+  const fundingUpper = Math.min(requestedGrant, maxGrantByRate, callMaxGrantSEK(call));
   const estimatedFundingSEK: [number, number] = [
     Math.min(Math.round(maxGrantByRate * 0.7), fundingUpper),
     fundingUpper,

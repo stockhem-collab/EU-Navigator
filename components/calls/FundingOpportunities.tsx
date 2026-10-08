@@ -8,6 +8,7 @@ import { ProjectBankEntry } from "@/lib/types";
 import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { callDeadlineMonths } from "@/lib/data/fundingCalls";
+import CallStatusBadge from "@/components/calls/CallStatusBadge";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeMatchesForCall } from "@/lib/matching/portfolio";
 import { FundingCall, FundingProgram } from "@/lib/types";
@@ -153,6 +154,7 @@ function CallCard({
             <div className="flex flex-wrap items-center gap-2">
               <h4 className="font-bold text-navy-900">{lang === "sv" ? call.title_sv : call.title_en}</h4>
               {isWatched && <span className="badge bg-gold-100 text-gold-800">{bv.watchedBadge}</span>}
+              {call.status === "upcoming" && <CallStatusBadge call={call} />}
             </div>
           </div>
         </div>
