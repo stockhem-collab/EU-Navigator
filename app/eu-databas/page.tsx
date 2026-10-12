@@ -125,7 +125,7 @@ function EuDatabaseInner() {
   return (
     <>
       <Header />
-      <main className="section">
+      <main className="page">
         <KnowledgeTabs />
         <h1 className="text-2xl font-bold text-navy-900">{db.title}</h1>
         <p className="mt-2 text-sm text-navy-600">{db.subtitle}</p>

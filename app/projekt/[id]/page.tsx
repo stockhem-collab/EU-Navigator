@@ -32,7 +32,6 @@ import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { fundedProjects } from "@/lib/data/fundedProjects";
 import { orgUnits as seedOrgUnits, projectRoleLabels, shareableUnits, unitDepth } from "@/lib/data/users";
-import { sectorLabel } from "@/lib/matching/scoreMatch";
 import {
   computeMatchesForEntry,
   projectToGrant,
@@ -51,6 +50,9 @@ import TagPicker from "@/components/TagPicker";
 import ProjectMatchingFields, { MatchingFieldsValue } from "@/components/projectbank/ProjectMatchingFields";
 import { applicantTypeLabel } from "@/lib/data/fundingCalls";
 import { activityTypeLabel, partnerLevelLabel, regionLabel, targetGroupLabel } from "@/lib/data/matchingVocabulary";
+
+/** Matches shown before "Visa alla". */
+const MATCHES_SHOWN = 5;
 
 const SECTORS: Sector[] = ["energy", "climate", "digital", "social", "mobility", "education", "health", "research"];
 const STATUSES: ProjectStatus[] = PROJECT_STATUS_ORDER;
@@ -109,6 +111,7 @@ export default function ProjectBankDetailPage() {
   const [editTaskText, setEditTaskText] = useState("");
   const [editTaskDue, setEditTaskDue] = useState("");
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
+  const [showAllMatches, setShowAllMatches] = useState(false);
   const suggestedTagsForDraft = useMemo(
     () => suggestTags(`${draft?.title ?? ""} ${draft?.description ?? ""}`),
     [draft?.title, draft?.description]
@@ -119,7 +122,7 @@ export default function ProjectBankDetailPage() {
     return (
       <>
         <Header />
-        <main className="section max-w-3xl">
+        <main className="page max-w-3xl">
           <Link href="/projekt" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
             ← {pb.back}
           </Link>
@@ -132,6 +135,9 @@ export default function ProjectBankDetailPage() {
 
   const storedMissing = lang === "sv" ? entry.missingFields_sv : entry.missingFields_en;
   const matches = computeMatchesForEntry(entry, fundingCalls);
+  // The best few matches first; the long tail (often 25–30 calls, most of
+  // them weak) only on request, so the page stays readable.
+  const visibleMatches = showAllMatches ? matches : matches.slice(0, MATCHES_SHOWN);
   // The same readiness measure as the application workspace, computed from
   // the project as it is now against its best-matching call — so it moves
   // when the project is edited, and reads the same as a new application to
@@ -272,7 +278,7 @@ export default function ProjectBankDetailPage() {
     entry.requestedGrantSEK && { label: intakeT.fieldRequestedGrant.replace(/\s*\(.*\)$/, ""), value: fmtSEK(entry.requestedGrantSEK, lang) },
     entry.secondarySectors?.length && {
       label: intakeT.fieldSecondarySectors.replace(/\s*\(.*\)$/, ""),
-      value: entry.secondarySectors.map((s) => sectorLabel(s, lang)).join(", "),
+      value: entry.secondarySectors.map((s) => t.demo.intake.sectors[s]).join(", "),
     },
     entry.targetGroups?.length && {
       label: intakeT.fieldTargetGroups.replace(/\s*\(.*\)$/, ""),
@@ -339,7 +345,7 @@ export default function ProjectBankDetailPage() {
   return (
     <>
       <Header />
-      <main className="section max-w-3xl">
+      <main className="page max-w-3xl">
         <Link href="/projekt" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
           ← {pb.back}
         </Link>
@@ -531,7 +537,7 @@ export default function ProjectBankDetailPage() {
               </div>
               <div>
                 <dt className="text-xs font-semibold uppercase text-navy-400">{pb.detailThemeLabel}</dt>
-                <dd className="mt-1 text-lg font-bold text-navy-900">{sectorLabel(entry.sector, lang)}</dd>
+                <dd className="mt-1 text-lg font-bold text-navy-900">{t.demo.intake.sectors[entry.sector]}</dd>
               </div>
               <div>
                 <dt className="text-xs font-semibold uppercase text-navy-400">{pb.columnReadiness}</dt>
@@ -736,12 +742,12 @@ export default function ProjectBankDetailPage() {
             <p className="mt-2 text-sm text-navy-500">{pb.detailNoMatches}</p>
           ) : (
             <div className="mt-4 space-y-3">
-              {matches.map((match) => (
+              {visibleMatches.map((match) => (
                 <div
                   key={match.call.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white p-4"
+                  className="flex flex-col gap-3 rounded-xl border border-navy-100 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-xs font-bold text-white">
                       {match.program.logoLetter}
                     </span>
@@ -760,7 +766,7 @@ export default function ProjectBankDetailPage() {
                       <AmountBenchmark stats={benchmarks[match.call.programId]} />
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex shrink-0 items-center gap-3">
                     <span className={`badge ${recommendationStyle(match.recommendation)}`}>{match.score}%</span>
                     {(() => {
                       // An application already in progress to this call is
@@ -778,6 +784,15 @@ export default function ProjectBankDetailPage() {
                   </div>
                 </div>
               ))}
+              {matches.length > MATCHES_SHOWN && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllMatches(!showAllMatches)}
+                  className="w-full rounded-xl border border-dashed border-navy-200 bg-white py-2.5 text-sm font-semibold text-navy-600 transition hover:bg-navy-50"
+                >
+                  {showAllMatches ? pb.showFewerMatches : pb.showAllMatches(matches.length)}
+                </button>
+              )}
             </div>
           )}
         </div>

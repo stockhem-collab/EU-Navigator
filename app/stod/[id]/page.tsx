@@ -88,7 +88,7 @@ export default function GrantPage() {
     return (
       <>
         <Header />
-        <main className="section max-w-3xl">
+        <main className="page max-w-3xl">
           <Link href="/rapportera" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
             ← {ap.back}
           </Link>
@@ -162,7 +162,7 @@ export default function GrantPage() {
   return (
     <>
       <Header />
-      <main className="section max-w-3xl">
+      <main className="page max-w-3xl">
         <Link href="/rapportera" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
           ← {ap.back}
         </Link>

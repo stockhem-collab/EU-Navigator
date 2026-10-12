@@ -17,6 +17,10 @@ export default function ImportedSimilarProjects({ project }: { project: ProjectI
   const { config } = useOrgConfig();
   const [result, setResult] = useState<SimilarResponse | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  // A handful of each up front; the rest on request, so the project page
+  // doesn't run to many screens of cards.
+  const [allSimilar, setAllSimilar] = useState(false);
+  const [allPartners, setAllPartners] = useState(false);
 
   const idea: IdeaInput = {
     title: project.title,
@@ -60,7 +64,7 @@ export default function ImportedSimilarProjects({ project }: { project: ProjectI
               <p className="mt-3 text-sm text-navy-500">{it.similarNone}</p>
             ) : (
               <div className="mt-4 grid gap-5 md:grid-cols-2">
-                {result.similar.map(({ project: p, similarityPct, reasons }) => (
+                {(allSimilar ? result.similar : result.similar.slice(0, SIMILAR_SHOWN)).map(({ project: p, similarityPct, reasons }) => (
                   <ImportedProjectCard key={p.id} project={p}>
                     <div className="mt-3 rounded-md bg-navy-50 px-3 py-2" data-testid="similarity-reasons">
                       <p className="flex items-center justify-between text-xs font-semibold uppercase text-navy-500">
@@ -79,6 +83,9 @@ export default function ImportedSimilarProjects({ project }: { project: ProjectI
                   </ImportedProjectCard>
                 ))}
               </div>
+            )}
+            {result.similar.length > SIMILAR_SHOWN && (
+              <ShowMoreButton open={allSimilar} onToggle={() => setAllSimilar(!allSimilar)} label={allSimilar ? it.showFewer : it.showAll(result.similar.length)} />
             )}
           </>
         )}
@@ -104,7 +111,7 @@ export default function ImportedSimilarProjects({ project }: { project: ProjectI
                   </tr>
                 </thead>
                 <tbody>
-                  {result.partners.map((p) => (
+                  {(allPartners ? result.partners : result.partners.slice(0, PARTNERS_SHOWN)).map((p) => (
                     <tr key={p.organisationId} className="border-b border-navy-50 last:border-0">
                       <td className="px-3 py-2 align-top font-semibold text-navy-800">
                         {p.name}
@@ -127,8 +134,27 @@ export default function ImportedSimilarProjects({ project }: { project: ProjectI
               </table>
             </div>
           )}
+          {result.partners.length > PARTNERS_SHOWN && (
+            <ShowMoreButton open={allPartners} onToggle={() => setAllPartners(!allPartners)} label={allPartners ? it.showFewer : it.showAll(result.partners.length)} />
+          )}
         </section>
       )}
     </>
+  );
+}
+
+const SIMILAR_SHOWN = 4;
+const PARTNERS_SHOWN = 8;
+
+function ShowMoreButton({ open, onToggle, label }: { open: boolean; onToggle: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      className="mt-3 w-full rounded-xl border border-dashed border-navy-200 bg-white py-2.5 text-sm font-semibold text-navy-600 transition hover:bg-navy-50"
+    >
+      {label}
+    </button>
   );
 }

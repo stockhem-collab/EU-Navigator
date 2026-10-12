@@ -7,7 +7,9 @@ import { test, expect } from "@playwright/test";
 
 test("the requested grant is edited in the application, checked against the call, and carried to the grant", async ({ page }) => {
   await page.goto("/projekt/pb-3");
-  const href = await page.locator('a[href*="/ansokan?project=pb-3"]').first().getAttribute("href");
+  // A match card's link, not the "Öppna" link of the seeded application
+  // above it, which only appears once the page has hydrated.
+  const href = await page.locator("#matches").locator('a[href*="/ansokan?project=pb-3"]').first().getAttribute("href");
   await page.goto(href!);
   await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
 

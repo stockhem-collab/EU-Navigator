@@ -71,7 +71,7 @@ export default function UsersSettingsPage() {
   return (
     <>
       <Header />
-      <main className="section max-w-4xl">
+      <main className="page max-w-4xl">
         <Link href="/installningar" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
           {us.back}
         </Link>
@@ -274,7 +274,7 @@ function UserDetail({
   return (
     <>
       <Header />
-      <main className="section max-w-2xl">
+      <main className="page max-w-2xl">
         <button type="button" onClick={onBack} className="text-sm font-semibold text-navy-600 hover:text-navy-900">
           {us.detailBack}
         </button>

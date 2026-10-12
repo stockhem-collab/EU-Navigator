@@ -303,7 +303,7 @@ export default function ImportUtlysningPage() {
   return (
     <>
       <Header />
-      <main className="section max-w-3xl">
+      <main className="page max-w-3xl">
         <Link href="/datacenter" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
           ← {ci.back}
         </Link>

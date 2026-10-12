@@ -35,6 +35,8 @@ export interface ImportedTexts {
   similarTitle: string;
   similarIntro: string;
   similarNone: string;
+  showAll: (n: number) => string;
+  showFewer: string;
   similarCompared: (n: number) => string;
   similarWhy: string;
   partnersTitle: string;
@@ -121,6 +123,8 @@ export const importedSv: ImportedTexts = {
   similarTitle: "Liknande projekt i EU:s projektdatabaser",
   similarIntro:
     "Hittade med en översättningstabell från appens teman till källornas egna koder (Kohesios interventionskategorier, CORDIS-ämnen och Keep.eu-teman) och en svensk-engelsk ordlista, så att svenska idéer hittar engelska projekt. Ingen AI.",
+  showAll: (n: number) => `Visa alla ${n}`,
+  showFewer: "Visa färre",
   similarNone: "Inga liknande projekt i den importerade datan. Lägg till fler ord i beskrivningen eller fler taggar.",
   similarCompared: (n) => `Jämfört med ${n.toLocaleString("sv-SE")} importerade projekt.`,
   similarWhy: "Varför liknande",
@@ -211,6 +215,8 @@ export const importedEn: ImportedTexts = {
   similarTitle: "Similar projects in the EU project databases",
   similarIntro:
     "Found with a translation table from the app's themes to the sources' own codes (Kohesio's categories of intervention, CORDIS topics and Keep.eu themes) and a Swedish–English word list, so Swedish ideas find English projects. No AI.",
+  showAll: (n: number) => `Show all ${n}`,
+  showFewer: "Show fewer",
   similarNone: "No similar projects in the imported data. Add more words to the description or more tags.",
   similarCompared: (n) => `Compared with ${n.toLocaleString("en-US")} imported projects.`,
   similarWhy: "Why similar",

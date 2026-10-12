@@ -2,9 +2,11 @@
 // planned, upcoming and expected) — into the app's FundingCall shape.
 // Columns: Namn, Program, Länk, Öppnar, Stänger, Minsta bidrag, Största
 // bidrag, Valuta, Stödnivå (%), Vem får söka, Beskrivning, Status, Tema,
-// Kommentar. Dates may be months and preliminary ("2027-04 (prel.)");
+// Kommentar, Taggar. Dates may be months and preliminary ("2027-04 (prel.)");
 // euro amounts are converted at the yearly average rate of the year the
-// call opens (data/vaxelkurs.csv).
+// call opens (data/vaxelkurs.csv). Taggar holds hand-set tags (labels or
+// ids from lib/data/tags.ts, comma-separated); when it is empty the tags are
+// suggested from the call's name and description.
 
 import type { CallDate, CallSourceStatus, FundingCall, FundTheme, Sector } from "../../types";
 import { convert, eurSekRate, type EurSekRates } from "../core/currency";
@@ -74,15 +76,18 @@ function monthsUntil(isoDate: string, now: Date): number {
 
 export interface CallListOptions {
   rates: EurSekRates;
-  /** Rule-based tag suggestions for a call's text (lib/matching/tagSuggestions). */
+  /** Rule-based tag suggestions for a call's text (lib/matching/tagSuggestions),
+   * used when the row has no Taggar. */
   suggestTags: (text: string) => string[];
+  /** A Taggar value (label or id) → tag id (lib/data/tags.ts). */
+  tagIdFor: (label: string) => string | undefined;
   /** The eufonder.se themes for a Tema value (lib/data/fundThemes). */
   themesFromTema: (tema: string) => FundTheme[] | undefined;
   now?: Date;
 }
 
 export function callsFromList(records: Record<string, string>[], options: CallListOptions): FundingCall[] {
-  const { rates, suggestTags, themesFromTema, now = new Date() } = options;
+  const { rates, suggestTags, tagIdFor, themesFromTema, now = new Date() } = options;
   const seen = new Set<string>();
   return records
     .filter((r) => (r["Namn"] ?? "").trim())
@@ -119,6 +124,15 @@ export function callsFromList(records: Record<string, string>[], options: CallLi
       const comment = (r["Kommentar"] ?? "").trim();
       const tema = (r["Tema"] ?? "").trim();
       const sector = TEMA_SECTORS[tema.toLowerCase()];
+      const handTags = (r["Taggar"] ?? "")
+        .split(/[,;]/)
+        .map((t) => t.trim())
+        .filter(Boolean)
+        .map((label) => {
+          const tagId = tagIdFor(label);
+          if (!tagId) throw new Error(`Rad ${row}: okänd tagg "${label}"`);
+          return tagId;
+        });
       const consortium = /konsorti|minst tre|tre (?:partner|organisationer)/i.test(who);
       const deadlineDate = lastDayOf(closes);
 
@@ -148,7 +162,7 @@ export function callsFromList(records: Record<string, string>[], options: CallLi
         priorities_sv: [],
         priorities_en: [],
         extraKeywords: [],
-        tags: suggestTags(`${name} ${description}`),
+        tags: handTags.length > 0 ? handTags : suggestTags(`${name} ${description}`),
         ...(themesFromTema(tema) ? { themes: themesFromTema(tema) } : {}),
         ...(sector ? { sectors: [sector] } : {}),
         evaluationCriteria: [],

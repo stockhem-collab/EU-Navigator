@@ -52,7 +52,7 @@ export default function FundingProfileSettingsPage() {
   return (
     <>
       <Header />
-      <main className="section max-w-2xl">
+      <main className="page max-w-2xl">
         <Link href="/installningar" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
           {fp.back}
         </Link>

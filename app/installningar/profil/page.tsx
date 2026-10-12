@@ -26,7 +26,7 @@ export default function ProfileSettingsPage() {
     return (
       <>
         <Header />
-        <main className="section max-w-2xl">
+        <main className="page max-w-2xl">
           <p className="text-sm text-navy-600">{ps.notFound}</p>
           <Link href="/installningar" className="mt-2 inline-block text-sm font-semibold text-navy-600 hover:text-navy-900">
             {ps.back}
@@ -40,7 +40,7 @@ export default function ProfileSettingsPage() {
   return (
     <>
       <Header />
-      <main className="section max-w-2xl">
+      <main className="page max-w-2xl">
         <Link href="/installningar" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
           {ps.back}
         </Link>

@@ -50,7 +50,7 @@ export default function CallDetailPage() {
   return (
     <>
       <Header />
-      <main className="section max-w-3xl">
+      <main className="page max-w-3xl">
         <Link
           href={otherCallsInProgram ? `/eu-databas/${program.id}` : "/eu-databas"}
           className="text-sm font-semibold text-navy-600 hover:text-navy-900"

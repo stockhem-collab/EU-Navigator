@@ -26,7 +26,7 @@ export default function SettingsHubPage() {
   return (
     <>
       <Header />
-      <main className="section max-w-3xl">
+      <main className="page max-w-3xl">
         <h1 className="text-2xl font-bold text-navy-900">{sh.title}</h1>
         <p className="mt-2 text-sm text-navy-600">{sh.subtitle}</p>
 

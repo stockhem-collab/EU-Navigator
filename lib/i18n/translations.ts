@@ -139,6 +139,8 @@ export interface TranslationTree {
       fieldTags: string;
       tagsHint: string;
       tagsSuggestedLabel: string;
+      tagGroupApproach: string;
+      tagGroupCustom: string;
       tagsAddAllLabel: string;
       tagsAddNewPlaceholder: string;
       tagsAddNewButton: string;
@@ -336,6 +338,8 @@ export interface TranslationTree {
     detailMissingInfoBody: string;
     detailFindFunding: string;
     detailMatchesTitle: string;
+    showAllMatches: (n: number) => string;
+    showFewerMatches: string;
     detailNoMatches: string;
     similarProjectsTitle: string;
     similarProjectsIntro: string;
@@ -427,6 +431,10 @@ export interface TranslationTree {
     title: string;
     subtitle: string;
     disclaimer: string;
+    readMore: string;
+    readLess: string;
+    showAllExamples: (n: number) => string;
+    showFewerExamples: string;
     startApplicationCta: string;
     searchPlaceholder: string;
     noProjectsMatch: string;
@@ -1186,6 +1194,8 @@ export const translations: Record<Lang, TranslationTree> = {
         fieldTags: "Taggar (för säkrare matchning)",
         tagsHint: "Välj de taggar som beskriver projektet — taggar matchas exakt mot utlysningarnas teman och missar inte synonymer på samma sätt som fritextsökning.",
         tagsSuggestedLabel: "Förslag baserat på beskrivningen:",
+        tagGroupApproach: "Arbetssätt och samarbete",
+        tagGroupCustom: "Egna taggar",
         tagsAddAllLabel: "Lägg till alla",
         tagsAddNewPlaceholder: "Ny tagg som saknas…",
         tagsAddNewButton: "Lägg till ny tagg",
@@ -1400,6 +1410,8 @@ export const translations: Record<Lang, TranslationTree> = {
       detailMissingInfoBody:
         "Projektinformationen är inte tillräcklig för optimal EU-matchning. Komplettera enligt nedan innan en specifik utlysning väljs.",
       detailMatchesTitle: "Matchningar mot öppna och kommande utlysningar",
+      showAllMatches: (n: number) => `Visa alla ${n} utlysningar`,
+      showFewerMatches: "Visa bara de bästa",
       detailNoMatches: "Inga utlysningar att matcha mot just nu.",
       similarProjectsTitle: "Liknande beviljade projekt",
       similarProjectsIntro:
@@ -1510,7 +1522,11 @@ export const translations: Record<Lang, TranslationTree> = {
       title: "Beviljade referensprojekt",
       subtitle: "Vad har faktiskt fått finansiering tidigare — och varför?",
       disclaimer:
-        "Verklig data: en anonymiserad kommuns faktiska register över EU-finansierade projekt 2014–2027, hämtat ur kommunens egen dokumentation (organisationsnamn ersatta med \"Exempelstad\"). Inte alla projekt har publicerat en fullständig budgetsiffra.",
+        "Exempelprojekten kommer från en anonymiserad kommuns faktiska register över EU-finansierade projekt 2014–2027, hämtat ur kommunens egen dokumentation (organisationsnamn ersatta med \"Exempelstad\"). Inte alla projekt har publicerat en fullständig budgetsiffra.",
+      readMore: "Läs mer",
+      readLess: "Visa mindre",
+      showAllExamples: (n: number) => `Visa alla ${n} exempelprojekt`,
+      showFewerExamples: "Visa färre exempelprojekt",
       startApplicationCta: "Har du ett liknande projekt? Starta en ansökan →",
       searchPlaceholder: "Sök bland projekten…",
       noProjectsMatch: "Inga projekt matchar din sökning.",
@@ -2301,6 +2317,8 @@ export const translations: Record<Lang, TranslationTree> = {
         fieldTags: "Tags (for more accurate matching)",
         tagsHint: "Pick the tags that describe the project — tags are matched exactly against the calls' themes, and don't miss synonyms the way free-text search does.",
         tagsSuggestedLabel: "Suggestions based on the description:",
+        tagGroupApproach: "Ways of working and cooperation",
+        tagGroupCustom: "Custom tags",
         tagsAddAllLabel: "Add all",
         tagsAddNewPlaceholder: "New tag that's missing…",
         tagsAddNewButton: "Add new tag",
@@ -2511,6 +2529,8 @@ export const translations: Record<Lang, TranslationTree> = {
       detailMissingInfoBody:
         "The project information isn't sufficient for optimal EU matching. Complete it as below before selecting a specific call.",
       detailMatchesTitle: "Matches against open and upcoming calls",
+      showAllMatches: (n: number) => `Show all ${n} calls`,
+      showFewerMatches: "Show only the best",
       detailNoMatches: "No calls to match against right now.",
       similarProjectsTitle: "Similar funded projects",
       similarProjectsIntro:
@@ -2621,7 +2641,11 @@ export const translations: Record<Lang, TranslationTree> = {
       title: "Awarded reference projects",
       subtitle: "What has actually been funded before — and why?",
       disclaimer:
-        "Real data: an anonymised municipality's actual register of EU-funded projects 2014-2027, drawn from its own documentation (organisation names replaced with \"Exempelstad\"). Not every project has published a full budget figure.",
+        "The example projects come from an anonymised municipality's actual register of EU-funded projects 2014-2027, drawn from its own documentation (organisation names replaced with \"Exempelstad\"). Not every project has published a full budget figure.",
+      readMore: "Read more",
+      readLess: "Show less",
+      showAllExamples: (n: number) => `Show all ${n} example projects`,
+      showFewerExamples: "Show fewer example projects",
       startApplicationCta: "Have a similar project? Start an application →",
       searchPlaceholder: "Search the projects…",
       noProjectsMatch: "No projects match your search.",

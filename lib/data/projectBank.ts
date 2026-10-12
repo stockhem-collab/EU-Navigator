@@ -102,7 +102,7 @@ export const projectBank: ProjectBankEntry[] = [
     aiReadinessPct: 55,
     missingFields_sv: ["Beräknad minskning av biltrafik", "Koppling till klimatmål", "Budget per delsträcka"],
     missingFields_en: ["Estimated reduction in car traffic", "Link to climate goals", "Budget per section"],
-    tags: ["infrastruktur", "gron-stadsutveckling", "klimatatgarder"],
+    tags: ["hallbara-transporter", "infrastruktur", "gron-stadsutveckling", "klimatatgarder"],
   },
   {
     id: "pb-5",
@@ -125,7 +125,7 @@ export const projectBank: ProjectBankEntry[] = [
     aiReadinessPct: 88,
     missingFields_sv: ["Fördelning av budget mellan partners"],
     missingFields_en: ["Budget split between partners"],
-    tags: ["gransoverskridande", "klimatatgarder", "ostersjosamarbete"],
+    tags: ["klimatanpassning", "vatten-avlopp", "klimatatgarder", "gransoverskridande", "ostersjosamarbete"],
   },
   {
     id: "pb-6",

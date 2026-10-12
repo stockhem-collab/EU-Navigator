@@ -7,7 +7,7 @@ import {
   RationaleLine,
 } from "@/lib/types";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { tagLabel } from "@/lib/data/tags";
+import { tagLabel, tagWeight } from "@/lib/data/tags";
 import { applicantTypeLabel, callDeadlineMonths, callMaxGrantSEK } from "@/lib/data/fundingCalls";
 import {
   activityTypeShortLabel,
@@ -264,9 +264,10 @@ export function scoreMatch(
   // text. This is now the primary thematic-fit signal, ahead of the raw
   // keyword overlap below: it catches genuine thematic matches that exact
   // word matching misses on synonyms/paraphrasing, without any AI call at
-  // match time.
+  // match time. A subject tag counts 7, a way-of-working or very broad tag
+  // (Konsortiesamarbete, Hållbarhet) 3 — see tagWeight.
   const matchedTags = (project.tags ?? []).filter((id) => call.tags.includes(id));
-  const tagScore = Math.min(20, matchedTags.length * 7);
+  const tagScore = Math.min(20, matchedTags.reduce((sum, id) => sum + tagWeight(id), 0));
   thematicScore += tagScore;
   if (matchedTags.length > 0) {
     rationale.push({

@@ -14,5 +14,5 @@ const STYLES: Record<ProjectStatus, string> = {
 
 export default function StatusBadge({ status }: { status: ProjectStatus }) {
   const { t } = useLanguage();
-  return <span className={`badge ${STYLES[status]}`}>{t.projectBank.statusLabels[status]}</span>;
+  return <span className={`badge whitespace-nowrap ${STYLES[status]}`}>{t.projectBank.statusLabels[status]}</span>;
 }

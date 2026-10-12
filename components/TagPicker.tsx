@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Lang, Tag } from "@/lib/types";
+import { TAG_GROUP_ORDER, TagGroup, tagGroup } from "@/lib/data/tags";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface Props {
   /** The full vocabulary to render — the fixed list plus any custom tags
@@ -31,6 +33,15 @@ interface Props {
 
 export default function TagPicker({ tags, selected, onChange, suggested = [], lang, labels, onAddTag }: Props) {
   const [newTagLabel, setNewTagLabel] = useState("");
+  const intake = useLanguage().t.demo.intake;
+  const groupLabel = (group: TagGroup) =>
+    group === "approach" ? intake.tagGroupApproach : group === "custom" ? intake.tagGroupCustom : intake.sectors[group];
+  // The vocabulary grouped the way it is authored (lib/data/tags.ts): subject
+  // tags under their area, then ways of working, then custom tags — a few
+  // short labelled rows instead of one wall of 50 buttons.
+  const groups = TAG_GROUP_ORDER.map((group) => ({ group, tags: tags.filter((tag) => tagGroup(tag) === group) })).filter(
+    (g) => g.tags.length > 0
+  );
 
   const toggle = (id: string) => {
     onChange(selected.includes(id) ? selected.filter((t) => t !== id) : [...selected, id]);
@@ -79,25 +90,34 @@ export default function TagPicker({ tags, selected, onChange, suggested = [], la
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        {tags.map((tag) => {
-          const isSelected = selected.includes(tag.id);
-          return (
-            <button
-              key={tag.id}
-              type="button"
-              onClick={() => toggle(tag.id)}
-              aria-pressed={isSelected}
-              className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
-                isSelected
-                  ? "border-navy-800 bg-navy-800 text-white"
-                  : "border-navy-200 bg-white text-navy-600 hover:bg-navy-50"
-              }`}
-            >
-              {lang === "sv" ? tag.label_sv : tag.label_en}
-            </button>
-          );
-        })}
+      <div className="space-y-2.5">
+        {groups.map(({ group, tags: groupTags }) => (
+          <div key={group} className="sm:flex sm:gap-3">
+            <div className="mb-1 shrink-0 pt-1 text-[11px] font-semibold uppercase tracking-wide text-navy-400 sm:mb-0 sm:w-36">
+              {groupLabel(group)}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {groupTags.map((tag) => {
+                const isSelected = selected.includes(tag.id);
+                return (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => toggle(tag.id)}
+                    aria-pressed={isSelected}
+                    className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                      isSelected
+                        ? "border-navy-800 bg-navy-800 text-white"
+                        : "border-navy-200 bg-white text-navy-600 hover:bg-navy-50"
+                    }`}
+                  >
+                    {lang === "sv" ? tag.label_sv : tag.label_en}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       {onAddTag && (
