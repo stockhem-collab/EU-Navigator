@@ -7,6 +7,7 @@ import { callsFromList, lastDayOf, parseCallDate, programIdFor } from "../../lib
 import { parseCsv } from "../../lib/integrations/core/csv";
 import { parseEurSekRates } from "../../lib/integrations/core/currency";
 import { suggestTags } from "../../lib/matching/tagSuggestions";
+import { tagIdFor } from "../../lib/data/tags";
 import { themesFromCsvTema } from "../../lib/data/fundThemes";
 import { scoreMatch } from "../../lib/matching/scoreMatch";
 import { findProgram } from "../../lib/data/fundingPrograms";
@@ -76,7 +77,7 @@ test.describe("imported reference data on the server", () => {
 test.describe("call list (data/utlysningar.csv)", () => {
   const rates = parseEurSekRates(fs.readFileSync(path.join(ROOT, "data", "vaxelkurs.csv"), "utf8"));
   const records = parseCsv(fs.readFileSync(path.join(ROOT, "data", "utlysningar.csv"), "utf8"), ",");
-  const calls = callsFromList(records, { rates, suggestTags, themesFromTema: themesFromCsvTema, now: new Date("2026-10-08T12:00:00") });
+  const calls = callsFromList(records, { rates, suggestTags, tagIdFor, themesFromTema: themesFromCsvTema, now: new Date("2026-10-08T12:00:00") });
 
   test("lib/data/callList.json is up to date with the CSV (run npm run import:calls)", () => {
     const committed: FundingCall[] = JSON.parse(fs.readFileSync(path.join(ROOT, "lib", "data", "callList.json"), "utf8"));

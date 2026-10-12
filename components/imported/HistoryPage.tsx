@@ -19,7 +19,7 @@ export default function HistoryPage({ history }: { history: HistoryView | null }
   return (
     <>
       <Header />
-      <main className="section">
+      <main className="page">
         <KnowledgeTabs />
         <h1 className="text-2xl font-bold text-navy-900">{it.historyTitle}</h1>
         {!history ? (

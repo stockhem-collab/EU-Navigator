@@ -16,6 +16,7 @@ import { useGrants } from "@/lib/hooks/useGrants";
 import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { useApplications } from "@/lib/hooks/useApplications";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
+import { useTags } from "@/lib/hooks/useTags";
 import { isActiveApplication } from "@/lib/matching/applications";
 import {
   CURRENT_USER_ID,
@@ -35,6 +36,9 @@ import { useOnlyMineAndShared } from "@/lib/hooks/useOnlyMineAndShared";
 // row shows where the project stands on its own lifecycle, its
 // applications and, once funded, its reporting; the project page is the
 // hub for all of it.
+/** Tags shown per project in the list before "+N". */
+const TAGS_SHOWN = 2;
+
 export default function ProjectsPage() {
   return (
     <Suspense fallback={null}>
@@ -50,6 +54,7 @@ function isProjectStatus(value: string | null): value is ProjectStatus {
 function ProjectsPageInner() {
   const searchParams = useSearchParams();
   const { t, lang } = useLanguage();
+  const { all: allTags } = useTags();
   const pb = t.projectBank;
   const ap = t.grants;
   const ov = t.oversikt;
@@ -103,7 +108,7 @@ function ProjectsPageInner() {
   return (
     <>
       <Header />
-      <main className="section">
+      <main className="page">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-navy-900">{pb.title}</h1>
@@ -118,8 +123,8 @@ function ProjectsPageInner() {
           <h2 id="add-project-heading" className="text-sm font-semibold uppercase text-navy-400">
             {pb.addProjectTitle}
           </h2>
-          <div className="mt-3 grid gap-4 md:grid-cols-2">
-            <div className="flex flex-col rounded-lg border border-navy-100 p-4">
+          <div className="mt-3 grid gap-5 md:grid-cols-[1fr_2fr] md:divide-x md:divide-navy-100">
+            <div className="flex flex-col">
               <h3 className="font-semibold text-navy-800">{pb.addFormTitle}</h3>
               <p className="mt-1 text-sm text-navy-500">{pb.addFormBody}</p>
               <div className="mt-3">
@@ -131,7 +136,7 @@ function ProjectsPageInner() {
                 </Link>
               </div>
             </div>
-            <div className="rounded-lg border border-navy-100 p-4">
+            <div className="md:pl-5">
               <h3 className="font-semibold text-navy-800">{pb.addImportTitle}</h3>
               <p className="mb-3 mt-1 text-sm text-navy-500">{pb.addImportBody}</p>
               {/* Includes soft-deleted ids too (not just the visible
@@ -218,13 +223,13 @@ function ProjectsPageInner() {
           <table className="w-full min-w-[900px] text-left text-sm">
             <thead className="border-b border-navy-100 text-xs uppercase text-navy-400">
               <tr>
-                <th className="px-4 py-3">{pb.columnTitle}</th>
-                <th className="px-4 py-3">{pb.columnDepartment}</th>
-                <th className="px-4 py-3">{pb.columnStatus}</th>
-                <th className="px-4 py-3">{pb.columnApplications}</th>
-                <th className="px-4 py-3">{pb.columnCost}</th>
-                <th className="px-4 py-3">{pb.columnBestMatch}</th>
-                <th className="px-4 py-3" aria-hidden="true" />
+                <th className="px-3 py-3">{pb.columnTitle}</th>
+                <th className="px-3 py-3">{pb.columnDepartment}</th>
+                <th className="px-3 py-3">{pb.columnStatus}</th>
+                <th className="px-3 py-3">{pb.columnApplications}</th>
+                <th className="px-3 py-3">{pb.columnCost}</th>
+                <th className="px-3 py-3">{pb.columnBestMatch}</th>
+                <th className="px-3 py-3" aria-hidden="true" />
               </tr>
             </thead>
             <tbody className="divide-y divide-navy-50">
@@ -236,7 +241,7 @@ function ProjectsPageInner() {
                 const assignment = primaryProjectAssignment(users, p.id);
                 return (
                   <tr key={p.id} className="transition hover:bg-navy-50/50">
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3">
                       <Link href={`/projekt/${p.id}`} className="font-semibold text-navy-800 hover:underline">
                         {lang === "sv" ? p.title_sv : p.title_en}
                       </Link>
@@ -246,12 +251,24 @@ function ProjectsPageInner() {
                           {assignment.othersCount > 0 && ` ${pb.plusOthers(assignment.othersCount)}`}
                         </p>
                       )}
+                      {p.tags && p.tags.length > 0 && (
+                        <p className="mt-1 text-xs text-navy-400">
+                          {p.tags
+                            .slice(0, TAGS_SHOWN)
+                            .map((id) => {
+                              const tag = allTags.find((t) => t.id === id);
+                              return tag ? (lang === "sv" ? tag.label_sv : tag.label_en) : id;
+                            })
+                            .join(" · ")}
+                          {p.tags.length > TAGS_SHOWN && ` · +${p.tags.length - TAGS_SHOWN}`}
+                        </p>
+                      )}
                     </td>
-                    <td className="px-4 py-3 text-navy-600">{lang === "sv" ? p.department_sv : p.department_en}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3 text-navy-600">{lang === "sv" ? p.department_sv : p.department_en}</td>
+                    <td className="px-3 py-3">
                       <StatusBadge status={p.status} />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3">
                       <div className="flex flex-wrap items-center gap-1.5">
                         {(activeCount > 0 || awardedCount > 0) && (
                           <span className="text-xs text-navy-600">{pb.applicationsSummary(activeCount, awardedCount)}</span>
@@ -264,25 +281,28 @@ function ProjectsPageInner() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-navy-600">{fmtSEK(p.estimatedCostSEK, lang)}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3 text-navy-600">{fmtSEK(p.estimatedCostSEK, lang)}</td>
+                    <td className="px-3 py-3">
                       {match ? (
-                        <span
-                          className={`badge ${
-                            match.recommendation === "proceed"
-                              ? "bg-green-100 text-green-800"
-                              : match.recommendation === "consider"
-                              ? "bg-gold-100 text-gold-800"
-                              : "bg-navy-100 text-navy-600"
-                          }`}
-                        >
-                          {match.score}% · {match.program.shortName}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`badge whitespace-nowrap ${
+                              match.recommendation === "proceed"
+                                ? "bg-green-100 text-green-800"
+                                : match.recommendation === "consider"
+                                ? "bg-gold-100 text-gold-800"
+                                : "bg-navy-100 text-navy-600"
+                            }`}
+                          >
+                            {match.score}%
+                          </span>
+                          <span className="text-xs text-navy-600">{match.program.shortName}</span>
+                        </div>
                       ) : (
                         <span className="text-xs text-navy-400">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-3 py-3 text-right">
                       {importedIds.has(p.id) && (
                         <ConfirmButton
                           label="✕"

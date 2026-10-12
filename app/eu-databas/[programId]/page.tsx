@@ -31,7 +31,7 @@ export default function ProgramCallsPage() {
   return (
     <>
       <Header />
-      <main className="section">
+      <main className="page">
         <Link href="/eu-databas" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
           ← {db.backToPrograms}
         </Link>

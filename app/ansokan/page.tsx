@@ -149,7 +149,7 @@ function DemoPageInner() {
       <Header />
       {/* data-project-loaded: set once a ?project= has been read from this
           browser's storage — the form is re-filled with it at that point. */}
-      <main className="section min-h-[70vh]" data-project-loaded={resolved}>
+      <main className="page min-h-[70vh]" data-project-loaded={resolved}>
         {step.name === "intake" && (
           <>
           {!preselectedProjectId && !step.project && <ExistingProjectPicker />}

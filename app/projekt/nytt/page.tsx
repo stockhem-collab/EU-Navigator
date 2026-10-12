@@ -21,7 +21,7 @@ export default function NewProjectPage() {
   return (
     <>
       <Header />
-      <main className="section min-h-[70vh]">
+      <main className="page min-h-[70vh]">
         <div className="mx-auto mb-6 max-w-2xl">
           <Link href="/projekt" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
             ← {pb.back}

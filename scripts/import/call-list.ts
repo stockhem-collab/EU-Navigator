@@ -6,6 +6,7 @@ import path from "node:path";
 import { readCsv, readEurSekRates, ROOT } from "../../lib/integrations/core/files";
 import { callsFromList } from "../../lib/integrations/calls/callList";
 import { suggestTags } from "../../lib/matching/tagSuggestions";
+import { tagIdFor } from "../../lib/data/tags";
 import { themesFromCsvTema } from "../../lib/data/fundThemes";
 import { main } from "./run";
 
@@ -16,6 +17,7 @@ export function readCallList(now?: Date) {
   return callsFromList(readCsv(CALL_LIST_CSV, ","), {
     rates: readEurSekRates(),
     suggestTags,
+    tagIdFor,
     themesFromTema: themesFromCsvTema,
     now,
   });

@@ -15,7 +15,7 @@
       "preliminary": false
     },
     "deadlineDate": "2026-10-08",
-    "deadlineMonthsFromNow": 0,
+    "deadlineMonthsFromNow": -1,
     "budgetTotalSEK": 0,
     "minGrantSEK": 0,
     "maxGrantSEK": 54264500,
@@ -34,7 +34,13 @@
     "priorities_sv": [],
     "priorities_en": [],
     "extraKeywords": [],
-    "tags": [],
+    "tags": [
+      "hallbara-transporter",
+      "energieffektivisering",
+      "stadsomstallning-klimatneutral",
+      "pilotprojekt-trl",
+      "konsortiesamarbete"
+    ],
     "themes": [
       "transport-resande"
     ],
@@ -64,7 +70,7 @@
       "preliminary": false
     },
     "deadlineDate": "2026-10-08",
-    "deadlineMonthsFromNow": 0,
+    "deadlineMonthsFromNow": -1,
     "budgetTotalSEK": 0,
     "minGrantSEK": 0,
     "maxGrantSEK": 21705800,
@@ -83,7 +89,12 @@
     "priorities_sv": [],
     "priorities_en": [],
     "extraKeywords": [],
-    "tags": [],
+    "tags": [
+      "energieffektivisering",
+      "renovering",
+      "stadsomstallning-klimatneutral",
+      "konsortiesamarbete"
+    ],
     "themes": [
       "miljo-klimat"
     ],
@@ -113,7 +124,7 @@
       "preliminary": false
     },
     "deadlineDate": "2026-10-08",
-    "deadlineMonthsFromNow": 0,
+    "deadlineMonthsFromNow": -1,
     "budgetTotalSEK": 0,
     "minGrantSEK": 0,
     "maxGrantSEK": 20620510,
@@ -134,7 +145,9 @@
     "extraKeywords": [],
     "tags": [
       "cirkular-ekonomi",
-      "skolor-byggnader"
+      "renovering",
+      "stadsomstallning-klimatneutral",
+      "konsortiesamarbete"
     ],
     "themes": [
       "miljo-klimat"
@@ -177,7 +190,12 @@
     "priorities_en": [],
     "extraKeywords": [],
     "tags": [
-      "stadsomstallning-klimatneutral"
+      "stadsomstallning-klimatneutral",
+      "gron-stadsutveckling",
+      "cirkular-ekonomi",
+      "energieffektivisering",
+      "forskning-innovation",
+      "konsortiesamarbete"
     ],
     "themes": [
       "miljo-klimat"
@@ -220,7 +238,8 @@
     "priorities_en": [],
     "extraKeywords": [],
     "tags": [
-      "utbildning-kompetens"
+      "utbildning-kompetens",
+      "arbetsmarknad"
     ],
     "themes": [
       "kompetens-entreprenorskap"
@@ -262,7 +281,12 @@
     "priorities_sv": [],
     "priorities_en": [],
     "extraKeywords": [],
-    "tags": [],
+    "tags": [
+      "arbetsmarknad",
+      "socialtjanst-inkludering",
+      "unga",
+      "natverk-samverkan"
+    ],
     "themes": [
       "social-inkludering"
     ],
@@ -312,7 +336,10 @@
     "priorities_en": [],
     "extraKeywords": [],
     "tags": [
-      "migration-integration"
+      "energinat",
+      "fornybar-energi",
+      "stadsomstallning-klimatneutral",
+      "konsortiesamarbete"
     ],
     "themes": [
       "miljo-klimat"
@@ -362,7 +389,12 @@
     "priorities_sv": [],
     "priorities_en": [],
     "extraKeywords": [],
-    "tags": [],
+    "tags": [
+      "fornybar-energi",
+      "hallbara-transporter",
+      "stadsomstallning-klimatneutral",
+      "konsortiesamarbete"
+    ],
     "themes": [
       "miljo-klimat"
     ],
@@ -410,7 +442,13 @@
     "priorities_sv": [],
     "priorities_en": [],
     "extraKeywords": [],
-    "tags": [],
+    "tags": [
+      "hallbara-transporter",
+      "klimatanpassning",
+      "socialtjanst-inkludering",
+      "stadsomstallning-klimatneutral",
+      "konsortiesamarbete"
+    ],
     "themes": [
       "transport-resande"
     ],
@@ -459,7 +497,12 @@
     "priorities_sv": [],
     "priorities_en": [],
     "extraKeywords": [],
-    "tags": [],
+    "tags": [
+      "cirkular-ekonomi",
+      "hallbara-transporter",
+      "stadsomstallning-klimatneutral",
+      "konsortiesamarbete"
+    ],
     "themes": [
       "miljo-klimat"
     ],
@@ -507,7 +550,12 @@
     "priorities_sv": [],
     "priorities_en": [],
     "extraKeywords": [],
-    "tags": [],
+    "tags": [
+      "stadsomstallning-klimatneutral",
+      "klimatatgarder",
+      "forskning-innovation",
+      "konsortiesamarbete"
+    ],
     "themes": [
       "miljo-klimat"
     ],
@@ -556,7 +604,12 @@
     "priorities_sv": [],
     "priorities_en": [],
     "extraKeywords": [],
-    "tags": [],
+    "tags": [
+      "natur-biologisk-mangfald",
+      "gron-stadsutveckling",
+      "klimatanpassning",
+      "konsortiesamarbete"
+    ],
     "themes": [
       "miljo-klimat"
     ],
@@ -606,7 +659,11 @@
     "priorities_en": [],
     "extraKeywords": [],
     "tags": [
-      "cirkular-ekonomi"
+      "vatten-avlopp",
+      "klimatanpassning",
+      "cirkular-ekonomi",
+      "forskning-innovation",
+      "konsortiesamarbete"
     ],
     "themes": [
       "miljo-klimat"
@@ -657,7 +714,10 @@
     "priorities_en": [],
     "extraKeywords": [],
     "tags": [
-      "gransoverskridande"
+      "klimatanpassning",
+      "gransoverskridande",
+      "pilotprojekt-trl",
+      "konsortiesamarbete"
     ],
     "themes": [
       "miljo-klimat"
@@ -708,8 +768,10 @@
     "priorities_en": [],
     "extraKeywords": [],
     "tags": [
+      "klimatanpassning",
+      "ai-artificiell-intelligens",
       "forskning-innovation",
-      "ai-artificiell-intelligens"
+      "konsortiesamarbete"
     ],
     "themes": [
       "miljo-klimat"
@@ -758,7 +820,12 @@
     "priorities_sv": [],
     "priorities_en": [],
     "extraKeywords": [],
-    "tags": [],
+    "tags": [
+      "klimatanpassning",
+      "halso-sjukvard",
+      "forskning-innovation",
+      "konsortiesamarbete"
+    ],
     "themes": [
       "risker-kriser"
     ],
@@ -801,6 +868,9 @@
     "priorities_en": [],
     "extraKeywords": [],
     "tags": [
+      "klimatanpassning",
+      "natur-biologisk-mangfald",
+      "vatten-avlopp",
       "infrastruktur"
     ],
     "themes": [
@@ -845,6 +915,8 @@
     "priorities_en": [],
     "extraKeywords": [],
     "tags": [
+      "klimatatgarder",
+      "hallbara-transporter",
       "fornybar-energi"
     ],
     "themes": [
@@ -933,7 +1005,9 @@
     "extraKeywords": [],
     "tags": [
       "energieffektivisering",
-      "fornybar-energi"
+      "fornybar-energi",
+      "renovering",
+      "kapacitetsokning"
     ],
     "themes": [
       "miljo-klimat"

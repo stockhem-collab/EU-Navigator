@@ -87,6 +87,13 @@ export interface Tag {
   /** Optional grouping under the existing Sector taxonomy, for browsability
    * in the tag picker — not used in scoring. */
   sector?: Sector;
+  /** A way of working (consortium, cross-border cooperation, piloting …)
+   * rather than a subject. Shown in its own group in the tag picker and
+   * weighted lower in matching than a subject tag. */
+  approach?: boolean;
+  /** A tag so broad it fits almost any project (Hållbarhet) — weighted
+   * like an approach tag so it can't carry a match on its own. */
+  broad?: boolean;
 }
 
 // ---------------------------------------------------------------------------
