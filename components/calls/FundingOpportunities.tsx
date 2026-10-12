@@ -7,7 +7,9 @@ import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { ProjectBankEntry } from "@/lib/types";
 import { useWatchPreferences } from "@/lib/hooks/useWatchPreferences";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
-import { callDeadlineMonths } from "@/lib/data/fundingCalls";
+import { callDeadlineMonths, isCallOutdated } from "@/lib/data/fundingCalls";
+import OutdatedCallsToggle from "@/components/calls/OutdatedCallsToggle";
+import { useShowOutdatedCalls } from "@/lib/hooks/useShowOutdatedCalls";
 import CallStatusBadge from "@/components/calls/CallStatusBadge";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { computeMatchesForCall } from "@/lib/matching/portfolio";
@@ -38,11 +40,13 @@ export default function FundingOpportunities({ projects }: { projects?: ProjectB
   const { prefs, hydrated: watchHydrated, toggleCall } = useWatchPreferences();
   const [onlyWatched, setOnlyWatched] = useState(false);
   const [showOtherCalls, setShowOtherCalls] = useState(false);
+  const { show: showOutdated, setShow: setShowOutdated } = useShowOutdatedCalls();
+  const outdatedCount = fundingCalls.filter((call) => isCallOutdated(call)).length;
 
   const rows = useMemo(
     () =>
       [...fundingCalls]
-        .filter((call) => callDeadlineMonths(call) >= 0)
+        .filter((call) => showOutdated || !isCallOutdated(call))
         .sort((a, b) => callDeadlineMonths(a) - callDeadlineMonths(b))
         .map((call) => {
           const program = findProgram(call.programId);
@@ -59,7 +63,7 @@ export default function FundingOpportunities({ projects }: { projects?: ProjectB
           return { call, program, matches, isWatched };
         })
         .filter((r): r is NonNullable<typeof r> => r !== null),
-    [projectBank, prefs, fundingCalls]
+    [projectBank, prefs, fundingCalls, showOutdated]
   );
 
   const visibleRows = onlyWatched ? rows.filter((r) => r.isWatched) : rows;
@@ -76,10 +80,13 @@ export default function FundingOpportunities({ projects }: { projects?: ProjectB
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-navy-500">{bv.subtitle}</p>
-        <label className="flex shrink-0 items-center gap-2 text-sm font-semibold text-navy-700">
-          <input type="checkbox" checked={onlyWatched} onChange={(e) => setOnlyWatched(e.target.checked)} />
-          {bv.onlyWatchedToggle}
-        </label>
+        <div className="flex flex-wrap items-center gap-4">
+          <label className="flex shrink-0 items-center gap-2 text-sm font-semibold text-navy-700">
+            <input type="checkbox" checked={onlyWatched} onChange={(e) => setOnlyWatched(e.target.checked)} />
+            {bv.onlyWatchedToggle}
+          </label>
+          <OutdatedCallsToggle count={outdatedCount} show={showOutdated} onChange={setShowOutdated} />
+        </div>
       </div>
 
       {visibleRows.length === 0 && <p className="mt-6 text-sm text-navy-500">{bv.noWatchedCalls}</p>}

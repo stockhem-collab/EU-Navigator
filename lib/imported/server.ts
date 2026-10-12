@@ -10,10 +10,11 @@ import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 import { convert, eurSekRate, parseEurSekRates, type EurSekRates } from "@/lib/integrations/core/currency";
-import type { Money, PartnerRole, SourceSystem } from "@/lib/integrations/core/types";
+import type { Money, OrganisationType, PartnerRole, SourceSystem } from "@/lib/integrations/core/types";
 import type { Candidate, HistoryProject } from "@/lib/integrations/municipality/match";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { findTag } from "@/lib/data/tags";
+import { populationOf, POPULATION_YEAR } from "@/lib/data/population";
 import { significantWords } from "@/lib/matching/similarProjects";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import type { Sector } from "@/lib/types";
@@ -22,6 +23,9 @@ import type {
   AmountStats,
   IdeaInput,
   IndexProject,
+  PartnerSearchFilters,
+  PartnerSearchHit,
+  PartnerSearchResponse,
   PartnerSuggestion,
   ReferenceFilterOptions,
   ReferenceIndex,
@@ -45,6 +49,8 @@ interface Loaded {
   fullText: string[];
   /** Per project: [organisation index, role] pairs. */
   partnersOf: [number, PartnerRole][][];
+  /** Per organisation: its name as searchable text. */
+  orgText: string[];
   options: ReferenceFilterOptions;
 }
 
@@ -68,7 +74,9 @@ function load(): Loaded {
   const titleText = index.projects.map((p) => searchableText(`${p.title} ${p.titleEn ?? ""} ${p.acronym ?? ""}`));
   const fullText = index.projects.map((p, i) => `${titleText[i]}${searchableText(`${p.summary ?? ""} ${p.summaryEn ?? ""}`)}`);
 
-  cache = { index, rates, cards, titleText, fullText, partnersOf, options: filterOptions(cards) };
+  const orgText = index.organisations.map((o) => searchableText(o.name));
+
+  cache = { index, rates, cards, titleText, fullText, partnersOf, orgText, options: filterOptions(cards) };
   return cache;
 }
 
@@ -346,6 +354,142 @@ function partnerSuggestions(
 }
 
 // ---------------------------------------------------------------------------
+// Partner search
+// ---------------------------------------------------------------------------
+
+/** Words that make an organisation the source gives no type a
+ * municipality — the sources leave most public bodies untyped, and these
+ * are the partners a municipality most often looks for. Whole words, in
+ * the languages of the countries with the most imported organisations. */
+const MUNICIPAL_NAME =
+  /(^|[^\p{L}])(kommun|stad|municipality|city of|city council|borough council|gemeente|kommune|stadt|gemeinde|landeshauptstadt|ville de|commune de|comune di|ayuntamiento|concello|municipio|câmara municipal|miasto|gmina|kaupunki|kunta|linn|vald|savivaldybė|pašvaldība|dimos|δήμος)($|[^\p{L}])/iu;
+
+/** The organisation's type, or "municipality" read from its name when the
+ * source gives no type. */
+export function organisationTypeOf(org: { name: string; type: OrganisationType | null }): {
+  type: OrganisationType | null;
+  fromName: boolean;
+} {
+  if (org.type) return { type: org.type, fromName: false };
+  return MUNICIPAL_NAME.test(org.name) ? { type: "municipality", fromName: true } : { type: null, fromName: false };
+}
+
+const PARTNER_PAGE_SIZE = 25;
+const PARTNER_PROJECTS_SHOWN = 5;
+
+export function searchPartners(filters: PartnerSearchFilters): PartnerSearchResponse {
+  const { cards, fullText, partnersOf, orgText, index } = load();
+  const pageSize = Math.min(Math.max(filters.pageSize ?? PARTNER_PAGE_SIZE, 1), 100);
+  const page = Math.max(filters.page ?? 1, 1);
+  const q = filters.q?.trim() ? searchableText(filters.q).trim() : "";
+  // Swedish words also find English projects through the theme word list
+  // ("klimatanpassning" → "climate adaptation").
+  const concepts = filters.q?.trim() ? conceptsInText(filters.q) : [];
+  const own = filters.own?.trim() ? normalised(filters.own) : null;
+  const types = index.organisations.map(organisationTypeOf);
+
+  interface Acc {
+    oi: number;
+    projects: { pi: number; role: PartnerRole }[];
+  }
+  const byOrg = new Map<number, Acc>();
+  let matchedProjects = 0;
+  cards.forEach((c, pi) => {
+    if (filters.program && programKey(c) !== filters.program) return;
+    if (filters.sector && !c.themes.some((t) => t.sector === filters.sector)) return;
+    if (filters.period && c.period !== filters.period) return;
+    const textHit =
+      !q || fullText[pi].includes(q) || concepts.some((c) => c.terms.some((t) => termOccurs(t, fullText[pi])));
+    let counted = false;
+    for (const [oi, role] of partnersOf[pi]) {
+      const org = index.organisations[oi];
+      // A word that names the organisation finds all its projects, not
+      // only those that mention the word.
+      if (!textHit && !orgText[oi].includes(q)) continue;
+      if (own && normalised(org.name).includes(own)) continue;
+      if (filters.role === "coordinator" && role !== "coordinator") continue;
+      const acc = byOrg.get(oi) ?? { oi, projects: [] };
+      if (!acc.projects.some((p) => p.pi === pi)) acc.projects.push({ pi, role });
+      byOrg.set(oi, acc);
+      counted = true;
+    }
+    if (counted) matchedProjects += 1;
+  });
+
+  // The type and country choices count what the other filters left, so
+  // a choice never leads to an empty list.
+  const typeCounts = new Map<string, number>();
+  const countryCounts = new Map<string, number>();
+  const hits: Acc[] = [];
+  for (const acc of byOrg.values()) {
+    const org = index.organisations[acc.oi];
+    const type = types[acc.oi].type ?? "unknown";
+    typeCounts.set(type, (typeCounts.get(type) ?? 0) + 1);
+    if (org.country) countryCounts.set(org.country, (countryCounts.get(org.country) ?? 0) + 1);
+    if (filters.type && type !== filters.type) continue;
+    if (filters.country && org.country !== filters.country) continue;
+    hits.push(acc);
+  }
+
+  const latestYear = (acc: Acc) => Math.max(0, ...acc.projects.map((p) => cards[p.pi].startYear ?? 0));
+  const coordinated = (acc: Acc) => acc.projects.filter((p) => p.role === "coordinator").length;
+  hits.sort(
+    (a, b) =>
+      b.projects.length - a.projects.length ||
+      coordinated(b) - coordinated(a) ||
+      latestYear(b) - latestYear(a) ||
+      index.organisations[a.oi].name.localeCompare(index.organisations[b.oi].name, "sv")
+  );
+
+  const toHit = (acc: Acc): PartnerSearchHit => {
+    const org = index.organisations[acc.oi];
+    const programmes = new Map<string, { key: string; label: string; count: number }>();
+    for (const { pi } of acc.projects) {
+      const key = programKey(cards[pi]);
+      const prev = programmes.get(key);
+      programmes.set(key, { key, label: prev?.label ?? programLabel(key, cards[pi].programme), count: (prev?.count ?? 0) + 1 });
+    }
+    const newest = [...acc.projects].sort((a, b) => (cards[b.pi].startDate ?? "").localeCompare(cards[a.pi].startDate ?? ""));
+    const year = latestYear(acc);
+    return {
+      organisationId: org.id,
+      name: org.name,
+      type: types[acc.oi].type,
+      typeFromName: types[acc.oi].fromName,
+      country: org.country,
+      projectCount: acc.projects.length,
+      coordinatorCount: coordinated(acc),
+      partnerCount: acc.projects.filter((p) => p.role === "partner").length,
+      associatedCount: acc.projects.filter((p) => p.role === "associated-partner").length,
+      latestYear: year > 0 ? year : null,
+      programmes: [...programmes.values()].sort((a, b) => b.count - a.count).slice(0, 3),
+      projects: newest.slice(0, PARTNER_PROJECTS_SHOWN).map(({ pi, role }) => ({
+        id: cards[pi].id,
+        title: cards[pi].title,
+        acronym: cards[pi].acronym,
+        programme: programLabel(programKey(cards[pi]), cards[pi].programme),
+        role,
+        source: cards[pi].source,
+        startYear: cards[pi].startYear,
+        url: cards[pi].url,
+      })),
+    };
+  };
+
+  return {
+    total: hits.length,
+    page,
+    pageSize,
+    matchedProjects,
+    organisations: hits.slice((page - 1) * pageSize, page * pageSize).map(toHit),
+    options: {
+      types: [...typeCounts].map(([id, count]) => ({ id, count })).sort((a, b) => b.count - a.count),
+      countries: [...countryCounts].map(([id, count]) => ({ id, count })).sort((a, b) => b.count - a.count),
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Amount benchmarks for a match card
 // ---------------------------------------------------------------------------
 
@@ -470,7 +614,22 @@ interface HistoryFile {
 
 interface PeersFile {
   rules?: { caveats?: string[] };
-  municipalities: { name: string; reference: boolean; projects: number; euContributionSek: number; euContributionEur: number }[];
+  municipalities: {
+    name: string;
+    reference: boolean;
+    kommunkod?: string;
+    projects: number;
+    euContributionSek: number;
+    euContributionEur: number;
+    byProgram?: {
+      programId: string | null;
+      programme: string;
+      projects: number;
+      euContributionEur: number;
+      euContributionSek: number;
+      byPeriod?: Record<string, { projects: number; euContributionEur: number }>;
+    }[];
+  }[];
 }
 
 export function historyView(): HistoryView | null {
@@ -537,5 +696,80 @@ export function historyView(): HistoryView | null {
       }))
       .sort((a, b) => b.euContributionSek - a.euContributionSek),
     peerCaveats: peers?.rules?.caveats ?? [],
+  };
+}
+
+// ---------------------------------------------------------------------------
+// The leadership report's municipality comparison (peers.json)
+// ---------------------------------------------------------------------------
+
+export interface LeadershipPeer {
+  name: string;
+  reference: boolean;
+  population: number | null;
+  projects: number;
+  euContributionSek: number;
+  euContributionEur: number;
+  /** Kronor per inhabitant; null without a population figure. */
+  perCapitaSek: number | null;
+  /** Per programme period: projects and EU grant in kronor. Kronor are the
+   * period's share of the municipality's kronor total, by its euro share
+   * (the file gives periods in euro only). */
+  byPeriod: Record<"2014-2020" | "2021-2027", { projects: number; sek: number }>;
+  byProgram: { key: string; programme: string; projects: number; sek: number }[];
+}
+
+export interface LeadershipView {
+  generatedAt: string;
+  populationYear: number;
+  peers: LeadershipPeer[];
+  caveats: string[];
+}
+
+export function leadershipView(): LeadershipView | null {
+  const { index } = load();
+  const peers = index.peers as PeersFile | null;
+  if (!peers?.municipalities?.length) return null;
+  return {
+    generatedAt: (index.peers as { generatedAt?: string }).generatedAt ?? index.generatedAt,
+    populationYear: POPULATION_YEAR,
+    caveats: peers.rules?.caveats ?? [],
+    peers: peers.municipalities.map((m) => {
+      const population = populationOf(m.kommunkod);
+      // Kronor per euro for this municipality's own mix of years.
+      const sekPerEur = m.euContributionEur > 0 ? m.euContributionSek / m.euContributionEur : 0;
+      const byPeriod: LeadershipPeer["byPeriod"] = {
+        "2014-2020": { projects: 0, sek: 0 },
+        "2021-2027": { projects: 0, sek: 0 },
+      };
+      const byProgram = new Map<string, LeadershipPeer["byProgram"][number]>();
+      for (const p of m.byProgram ?? []) {
+        for (const [period, v] of Object.entries(p.byPeriod ?? {})) {
+          if (period !== "2014-2020" && period !== "2021-2027") continue;
+          byPeriod[period].projects += v.projects;
+          byPeriod[period].sek += Math.round(v.euContributionEur * sekPerEur);
+        }
+        const key = p.programId ?? `name:${p.programme}`;
+        const label = (p.programId && findProgram(p.programId)?.shortName) || p.programme;
+        const prev = byProgram.get(key);
+        byProgram.set(key, {
+          key,
+          programme: prev?.programme ?? label,
+          projects: (prev?.projects ?? 0) + p.projects,
+          sek: (prev?.sek ?? 0) + p.euContributionSek,
+        });
+      }
+      return {
+        name: m.name,
+        reference: m.reference,
+        population,
+        projects: m.projects,
+        euContributionSek: m.euContributionSek,
+        euContributionEur: m.euContributionEur,
+        perCapitaSek: population ? m.euContributionSek / population : null,
+        byPeriod,
+        byProgram: [...byProgram.values()].sort((a, b) => b.sek - a.sek),
+      };
+    }),
   };
 }

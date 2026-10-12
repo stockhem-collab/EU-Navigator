@@ -430,6 +430,13 @@ export function callDeadlineMonths(call: FundingCall, now: Date = new Date()): n
   return monthsUntilDate(call.deadlineDate, now) ?? call.deadlineMonthsFromNow;
 }
 
+/** A call whose application deadline has passed — hidden from the call
+ * lists unless the user chooses to see it. Calls with only a relative
+ * deadline (the seed calls) are never outdated. */
+export function isCallOutdated(call: FundingCall, now: Date = new Date()): boolean {
+  return !!call.deadlineDate && callDeadlineMonths(call, now) < 0;
+}
+
 /** The call's largest grant, or no limit when the call doesn't state one. */
 export function callMaxGrantSEK(call: FundingCall): number {
   return call.grantRangeStated === false ? Number.POSITIVE_INFINITY : call.maxGrantSEK;

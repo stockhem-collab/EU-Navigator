@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import { countryName, sourceLabel } from "@/lib/imported/labels";
@@ -137,6 +138,9 @@ export default function ImportedSimilarProjects({ project }: { project: ProjectI
           {result.partners.length > PARTNERS_SHOWN && (
             <ShowMoreButton open={allPartners} onToggle={() => setAllPartners(!allPartners)} label={allPartners ? it.showFewer : it.showAll(result.partners.length)} />
           )}
+          <Link href={`/partnersok?sector=${project.sector}`} className="mt-3 inline-block text-sm font-semibold text-navy-600 hover:text-navy-900">
+            {t.ext.partners.moreInPartnerSearch} →
+          </Link>
         </section>
       )}
     </>

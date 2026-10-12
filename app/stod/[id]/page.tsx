@@ -33,12 +33,13 @@ import { fmtSEK } from "@/lib/format";
 import { Grant, Commitment, ReportingEvent, ReportingPeriodicity } from "@/lib/types";
 import ReportCard, { documentAttachmentKey, reportAttachmentKey, requiredDocuments, statusStyle } from "@/components/grants/ReportCard";
 import CommitmentsEditor, { completeCommitments } from "@/components/grants/CommitmentsEditor";
+import AuditChecklist from "@/components/grants/AuditChecklist";
 
 // A grant and its reporting, ordered from "what do I do now" to reference:
 // the key figures, the report to write next, how the project is doing
-// (commitments and finances together), every report in the plan, and last
-// the call's reporting requirements and the links to project and
-// application.
+// (commitments and finances together), every report in the plan, audit
+// readiness, and last the call's reporting requirements and the links to
+// project and application.
 export default function GrantPage() {
   const params = useParams<{ id: string }>();
   const { t, lang } = useLanguage();
@@ -304,7 +305,10 @@ export default function GrantPage() {
           </ul>
         </section>
 
-        {/* 5. Reference: the call's reporting requirements, in one place */}
+        {/* 5. Audit readiness: what an audit will ask for, ticked off */}
+        <AuditChecklist grant={grant} call={call} program={program} />
+
+        {/* 6. Reference: the call's reporting requirements, in one place */}
         {reportingReq && (
           <details className="mt-10 rounded-xl border border-navy-100 bg-white p-5">
             <summary className="cursor-pointer text-sm font-semibold text-navy-800">{ap.reportingRequirementsTitle}</summary>

@@ -97,6 +97,22 @@ Old addresses (`/demo`, `/projektbank`, `/bevakning`, grants under
   what data the AI has access to (project ideas, programmes, calls, open
   calls, reference projects, documents) and what needs attention
   (documents needing an update, projects with incomplete information).
+- **Ledningsrapport** (`/datacenter/ledningsrapport`) — one printable page
+  for leadership: the own portfolio (applications, success rate, grants,
+  reporting, co-financing) and EU grants per inhabitant against the ten
+  largest municipalities (peers.json, population in `lib/data/population.ts`).
+- **Medfinansiering** (`/datacenter/medfinansiering`) — own co-financing
+  per year for grants and applications with the funder, how much is paid
+  out before the grant arrives (advance and payment lag adjustable), the
+  currency risk on grants paid in euro, and a Word decision brief per
+  project (`lib/matching/cofinancing.ts`).
+- **Partnersök** (`/partnersok`) — the organisations in the imported
+  projects, searched by subject, programme, theme, period, type and
+  country (`/api/partnersok`).
+- **Revisionsberedskap** — a checklist on each grant page of what an audit
+  asks for, chosen by programme (`lib/data/auditChecklist.ts`).
+- Calls whose deadline has passed are hidden from the call lists unless
+  "Visa inaktuella utlysningar" is ticked.
 
 The homepage's three entry points route into this same system depending
 on where the user is in the chain: *"Jag har ett projekt"* → `/ansokan`,
