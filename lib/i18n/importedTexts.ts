@@ -18,8 +18,7 @@ export interface ImportedTexts {
   exampleCount: (n: number) => string;
   importedTitle: string;
   importedIntro: string;
-  showingCount: (shown: number, total: number) => string;
-  loadMore: string;
+  showingCount: (from: number, to: number, total: number) => string;
   loading: string;
   loadError: string;
   noImported: string;
@@ -106,8 +105,8 @@ export const importedSv: ImportedTexts = {
   importedTitle: "Projekt ur EU:s projektdatabaser",
   importedIntro:
     "Beviljade projekt ur Kohesio, Keep.eu, CORDIS och ESF-rådets projektbank. Belopp i kronor, omräknade från euro med årsmedelkursen för projektets startår – håll muspekaren över beloppet för originalbeloppet.",
-  showingCount: (shown, total) => `Visar ${shown} av ${total.toLocaleString("sv-SE")} projekt`,
-  loadMore: "Visa fler",
+  showingCount: (from, to, total) =>
+    `Visar ${from.toLocaleString("sv-SE")}–${to.toLocaleString("sv-SE")} av ${total.toLocaleString("sv-SE")} projekt`,
   loading: "Hämtar…",
   loadError: "Kunde inte hämta projekten. Försök igen.",
   noImported: "Inga projekt matchar filtret.",
@@ -198,8 +197,8 @@ export const importedEn: ImportedTexts = {
   importedTitle: "Projects from the EU project databases",
   importedIntro:
     "Funded projects from Kohesio, Keep.eu, CORDIS and the ESF Council's project bank. Amounts in SEK, converted from euro at the yearly average rate of the project's start year — hover over an amount for the original.",
-  showingCount: (shown, total) => `Showing ${shown} of ${total.toLocaleString("en-US")} projects`,
-  loadMore: "Show more",
+  showingCount: (from, to, total) =>
+    `Showing ${from.toLocaleString("en-US")}–${to.toLocaleString("en-US")} of ${total.toLocaleString("en-US")} projects`,
   loading: "Loading…",
   loadError: "Could not load the projects. Try again.",
   noImported: "No projects match the filter.",

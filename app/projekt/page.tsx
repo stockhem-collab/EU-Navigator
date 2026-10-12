@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
@@ -30,6 +30,8 @@ import { fmtSEK } from "@/lib/format";
 import { PROJECT_STATUS_ORDER, ProjectStatus } from "@/lib/types";
 import ConfirmButton from "@/components/ConfirmButton";
 import { useOnlyMineAndShared } from "@/lib/hooks/useOnlyMineAndShared";
+import Pagination, { totalPagesFor } from "@/components/Pagination";
+import { pageFromParams, useReplaceQuery } from "@/lib/hooks/useQueryState";
 
 // The one list of projects — what used to be split between Projektbank
 // (ideas) and Mina projekt (the same projects, filtered by status). Each
@@ -38,6 +40,8 @@ import { useOnlyMineAndShared } from "@/lib/hooks/useOnlyMineAndShared";
 // hub for all of it.
 /** Tags shown per project in the list before "+N". */
 const TAGS_SHOWN = 2;
+/** Projects per page in the list. */
+const PAGE_SIZE = 25;
 
 export default function ProjectsPage() {
   return (
@@ -77,6 +81,12 @@ function ProjectsPageInner() {
   );
   const [onlyMineAndShared, setOnlyMineAndShared] = useOnlyMineAndShared();
   const [search, setSearch] = useState("");
+  // The page of the list (?sida=); every filter change goes back to page 1.
+  const [page, setPage] = useState(pageFromParams(searchParams));
+  const replaceQuery = useReplaceQuery();
+  useEffect(() => {
+    replaceQuery({ status: statusFilter === "all" ? null : statusFilter, sida: page > 1 ? String(page) : null });
+  }, [statusFilter, page, replaceQuery]);
 
   const rows = useMemo(
     () =>
@@ -99,6 +109,10 @@ function ProjectsPageInner() {
   const statusCounts = new Map<ProjectStatus, number>();
   for (const r of scoped) statusCounts.set(r.entry.status, (statusCounts.get(r.entry.status) ?? 0) + 1);
   const visible = scoped.filter((r) => statusFilter === "all" || r.entry.status === statusFilter);
+  // The projects load from the browser after the first render, so a page
+  // past the end is shown as the last page rather than reset.
+  const currentPage = Math.min(page, totalPagesFor(visible.length, PAGE_SIZE));
+  const pageRows = visible.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const tile = (active: boolean) =>
     `rounded-xl border p-3 text-left transition ${
@@ -186,18 +200,27 @@ function ProjectsPageInner() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               placeholder={pb.searchPlaceholder}
               aria-label={pb.searchPlaceholder}
               className="w-full max-w-xs rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
             />
             <label className="flex items-center gap-2 text-sm font-semibold text-navy-700">
-              <input type="checkbox" checked={onlyMineAndShared} onChange={(e) => setOnlyMineAndShared(e.target.checked)} />
+              <input type="checkbox" checked={onlyMineAndShared} onChange={(e) => {
+                  setOnlyMineAndShared(e.target.checked);
+                  setPage(1);
+                }} />
               {ap.onlyMineAndSharedToggle}
             </label>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-            <button type="button" onClick={() => setStatusFilter("all")} className={tile(statusFilter === "all")}>
+            <button type="button" onClick={() => {
+                setStatusFilter("all");
+                setPage(1);
+              }} className={tile(statusFilter === "all")}>
               <p className="text-xl font-extrabold">{scoped.length}</p>
               <p className={`text-xs ${statusFilter === "all" ? "text-navy-200" : "text-navy-500"}`}>{ap.statusFilterAll}</p>
             </button>
@@ -208,7 +231,10 @@ function ProjectsPageInner() {
                   key={status}
                   type="button"
                   aria-pressed={active}
-                  onClick={() => setStatusFilter(active ? "all" : status)}
+                  onClick={() => {
+                    setStatusFilter(active ? "all" : status);
+                    setPage(1);
+                  }}
                   className={tile(active)}
                 >
                   <p className="text-xl font-extrabold">{statusCounts.get(status) ?? 0}</p>
@@ -233,7 +259,7 @@ function ProjectsPageInner() {
               </tr>
             </thead>
             <tbody className="divide-y divide-navy-50">
-              {visible.map(({ entry: p, match }) => {
+              {pageRows.map(({ entry: p, match }) => {
                 const projectApplications = applications.filter((r) => r.projectId === p.id);
                 const activeCount = projectApplications.filter(isActiveApplication).length;
                 const awardedCount = projectApplications.filter((r) => r.status === "awarded").length;
@@ -332,6 +358,15 @@ function ProjectsPageInner() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          page={currentPage}
+          pageSize={PAGE_SIZE}
+          total={visible.length}
+          onPageChange={(next) => {
+            setPage(next);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
       </main>
       <Footer />
     </>
