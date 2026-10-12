@@ -1,0 +1,284 @@
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import KnowledgeTabs from "@/components/KnowledgeTabs";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { fundingPrograms } from "@/lib/data/fundingPrograms";
+import { ALL_SECTORS } from "@/lib/imported/themes";
+import { sectorLabel } from "@/lib/matching/scoreMatch";
+import { countryName, sourceLabel } from "@/lib/imported/labels";
+import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
+import type { OrganisationType } from "@/lib/integrations/core/types";
+import type { PartnerSearchHit, PartnerSearchResponse } from "@/lib/imported/types";
+
+const PAGE_SIZE = 25;
+
+interface Filters {
+  q: string;
+  type: string;
+  country: string;
+  program: string;
+  sector: string;
+  period: string;
+  onlyCoordinators: boolean;
+  excludeOwn: boolean;
+}
+
+function queryString(f: Filters, own: string | null, page: number): string {
+  const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
+  if (f.q.trim()) params.set("q", f.q.trim());
+  for (const key of ["type", "country", "program", "sector", "period"] as const) {
+    if (f[key] !== "all") params.set(key, f[key]);
+  }
+  if (f.onlyCoordinators) params.set("role", "coordinator");
+  if (f.excludeOwn && own) params.set("own", own);
+  return params.toString();
+}
+
+export default function PartnerSearchPage() {
+  return (
+    <Suspense fallback={null}>
+      <PartnerSearchInner />
+    </Suspense>
+  );
+}
+
+// Partnersök: the organisations in the imported EU projects, found by what
+// they have done (subject, programme, theme, period) and who they are
+// (type, country, whether they have led a project). Searched on the
+// server, a page at a time, like the reference projects.
+function PartnerSearchInner() {
+  const { t, lang } = useLanguage();
+  const ps = t.ext.partners;
+  const searchParams = useSearchParams();
+  const { config } = useOrgConfig();
+  const own = config.organisationName;
+  const [filters, setFilters] = useState<Filters>({
+    q: searchParams.get("q") ?? "",
+    type: searchParams.get("type") ?? "all",
+    country: searchParams.get("country") ?? "all",
+    program: searchParams.get("program") ?? "all",
+    sector: searchParams.get("sector") ?? "all",
+    period: searchParams.get("period") ?? "all",
+    onlyCoordinators: searchParams.get("role") === "coordinator",
+    excludeOwn: true,
+  });
+  const [result, setResult] = useState<PartnerSearchResponse | null>(null);
+  const [hits, setHits] = useState<PartnerSearchHit[]>([]);
+  const [page, setPage] = useState(1);
+  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const [openOrgs, setOpenOrgs] = useState<string[]>([]);
+  const key = queryString(filters, own, 1);
+  const set = (patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch }));
+
+  // A new search starts over from page 1; typing waits for a pause.
+  useEffect(() => {
+    let cancelled = false;
+    setState("loading");
+    const timer = window.setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/partnersok?${key}`);
+        if (!res.ok) throw new Error(String(res.status));
+        const data: PartnerSearchResponse = await res.json();
+        if (cancelled) return;
+        setResult(data);
+        setHits(data.organisations);
+        setPage(1);
+        setState("ready");
+      } catch {
+        if (!cancelled) setState("error");
+      }
+    }, 300);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [key]);
+
+  const loadMore = async () => {
+    setState("loading");
+    try {
+      const res = await fetch(`/api/partnersok?${queryString(filters, own, page + 1)}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const data: PartnerSearchResponse = await res.json();
+      setHits((prev) => [...prev, ...data.organisations]);
+      setPage(page + 1);
+      setState("ready");
+    } catch {
+      setState("error");
+    }
+  };
+
+  const typeLabel = (type: string) => (type === "unknown" ? ps.typeUnknown : (ps.types[type as OrganisationType] ?? type));
+  const selectClass =
+    "rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500";
+  // The chosen type and country stay in the list even when the other
+  // filters leave none of them.
+  const typeOptions = result?.options.types ?? [];
+  const countryOptions = (result?.options.countries ?? [])
+    .map((c) => ({ id: c.id, name: countryName(c.id, lang), count: c.count }))
+    .sort((a, b) => a.name.localeCompare(b.name, lang));
+
+  return (
+    <>
+      <Header />
+      <main className="page">
+        <KnowledgeTabs />
+        <h1 className="text-2xl font-bold text-navy-900">{ps.title}</h1>
+        <p className="mt-2 max-w-3xl text-sm text-navy-600">{ps.intro}</p>
+
+        <div className="mt-6 flex flex-wrap gap-3">
+          <input
+            value={filters.q}
+            onChange={(e) => set({ q: e.target.value })}
+            placeholder={ps.searchPlaceholder}
+            aria-label={ps.searchLabel}
+            className="w-full max-w-md rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+          />
+          <select aria-label={ps.typeLabel} value={filters.type} onChange={(e) => set({ type: e.target.value })} className={selectClass}>
+            <option value="all">{ps.typeAll}</option>
+            {filters.type !== "all" && !typeOptions.some((o) => o.id === filters.type) && (
+              <option value={filters.type}>{typeLabel(filters.type)}</option>
+            )}
+            {typeOptions.map((o) => (
+              <option key={o.id} value={o.id}>
+                {typeLabel(o.id)} ({o.count})
+              </option>
+            ))}
+          </select>
+          <select aria-label={ps.countryLabel} value={filters.country} onChange={(e) => set({ country: e.target.value })} className={selectClass}>
+            <option value="all">{ps.countryAll}</option>
+            {filters.country !== "all" && !countryOptions.some((o) => o.id === filters.country) && (
+              <option value={filters.country}>{countryName(filters.country, lang)}</option>
+            )}
+            {countryOptions.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.name} ({o.count})
+              </option>
+            ))}
+          </select>
+          <select aria-label={ps.programLabel} value={filters.program} onChange={(e) => set({ program: e.target.value })} className={selectClass}>
+            <option value="all">{ps.programAll}</option>
+            {fundingPrograms.map((p) => (
+              <option key={p.id} value={p.id}>
+                {lang === "sv" ? p.name_sv : p.name}
+              </option>
+            ))}
+          </select>
+          <select aria-label={ps.sectorLabel} value={filters.sector} onChange={(e) => set({ sector: e.target.value })} className={selectClass}>
+            <option value="all">{ps.sectorAll}</option>
+            {ALL_SECTORS.map((s) => (
+              <option key={s} value={s}>
+                {sectorLabel(s, lang)}
+              </option>
+            ))}
+          </select>
+          <select aria-label={ps.periodLabel} value={filters.period} onChange={(e) => set({ period: e.target.value })} className={selectClass}>
+            <option value="all">{ps.periodAll}</option>
+            <option value="2021-2027">2021–2027</option>
+            <option value="2014-2020">2014–2020</option>
+          </select>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-5 text-sm font-semibold text-navy-700">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={filters.onlyCoordinators} onChange={(e) => set({ onlyCoordinators: e.target.checked })} />
+            {ps.onlyCoordinators}
+          </label>
+          {own && (
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={filters.excludeOwn} onChange={(e) => set({ excludeOwn: e.target.checked })} />
+              {ps.excludeOwn(own)}
+            </label>
+          )}
+        </div>
+
+        <div className="mt-6" aria-live="polite">
+          {state === "error" && <p className="text-sm text-red-700">{ps.loadError}</p>}
+          {result && (
+            <p className="text-sm text-navy-500" data-testid="partner-result-count">
+              {ps.resultCount(result.total, result.matchedProjects)}
+            </p>
+          )}
+          {state === "ready" && result?.total === 0 && <p className="mt-3 text-sm text-navy-500">{ps.none}</p>}
+        </div>
+
+        <ul className="mt-3 space-y-3" data-testid="partner-results">
+          {hits.map((org) => {
+            const isOpen = openOrgs.includes(org.organisationId);
+            return (
+              <li key={org.organisationId} className="rounded-xl border border-navy-100 bg-white p-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="font-bold text-navy-900">{org.name}</h2>
+                    <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-navy-500">
+                      <span>{countryName(org.country, lang)}</span>
+                      {org.type && (
+                        <span className="badge bg-navy-50 text-navy-600" title={org.typeFromName ? ps.typeFromNameTooltip : undefined}>
+                          {ps.types[org.type]}
+                          {org.typeFromName ? " *" : ""}
+                        </span>
+                      )}
+                      {org.latestYear && <span>{ps.latestYear(org.latestYear)}</span>}
+                    </p>
+                  </div>
+                  <div className="text-right text-sm">
+                    <p className="font-semibold text-navy-800">{ps.projectCount(org.projectCount)}</p>
+                    <p className="text-xs text-navy-500">{ps.roleSummary(org.coordinatorCount, org.partnerCount, org.associatedCount)}</p>
+                  </div>
+                </div>
+                <p className="mt-2 text-xs text-navy-500">{org.programmes.map((p) => `${p.label} (${p.count})`).join(" · ")}</p>
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  onClick={() => setOpenOrgs(isOpen ? openOrgs.filter((id) => id !== org.organisationId) : [...openOrgs, org.organisationId])}
+                  className="mt-2 text-xs font-semibold text-navy-600 hover:text-navy-900"
+                >
+                  {isOpen ? ps.hideProjects : ps.showProjects(org.projects.length)}
+                </button>
+                {isOpen && (
+                  <ul className="mt-2 space-y-1.5 border-t border-navy-50 pt-2 text-sm">
+                    {org.projects.map((p) => (
+                      <li key={p.id} className="flex flex-wrap items-baseline justify-between gap-2">
+                        <span className="text-navy-700">
+                          {p.acronym ? `${p.acronym}: ` : ""}
+                          {p.title}
+                          <span className="ml-2 text-xs text-navy-400">
+                            {p.programme}
+                            {p.startYear ? `, ${p.startYear}` : ""} · {t.imported.roles[p.role]}
+                          </span>
+                        </span>
+                        {p.url ? (
+                          <a href={p.url} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-navy-600 hover:text-navy-900">
+                            {sourceLabel(p.source, lang)} ↗
+                          </a>
+                        ) : (
+                          <span className="text-xs text-navy-400">{sourceLabel(p.source, lang)}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+
+        {state === "loading" && <p className="mt-4 text-sm text-navy-500">{ps.loading}</p>}
+        {state === "ready" && result && hits.length < result.total && (
+          <button
+            type="button"
+            onClick={loadMore}
+            className="mt-5 w-full rounded-xl border border-dashed border-navy-200 bg-white py-2.5 text-sm font-semibold text-navy-600 transition hover:bg-navy-50"
+          >
+            {ps.loadMore}
+          </button>
+        )}
+        <p className="mb-16 mt-6 text-xs text-navy-500">{ps.sourceNote}</p>
+      </main>
+      <Footer />
+    </>
+  );
+}

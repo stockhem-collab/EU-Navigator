@@ -1,6 +1,8 @@
 "use client";
 
-import { callDeadlineMonths } from "@/lib/data/fundingCalls";
+import { callDeadlineMonths, isCallOutdated } from "@/lib/data/fundingCalls";
+import OutdatedCallsToggle from "@/components/calls/OutdatedCallsToggle";
+import { useShowOutdatedCalls } from "@/lib/hooks/useShowOutdatedCalls";
 import CallStatusBadge, { CallDates, GrantRangeText } from "@/components/calls/CallStatusBadge";
 import { Suspense, useState } from "react";
 import Link from "next/link";
@@ -34,6 +36,7 @@ function EuDatabaseInner() {
   const searchParams = useSearchParams();
   const { all: fundingCalls } = useFundingCalls();
   const [search, setSearch] = useState("");
+  const { show: showOutdated, setShow: setShowOutdated } = useShowOutdatedCalls();
   // The theme lives in the URL (?tema=…) so a themed view can be shared.
   const temaParam = searchParams.get("tema");
   const theme: FundTheme | null = isFundTheme(temaParam) ? temaParam : null;
@@ -46,8 +49,11 @@ function EuDatabaseInner() {
   // Grouped the way eufonder.se groups them: a fund shows under a theme
   // when it finances that theme itself or one of its calls does, and then
   // only with the calls that fit the theme.
+  // Calls whose deadline has passed only when the user asks for them.
+  const inTheme = (c: FundingCall) => !theme || callThemes(c).includes(theme);
+  const outdatedCount = fundingCalls.filter((c) => inTheme(c) && isCallOutdated(c)).length;
   const callsFor = (program: FundingProgram): FundingCall[] =>
-    fundingCalls.filter((c) => c.programId === program.id && (!theme || callThemes(c).includes(theme)));
+    fundingCalls.filter((c) => c.programId === program.id && inTheme(c) && (showOutdated || !isCallOutdated(c)));
   const filteredPrograms = fundingPrograms.filter(
     (p) =>
       (query ? `${p.name_sv} ${p.name} ${p.description_sv} ${p.description_en}`.toLowerCase().includes(query) : true) &&
@@ -148,12 +154,15 @@ function EuDatabaseInner() {
           ))}
         </div>
 
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={db.searchProgramsPlaceholder}
-          className="mt-6 w-full max-w-sm rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-        />
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={db.searchProgramsPlaceholder}
+            className="w-full max-w-sm rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+          />
+          <OutdatedCallsToggle count={outdatedCount} show={showOutdated} onChange={setShowOutdated} />
+        </div>
 
         {filteredPrograms.length === 0 && <p className="mt-6 text-sm text-navy-500">{db.noProgramsMatch}</p>}
 

@@ -1,8 +1,10 @@
 import { ApplicationStatus, Lang } from "@/lib/types";
 import { ImportedTexts, importedEn, importedSv } from "./importedTexts";
+import { ExtensionTexts, extensionEn, extensionSv } from "./extensionTexts";
 
 export interface TranslationTree {
   imported: ImportedTexts;
+  ext: ExtensionTexts;
   confirm: {
     yesRemove: string;
     yesReset: string;
@@ -973,6 +975,7 @@ export interface TranslationTree {
 export const translations: Record<Lang, TranslationTree> = {
   sv: {
     imported: importedSv,
+    ext: extensionSv,
     confirm: {
       yesRemove: "Ja, ta bort",
       yesReset: "Ja, återställ",
@@ -2096,6 +2099,7 @@ export const translations: Record<Lang, TranslationTree> = {
   },
   en: {
     imported: importedEn,
+    ext: extensionEn,
     confirm: {
       yesRemove: "Yes, remove",
       yesReset: "Yes, reset",

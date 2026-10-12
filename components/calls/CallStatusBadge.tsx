@@ -4,11 +4,20 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fmtSEK } from "@/lib/format";
 import { fmtMoney, fmtRate } from "@/lib/imported/labels";
 import type { CallDate, FundingCall } from "@/lib/types";
+import { isCallOutdated } from "@/lib/data/fundingCalls";
 
 /** Öppen / Planerad / Kommande / Förväntad — the call list's own status
- * when the call has one, otherwise open or upcoming. */
+ * when the call has one, otherwise open or upcoming; Stängd once the
+ * deadline has passed. */
 export default function CallStatusBadge({ call }: { call: FundingCall }) {
   const { t } = useLanguage();
+  if (isCallOutdated(call)) {
+    return (
+      <span className="badge bg-navy-100 text-navy-500" data-testid="call-status">
+        {t.ext.calls.closedStatus}
+      </span>
+    );
+  }
   const label = call.sourceStatus
     ? t.imported.callStatus[call.sourceStatus]
     : call.status === "open"

@@ -180,3 +180,73 @@ export interface AmountStats {
    * included when the current one has too few projects). */
   programIds: string[];
 }
+
+// ---------------------------------------------------------------------------
+// Partner search: organisations in the imported projects, filtered by what
+// they have done (programme, theme, period, words) and who they are (type,
+// country, role).
+// ---------------------------------------------------------------------------
+
+export interface PartnerSearchFilters {
+  /** Words in the projects' titles and descriptions, or in the
+   * organisation's name. */
+  q?: string | null;
+  /** An OrganisationType, or "unknown" for organisations the source gives
+   * no type. */
+  type?: string | null;
+  country?: string | null;
+  /** A programme key, as the reference list's programme filter. */
+  program?: string | null;
+  sector?: string | null;
+  period?: string | null;
+  /** "coordinator" = only organisations that have led a matching project. */
+  role?: string | null;
+  /** The user's own organisation, left out of the results. */
+  own?: string | null;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PartnerSearchProject {
+  id: string;
+  title: string;
+  acronym: string | null;
+  programme: string;
+  role: PartnerRole;
+  source: SourceSystem;
+  startYear: number | null;
+  url: string | null;
+}
+
+export interface PartnerSearchHit {
+  organisationId: string;
+  name: string;
+  type: OrganisationType | null;
+  /** True when the type was read from the name ("… kommun", "City of …")
+   * because the source gives none. */
+  typeFromName: boolean;
+  country: string | null;
+  /** Matching projects the organisation took part in. */
+  projectCount: number;
+  coordinatorCount: number;
+  partnerCount: number;
+  associatedCount: number;
+  latestYear: number | null;
+  /** The programmes of those projects, most frequent first (at most 3). */
+  programmes: { key: string; label: string; count: number }[];
+  /** The most recent of those projects (at most 5). */
+  projects: PartnerSearchProject[];
+}
+
+export interface PartnerSearchResponse {
+  total: number;
+  page: number;
+  pageSize: number;
+  /** How many imported projects matched the project filters. */
+  matchedProjects: number;
+  organisations: PartnerSearchHit[];
+  options: {
+    types: { id: string; count: number }[];
+    countries: { id: string; count: number }[];
+  };
+}

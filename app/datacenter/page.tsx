@@ -5,9 +5,11 @@ import Link from "next/link";
 import { applicationStatusGroup } from "@/lib/matching/applications";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import DatacenterTabs from "@/components/DatacenterTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
 import { fundedProjects } from "@/lib/data/fundedProjects";
+import { isCallOutdated } from "@/lib/data/fundingCalls";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { useGrants } from "@/lib/hooks/useGrants";
@@ -71,7 +73,7 @@ export default function DatacenterPage() {
 
   const docs = fundingCalls.flatMap((c) => c.documents.map((d) => ({ ...d, callId: c.id })));
   const docsNeedingUpdate = docs.filter((d) => d.needsUpdate);
-  const openCalls = fundingCalls.filter((c) => c.status === "open");
+  const openCalls = fundingCalls.filter((c) => c.status === "open" && !isCallOutdated(c));
   const upcomingCalls = fundingCalls.filter((c) => c.status === "upcoming");
   const activeProjects = projectBank.filter(
     (p) => p.status !== "idea" && p.status !== "completed"
@@ -97,6 +99,7 @@ export default function DatacenterPage() {
     <>
       <Header />
       <main className="page">
+        <DatacenterTabs />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-navy-900">{dc.title}</h1>

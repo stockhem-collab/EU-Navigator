@@ -1,6 +1,8 @@
 "use client";
 
-import { callDeadlineMonths } from "@/lib/data/fundingCalls";
+import { callDeadlineMonths, isCallOutdated } from "@/lib/data/fundingCalls";
+import OutdatedCallsToggle from "@/components/calls/OutdatedCallsToggle";
+import { useShowOutdatedCalls } from "@/lib/hooks/useShowOutdatedCalls";
 import CallStatusBadge, { CallDates, GrantRangeText } from "@/components/calls/CallStatusBadge";
 import { useState } from "react";
 import Link from "next/link";
@@ -19,12 +21,15 @@ export default function ProgramCallsPage() {
   const db = t.euDatabase;
   const { all: fundingCalls } = useFundingCalls();
   const [search, setSearch] = useState("");
+  const { show: showOutdated, setShow: setShowOutdated } = useShowOutdatedCalls();
 
   const program = findProgram(params.programId);
   if (!program) return notFound();
   const query = search.trim().toLowerCase();
   const allCallsForProgram = fundingCalls.filter((c) => c.programId === program.id);
+  const outdatedCount = allCallsForProgram.filter((c) => isCallOutdated(c)).length;
   const calls = allCallsForProgram
+    .filter((c) => showOutdated || !isCallOutdated(c))
     .filter((c) => (query ? `${c.title_sv} ${c.title_en}`.toLowerCase().includes(query) : true))
     .sort((a, b) => callDeadlineMonths(a) - callDeadlineMonths(b));
 
@@ -63,18 +68,27 @@ export default function ProgramCallsPage() {
           </div>
         )}
 
-        {allCallsForProgram.length > 1 && (
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={db.searchCallsPlaceholder}
-            className="mt-6 w-full max-w-sm rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-          />
+        {(allCallsForProgram.length > 1 || outdatedCount > 0) && (
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            {allCallsForProgram.length > 1 ? (
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={db.searchCallsPlaceholder}
+                className="w-full max-w-sm rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+              />
+            ) : (
+              <span />
+            )}
+            <OutdatedCallsToggle count={outdatedCount} show={showOutdated} onChange={setShowOutdated} />
+          </div>
         )}
 
         {allCallsForProgram.length === 0 && <p className="mt-8 text-sm text-navy-500">{db.noCallsForProgram}</p>}
         {allCallsForProgram.length > 0 && calls.length === 0 && (
-          <p className="mt-8 text-sm text-navy-500">{db.noCallsMatch}</p>
+          <p className="mt-8 text-sm text-navy-500">
+            {!showOutdated && outdatedCount === allCallsForProgram.length ? t.ext.calls.outdatedHidden(outdatedCount) : db.noCallsMatch}
+          </p>
         )}
 
         <div className="mt-8 space-y-4">
