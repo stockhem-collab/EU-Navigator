@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
@@ -13,6 +13,7 @@ import { fmtSEK } from "@/lib/format";
 import ImportedReferenceList from "@/components/imported/ImportedReferenceList";
 import { IMPORTED_SOURCES, countryName, sourceLabel } from "@/lib/imported/labels";
 import type { ReferenceFilterOptions } from "@/lib/imported/types";
+import { pageFromParams, useReplaceQuery } from "@/lib/hooks/useQueryState";
 
 /** Example cards shown before "Visa alla". */
 const EXAMPLES_SHOWN = 8;
@@ -32,12 +33,33 @@ export default function ReferenceProjectsPage() {
 
 function ReferenceProjectsInner() {
   const searchParams = useSearchParams();
-  const initialProgram = searchParams.get("program") ?? "all";
-  const [programFilter, setProgramFilter] = useState(initialProgram);
-  const [search, setSearch] = useState("");
+  const replaceQuery = useReplaceQuery();
+  const [programFilter, setProgramFilter] = useState(searchParams.get("program") ?? "all");
+  const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [sourceFilter, setSourceFilter] = useState(searchParams.get("source") ?? "all");
   const [countryFilter, setCountryFilter] = useState(searchParams.get("country") ?? "all");
   const [yearFilter, setYearFilter] = useState(searchParams.get("year") ?? "all");
+  // The page of imported projects (?sida=); every filter change goes back
+  // to page 1.
+  const [page, setPage] = useState(pageFromParams(searchParams));
+  const filterSetter = (set: (value: string) => void) => (value: string) => {
+    set(value);
+    setPage(1);
+  };
+
+  // Filters and page live in the URL, so a link or a reload opens the same
+  // list. Defaults are left out.
+  useEffect(() => {
+    const value = (v: string) => (v === "all" ? null : v);
+    replaceQuery({
+      program: value(programFilter),
+      source: value(sourceFilter),
+      country: value(countryFilter),
+      year: value(yearFilter),
+      q: search.trim() || null,
+      sida: page > 1 ? String(page) : null,
+    });
+  }, [programFilter, sourceFilter, countryFilter, yearFilter, search, page, replaceQuery]);
   const [importedOptions, setImportedOptions] = useState<ReferenceFilterOptions | null>(null);
   const { t, lang } = useLanguage();
   const rp = t.referenceProjects;
@@ -95,14 +117,14 @@ function ReferenceProjectsInner() {
         <div className="mt-6 flex flex-wrap gap-3">
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => filterSetter(setSearch)(e.target.value)}
             placeholder={rp.searchPlaceholder}
             className="w-full max-w-xs rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
           />
           <select
             aria-label={it.filterProgram}
             value={programFilter}
-            onChange={(e) => setProgramFilter(e.target.value)}
+            onChange={(e) => filterSetter(setProgramFilter)(e.target.value)}
             className={selectClass}
           >
             <option value="all">{rp.filterAll}</option>
@@ -117,7 +139,7 @@ function ReferenceProjectsInner() {
               </option>
             ))}
           </select>
-          <select aria-label={it.filterSource} value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} className={selectClass}>
+          <select aria-label={it.filterSource} value={sourceFilter} onChange={(e) => filterSetter(setSourceFilter)(e.target.value)} className={selectClass}>
             <option value="all">{it.sourceFilterAll}</option>
             <option value="example">{it.sourceExample}</option>
             {IMPORTED_SOURCES.map((s) => (
@@ -126,7 +148,7 @@ function ReferenceProjectsInner() {
               </option>
             ))}
           </select>
-          <select aria-label={it.filterCountry} value={countryFilter} onChange={(e) => setCountryFilter(e.target.value)} className={selectClass}>
+          <select aria-label={it.filterCountry} value={countryFilter} onChange={(e) => filterSetter(setCountryFilter)(e.target.value)} className={selectClass}>
             <option value="all">{it.countryFilterAll}</option>
             {(importedOptions?.countries ?? [{ id: "SE", count: 0 }])
               .map((c) => ({ id: c.id, name: countryName(c.id, lang) }))
@@ -137,7 +159,7 @@ function ReferenceProjectsInner() {
                 </option>
               ))}
           </select>
-          <select aria-label={it.filterYear} value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} className={selectClass}>
+          <select aria-label={it.filterYear} value={yearFilter} onChange={(e) => filterSetter(setYearFilter)(e.target.value)} className={selectClass}>
             <option value="all">{it.yearFilterAll}</option>
             {years.map((y) => (
               <option key={y} value={y}>
@@ -267,6 +289,8 @@ function ReferenceProjectsInner() {
         {sourceFilter !== "example" && (
           <ImportedReferenceList
             filters={{ source: sourceFilter, program: programFilter, country: countryFilter, year: yearFilter, q: search }}
+            page={page}
+            onPageChange={setPage}
             onOptions={setImportedOptions}
           />
         )}

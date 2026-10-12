@@ -10,7 +10,7 @@ test("imported projects show their source and amounts in kronor with the euro am
 
   const imported = page.getByTestId("imported-projects");
   await expect(imported.getByRole("heading", { name: "Projekt ur EU:s projektdatabaser" })).toBeVisible();
-  await expect(imported.getByText(/Visar 20 av [\d\s ]+ projekt/)).toBeVisible();
+  await expect(imported.getByText(/Visar 1–20 av [\d\s ]+ projekt/)).toBeVisible();
 
   await page.getByLabel("Källa", { exact: true }).selectOption("cordis");
   const cards = imported.getByTestId("imported-project-card");
@@ -29,7 +29,7 @@ test("imported projects show their source and amounts in kronor with the euro am
 test("filters on programme, country and year narrow the imported list", async ({ page }) => {
   await page.goto("/referensprojekt");
   const imported = page.getByTestId("imported-projects");
-  await expect(imported.getByText(/Visar 20 av/)).toBeVisible();
+  await expect(imported.getByText(/Visar 1–20 av/)).toBeVisible();
 
   await page.getByLabel("Källa", { exact: true }).selectOption("kohesio");
   await page.getByLabel("Program", { exact: true }).selectOption("esf");

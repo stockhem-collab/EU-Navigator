@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { countryName, sourceLabel } from "@/lib/imported/labels";
 import type { ReferenceListResponse, ReferenceProjectCard } from "@/lib/imported/types";
 import SekAmountText from "./SekAmountText";
+import Pagination, { totalPagesFor } from "@/components/Pagination";
 
 export interface ImportedFilters {
   source: string; // "all" or a SourceSystem
@@ -15,10 +16,10 @@ export interface ImportedFilters {
   q: string;
 }
 
-const PAGE_SIZE = 20;
+export const REFERENCE_PAGE_SIZE = 20;
 
 function queryString(filters: ImportedFilters, page: number): string {
-  const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
+  const params = new URLSearchParams({ page: String(page), pageSize: String(REFERENCE_PAGE_SIZE) });
   if (filters.source !== "all") params.set("source", filters.source);
   if (filters.program !== "all") params.set("program", filters.program);
   if (filters.country !== "all") params.set("country", filters.country);
@@ -27,25 +28,30 @@ function queryString(filters: ImportedFilters, page: number): string {
   return params.toString();
 }
 
-/** The imported reference projects, fetched page by page from the server
- * with the page's filters. Reports the filter options it gets back. */
+/** The imported reference projects, fetched one page at a time from the
+ * server with the page's filters. The page number is the parent's (it
+ * lives in the URL); a filter change should send it back to 1. Reports the
+ * filter options it gets back. */
 export default function ImportedReferenceList({
   filters,
+  page,
+  onPageChange,
   onOptions,
 }: {
   filters: ImportedFilters;
+  page: number;
+  onPageChange: (page: number) => void;
   onOptions?: (options: ReferenceListResponse["options"]) => void;
 }) {
   const { t } = useLanguage();
   const it = t.imported;
   const [projects, setProjects] = useState<ReferenceProjectCard[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
-  const key = queryString(filters, 1);
+  const sectionRef = useRef<HTMLElement>(null);
+  const key = queryString(filters, page);
 
-  // A new filter starts over from page 1; the search waits for typing to
-  // pause before asking the server.
+  // The search waits for typing to pause before asking the server.
   useEffect(() => {
     let cancelled = false;
     setState("loading");
@@ -57,9 +63,12 @@ export default function ImportedReferenceList({
         if (cancelled) return;
         setProjects(data.projects);
         setTotal(data.total);
-        setPage(1);
         setState("ready");
         onOptions?.(data.options);
+        // A page past the end (an old link, or fewer hits than before)
+        // goes to the last page there is.
+        const last = totalPagesFor(data.total, REFERENCE_PAGE_SIZE);
+        if (page > last) onPageChange(last);
       } catch {
         if (!cancelled) setState("error");
       }
@@ -68,26 +77,19 @@ export default function ImportedReferenceList({
       cancelled = true;
       window.clearTimeout(timer);
     };
-    // onOptions is a setter from the parent; the query string is the input.
+    // onOptions and onPageChange come from the parent; the query string is the input.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  const loadMore = async () => {
-    setState("loading");
-    try {
-      const res = await fetch(`/api/referensprojekt?${queryString(filters, page + 1)}`);
-      if (!res.ok) throw new Error(String(res.status));
-      const data: ReferenceListResponse = await res.json();
-      setProjects((prev) => [...prev, ...data.projects]);
-      setPage(page + 1);
-      setState("ready");
-    } catch {
-      setState("error");
-    }
+  const goTo = (next: number) => {
+    onPageChange(next);
+    sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+  const from = (page - 1) * REFERENCE_PAGE_SIZE + 1;
+  const to = Math.min(page * REFERENCE_PAGE_SIZE, total);
 
   return (
-    <section className="mt-10" aria-labelledby="imported-projects-title" data-testid="imported-projects">
+    <section ref={sectionRef} className="mt-10 scroll-mt-4" aria-labelledby="imported-projects-title" data-testid="imported-projects">
       <h2 id="imported-projects-title" className="text-lg font-bold text-navy-800">
         {it.importedTitle}
       </h2>
@@ -95,27 +97,18 @@ export default function ImportedReferenceList({
       {state === "error" && <p className="mt-4 text-sm text-amber-700">⚠ {it.loadError}</p>}
       {state !== "error" && (
         <p className="mt-3 text-xs font-semibold text-navy-500" aria-live="polite">
-          {state === "loading" && projects.length === 0 ? it.loading : it.showingCount(projects.length, total)}
+          {state === "loading" && projects.length === 0 ? it.loading : total > 0 ? it.showingCount(from, to, total) : null}
         </p>
       )}
       {state === "ready" && total === 0 && <p className="mt-4 text-sm text-navy-500">{it.noImported}</p>}
 
-      <div className="mt-4 grid gap-5 md:grid-cols-2">
+      <div className={`mt-4 grid gap-5 md:grid-cols-2 ${state === "loading" ? "opacity-60" : ""}`}>
         {projects.map((project) => (
           <ImportedProjectCard key={project.id} project={project} />
         ))}
       </div>
 
-      {projects.length < total && (
-        <button
-          type="button"
-          onClick={loadMore}
-          disabled={state === "loading"}
-          className="mt-6 rounded-md border border-navy-200 px-4 py-2 text-sm font-semibold text-navy-700 transition hover:bg-navy-50 disabled:opacity-50"
-        >
-          {state === "loading" ? it.loading : it.loadMore}
-        </button>
-      )}
+      <Pagination page={page} pageSize={REFERENCE_PAGE_SIZE} total={total} onPageChange={goTo} disabled={state === "loading"} />
     </section>
   );
 }
