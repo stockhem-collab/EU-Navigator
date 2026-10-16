@@ -54,9 +54,11 @@ export const lidingoPreset: OrgPreset = {
   pic: "",
   units: [
     { name: "Omsorgs- och socialförvaltningen", pic: "937902313" },
+    { name: "Utbildningsförvaltningen", pic: "944692507" },
     { name: "Källängens skola", pic: "943033710" },
     { name: "Högsätra F-6", pic: "944116424" },
     { name: "Käppala skola", pic: "908470476" },
     { name: "Hersby gymnasium", pic: "946977342" },
+    { name: "Lidingö särskola", pic: "945056742" },
   ],
 };
