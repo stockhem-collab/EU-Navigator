@@ -84,7 +84,7 @@ function elementEnd(xml: string, start: number, name: string): number {
 }
 
 /** The child elements of the XML between `from` and `to`. */
-function children(xml: string, from: number, to: number): Element[] {
+export function children(xml: string, from: number, to: number): Element[] {
   const out: Element[] = [];
   const open = /<([A-Za-z0-9]+:[A-Za-z0-9]+)(?=[\s>/])/g;
   open.lastIndex = from;
@@ -97,7 +97,7 @@ function children(xml: string, from: number, to: number): Element[] {
 }
 
 /** The children of the element `el` of `xml` (inside its opening tag). */
-function inner(xml: string, el: Element): Element[] {
+export function inner(xml: string, el: Element): Element[] {
   const openEnd = xml.indexOf(">", el.start) + 1;
   return children(xml, openEnd, el.end);
 }
@@ -116,7 +116,7 @@ function escapeXml(text: string): string {
 }
 
 /** A fragment's text; tabs and line breaks read as spaces ("1.1<tab>Objectives"). */
-function textOf(fragment: string): string {
+export function textOf(fragment: string): string {
   return [...fragment.matchAll(/<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>|<w:(?:tab|br|cr)(?:\s[^>]*)?\/>/g)]
     .map((m) => (m[1] === undefined ? " " : decode(m[1])))
     .join("");
@@ -137,7 +137,7 @@ function headingCore(text: string): string {
   return normalize(text).replace(/\s*[[(].*$/, "");
 }
 
-function isTocLine(fragment: string): boolean {
+export function isTocLine(fragment: string): boolean {
   return /<w:pStyle w:val="(?:TOC|Innehll|Contents)/i.test(fragment);
 }
 

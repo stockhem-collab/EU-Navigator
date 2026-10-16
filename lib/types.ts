@@ -190,6 +190,28 @@ export interface ApplicationTemplateSection {
   required?: boolean;
   /** Tables the form asks for in this section. */
   tables?: TemplateTable[];
+  /** For a report form: the reports the section belongs to. Undefined =
+   * every report. */
+  reportTypes?: ReportingEventType[];
+  /** For a report form: the application sections (keys) whose text shows
+   * beside this section, as what was promised. */
+  fromApplication?: string[];
+}
+
+/** A cost category of a funder's budget or financial report (e.g. Horizon
+ * Europe's "A. Personnel costs", ESF+'s "Resor och logi"). */
+export interface CostCategory {
+  key: string;
+  /** The funder's own code, e.g. "A" or "C.1". */
+  code?: string;
+  label_sv: string;
+  label_en: string;
+  note_sv?: string;
+  note_en?: string;
+  /** A category calculated as a flat rate of others — e.g. Horizon
+   * Europe's indirect costs, 25 % of the direct costs except
+   * subcontracting. Undefined percent = set in the decision; entered. */
+  flatRate?: { percent?: number; of: string[] };
 }
 
 /** A table a funder's form asks for (e.g. Horizon Europe's 3.1a "List of
@@ -202,6 +224,9 @@ export interface TemplateTable {
   columns_en: string[];
   note_sv?: string;
   note_en?: string;
+  /** For a report form: an application table whose rows start this one
+   * (e.g. the work packages of Part B's 3.1a), with the columns to take. */
+  fromApplicationTable?: { key: string; columns: number[] };
   /** How the table sits in the funder's Word template, when it differs
    * from a title followed by a table with one row per row. */
   docx?: {
@@ -217,12 +242,15 @@ export interface TemplateTable {
  * ESF-rådet's Projektrummet+). Decides how the application is exported. */
 export type CallTemplateFormat = "docx" | "web-form";
 
-/** A funder's application form, shared by every call that uses it — the
- * forms follow the programme and type of action, not the single call. A
- * call points to one with applicationTemplateId (the call list's
- * Ansökningsmall column). See lib/data/callTemplates.ts. */
+/** A funder's application or report form, shared by every call that uses
+ * it — the forms follow the programme and type of action, not the single
+ * call. A call points to one with applicationTemplateId (the call list's
+ * Ansökningsmall column) and reportTemplateId (Rapportmall). See
+ * lib/data/callTemplates.ts. */
 export interface CallTemplate {
   id: string;
+  /** What the form is for. Undefined = an application form. */
+  kind?: "application" | "report";
   format: CallTemplateFormat;
   /** The language the funder's form is in — the export uses its headings.
    * Undefined = the language the user works in. */
@@ -259,6 +287,14 @@ export interface CallTemplate {
     /** The title of the list of participants. */
     participantsTitle?: string;
   };
+  /** The form's cost categories — the budget an application states, or
+   * the costs a report declares. */
+  costCategories?: CostCategory[];
+  /** The currency the funder works in; amounts are kept in SEK and shown
+   * converted. */
+  currency?: "SEK" | "EUR";
+  /** A form added in Datacenter (Mallar), kept in this browser. */
+  custom?: boolean;
   /** The evaluation criteria the form's sections are assessed against —
    * given to calls using the template that don't state their own. */
   evaluationCriteria?: EvaluationCriterion[];
@@ -380,6 +416,10 @@ export interface FundingCall {
    * CallTemplate id, from the call list's Ansökningsmall column). Ignored
    * when applicationTemplate is set. Undefined = no form on file. */
   applicationTemplateId?: string;
+  /** The shared funder form this call's reports follow (a report
+   * CallTemplate id, from the call list's Rapportmall column). Undefined =
+   * the standard report sections. */
+  reportTemplateId?: string;
   /** This call's post-award reporting obligation, when known — see
    * ReportingRequirement (defined further down, alongside Grant).
    * Undefined = not on file yet. */
@@ -615,13 +655,14 @@ export interface Commitment {
 export type ReportingEventType = "interim" | "final" | "sustainability";
 export type ReportingEventStatus = "upcoming" | "submitted" | "approved" | "revision-requested";
 
-/** A reporting event's economic summary — deliberately narrow (spend for
- * this period, compared against the project's total awarded amount)
- * rather than a fund-specific cost-category breakdown (personnel,
- * overhead, travel, …) that varies by fund and that this app has no real
- * source to populate honestly. */
+/** A reporting event's economic summary: the spend for the period, and —
+ * when the call's report form has cost categories (CallTemplate
+ * .costCategories) — the same spend per category. */
 export interface FinancialOutcome {
   spentThisPeriodSEK: number;
+  /** The period's costs per cost category (CostCategory.key -> SEK), when
+   * the call's report form declares costs that way. */
+  byCategory?: Record<string, number>;
 }
 
 /** The outturn reported for one Commitment indicator as of one specific

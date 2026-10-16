@@ -1,4 +1,6 @@
 import type { CallTemplate, FundingCall } from "../types";
+import { ESF_COST_CATEGORIES, HE_COST_CATEGORIES } from "./costCategories";
+import { reportTemplates } from "./reportTemplates";
 
 // The funders' application forms, shared by every call that uses them — a
 // form follows the programme and type of action, not the single call. A
@@ -26,6 +28,8 @@ const HE_RIA_IA: CallTemplate = {
   formatting_sv: "Titel, deltagarlista och avsnitt 1–3 räknas, inklusive tabeller och figurer. Times New Roman minst 11 pt, enkelt radavstånd, A4, marginaler minst 15 mm.",
   formatting_en: "Title, list of participants and sections 1–3 count, including tables and figures. Times New Roman at least 11 pt, single line spacing, A4, margins at least 15 mm.",
   participantsList: true,
+  currency: "EUR",
+  costCategories: HE_COST_CATEGORIES,
   // The template from the portal (an .rtf, saved as .docx).
   funderFile: {
     url: "/mallar/horizon-europe-part-b-ria-ia-v5.1.docx",
@@ -276,6 +280,8 @@ const ESF_PLUS: CallTemplate = {
   version: "Urvalskriterier enligt utlysning 26-024 (2026-08-18)",
   sourceUrl: "https://www.esf.se/soka-stod/sok-stod-steg-for-steg/",
   submittedIn: "Projektrummet+",
+  currency: "SEK",
+  costCategories: ESF_COST_CATEGORIES,
   note_sv:
     "Ansökan skrivs direkt i Projektrummet+. Avsnitten följer ESF+:s fem urvalskriterier, som ansökan bedöms mot; formulärets exakta fält och teckengränser står i Projektrummet+ och finns inte i systemet än. Utlysningens egna krav (förväntade resultat, bilagor) gäller utöver detta.",
   note_en:
@@ -386,16 +392,30 @@ const ESF_PLUS: CallTemplate = {
   ],
 };
 
-export const callTemplates: CallTemplate[] = [HE_RIA_IA, ESF_PLUS];
+export const applicationTemplates: CallTemplate[] = [HE_RIA_IA, ESF_PLUS];
 
-export function findCallTemplate(id: string | undefined): CallTemplate | undefined {
-  return id ? callTemplates.find((t) => t.id === id) : undefined;
+/** Every form in the app's library: the application forms and the report
+ * forms (lib/data/reportTemplates.ts). */
+export const callTemplates: CallTemplate[] = [...applicationTemplates, ...reportTemplates];
+
+/** Forms added in Datacenter (Mallar) and which form a call uses when it was
+ * chosen there — kept in the browser (lib/hooks/useCallTemplates.ts). */
+export interface TemplateRegistry {
+  custom: CallTemplate[];
+  /** Call id -> the forms chosen for it in Datacenter. */
+  assignments: Record<string, { application?: string; report?: string }>;
+}
+
+export function findCallTemplate(id: string | undefined, registry?: TemplateRegistry): CallTemplate | undefined {
+  if (!id) return undefined;
+  return callTemplates.find((t) => t.id === id) ?? registry?.custom.find((t) => t.id === id);
 }
 
 /** The form a call's applications follow: the call's own sections when it
- * has them, else the shared template it points to. Undefined = no form on
- * file, and the workspace falls back to its generic project logic. */
-export function applicationTemplateFor(call: FundingCall): CallTemplate | undefined {
+ * has them, else the form chosen for it in Datacenter, else the shared
+ * template it points to. Undefined = no form on file, and the workspace
+ * falls back to its generic project logic. */
+export function applicationTemplateFor(call: FundingCall, registry?: TemplateRegistry): CallTemplate | undefined {
   if (call.applicationTemplate && call.applicationTemplate.length > 0) {
     return {
       id: `call:${call.id}`,
@@ -406,5 +426,17 @@ export function applicationTemplateFor(call: FundingCall): CallTemplate | undefi
       sections: call.applicationTemplate,
     };
   }
-  return findCallTemplate(call.applicationTemplateId);
+  const chosen = registry?.assignments[call.id]?.application;
+  const template = findCallTemplate(chosen, registry) ?? findCallTemplate(call.applicationTemplateId, registry);
+  return template?.kind === "report" ? undefined : template;
+}
+
+/** The form a call's reports follow: the one chosen in Datacenter, else
+ * the call's Rapportmall. Undefined = the standard report sections
+ * (lib/data/reportSections.ts). */
+export function reportTemplateFor(call: FundingCall | undefined, registry?: TemplateRegistry): CallTemplate | undefined {
+  if (!call) return undefined;
+  const chosen = registry?.assignments[call.id]?.report;
+  const template = findCallTemplate(chosen, registry) ?? findCallTemplate(call.reportTemplateId, registry);
+  return template?.kind === "report" ? template : undefined;
 }

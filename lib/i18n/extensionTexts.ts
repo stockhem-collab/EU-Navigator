@@ -49,6 +49,7 @@ export interface ExtensionTexts {
     overview: string;
     leadership: string;
     cofinancing: string;
+    templates: string;
   };
   leadership: {
     title: string;
@@ -209,6 +210,7 @@ export const extensionSv: ExtensionTexts = {
     overview: "Översikt",
     leadership: "Ledningsrapport",
     cofinancing: "Medfinansiering",
+    templates: "Mallar",
   },
   leadership: {
     title: "Ledningsrapport",
@@ -373,6 +375,7 @@ export const extensionEn: ExtensionTexts = {
     overview: "Overview",
     leadership: "Leadership report",
     cofinancing: "Co-financing",
+    templates: "Templates",
   },
   leadership: {
     title: "Leadership report",

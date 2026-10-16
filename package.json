@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "docx": "^9.7.1",
+    "exceljs": "^4.4.0",
     "jszip": "^3.10.2",
     "next": "14.2.35",
     "papaparse": "^5.7.0",
@@ -38,7 +39,6 @@
     "autoprefixer": "^10.4.19",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.35",
-    "exceljs": "^4.4.0",
     "postcss": "^8.4.40",
     "tailwindcss": "^3.4.7",
     "tsx": "^4.20.6",

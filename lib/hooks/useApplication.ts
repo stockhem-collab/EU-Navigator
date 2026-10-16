@@ -29,9 +29,18 @@ interface ApplicationDraft {
   /** The eligible budget and grant this application states, when set —
    * see ApplicationBudget. Empty = the project's figures. */
   budget: ApplicationBudget;
+  /** The budget per the form's cost categories, as typed
+   * (CostCategory.key -> amount in SEK). */
+  costs: Record<string, string>;
 }
 
-const EMPTY_DRAFT: ApplicationDraft = { sectionDrafts: {}, tables: {}, updatedAt: "", versions: [], budget: {} };
+const EMPTY_DRAFT: ApplicationDraft = { sectionDrafts: {}, tables: {}, updatedAt: "", versions: [], budget: {}, costs: {} };
+
+/** Keeps only string amounts from storage. */
+function sanitizeCosts(value: unknown): Record<string, string> {
+  if (!value || typeof value !== "object") return {};
+  return Object.fromEntries(Object.entries(value as Record<string, unknown>).filter(([, v]) => typeof v === "string")) as Record<string, string>;
+}
 
 /** Keeps only well-formed tables (rows of string cells) from storage. */
 function sanitizeTables(value: unknown): Record<string, string[][]> {
@@ -59,6 +68,7 @@ function readDraft(applicationId: string): ApplicationDraft {
       updatedAt: typeof parsed?.updatedAt === "string" ? parsed.updatedAt : "",
       versions: Array.isArray(parsed?.versions) ? parsed.versions : [],
       budget: sanitizeApplicationBudget(parsed?.budget),
+      costs: sanitizeCosts(parsed?.costs),
     };
   } catch {
     return EMPTY_DRAFT;
@@ -86,10 +96,11 @@ export function seedApplicationDraft(
   callId: string,
   sectionDrafts: Record<string, string>,
   budget: ApplicationBudget = {},
-  tables: Record<string, string[][]> = {}
+  tables: Record<string, string[][]> = {},
+  costs: Record<string, string> = {}
 ) {
   const id = defaultApplicationId(customerProjectId, callId);
-  writeDraft(id, { sectionDrafts, tables, updatedAt: new Date().toISOString(), versions: [], budget });
+  writeDraft(id, { sectionDrafts, tables, updatedAt: new Date().toISOString(), versions: [], budget, costs });
   touchApplicationRecord(id, customerProjectId, callId);
 }
 
@@ -104,6 +115,12 @@ export function readApplicationBudget(applicationId: string): ApplicationBudget 
  * application promised. */
 export function readApplicationSections(applicationId: string): Record<string, string> {
   return readDraft(applicationId).sectionDrafts;
+}
+
+/** A stored application's form tables — e.g. its work packages for the
+ * grant's reports. */
+export function readApplicationTables(applicationId: string): Record<string, string[][]> {
+  return readDraft(applicationId).tables;
 }
 
 /**
@@ -222,6 +239,13 @@ export function useApplication(customerProjectId: string | null, callId: string,
     [commit]
   );
 
+  /** Sets one cost category's amount in the budget per cost category. */
+  const setCost = useCallback(
+    (key: string, value: string) =>
+      commit((prev) => ({ ...prev, costs: { ...prev.costs, [key]: value }, updatedAt: new Date().toISOString() })),
+    [commit]
+  );
+
   /** Sets (or, with undefined, clears) the application's own amounts. */
   const setBudget = useCallback(
     (patch: ApplicationBudget) =>
@@ -303,6 +327,8 @@ export function useApplication(customerProjectId: string | null, callId: string,
     versions: draft.versions,
     budget: draft.budget,
     setBudget,
+    costs: draft.costs,
+    setCost,
     setSection,
     resetSection,
     saveVersion,

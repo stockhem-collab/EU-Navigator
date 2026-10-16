@@ -26,12 +26,13 @@ import { useGrants } from "@/lib/hooks/useGrants";
 import { useApplications } from "@/lib/hooks/useApplications";
 import { useUsersDirectory } from "@/lib/hooks/useUsersDirectory";
 import { useAttachments } from "@/lib/hooks/useAttachments";
+import { useCallTemplates } from "@/lib/hooks/useCallTemplates";
 import { buildGrantDocx, ReportContent } from "@/lib/export/exportReport";
 import { downloadBlob } from "@/lib/export/exportApplication";
 import { formatReportDue } from "@/lib/matching/reportingSchedule";
 import { fmtSEK } from "@/lib/format";
 import { Grant, Commitment, ReportingEvent, ReportingPeriodicity } from "@/lib/types";
-import ReportCard, { documentAttachmentKey, reportAttachmentKey, requiredDocuments, statusStyle } from "@/components/grants/ReportCard";
+import ReportCard, { ReportCardApi, documentAttachmentKey, reportAttachmentKey, requiredDocuments, statusStyle } from "@/components/grants/ReportCard";
 import CommitmentsEditor, { completeCommitments } from "@/components/grants/CommitmentsEditor";
 import AuditChecklist from "@/components/grants/AuditChecklist";
 
@@ -60,6 +61,7 @@ export default function GrantPage() {
   const { records: applicationRecords } = useApplications();
   const { users } = useUsersDirectory();
   const { attachmentsFor } = useAttachments();
+  const templates = useCallTemplates();
   const [openReports, setOpenReports] = useState<string[]>([]);
 
   // A grant registered from an application only exists in this browser's
@@ -133,6 +135,12 @@ export default function GrantPage() {
       }),
       otherAttachments: attachmentsFor(reportAttachmentKey(grant.id, event.id)).map((a) => a.fileName),
       ownerName: owner ? `${owner.firstName} ${owner.lastName}` : undefined,
+      tables: { ...(latest?.tables ?? {}), ...draft.tables },
+      ...(Object.keys(draft.costs).length > 0
+        ? { costs: Object.fromEntries(Object.entries(draft.costs).map(([k, v]) => [k, Number(v) || 0])) }
+        : latest?.costs
+        ? { costs: latest.costs }
+        : {}),
     };
   };
 
@@ -145,7 +153,7 @@ export default function GrantPage() {
       outcomes: Record<string, number>,
       note: string,
       spent: number | undefined,
-      content: { sections: Record<string, string>; deviations: Record<string, string> }
+      content: Parameters<ReportCardApi["onSubmit"]>[3]
     ) => submitReport(grant.id, event.id, outcomes, note, spent, content),
     onSetStatus: (status: Parameters<typeof setEventStatus>[2]) => setEventStatus(grant.id, event.id, status),
     contentFor: () => contentFor(event),
@@ -153,7 +161,7 @@ export default function GrantPage() {
   });
 
   const handleExportAll = async () => {
-    const blob = await buildGrantDocx(grant, call, program, contentFor, lang);
+    const blob = await buildGrantDocx(grant, call, program, contentFor, lang, templates.reportTemplateFor(call));
     downloadBlob(blob, `stod-${grant.id}.docx`);
   };
 

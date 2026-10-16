@@ -1,5 +1,5 @@
 import { ApplicationTemplateSection, FundingCall, FundingProgram, ProjectInput } from "@/lib/types";
-import { applicationTemplateFor } from "@/lib/data/callTemplates";
+import { applicationTemplateFor, TemplateRegistry } from "@/lib/data/callTemplates";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import { textSignals } from "@/lib/matching/readiness";
 
@@ -79,9 +79,10 @@ function generateTemplatedSection(
 export function generateProjectLogic(
   project: ProjectInput,
   call: FundingCall,
-  program: FundingProgram
+  program: FundingProgram,
+  registry?: TemplateRegistry
 ): ProjectLogicRow[] {
-  const template = applicationTemplateFor(call);
+  const template = applicationTemplateFor(call, registry);
   if (template) {
     return template.sections.map((section) => generateTemplatedSection(section, project, call, program));
   }
