@@ -53,6 +53,15 @@ test.describe("leadership report", () => {
     }
     expect(view!.peers.filter((p) => p.reference).map((p) => p.name)).toEqual(["Uppsala kommun"]);
   });
+
+  test("the Lidingö profile compares with its own group", () => {
+    const view = leadershipView("lidingo");
+    expect(view).not.toBeNull();
+    expect(view!.peers.length).toBe(10);
+    expect(view!.peers.filter((p) => p.reference).map((p) => p.name)).toEqual(["Lidingö stad"]);
+    for (const p of view!.peers) expect(p.population).toBeGreaterThan(30_000);
+    expect(view!.peers.find((p) => p.name === "Södertälje kommun")!.projects).toBeGreaterThan(0);
+  });
 });
 
 test.describe("audit readiness", () => {

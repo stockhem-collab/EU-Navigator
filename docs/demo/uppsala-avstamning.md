@@ -1,8 +1,8 @@
 # Uppsala kommun – avstämning mot kontrollistan
 
-Genererad 2026-10-08 av `npm run history:uppsala` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS) och `data/kontrollista.csv`. Ändra inte för hand; kör skriptet igen.
+Genererad 2026-10-16 av `npm run history:uppsala` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS) och `data/kontrollista.csv`. Ändra inte för hand; kör skriptet igen.
 
-Säker träff kräver Uppsala kommuns PIC (kommunen eller en av de fyra enheterna), momsnummer eller organisationsnummer hos en partner i projektet. Namnlika träffar är kandidater för manuell granskning och räknas inte. Uppsala universitet, Region Uppsala, SLU och Länsstyrelsen i Uppsala län räknas aldrig. Uppsala Stadshus AB och dotterbolagen listas bara som kandidater. Projekt som slutade före 2014 visas inte i historiken.
+Säker träff kräver Uppsala kommuns PIC (kommunen eller en av de fyra enheterna), momsnummer eller organisationsnummer hos en partner i projektet. Namnlika träffar är kandidater för manuell granskning och räknas inte. Uppsala universitet, Region Uppsala, SLU och Länsstyrelsen i Uppsala län räknas aldrig, inte heller andra universitet, regioner, länsstyrelser, kommunalförbund och kyrkor. Uppsala Stadshus AB och dotterbolagen listas bara som kandidater. Projekt som slutade före 2014 visas inte i historiken.
 
 ## Sammanfattning
 

@@ -125,8 +125,9 @@ Old addresses (`/demo`, `/projektbank`, `/bevakning`, grants under
   (documents needing an update, projects with incomplete information).
 - **Ledningsrapport** (`/datacenter/ledningsrapport`) — one printable page
   for leadership: the own portfolio (applications, success rate, grants,
-  reporting, co-financing) and EU grants per inhabitant against the ten
-  largest municipalities (peers.json, population in `lib/data/population.ts`).
+  reporting, co-financing) and EU grants per inhabitant against the demo
+  municipality's comparison group (`<profile>-peers.json`, population in
+  `lib/data/population.ts`).
 - **Medfinansiering** (`/datacenter/medfinansiering`) — own co-financing
   per year for grants and applications with the funder, how much is paid
   out before the grant arrives (advance and payment lag adjustable), the

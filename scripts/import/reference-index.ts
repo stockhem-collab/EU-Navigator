@@ -9,6 +9,7 @@ import path from "node:path";
 import zlib from "node:zlib";
 import { GENERATED_DIR, ROOT } from "../../lib/integrations/core/files";
 import type { IndexOrganisation, IndexPartner, IndexProject, ReferenceIndex } from "../../lib/imported/types";
+import { municipalityProfiles } from "../../lib/data/municipalities";
 import { readGenerated } from "./generated";
 import { main } from "./run";
 
@@ -25,7 +26,7 @@ function shorten(text: string | null | undefined): string | null {
 
 function readJson(name: string): unknown {
   const file = path.join(GENERATED_DIR, name);
-  if (!fs.existsSync(file)) throw new Error(`Missing lib/data/generated/${name}. Run npm run history:uppsala and history:peers first.`);
+  if (!fs.existsSync(file)) throw new Error(`Missing lib/data/generated/${name}. Run npm run history:all first.`);
   return JSON.parse(fs.readFileSync(file, "utf8"));
 }
 
@@ -85,8 +86,12 @@ export function buildReferenceIndex(): ReferenceIndex {
     projects,
     organisations,
     partners,
-    history: readJson("uppsala-history.json"),
-    peers: readJson("peers.json"),
+    profiles: Object.fromEntries(
+      Object.keys(municipalityProfiles).map((id) => [
+        id,
+        { history: readJson(`${id}-history.json`), peers: readJson(`${id}-peers.json`) },
+      ]),
+    ),
   };
 }
 

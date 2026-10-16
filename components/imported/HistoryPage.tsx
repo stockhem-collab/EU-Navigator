@@ -52,6 +52,12 @@ export default function HistoryPage({ history }: { history: HistoryView | null }
               </div>
             </section>
 
+            {history.projects.length === 0 && (
+              <p className="mt-4 rounded-md border border-gold-300 bg-gold-50 px-3 py-2 text-sm text-navy-700">
+                {it.historyNoProjects(history.municipality.name)}
+              </p>
+            )}
+
             <h2 className="mt-8 text-lg font-bold text-navy-800">{it.byProgramTitle}</h2>
             <div className="mt-3 overflow-x-auto rounded-xl border border-navy-100 bg-white">
               <table className="w-full text-sm">

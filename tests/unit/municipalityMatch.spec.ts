@@ -11,11 +11,12 @@ import {
   organisationNumberOf,
 } from "../../lib/integrations/municipality/match";
 import { checkAmount, linkRow, parseChecklist, reconcile } from "../../lib/integrations/municipality/reconcile";
-import { peerMunicipalities, uppsalaMatch } from "../../lib/data/municipalities";
-import { uppsalaPreset } from "../../lib/data/orgPresets";
+import { lidingoMatch, lidingoPeers, municipalityProfiles, peerMunicipalities, uppsalaMatch } from "../../lib/data/municipalities";
+import { lidingoPreset, uppsalaPreset } from "../../lib/data/orgPresets";
+import { DEMO_PROFILES } from "../../lib/data/demoProfiles";
 
 // Finding a municipality's projects in the generated source data
-// (scripts/import/uppsala-history.ts, peers.ts): sure hits only on
+// (scripts/import/history.ts, peers.ts): sure hits only on
 // identifiers, names only as candidates, and the reconciliation with
 // data/kontrollista.csv.
 
@@ -92,6 +93,25 @@ test.describe("municipality config", () => {
   test("ten peers with municipal organisationsnummer", () => {
     expect(peerMunicipalities).toHaveLength(10);
     for (const m of peerMunicipalities) expect(m.orgNumber).toMatch(/^212000-\d{4}$/);
+  });
+
+  test("Lidingö's registry numbers come from its preset, peers in Stockholm county", () => {
+    expect(lidingoMatch.orgNumber).toBe(lidingoPreset.orgNumber);
+    expect(lidingoMatch.vatNumber).toBe("SE212000019101");
+    expect(lidingoMatch.pic).toBeNull();
+    expect(lidingoMatch.kommunkod).toBe("0186");
+    for (const m of lidingoPeers) {
+      expect(m.orgNumber).toMatch(/^212000-\d{4}$/);
+      expect(m.vatNumber).toBe(`SE${m.orgNumber.replace("-", "")}01`);
+      expect(m.lan).toBe("Stockholms län");
+    }
+  });
+
+  test("every demo profile has a municipality config of the same organisation", () => {
+    for (const { id, preset } of DEMO_PROFILES) {
+      expect(municipalityProfiles[id].match.name).toBe(preset.organisationName);
+      expect(municipalityProfiles[id].match.orgNumber).toBe(preset.orgNumber);
+    }
   });
 });
 

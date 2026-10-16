@@ -39,3 +39,18 @@ export const uppsalaPreset: OrgPreset = {
     { name: "Uppsala kommun Fritid", pic: "928710205" },
   ],
 };
+
+// Lidingö stad (checked 2026-10-16): organisationsnummer and VAT number in
+// the EU VIES register (name "LIDINGÖ KOMMUN"). No PIC yet: none of the
+// sources ties one to the organisationsnummer; fill in from the Funding &
+// Tenders Portal's participant register when known.
+export const lidingoPreset: OrgPreset = {
+  organisationName: "Lidingö stad",
+  orgNumber: "212000-0191",
+  vatNumber: "SE212000019101",
+  orgType: "Kommun",
+  country: "Sverige",
+  website: "https://www.lidingo.se",
+  pic: "",
+  units: [],
+};

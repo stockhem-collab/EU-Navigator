@@ -15,6 +15,7 @@ import type { Candidate, HistoryProject } from "@/lib/integrations/municipality/
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { findTag } from "@/lib/data/tags";
 import { populationOf, POPULATION_YEAR } from "@/lib/data/population";
+import { DEFAULT_PROFILE, type DemoProfileId } from "@/lib/data/demoProfiles";
 import { significantWords } from "@/lib/matching/similarProjects";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import type { Sector } from "@/lib/types";
@@ -65,7 +66,7 @@ function load(): Loaded {
   const rates = parseEurSekRates(fs.readFileSync(RATES_FILE, "utf8"));
   const index: ReferenceIndex = referenceDataAvailable()
     ? JSON.parse(zlib.gunzipSync(fs.readFileSync(INDEX_FILE)).toString("utf8"))
-    : { generatedAt: "", sources: [], projects: [], organisations: [], partners: [], history: null, peers: null };
+    : { generatedAt: "", sources: [], projects: [], organisations: [], partners: [], profiles: {} };
 
   const partnersOf: [number, PartnerRole][][] = index.projects.map(() => []);
   for (const [pi, oi, role] of index.partners) partnersOf[pi].push([oi, role]);
@@ -551,7 +552,7 @@ export function amountStats(programId: string, sector: Sector): AmountStats {
 }
 
 // ---------------------------------------------------------------------------
-// The municipality's own EU history (uppsala-history.json, peers.json)
+// The municipality's own EU history (<profile>-history.json, <profile>-peers.json)
 // ---------------------------------------------------------------------------
 
 export interface HistoryRow {
@@ -632,11 +633,11 @@ interface PeersFile {
   }[];
 }
 
-export function historyView(): HistoryView | null {
+export function historyView(profile: DemoProfileId = DEFAULT_PROFILE): HistoryView | null {
   const { index, rates } = load();
-  const history = index.history as HistoryFile | null;
+  const history = (index.profiles[profile]?.history ?? null) as HistoryFile | null;
   if (!history) return null;
-  const peers = index.peers as PeersFile | null;
+  const peers = (index.profiles[profile]?.peers ?? null) as PeersFile | null;
 
   const projects: HistoryRow[] = history.projects
     .map((p) => ({
@@ -726,12 +727,12 @@ export interface LeadershipView {
   caveats: string[];
 }
 
-export function leadershipView(): LeadershipView | null {
+export function leadershipView(profile: DemoProfileId = DEFAULT_PROFILE): LeadershipView | null {
   const { index } = load();
-  const peers = index.peers as PeersFile | null;
+  const peers = (index.profiles[profile]?.peers ?? null) as (PeersFile & { generatedAt?: string }) | null;
   if (!peers?.municipalities?.length) return null;
   return {
-    generatedAt: (index.peers as { generatedAt?: string }).generatedAt ?? index.generatedAt,
+    generatedAt: peers.generatedAt ?? index.generatedAt,
     populationYear: POPULATION_YEAR,
     caveats: peers.rules?.caveats ?? [],
     peers: peers.municipalities.map((m) => {

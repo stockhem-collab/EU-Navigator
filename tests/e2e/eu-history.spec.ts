@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 // "Er EU-historik" shows Uppsala's own EU-funded projects from
-// uppsala-history.json, with the unconfirmed candidates apart and the
+// uppsala-history.json (the default demo profile), with the unconfirmed candidates apart and the
 // comparison with the largest municipalities.
 
 test("the EU history view lists the municipality's projects, candidates and peers", async ({ page }) => {

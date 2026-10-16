@@ -57,10 +57,9 @@ export interface ReferenceIndex {
   projects: IndexProject[];
   organisations: IndexOrganisation[];
   partners: IndexPartner[];
-  /** lib/data/generated/uppsala-history.json, as written. */
-  history: unknown;
-  /** lib/data/generated/peers.json, as written. */
-  peers: unknown;
+  /** Per demo profile (lib/data/demoProfiles.ts): lib/data/generated/
+   * <id>-history.json and <id>-peers.json, as written. */
+  profiles: Partial<Record<string, { history: unknown; peers: unknown }>>;
 }
 
 // ---------------------------------------------------------------------------

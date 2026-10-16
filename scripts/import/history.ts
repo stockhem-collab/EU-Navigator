@@ -1,7 +1,12 @@
-// npm run history:uppsala — Uppsala kommun's projects in lib/data/generated/
-// → lib/data/generated/uppsala-history.json, reconciled with
-// data/kontrollista.csv → docs/demo/uppsala-avstamning.md.
-// Run npm run import:all first.
+// npm run history:<profile> (or history:all) — a demo municipality's EU
+// history and its comparison group (lib/data/municipalities.ts,
+// municipalityProfiles) from lib/data/generated/:
+// - <profile>-history.json: the municipality's own projects, reconciled with
+//   its checklist when it has one → docs/demo/<profile>-avstamning.md
+// - <profile>-peers.json: projects per programme for the municipality and its
+//   comparison group.
+// Sure hits on PIC, momsnummer or organisationsnummer only; name matches are
+// candidates and never counted. Run npm run import:all first.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -18,12 +23,17 @@ import {
   reconcile,
   Reconciliation,
 } from "../../lib/integrations/municipality/reconcile";
-import { uppsalaMatch } from "../../lib/data/municipalities";
+import {
+  COMMON_EXCLUSIONS,
+  MunicipalityMatchConfig,
+  MunicipalityProfile,
+  municipalityProfiles,
+} from "../../lib/data/municipalities";
+import { DemoProfileId, isDemoProfileId } from "../../lib/data/demoProfiles";
+import { GeneratedDataset } from "../../lib/integrations/core/types";
 import { readGenerated, SOURCES, writeGenerated } from "./generated";
+import { peersFile } from "./peers";
 import { main } from "./run";
-
-const CHECKLIST = "data/kontrollista.csv";
-const REPORT = "docs/demo/uppsala-avstamning.md";
 
 const SOURCE_LABEL: Record<string, string> = {
   kohesio: "Kohesio",
@@ -59,15 +69,49 @@ function candidateLine(c: CandidateEntry): string {
   return `| ${link(k.title, k.sourceUrl)} | ${SOURCE_LABEL[k.sourceSystem]} | ${cell(k.organisationName)} | ${k.reason} | ${period(k)} | ${money(k.euContribution)} | ${listed} |`;
 }
 
-function markdown(r: Reconciliation, generatedAt: string): string {
+function listing(names: string[]): string {
+  return names.length <= 1 ? names.join("") : `${names.slice(0, -1).join(", ")} och ${names[names.length - 1]}`;
+}
+
+function rulesText(m: MunicipalityMatchConfig): string {
+  const count = ["", "den enda", "de två", "de tre", "de fyra", "de fem", "de sex"][m.unitPics.length] ?? `de ${m.unitPics.length}`;
+  const pics = m.pic ? (m.unitPics.length > 0 ? `PIC (kommunen eller en av ${count} enheterna), ` : "PIC, ") : "";
+  const own = m.excluded.filter((e) => !COMMON_EXCLUSIONS.includes(e)).map((e) => e.name);
+  const common = "universitet, regioner, länsstyrelser, kommunalförbund och kyrkor";
+  return [
+    `Säker träff kräver ${m.name}s ${pics}momsnummer eller organisationsnummer hos en partner i projektet.`,
+    "Namnlika träffar är kandidater för manuell granskning och räknas inte.",
+    own.length > 0
+      ? `${listing(own)} räknas aldrig, inte heller andra ${common}.`
+      : `${common[0].toUpperCase()}${common.slice(1)} räknas aldrig.`,
+    m.companies ? `${m.companies.name} och dotterbolagen listas bara som kandidater.` : "",
+    "Projekt som slutade före 2014 visas inte i historiken.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function markdown(
+  id: DemoProfileId,
+  m: MunicipalityMatchConfig,
+  checklist: string | null,
+  r: Reconciliation,
+  generatedAt: string,
+): string {
   const amountDeviations = r.both.filter((b) => b.amount.status === "avviker").length;
   const out: string[] = [
-    "# Uppsala kommun – avstämning mot kontrollistan",
+    checklist ? `# ${m.name} – avstämning mot kontrollistan` : `# ${m.name} – EU-projekt i källorna`,
     "",
-    `Genererad ${generatedAt.slice(0, 10)} av \`npm run history:uppsala\` från \`lib/data/generated/\` (${SOURCES.map((s) => SOURCE_LABEL[s]).join(", ")}) och \`${CHECKLIST}\`. Ändra inte för hand; kör skriptet igen.`,
+    `Genererad ${generatedAt.slice(0, 10)} av \`npm run history:${id}\` från \`lib/data/generated/\` (${SOURCES.map((s) => SOURCE_LABEL[s]).join(", ")})${checklist ? ` och \`${checklist}\`` : ""}. Ändra inte för hand; kör skriptet igen.`,
     "",
-    "Säker träff kräver Uppsala kommuns PIC (kommunen eller en av de fyra enheterna), momsnummer eller organisationsnummer hos en partner i projektet. Namnlika träffar är kandidater för manuell granskning och räknas inte. Uppsala universitet, Region Uppsala, SLU och Länsstyrelsen i Uppsala län räknas aldrig. Uppsala Stadshus AB och dotterbolagen listas bara som kandidater. Projekt som slutade före 2014 visas inte i historiken.",
+    rulesText(m),
     "",
+    ...(checklist
+      ? []
+      : [
+          "Kommunen har ingen kontrollista i repot ännu, så alla säkra träffar står under \"Bara i källorna\". Lägg kommunens egen projektlista i `data/` och ange den i `municipalityProfiles` för att stämma av.",
+          "",
+        ]),
     "## Sammanfattning",
     "",
     `- Finns i båda: ${r.both.length} (varav ${amountDeviations} med beloppsavvikelse)`,
@@ -131,36 +175,39 @@ function markdown(r: Reconciliation, generatedAt: string): string {
   return out.join("\n");
 }
 
-main(() => {
-  const datasets = readGenerated();
+function runProfile(id: DemoProfileId, profile: MunicipalityProfile, datasets: GeneratedDataset[]) {
+  const { match, checklist } = profile;
   const rates = readEurSekRates();
-  const result = findMunicipalityProjects(datasets, uppsalaMatch, rates);
-  const rows = parseChecklist(readCsv(path.join(ROOT, CHECKLIST), ","));
+  const result = findMunicipalityProjects(datasets, match, rates);
+  const rows = checklist ? parseChecklist(readCsv(path.join(ROOT, checklist), ",")) : [];
   const rec = reconcile(
     result,
     rows,
     datasets,
     rates,
-    uppsalaMatch.excluded.map((e) => e.pattern),
+    match.excluded.map((e) => e.pattern),
   );
   const generatedAt = new Date().toISOString();
+  const report = `docs/demo/${id}-avstamning.md`;
 
-  const json = writeGenerated("uppsala-history.json", {
+  const json = writeGenerated(`${id}-history.json`, {
     generatedAt,
     municipality: {
-      name: uppsalaMatch.name,
-      orgNumber: uppsalaMatch.orgNumber,
-      vatNumber: uppsalaMatch.vatNumber,
-      pic: uppsalaMatch.pic,
-      unitPics: uppsalaMatch.unitPics,
-      kommunkod: uppsalaMatch.kommunkod,
-      lan: uppsalaMatch.lan,
-      nuts: uppsalaMatch.nuts,
+      name: match.name,
+      orgNumber: match.orgNumber,
+      vatNumber: match.vatNumber,
+      pic: match.pic,
+      unitPics: match.unitPics,
+      kommunkod: match.kommunkod,
+      lan: match.lan,
+      nuts: match.nuts,
     },
     rules: {
       sureMatch: "PIC (kommunen eller enhet), momsnummer eller organisationsnummer hos en partner",
-      candidates: "namnlika organisationer, projekttitlar som nämner kommunen, kommunala bolag, diarienummer ur kontrollistan; räknas inte",
-      excluded: uppsalaMatch.excluded.map((e) => e.name),
+      candidates: checklist
+        ? "namnlika organisationer, projekttitlar som nämner kommunen, kommunala bolag, diarienummer ur kontrollistan; räknas inte"
+        : "namnlika organisationer, projekttitlar som nämner kommunen, kommunala bolag; räknas inte",
+      excluded: match.excluded.map((e) => e.name),
       historyFrom: HISTORY_FROM,
       euContributionEur: "kommunens egen andel, SEK omräknat med årssnittskurs för startåret (data/vaxelkurs.csv)",
     },
@@ -176,16 +223,38 @@ main(() => {
     before2014: result.before2014.map((p) => ({ id: p.id, title: p.title, endDate: p.endDate })),
   });
 
-  fs.mkdirSync(path.join(ROOT, path.dirname(REPORT)), { recursive: true });
-  fs.writeFileSync(path.join(ROOT, REPORT), markdown(rec, generatedAt));
+  fs.mkdirSync(path.join(ROOT, path.dirname(report)), { recursive: true });
+  fs.writeFileSync(path.join(ROOT, report), markdown(id, match, checklist, rec, generatedAt));
 
-  console.log(`\n[uppsala-history]`);
+  const peers = peersFile(profile, datasets, rates);
+  const peersJson = writeGenerated(`${id}-peers.json`, peers);
+
+  console.log(`\n[history:${id}]`);
   console.log(`  säkra träffar    ${result.projects.length} (före 2014 bortlämnade: ${result.before2014.length})`);
   console.log(`  kandidater       ${rec.candidates.length}`);
-  console.log(`  finns i båda     ${rec.both.length}`);
-  console.log(`  bara i källorna  ${rec.sourcesOnly.length}`);
-  console.log(`  bara i listan    ${rec.checklistOnly.length}`);
-  console.log(`  "Ingen"          ${rec.notExpected.length}, före 2014: ${rec.before2014.length}`);
+  if (checklist) {
+    console.log(`  finns i båda     ${rec.both.length}`);
+    console.log(`  bara i källorna  ${rec.sourcesOnly.length}`);
+    console.log(`  bara i listan    ${rec.checklistOnly.length}`);
+    console.log(`  "Ingen"          ${rec.notExpected.length}, före 2014: ${rec.before2014.length}`);
+  }
+  console.log(`  jämförelse`);
+  for (const m of peers.municipalities) {
+    console.log(
+      `    ${m.name.padEnd(20)} projekt ${String(m.projects).padStart(3)}  EU-bidrag ${m.euContributionEur.toLocaleString("sv-SE").padStart(12)} EUR  kandidater ${m.candidates.length}`,
+    );
+  }
   console.log(`  skriven fil      ${json}`);
-  console.log(`  skriven fil      ${REPORT}`);
+  console.log(`  skriven fil      ${peersJson}`);
+  console.log(`  skriven fil      ${report}`);
+}
+
+main(() => {
+  const arg = process.argv[2];
+  const ids = arg === "all" ? (Object.keys(municipalityProfiles) as DemoProfileId[]) : [arg];
+  if (!ids.every(isDemoProfileId)) {
+    throw new Error(`Usage: tsx scripts/import/history.ts <${Object.keys(municipalityProfiles).join("|")}|all>`);
+  }
+  const datasets = readGenerated();
+  for (const id of ids as DemoProfileId[]) runProfile(id, municipalityProfiles[id], datasets);
 });

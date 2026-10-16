@@ -57,6 +57,7 @@ export interface ImportedTexts {
   historyTab: string;
   historyTitle: string;
   historyIntro: (name: string) => string;
+  historyNoProjects: (name: string) => string;
   historyRules: (sure: string, from: string) => string;
   historyNone: string;
   statProjects: string;
@@ -149,6 +150,8 @@ export const importedSv: ImportedTexts = {
   historyTab: "Er EU-historik",
   historyTitle: "Er EU-historik",
   historyIntro: (name) => `${name}s EU-finansierade projekt sedan 2014, hittade i Kohesio, Keep.eu, CORDIS och ESF-rådets projektbank.`,
+  historyNoProjects: (name) =>
+    `Källorna visar inga projekt sedan 2014 där ${name} är stödmottagare eller partner med sitt organisationsnummer, momsnummer eller PIC. Projekt där kommunen deltar under ett annat namn eller som partner i Kohesio syns inte här; jämförelsen nedan visar vad andra kommuner har fått.`,
   historyRules: (sure, from) => `Säkra träffar: ${sure}. Projekt som slutade före ${from} räknas inte.`,
   historyNone: "Ingen historik är importerad.",
   statProjects: "Projekt",
@@ -241,6 +244,8 @@ export const importedEn: ImportedTexts = {
   historyTab: "Your EU history",
   historyTitle: "Your EU history",
   historyIntro: (name) => `${name}'s EU-funded projects since 2014, found in Kohesio, Keep.eu, CORDIS and the ESF Council's project bank.`,
+  historyNoProjects: (name) =>
+    `The sources show no projects since 2014 where ${name} is beneficiary or partner under its organisation number, VAT number or PIC. Projects where the municipality takes part under another name, or as a partner in Kohesio, don't show here; the comparison below shows what other municipalities received.`,
   historyRules: (sure, from) => `Sure matches: ${sure}. Projects that ended before ${from} are not counted.`,
   historyNone: "No history has been imported.",
   statProjects: "Projects",
