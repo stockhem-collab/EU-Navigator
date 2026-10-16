@@ -108,7 +108,19 @@ test.describe("call list (data/utlysningar.csv)", () => {
     expect(clima.minPartnerCountries).toBe(3);
 
     const esf = calls.filter((c) => c.programId === "esf");
-    expect(esf.map((c) => c.sourceStatus)).toEqual(["planned", "planned"]);
+    expect(esf.map((c) => c.sourceStatus)).toEqual(["planned", "planned", "planned", "planned"]);
+    // ESF+ calls are per region, read from the end of the call name.
+    const stockholm = esf.filter((c) => c.title_sv.endsWith("– Stockholm"));
+    expect(stockholm).toHaveLength(2);
+    for (const c of stockholm) expect(c.eligibleRegions).toEqual(["stockholm"]);
+    expect(esf.find((c) => c.title_sv.endsWith("Östra Mellansverige"))!.eligibleRegions).toContain("uppsala");
+
+    const daphne = calls.find((c) => c.id === "cerv-2026-daphne-children")!;
+    expect(daphne.programId).toBe("cerv");
+    expect(daphne.sourceStatus).toBe("open");
+    const ka220 = calls.find((c) => c.title_sv.includes("KA220"))!;
+    expect(ka220.programId).toBe("erasmus");
+    expect(ka220.minPartnerCountries).toBe(3);
     expect(calls.filter((c) => c.sourceStatus === "open").every((c) => c.status === "open")).toBe(true);
   });
 
@@ -119,6 +131,9 @@ test.describe("call list (data/utlysningar.csv)", () => {
     expect(lastDayOf({ date: "2028-02", preliminary: true })).toBe("2028-02-29");
     expect(programIdFor("DUT-partnerskapet (Horisont Europa) med Energimyndigheten")).toBe("driving-urban-transitions");
     expect(programIdFor("Socialfonden+ (ESF+)")).toBe("esf");
+    expect(programIdFor("CERV – Daphne")).toBe("cerv");
+    expect(programIdFor("Interreg Central Baltic")).toBe("interreg-central-baltic");
+    expect(programIdFor("Interreg Östersjöprogrammet")).toBe("interreg-baltic-sea");
   });
 
   test("an upcoming call without a stated grant range is matched, not ruled out on budget", () => {

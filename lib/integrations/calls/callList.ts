@@ -12,7 +12,7 @@
 // criteria too. Rapportmall names the report form the grant's reports
 // follow (a report CallTemplate id).
 
-import type { CallDate, CallSourceStatus, FundingCall, FundTheme, Sector } from "../../types";
+import type { CallDate, CallSourceStatus, FundingCall, FundTheme, Sector, SwedishRegion } from "../../types";
 import { convert, eurSekRate, type EurSekRates } from "../core/currency";
 import { parseAmount } from "../core/values";
 import { findCallTemplate } from "../../data/callTemplates";
@@ -41,10 +41,26 @@ export function programIdFor(program: string): string | null {
   if (/socialfonden|esf/.test(p)) return "esf";
   if (/\blife\b/.test(p)) return "life";
   if (/regionalfonden|erdf/.test(p)) return "erdf";
+  if (/interreg/.test(p) && /central baltic/.test(p)) return "interreg-central-baltic";
+  if (/interreg/.test(p) && /östersjö|baltic sea/.test(p)) return "interreg-baltic-sea";
   if (/interreg/.test(p)) return null;
+  if (/\bcerv\b/.test(p)) return "cerv";
   if (/erasmus/.test(p)) return "erasmus";
   if (/digital europe|digitala europa/.test(p)) return "digital-europe";
   return null;
+}
+
+/** ESF+ calls are announced per region; the region is the last part of the
+ * call name ("A1 … – Stockholm"). The counties follow ESF-rådets eight
+ * regions. */
+const ESF_REGIONS: Record<string, SwedishRegion[]> = {
+  stockholm: ["stockholm"],
+  "östra mellansverige": ["uppsala", "sodermanland", "ostergotland", "orebro", "vastmanland"],
+};
+
+export function esfRegionsFor(name: string): SwedishRegion[] | undefined {
+  const region = name.split(/\s+–\s+/).pop()?.trim().toLowerCase() ?? "";
+  return ESF_REGIONS[region];
 }
 
 /** "2026-02-04", "2027-04 (prel.)" → a CallDate; null for an empty cell. */
@@ -167,6 +183,7 @@ export function callsFromList(records: Record<string, string>[], options: CallLi
           ? { originalGrantRange: { min, max, currency: "EUR" as const, rate: eurSekRate(rates, rateYear), rateYear } }
           : {}),
         requiresPartnership: consortium,
+        ...(programId === "esf" && esfRegionsFor(name) ? { eligibleRegions: esfRegionsFor(name) } : {}),
         ...(consortium && /tre länder/i.test(who) ? { minPartnerCountries: 3 } : {}),
         eligibleApplicants_sv: who,
         eligibleApplicants_en: who,
