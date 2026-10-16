@@ -14,11 +14,13 @@ import {
 import { ApplicationBudget, sanitizeApplicationBudget } from "@/lib/matching/applicationBudget";
 
 interface ApplicationDraft {
-  /** Project-logic row label (Swedish label, used as a stable key) -> the
-   * user's edited text. A label absent here means "still using the AI
-   * suggestion as-is" — the same semantics the throwaway component state
-   * had before this hook existed. */
+  /** Section key (ProjectLogicRow.key) -> the user's edited text. A key
+   * absent here means "still using the AI suggestion as-is". Drafts saved
+   * before sections had keys are keyed by the Swedish label instead; they
+   * are read through sectionDraftFor and moved to the key on the next edit. */
   sectionDrafts: Record<string, string>;
+  /** The form's tables (TemplateTable.key -> rows of cells). */
+  tables: Record<string, string[][]>;
   updatedAt: string; // ISO
   /** Named, immutable checkpoints ("Utkast", "Slutgiltig version", ...) —
    * see ApplicationVersion. Separate from the live sectionDrafts above,
@@ -29,7 +31,18 @@ interface ApplicationDraft {
   budget: ApplicationBudget;
 }
 
-const EMPTY_DRAFT: ApplicationDraft = { sectionDrafts: {}, updatedAt: "", versions: [], budget: {} };
+const EMPTY_DRAFT: ApplicationDraft = { sectionDrafts: {}, tables: {}, updatedAt: "", versions: [], budget: {} };
+
+/** Keeps only well-formed tables (rows of string cells) from storage. */
+function sanitizeTables(value: unknown): Record<string, string[][]> {
+  if (!value || typeof value !== "object") return {};
+  const out: Record<string, string[][]> = {};
+  for (const [key, rows] of Object.entries(value as Record<string, unknown>)) {
+    if (!Array.isArray(rows)) continue;
+    out[key] = rows.filter(Array.isArray).map((row) => (row as unknown[]).map((cell) => (typeof cell === "string" ? cell : "")));
+  }
+  return out;
+}
 
 function storageKey(applicationId: string) {
   return `${DRAFT_KEY_PREFIX}${applicationId}`;
@@ -42,6 +55,7 @@ function readDraft(applicationId: string): ApplicationDraft {
     const parsed = JSON.parse(raw);
     return {
       sectionDrafts: parsed?.sectionDrafts && typeof parsed.sectionDrafts === "object" ? parsed.sectionDrafts : {},
+      tables: sanitizeTables(parsed?.tables),
       updatedAt: typeof parsed?.updatedAt === "string" ? parsed.updatedAt : "",
       versions: Array.isArray(parsed?.versions) ? parsed.versions : [],
       budget: sanitizeApplicationBudget(parsed?.budget),
@@ -71,10 +85,11 @@ export function seedApplicationDraft(
   customerProjectId: string,
   callId: string,
   sectionDrafts: Record<string, string>,
-  budget: ApplicationBudget = {}
+  budget: ApplicationBudget = {},
+  tables: Record<string, string[][]> = {}
 ) {
   const id = defaultApplicationId(customerProjectId, callId);
-  writeDraft(id, { sectionDrafts, updatedAt: new Date().toISOString(), versions: [], budget });
+  writeDraft(id, { sectionDrafts, tables, updatedAt: new Date().toISOString(), versions: [], budget });
   touchApplicationRecord(id, customerProjectId, callId);
 }
 
@@ -85,7 +100,7 @@ export function readApplicationBudget(applicationId: string): ApplicationBudget 
 }
 
 /** The sections a stored application's user has written or edited
- * (label -> text) — e.g. to suggest the grant's commitments from what the
+ * (key, or label for older drafts -> text; read with sectionDraftFor) — e.g. to suggest the grant's commitments from what the
  * application promised. */
 export function readApplicationSections(applicationId: string): Record<string, string> {
   return readDraft(applicationId).sectionDrafts;
@@ -176,23 +191,34 @@ export function useApplication(customerProjectId: string | null, callId: string,
     [customerProjectId, callId, resolve, setDraft]
   );
 
+  // `legacyKey` is the section's Swedish label, which older drafts were
+  // saved under — removed on the first edit so the text lives under the
+  // section's key from then on.
   const setSection = useCallback(
-    (label: string, value: string) =>
-      commit((prev) => ({
-        ...prev,
-        sectionDrafts: { ...prev.sectionDrafts, [label]: value },
-        updatedAt: new Date().toISOString(),
-      })),
+    (key: string, value: string, legacyKey?: string) =>
+      commit((prev) => {
+        const sectionDrafts = { ...prev.sectionDrafts, [key]: value };
+        if (legacyKey && legacyKey !== key) delete sectionDrafts[legacyKey];
+        return { ...prev, sectionDrafts, updatedAt: new Date().toISOString() };
+      }),
     [commit]
   );
 
   const resetSection = useCallback(
-    (label: string) =>
+    (key: string, legacyKey?: string) =>
       commit((prev) => {
         const sectionDrafts = { ...prev.sectionDrafts };
-        delete sectionDrafts[label];
+        delete sectionDrafts[key];
+        if (legacyKey) delete sectionDrafts[legacyKey];
         return { ...prev, sectionDrafts, updatedAt: new Date().toISOString() };
       }),
+    [commit]
+  );
+
+  /** Replaces one of the form's tables (rows of cells). */
+  const setTable = useCallback(
+    (key: string, rows: string[][]) =>
+      commit((prev) => ({ ...prev, tables: { ...prev.tables, [key]: rows }, updatedAt: new Date().toISOString() })),
     [commit]
   );
 
@@ -222,6 +248,7 @@ export function useApplication(customerProjectId: string | null, callId: string,
         name,
         createdAt: new Date().toISOString(),
         sectionDrafts: resolvedSections,
+        tables: draftRef.current.tables,
         budget: { ...draftRef.current.budget },
       };
       commit((prev) => ({ ...prev, versions: [...prev.versions, version] }));
@@ -239,6 +266,8 @@ export function useApplication(customerProjectId: string | null, callId: string,
         return {
           ...prev,
           sectionDrafts: { ...version.sectionDrafts },
+          // Older versions didn't save tables — restoring one leaves them.
+          tables: version.tables ? sanitizeTables(version.tables) : prev.tables,
           // Older versions didn't save amounts — restoring one leaves them.
           budget: version.budget ? sanitizeApplicationBudget(version.budget) : prev.budget,
           updatedAt: new Date().toISOString(),
@@ -269,6 +298,8 @@ export function useApplication(customerProjectId: string | null, callId: string,
 
   return {
     sectionDrafts: draft.sectionDrafts,
+    tables: draft.tables,
+    setTable,
     versions: draft.versions,
     budget: draft.budget,
     setBudget,

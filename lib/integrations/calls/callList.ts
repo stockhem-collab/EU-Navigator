@@ -2,15 +2,19 @@
 // planned, upcoming and expected) — into the app's FundingCall shape.
 // Columns: Namn, Program, Länk, Öppnar, Stänger, Minsta bidrag, Största
 // bidrag, Valuta, Stödnivå (%), Vem får söka, Beskrivning, Status, Tema,
-// Kommentar, Taggar. Dates may be months and preliminary ("2027-04 (prel.)");
+// Kommentar, Taggar, Ansökningsmall. Dates may be months and preliminary ("2027-04 (prel.)");
 // euro amounts are converted at the yearly average rate of the year the
 // call opens (data/vaxelkurs.csv). Taggar holds hand-set tags (labels or
 // ids from lib/data/tags.ts, comma-separated); when it is empty the tags are
-// suggested from the call's name and description.
+// suggested from the call's name and description. Ansökningsmall names
+// the funder's application form the call uses (a CallTemplate id from
+// lib/data/callTemplates.ts); the call then takes the form's evaluation
+// criteria too.
 
 import type { CallDate, CallSourceStatus, FundingCall, FundTheme, Sector } from "../../types";
 import { convert, eurSekRate, type EurSekRates } from "../core/currency";
 import { parseAmount } from "../core/values";
+import { findCallTemplate } from "../../data/callTemplates";
 
 const STATUS: Record<string, CallSourceStatus> = {
   öppen: "open",
@@ -133,6 +137,9 @@ export function callsFromList(records: Record<string, string>[], options: CallLi
           if (!tagId) throw new Error(`Rad ${row}: okänd tagg "${label}"`);
           return tagId;
         });
+      const templateId = (r["Ansökningsmall"] ?? "").trim();
+      const template = findCallTemplate(templateId);
+      if (templateId && !template) throw new Error(`Rad ${row}: okänd ansökningsmall "${templateId}"`);
       const consortium = /konsorti|minst tre|tre (?:partner|organisationer)/i.test(who);
       const deadlineDate = lastDayOf(closes);
 
@@ -165,8 +172,9 @@ export function callsFromList(records: Record<string, string>[], options: CallLi
         tags: handTags.length > 0 ? handTags : suggestTags(`${name} ${description}`),
         ...(themesFromTema(tema) ? { themes: themesFromTema(tema) } : {}),
         ...(sector ? { sectors: [sector] } : {}),
-        evaluationCriteria: [],
+        evaluationCriteria: template?.evaluationCriteria ? [...template.evaluationCriteria] : [],
         documents: [],
+        ...(template ? { applicationTemplateId: template.id } : {}),
         ...(r["Länk"]?.trim() ? { link: r["Länk"].trim() } : {}),
         ...(description ? { description_sv: description } : {}),
         ...(comment ? { comment_sv: comment } : {}),

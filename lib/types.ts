@@ -162,13 +162,86 @@ export interface EvaluationCriterion {
  * matching their own real instructions. Left undefined on most calls today:
  * populating it accurately requires the call's real application-form text,
  * which isn't available for every illustrative call in this dataset — see
- * the one seeded example (Horizon Europe) for what a real one looks like. */
+ * the one seeded example (Horizon Europe) for what a real one looks like.
+ * Calls from the call list point to a shared CallTemplate instead (see
+ * FundingCall.applicationTemplateId). */
 export interface ApplicationTemplateSection {
+  /** Stable key the draft text is saved under — never the label, which may
+   * be reworded when the funder updates the form. */
   key: string;
   label_sv: string;
   label_en: string;
+  /** The funder's own instructions for the section, one point per line. */
   instructions_sv: string;
   instructions_en: string;
+  /** The section's number in the funder's form, e.g. "1.1". */
+  number?: string;
+  /** The main heading the section sits under in the form ("1 Excellence"),
+   * when the form groups its sections. */
+  group?: { number: string; label_sv: string; label_en: string };
+  /** The evaluation criterion the section is assessed under. */
+  criterion_sv?: string;
+  criterion_en?: string;
+  /** The funder's indicative length in pages, for page-limited forms. */
+  indicativePages?: number;
+  /** The field's character limit, for web forms. */
+  maxChars?: number;
+  /** False for sections the form marks as optional. Undefined = required. */
+  required?: boolean;
+  /** Tables the form asks for in this section. */
+  tables?: TemplateTable[];
+}
+
+/** A table a funder's form asks for (e.g. Horizon Europe's 3.1a "List of
+ * work packages"): its columns, filled in row by row in the workspace. */
+export interface TemplateTable {
+  key: string;
+  title_sv: string;
+  title_en: string;
+  columns_sv: string[];
+  columns_en: string[];
+  note_sv?: string;
+  note_en?: string;
+}
+
+/** How a funder takes in the application: a Word document uploaded as PDF
+ * (e.g. Horizon Europe Part B) or a web form filled in field by field (e.g.
+ * ESF-rådet's Projektrummet+). Decides how the application is exported. */
+export type CallTemplateFormat = "docx" | "web-form";
+
+/** A funder's application form, shared by every call that uses it — the
+ * forms follow the programme and type of action, not the single call. A
+ * call points to one with applicationTemplateId (the call list's
+ * Ansökningsmall column). See lib/data/callTemplates.ts. */
+export interface CallTemplate {
+  id: string;
+  format: CallTemplateFormat;
+  /** The language the funder's form is in — the export uses its headings.
+   * Undefined = the language the user works in. */
+  language?: Lang;
+  title_sv: string;
+  title_en: string;
+  /** The funder's version of the form, as it states it. */
+  version: string;
+  sourceUrl?: string;
+  /** Where the applicant fills in or uploads it, e.g. "Projektrummet+". */
+  submittedIn?: string;
+  /** Page limit for the whole document, for page-limited forms. */
+  pageLimit?: number;
+  /** A higher page limit that applies to some calls (e.g. lump-sum topics). */
+  pageLimitAlternative?: { pages: number; when_sv: string; when_en: string };
+  /** The form's formatting rules, shown with the page estimate. */
+  formatting_sv?: string;
+  formatting_en?: string;
+  /** Whether the form starts with a list of participants. */
+  participantsList?: boolean;
+  /** Something the user should know about the template itself. */
+  note_sv?: string;
+  note_en?: string;
+  /** The evaluation criteria the form's sections are assessed against —
+   * given to calls using the template that don't state their own. */
+  evaluationCriteria?: EvaluationCriterion[];
+  sections: ApplicationTemplateSection[];
 }
 
 /** Structured applicant-eligibility categories — the typed alternative to
@@ -282,6 +355,10 @@ export interface FundingCall {
    * ApplicationTemplateSection. Undefined = no call-specific structure on
    * file; the workspace falls back to the generic project-logic template. */
   applicationTemplate?: ApplicationTemplateSection[];
+  /** The shared funder form this call's applications follow (a
+   * CallTemplate id, from the call list's Ansökningsmall column). Ignored
+   * when applicationTemplate is set. Undefined = no form on file. */
+  applicationTemplateId?: string;
   /** This call's post-award reporting obligation, when known — see
    * ReportingRequirement (defined further down, alongside Grant).
    * Undefined = not on file yet. */
@@ -755,8 +832,11 @@ export interface ApplicationVersion {
   name: string;
   createdAt: string; // ISO
   /** Every section's fully resolved text at save time (project-logic row
-   * label -> text), not just the user's overrides. */
+   * key -> text), not just the user's overrides. */
   sectionDrafts: Record<string, string>;
+  /** The form's tables at save time (table key -> rows of cells). Absent on
+   * versions saved before applications had tables. */
+  tables?: Record<string, string[][]>;
   /** The application's own amounts at save time (see ApplicationBudget).
    * Absent on versions saved before applications had amounts of their own. */
   budget?: { eligibleBudgetSEK?: number; requestedGrantSEK?: number };

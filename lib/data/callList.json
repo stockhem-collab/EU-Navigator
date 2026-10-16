@@ -47,8 +47,25 @@
     "sectors": [
       "mobility"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-01",
     "description_sv": "Demonstration av energieffektiv stads- och förortstrafik ihop med delade mobilitetstjänster. 10 MEUR totalt, cirka 2 projekt.",
     "comment_sv": "Innovationsåtgärd: 100 % för offentliga ideella organisationer, 70 % för företag. Stänger om sex dagar – visa som exempel, inte som realistisk ansökan.",
@@ -101,8 +118,25 @@
     "sectors": [
       "energy"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-02",
     "description_sv": "Omställning till lågtemperaturlösningar för uppvärmning i flerbostadshus. 6 MEUR totalt, cirka 3 projekt.",
     "comment_sv": "Relevant för Uppsalahem om bolagen räknas in.",
@@ -155,8 +189,25 @@
     "sectors": [
       "climate"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-neb-b4p-ccri-03",
     "description_sv": "Cirkulär ekonomi i byggande, från enskilda byggnader till stadsnivå. 9,5 MEUR totalt, upp till 5 projekt.",
     "comment_sv": "Passar idén om cirkulärt byggande. Nästa liknande ämne är cirkulär logistik 2027.",
@@ -249,6 +300,7 @@
     ],
     "evaluationCriteria": [],
     "documents": [],
+    "applicationTemplateId": "esf-ansokan-om-stod",
     "link": "https://www.esf.se/utlysningar/utlysningsplan/",
     "description_sv": "Kompetensutveckling för anställda inom ramen för regionens prioriteringar, bland annat strategisk kompetensförsörjning utifrån arbetsgivares behov.",
     "comment_sv": "Preliminär enligt ESF-rådets utlysningsplan. Budget ej angiven.",
@@ -295,6 +347,7 @@
     ],
     "evaluationCriteria": [],
     "documents": [],
+    "applicationTemplateId": "esf-ansokan-om-stod",
     "link": "https://www.esf.se/utlysningar/utlysningsplan/",
     "description_sv": "Insatser för personer som står långt från arbetsmarknaden, bland annat stödstrukturer, aktörssamverkan och unga.",
     "comment_sv": "Passar idén Vägar till jobb för unga och nyanlända. Preliminär, budget ej angiven.",
@@ -347,8 +400,25 @@
     "sectors": [
       "energy"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Mikronät för bättre integration och effektivitet i städers energisystem. 7 MEUR totalt, cirka 3 projekt.",
     "comment_sv": "Datum enligt arbetsprogrammet 2026–2027.",
@@ -401,8 +471,25 @@
     "sectors": [
       "energy"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Vätgas i stadens energi- och transportsystem. 5 MEUR, 1 projekt.",
     "extractionSource": "call-list"
@@ -455,8 +542,25 @@
     "sectors": [
       "mobility"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Inkluderande och klimattåliga bytespunkter som flyttar resor till kollektivtrafik och delad mobilitet. 9 MEUR totalt, cirka 2 projekt.",
     "comment_sv": "Kan kopplas till spårvägen i mål och budget.",
@@ -509,8 +613,25 @@
     "sectors": [
       "climate"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Cirkulära logistiklösningar i städer, till exempel för byggmaterial och återbruk. 7,5 MEUR totalt, cirka 3 projekt.",
     "comment_sv": "Realistisk nästa chans för idén om cirkulärt byggande.",
@@ -616,8 +737,25 @@
     "sectors": [
       "climate"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Restaurering av ekosystem i staden, längs transportstråk och i bebyggd miljö. 10 MEUR totalt, upp till 4 projekt.",
     "comment_sv": "Passar idén om klimatanpassning mot skyfall och värmebölja.",
@@ -671,8 +809,25 @@
     "sectors": [
       "climate"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Behandling och återvinning av avloppsvatten i städer och regioner. 9,5 MEUR totalt, cirka 3 projekt.",
     "comment_sv": "Relevant för Uppsala Vatten och Avfall om bolagen räknas in.",
@@ -725,8 +880,25 @@
     "sectors": [
       "climate"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Demonstration av transformativa lösningar för klimatresiliens över nationsgränser. Upp till 5 projekt.",
     "comment_sv": "Stora projekt; kommunen passar som demonstrationsort i ett konsortium.",
@@ -779,8 +951,25 @@
     "sectors": [
       "climate"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Forskning och tillämpning av AI för klimatanpassning i regioner och kommuner. 3 MEUR totalt, upp till 4 projekt.",
     "extractionSource": "call-list"
@@ -832,8 +1021,25 @@
     "sectors": [
       "health"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Verktyg och teknik som skyddar hälsan vid klimatförändringar, till exempel värmeböljor. Upp till 4 projekt.",
     "comment_sv": "Kan stödja idén om klimatanpassning med fokus på äldre.",
@@ -855,7 +1061,7 @@
       "preliminary": true
     },
     "deadlineDate": "2027-09-30",
-    "deadlineMonthsFromNow": 12,
+    "deadlineMonthsFromNow": 11,
     "budgetTotalSEK": 0,
     "minGrantSEK": 0,
     "maxGrantSEK": 0,
@@ -902,7 +1108,7 @@
       "preliminary": true
     },
     "deadlineDate": "2027-09-30",
-    "deadlineMonthsFromNow": 12,
+    "deadlineMonthsFromNow": 11,
     "budgetTotalSEK": 0,
     "minGrantSEK": 0,
     "maxGrantSEK": 0,
@@ -948,7 +1154,7 @@
       "preliminary": true
     },
     "deadlineDate": "2027-09-30",
-    "deadlineMonthsFromNow": 12,
+    "deadlineMonthsFromNow": 11,
     "budgetTotalSEK": 0,
     "minGrantSEK": 0,
     "maxGrantSEK": 0,
@@ -992,7 +1198,7 @@
       "preliminary": true
     },
     "deadlineDate": "2027-09-30",
-    "deadlineMonthsFromNow": 12,
+    "deadlineMonthsFromNow": 11,
     "budgetTotalSEK": 0,
     "minGrantSEK": 0,
     "maxGrantSEK": 0,

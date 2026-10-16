@@ -24,7 +24,7 @@ import { computeReadiness } from "@/lib/matching/readiness";
 import ConfirmButton from "@/components/ConfirmButton";
 import { readApplicationBudget, readApplicationSections } from "@/lib/hooks/useApplication";
 import { extractCommitments } from "@/lib/matching/reportingSchedule";
-import { generateProjectLogic } from "@/lib/matching/generateWorkspace";
+import { generateProjectLogic, sectionDraftFor } from "@/lib/matching/generateWorkspace";
 import CommitmentsEditor, { completeCommitments } from "@/components/grants/CommitmentsEditor";
 import { resolveApplicationBudget } from "@/lib/matching/applicationBudget";
 import LinkedReportingBadge from "@/components/LinkedReportingBadge";
@@ -208,7 +208,7 @@ export default function ProjectBankDetailPage() {
     if (!call || !program) return extractCommitments(project.description);
     const sections = readApplicationSections(record.id);
     const logic = generateProjectLogic(project, call, program);
-    return extractCommitments([project.description, ...logic.map((row) => sections[row.label_sv] ?? row.content_sv)].join("\n"));
+    return extractCommitments([project.description, ...logic.map((row) => sectionDraftFor(sections, row) ?? row.content_sv)].join("\n"));
   };
 
   const handleCreateAwarded = (record: ApplicationRecord, awardedAmountSEK: number | undefined, commitments: Commitment[]) => {
