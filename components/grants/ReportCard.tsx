@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { expectedShareAt, isDeviation } from "@/lib/data/grants";
@@ -15,6 +15,12 @@ import { downloadBlob } from "@/lib/export/exportApplication";
 import { fmtSEK } from "@/lib/format";
 import { DemoUser, Grant, ReportingEvent, ReportingEventStatus } from "@/lib/types";
 import ConfirmButton from "@/components/ConfirmButton";
+import TemplateTableEditor from "@/components/demo/TemplateTableEditor";
+import CostCategoryEditor from "@/components/demo/CostCategoryEditor";
+import { useCallTemplates } from "@/lib/hooks/useCallTemplates";
+import { readApplicationSections, readApplicationTables } from "@/lib/hooks/useApplication";
+import { costAmounts, costTotal } from "@/lib/data/costCategories";
+import { ReportSection } from "@/lib/data/reportSections";
 
 export interface ReportCardApi {
   draft: ReportDraft;
@@ -25,7 +31,12 @@ export interface ReportCardApi {
     outcomes: Record<string, number>,
     note: string,
     spentThisPeriodSEK: number | undefined,
-    content: { sections: Record<string, string>; deviations: Record<string, string> }
+    content: {
+      sections: Record<string, string>;
+      deviations: Record<string, string>;
+      tables?: Record<string, string[][]>;
+      costs?: Record<string, number>;
+    }
   ) => void;
   onSetStatus: (status: ReportingEventStatus) => void;
   contentFor: () => ReportContent;
@@ -84,7 +95,22 @@ export default function ReportCard({
   const fmt = (v: number) => v.toLocaleString(lang === "sv" ? "sv-SE" : "en-US");
   const { draft, updateDraft } = api;
   const share = expectedShareAt(grant, event.id);
-  const sections = reportSectionsFor(event.type);
+  const templates = useCallTemplates();
+  // The call's report form, when it has one: its sections, tables and cost
+  // categories, and the application it follows up.
+  const reportForm = templates.reportTemplateFor(call);
+  const sections = reportSectionsFor(event.type, reportForm);
+  const categories = reportForm?.costCategories;
+  const eurRate = reportForm?.currency === "EUR" ? call?.originalGrantRange?.rate : undefined;
+  const applicationForm = call ? templates.applicationTemplateFor(call) : undefined;
+  const [application, setApplication] = useState<{ sections: Record<string, string>; tables: Record<string, string[][]> }>({
+    sections: {},
+    tables: {},
+  });
+  useEffect(() => {
+    if (!grant.applicationId) return;
+    setApplication({ sections: readApplicationSections(grant.applicationId), tables: readApplicationTables(grant.applicationId) });
+  }, [grant.applicationId]);
   const documents = requiredDocuments(grant, event, lang);
   const otherKey = reportAttachmentKey(grant.id, event.id);
 
@@ -105,7 +131,16 @@ export default function ReportCard({
   // Figures: as typed in the draft, else what the report already holds.
   const outcomeValue = (indicator: string) =>
     draft.outcomes[indicator] ?? (event.outcomes.find((o) => o.indicator_sv === indicator)?.value.toString() ?? "");
-  const spentValue = draft.spentThisPeriod || (event.financials ? String(event.financials.spentThisPeriodSEK) : "");
+  // With cost categories the spend is their total.
+  const costValues: Record<string, string> =
+    Object.keys(draft.costs).length > 0
+      ? draft.costs
+      : Object.fromEntries(Object.entries(event.financials?.byCategory ?? {}).map(([k, v]) => [k, String(v)]));
+  const costs = categories ? costAmounts(categories, costValues) : undefined;
+  const spentValue = costs
+    ? String(costTotal(costs))
+    : draft.spentThisPeriod || (event.financials ? String(event.financials.spentThisPeriodSEK) : "");
+  const tableRows = (key: string) => draft.tables[key] ?? [];
   const sectionValue = (key: string) =>
     draft.sections[key] ?? (key === "summary" ? (lang === "sv" ? event.note_sv : event.note_en) ?? "" : "");
 
@@ -115,7 +150,7 @@ export default function ReportCard({
   });
 
   const handleExport = async () => {
-    const blob = await buildReportDocx(grant, event, call, program, api.contentFor(), lang);
+    const blob = await buildReportDocx(grant, event, call, program, api.contentFor(), lang, reportForm);
     downloadBlob(blob, `rapport-${grant.id}-${event.id}.docx`);
   };
 
@@ -134,10 +169,18 @@ export default function ReportCard({
     setConfirmMissing(false);
     const outcomes = Object.fromEntries(grant.commitments.map((c) => [c.indicator_sv, Number(outcomeValue(c.indicator_sv)) || 0]));
     const resolvedSections = Object.fromEntries(sections.map((s) => [s.key, sectionValue(s.key)]));
-    api.onSubmit(outcomes, resolvedSections.summary ?? "", spentValue.trim() ? Number(spentValue) : undefined, {
-      sections: resolvedSections,
-      deviations: draft.deviations,
-    });
+    const hasCosts = costs && Object.values(costs).some((v) => v > 0);
+    api.onSubmit(
+      outcomes,
+      resolvedSections.summary ?? resolvedSections[sections[0]?.key] ?? "",
+      hasCosts ? Number(spentValue) : !costs && spentValue.trim() ? Number(spentValue) : undefined,
+      {
+        sections: resolvedSections,
+        deviations: draft.deviations,
+        ...(Object.keys(draft.tables).length > 0 ? { tables: draft.tables } : {}),
+        ...(hasCosts ? { costs } : {}),
+      }
+    );
     setJustSubmitted(true);
   };
 
@@ -180,7 +223,7 @@ export default function ReportCard({
             {statusLabel(event.status)}
           </span>
           <button type="button" onClick={handleExport} className="text-xs font-semibold text-navy-600 hover:text-navy-900">
-            {ap.exportReportButton}
+            {reportForm ? t.tpl.exportReportForm : ap.exportReportButton}
           </button>
         </div>
       </div>
@@ -340,39 +383,76 @@ export default function ReportCard({
             </div>
           )}
 
-          <div className="flex items-center gap-3">
-            <label htmlFor={`spent-${event.id}`} className="flex-1 text-sm text-navy-700">
-              {ap.reportFormFinancialLabel}
-            </label>
-            <input
-              id={`spent-${event.id}`}
-              type="number"
-              value={spentValue}
-              onChange={(e) => updateDraft({ spentThisPeriod: e.target.value })}
-              placeholder="0"
-              className="w-32 rounded-md border border-navy-200 px-2 py-1.5 text-right text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-            />
-          </div>
+          {categories ? (
+            <div>
+              <p className="text-sm font-semibold text-navy-800">{t.tpl.costsTitle}</p>
+              <p className="mb-2 text-xs text-navy-400">{t.tpl.costsHint(reportForm?.submittedIn ?? "")}</p>
+              <CostCategoryEditor
+                idPrefix={`cost-${event.id}`}
+                categories={categories}
+                values={costValues}
+                onChange={(key, value) => updateDraft({ costs: { ...costValues, [key]: value } })}
+                eurRate={eurRate}
+                testId="report-costs"
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <label htmlFor={`spent-${event.id}`} className="flex-1 text-sm text-navy-700">
+                {ap.reportFormFinancialLabel}
+              </label>
+              <input
+                id={`spent-${event.id}`}
+                type="number"
+                value={spentValue}
+                onChange={(e) => updateDraft({ spentThisPeriod: e.target.value })}
+                placeholder="0"
+                className="w-32 rounded-md border border-navy-200 px-2 py-1.5 text-right text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+              />
+            </div>
+          )}
 
           {/* The report's text, section by section. */}
           <div>
             <p className="text-sm font-semibold text-navy-800">{ap.sectionsTitle}</p>
+            {reportForm && (
+              <p className="mt-0.5 text-xs text-navy-500" data-testid="report-form">
+                {t.tpl.reportFormLabel}: {lang === "sv" ? reportForm.title_sv : reportForm.title_en}
+                {reportForm.version && ` · ${t.tpl.version(reportForm.version)}`}
+                {reportForm.sourceUrl && (
+                  <>
+                    {" · "}
+                    <a href={reportForm.sourceUrl} target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+                      {t.tpl.sourceLink}
+                    </a>
+                  </>
+                )}
+              </p>
+            )}
+            {reportForm && (lang === "sv" ? reportForm.note_sv : reportForm.note_en) && (
+              <p className="mt-1 text-xs text-navy-500">{lang === "sv" ? reportForm.note_sv : reportForm.note_en}</p>
+            )}
             <p className="text-xs text-navy-400">{ap.reportDraftSaved}</p>
             <div className="mt-2 space-y-3">
-              {sections.map((s) => (
-                <div key={s.key}>
-                  <label htmlFor={`section-${event.id}-${s.key}`} className="block text-sm font-semibold text-navy-700">
-                    {lang === "sv" ? s.label_sv : s.label_en}
-                  </label>
-                  <p className="text-xs text-navy-400">{lang === "sv" ? s.hint_sv : s.hint_en}</p>
-                  <textarea
-                    id={`section-${event.id}-${s.key}`}
-                    rows={3}
-                    value={sectionValue(s.key)}
-                    onChange={(e) => updateDraft({ sections: { ...draft.sections, [s.key]: e.target.value } })}
-                    className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-                  />
-                </div>
+              {sections.map((s, i) => (
+                <ReportSectionField
+                  key={s.key}
+                  section={s}
+                  groupStarts={Boolean(s.group) && sections[i - 1]?.group?.number !== s.group?.number}
+                  inputId={`section-${event.id}-${s.key}`}
+                  value={sectionValue(s.key)}
+                  onChange={(value) => updateDraft({ sections: { ...draft.sections, [s.key]: value } })}
+                  applicationText={(s.fromApplication ?? []).map((key) => {
+                    const appSection = applicationForm?.sections.find((x) => x.key === key);
+                    const heading = appSection
+                      ? `${appSection.number ? `${appSection.number} ` : ""}${lang === "sv" ? appSection.label_sv : appSection.label_en}`
+                      : key;
+                    return { heading, text: application.sections[key] ?? "" };
+                  })}
+                  tableRows={tableRows}
+                  onTableChange={(key, rows) => updateDraft({ tables: { ...draft.tables, [key]: rows } })}
+                  applicationTables={application.tables}
+                />
               ))}
             </div>
           </div>
@@ -446,7 +526,7 @@ export default function ReportCard({
           {event.financials && (
             <p className="text-sm text-navy-600">{ap.reportFinancialLine(fmtSEK(event.financials.spentThisPeriodSEK, lang))}</p>
           )}
-          <SubmittedText event={event} history={fullHistory} />
+          <SubmittedText event={event} history={fullHistory} sections={sections} />
 
           {/* The funder's response, as actions — each one dated below. */}
           {(event.status === "submitted" || event.status === "approved") && (
@@ -532,16 +612,19 @@ export default function ReportCard({
 
 // What a submitted report says — its text sections, or the seed data's
 // single comment for reports from before reports had sections.
-function SubmittedText({ event, history }: { event: ReportingEvent; history: ReportingSubmission[] }) {
+function SubmittedText({ event, history, sections: all }: { event: ReportingEvent; history: ReportingSubmission[]; sections: ReportSection[] }) {
   const { t, lang } = useLanguage();
   const latest = history[history.length - 1];
-  const sections = reportSectionsFor(event.type).filter((s) => latest?.sections?.[s.key]?.trim());
+  const sections = all.filter((s) => latest?.sections?.[s.key]?.trim());
   if (sections.length > 0) {
     return (
       <div className="space-y-2 border-t border-navy-50 pt-3">
         {sections.map((s) => (
           <div key={s.key}>
-            <p className="text-xs font-semibold uppercase text-navy-400">{lang === "sv" ? s.label_sv : s.label_en}</p>
+            <p className="text-xs font-semibold uppercase text-navy-400">
+              {s.number ? `${s.number} ` : ""}
+              {lang === "sv" ? s.label_sv : s.label_en}
+            </p>
             <p className="whitespace-pre-line text-sm text-navy-700">{latest!.sections![s.key]}</p>
           </div>
         ))}
@@ -601,6 +684,109 @@ function OtherAttachments({ attachmentKey, onError }: { attachmentKey: string; o
           }}
         />
       </label>
+    </div>
+  );
+}
+
+// One section of a report: its text, the funder's instructions, what the
+// application said for it, and the form's tables.
+function ReportSectionField({
+  section: s,
+  groupStarts,
+  inputId,
+  value,
+  onChange,
+  applicationText,
+  tableRows,
+  onTableChange,
+  applicationTables,
+}: {
+  section: ReportSection;
+  groupStarts: boolean;
+  inputId: string;
+  value: string;
+  onChange: (value: string) => void;
+  applicationText: { heading: string; text: string }[];
+  tableRows: (key: string) => string[][];
+  onTableChange: (key: string, rows: string[][]) => void;
+  applicationTables: Record<string, string[][]>;
+}) {
+  const { t, lang } = useLanguage();
+  const tp = t.tpl;
+  const hint = lang === "sv" ? s.hint_sv : s.hint_en;
+  const written = applicationText.filter((a) => a.text.trim());
+  return (
+    <div data-testid={`report-section-${s.key}`}>
+      {groupStarts && s.group && (
+        <p className="mb-1 mt-2 text-sm font-bold text-navy-800">
+          {s.group.number} {lang === "sv" ? s.group.label_sv : s.group.label_en}
+        </p>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <label htmlFor={inputId} className="block text-sm font-semibold text-navy-700">
+          {s.number ? `${s.number} ` : ""}
+          {lang === "sv" ? s.label_sv : s.label_en}
+        </label>
+        {s.required === false && <span className="badge bg-navy-50 text-navy-500">{tp.optional}</span>}
+      </div>
+      <p className="whitespace-pre-line text-xs text-navy-400">{hint}</p>
+      {applicationText.length > 0 && (
+        <details className="mt-1 rounded-md bg-navy-50 px-3 py-2 text-xs" data-testid={`from-application-${s.key}`}>
+          <summary className="cursor-pointer font-semibold text-navy-600">{tp.fromApplicationToggle}</summary>
+          {written.length === 0 ? (
+            <p className="mt-1 text-navy-500">{tp.fromApplicationEmpty}</p>
+          ) : (
+            <>
+              {written.map((a) => (
+                <div key={a.heading} className="mt-2">
+                  <p className="font-semibold text-navy-600">{a.heading}</p>
+                  <p className="whitespace-pre-line text-navy-700">{a.text}</p>
+                </div>
+              ))}
+              {!value.trim() && (
+                <button
+                  type="button"
+                  onClick={() => onChange(written.map((a) => a.text.trim()).join("\n\n"))}
+                  className="mt-2 font-semibold text-navy-700 underline hover:text-navy-900"
+                >
+                  {tp.useFromApplication}
+                </button>
+              )}
+            </>
+          )}
+        </details>
+      )}
+      <textarea
+        id={inputId}
+        rows={3}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1 w-full rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+      />
+      {(s.tables ?? []).map((table) => {
+        const rows = tableRows(table.key);
+        const source = table.fromApplicationTable;
+        const sourceRows = source ? (applicationTables[source.key] ?? []).filter((r) => r.some((c) => c.trim())) : [];
+        return (
+          <div key={table.key}>
+            <TemplateTableEditor table={table} rows={rows} onChange={(next) => onTableChange(table.key, next)} />
+            {source && rows.length === 0 && sourceRows.length > 0 && (
+              <button
+                type="button"
+                onClick={() =>
+                  onTableChange(
+                    table.key,
+                    sourceRows.map((r) => table.columns_sv.map((_, i) => (i < source.columns.length ? r[source.columns[i]] ?? "" : "")))
+                  )
+                }
+                className="mt-1 text-xs font-semibold text-navy-600 hover:text-navy-900"
+              >
+                {tp.fillTableFromApplication}
+              </button>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

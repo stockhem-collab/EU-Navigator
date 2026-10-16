@@ -12,7 +12,10 @@ import {
   ProjectLogicRow,
   sectionDraftFor,
 } from "@/lib/matching/generateWorkspace";
-import { applicationTemplateFor } from "@/lib/data/callTemplates";
+import { customTemplateFileKey, useCallTemplates } from "@/lib/hooks/useCallTemplates";
+import CostCategoryEditor from "@/components/demo/CostCategoryEditor";
+import { costAmounts, costTotal } from "@/lib/data/costCategories";
+import { buildBudgetXlsx } from "@/lib/export/exportBudget";
 import {
   TemplateExportInput,
   buildTemplateDocx,
@@ -93,14 +96,20 @@ export default function ApplicationWorkspace({
   const [tab, setTab] = useState<Tab>("application");
 
   const tp = t.tpl;
-  const logic = generateProjectLogic(project, match.call, match.program);
+  const templates = useCallTemplates();
+  const logic = generateProjectLogic(project, match.call, match.program, templates.registry);
   // The funder's shared form, when the call uses one (not the seed calls'
   // own inline sections, which keep the simpler export).
-  const callTemplate = applicationTemplateFor(match.call);
+  const callTemplate = templates.applicationTemplateFor(match.call);
   const sharedTemplate = callTemplate && !callTemplate.id.startsWith("call:") ? callTemplate : undefined;
   const funderFileKey = `funder-template:${match.call.id}`;
   const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
-  const funderFile = sharedTemplate?.format === "docx" ? attachmentsFor(funderFileKey).at(-1) : undefined;
+  // The user's upload for this call, else — for a form added in Datacenter —
+  // the funder's file it was added from.
+  const funderFile =
+    sharedTemplate?.format === "docx"
+      ? attachmentsFor(funderFileKey).at(-1) ?? (sharedTemplate.custom ? attachmentsFor(customTemplateFileKey(sharedTemplate.id)).at(-1) : undefined)
+      : undefined;
   const [exportNotice, setExportNotice] = useState<{ ok: boolean; lines: string[] } | null>(null);
 
   // Editable draft of the AI-generated project logic. Persisted per (project,
@@ -117,6 +126,8 @@ export default function ApplicationWorkspace({
     deleteVersion,
     budget,
     setBudget,
+    costs,
+    setCost,
     isPersisted,
     applicationId,
     record,
@@ -295,6 +306,30 @@ export default function ApplicationWorkspace({
 
   const handleExport = () => exportApplication(resolvedSections(), tables, budgetFigures);
 
+  // The budget per the form's cost categories, and as an Excel workbook.
+  const budgetEurRate = sharedTemplate?.currency === "EUR" ? match.call.originalGrantRange?.rate : undefined;
+  const categoryTotal = sharedTemplate?.costCategories ? costTotal(costAmounts(sharedTemplate.costCategories, costs)) : 0;
+  const handleExportBudget = async () => {
+    if (!sharedTemplate) return;
+    const bytes = await buildBudgetXlsx({
+      template: sharedTemplate,
+      projectTitle: project.title,
+      organisationName: project.municipality,
+      callTitle: lang === "sv" ? match.call.title_sv : match.call.title_en,
+      costs,
+      eurRate: budgetEurRate,
+      eligibleBudgetSEK: budgetFigures.eligibleBudgetSEK,
+      tables,
+      startYear: project.startYear,
+      endYear: project.endYear,
+      lang,
+    });
+    downloadBlob(
+      new Blob([new Uint8Array(bytes)], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
+      `budget-${match.call.id}.xlsx`
+    );
+  };
+
   // The whole application's estimated length in the funder's layout.
   const estimatedPages = logic.reduce((sum, row) => {
     const rows = (row.section?.tables ?? []).reduce((n, tb) => n + filledRows(tables[tb.key]).length, 0);
@@ -310,7 +345,7 @@ export default function ApplicationWorkspace({
   const handleSaveAsNewProject = () => {
     const entry = projectInputToProjectBankEntry(project, readiness);
     addImported([entry]);
-    seedApplicationDraft(entry.id, match.call.id, resolvedSections(), budget, tables);
+    seedApplicationDraft(entry.id, match.call.id, resolvedSections(), budget, tables, costs);
     onSavedAsProject?.(entry.id);
   };
 
@@ -318,7 +353,8 @@ export default function ApplicationWorkspace({
   // state (see useApplication) — leaving without a warning would silently
   // discard everything typed so far.
   const hasUnsavedDraft =
-    !isPersisted && (Object.keys(sectionDrafts).length > 0 || Object.keys(tables).length > 0 || hasApplicationBudget(budget));
+    !isPersisted &&
+    (Object.keys(sectionDrafts).length > 0 || Object.keys(tables).length > 0 || Object.keys(costs).length > 0 || hasApplicationBudget(budget));
 
   const handleSaveVersion = (name: string) => {
     if (!name.trim()) return;
@@ -693,6 +729,30 @@ export default function ApplicationWorkspace({
                       onChange={(value) => setBudget({ requestedGrantSEK: value })}
                     />
                   </div>
+                  {sharedTemplate?.costCategories && (
+                    <div className="mt-6 border-t border-navy-100 pt-5" data-testid="budget-categories">
+                      <h3 className="font-semibold text-navy-800">{tp.budgetTitle}</h3>
+                      <p className="mt-1 text-xs text-navy-500">{tp.budgetHint}</p>
+                      <div className="mt-3">
+                        <CostCategoryEditor
+                          idPrefix="budget"
+                          categories={sharedTemplate.costCategories}
+                          values={costs}
+                          onChange={setCost}
+                          eurRate={budgetEurRate}
+                          testId="budget-costs"
+                        />
+                      </div>
+                      {categoryTotal > 0 && Math.abs(categoryTotal - budgetFigures.eligibleBudgetSEK) >= 1 && (
+                        <p className="mt-2 text-xs text-amber-700" role="status" data-testid="budget-differs">
+                          {tp.budgetDiffers(fmtSEK(budgetFigures.eligibleBudgetSEK, lang))}
+                        </p>
+                      )}
+                      <button type="button" onClick={handleExportBudget} className="btn-secondary mt-3 text-sm" data-testid="export-budget">
+                        {tp.exportBudget}
+                      </button>
+                    </div>
+                  )}
                   {budgetIssues.length > 0 && (
                     <div className="mt-5 rounded-md border border-amber-200 bg-amber-50 p-3" role="status" data-testid="budget-issues">
                       <p className="text-xs font-semibold uppercase text-amber-800">{ws.budgetIssuesTitle}</p>

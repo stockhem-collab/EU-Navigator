@@ -1,17 +1,24 @@
-import { ReportingEventType } from "@/lib/types";
+import { CallTemplate, ReportingEventType, TemplateTable } from "@/lib/types";
 
-// The text sections a report is written in — the structure EU programmes'
-// progress and final reports broadly share (summary, activities, results,
-// deviations, horizontal principles, and what comes next). Calls in this
-// demo don't carry a report template of their own, so this standard one is
-// used for all; a call-specific template would replace it the same way an
-// application template does.
+// The text sections a report is written in. A call with a report form
+// (CallTemplate of kind "report", see lib/data/reportTemplates.ts) uses the
+// form's sections; every other call uses the standard ones below — the
+// structure EU programmes' progress and final reports broadly share
+// (summary, activities, results, deviations, horizontal principles, and
+// what comes next).
 export interface ReportSection {
   key: string;
   label_sv: string;
   label_en: string;
   hint_sv: string;
   hint_en: string;
+  /** From a report form: its number, main heading, whether it's optional,
+   * its tables and the application sections it follows up. */
+  number?: string;
+  group?: { number: string; label_sv: string; label_en: string };
+  required?: boolean;
+  tables?: TemplateTable[];
+  fromApplication?: string[];
 }
 
 const SUMMARY: ReportSection = {
@@ -64,7 +71,26 @@ const SUSTAINABILITY: ReportSection = {
   hint_en: "How the results are taken care of and maintained after the project.",
 };
 
-export function reportSectionsFor(type: ReportingEventType): ReportSection[] {
+/** The sections of one report: the call's report form's when it has one
+ * (the sections for this kind of report), else the standard ones. A
+ * sustainability follow-up always uses the standard sections. */
+export function reportSectionsFor(type: ReportingEventType, template?: CallTemplate): ReportSection[] {
+  if (template && type !== "sustainability") {
+    return template.sections
+      .filter((s) => !s.reportTypes || s.reportTypes.includes(type))
+      .map((s) => ({
+        key: s.key,
+        label_sv: s.label_sv,
+        label_en: s.label_en,
+        hint_sv: s.instructions_sv,
+        hint_en: s.instructions_en,
+        number: s.number,
+        group: s.group,
+        required: s.required,
+        tables: s.tables,
+        fromApplication: s.fromApplication,
+      }));
+  }
   if (type === "final") return [SUMMARY, ACTIVITIES, RESULTS, DEVIATIONS, HORIZONTAL, SUSTAINABILITY];
   if (type === "sustainability") return [SUMMARY, RESULTS, SUSTAINABILITY];
   return [SUMMARY, ACTIVITIES, RESULTS, DEVIATIONS, HORIZONTAL, NEXT_PERIOD];

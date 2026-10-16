@@ -47,6 +47,10 @@ export interface ReportingSubmission {
   sections?: Record<string, string>;
   /** Explanations for indicators behind plan (indicator_sv -> text). */
   deviations?: Record<string, string>;
+  /** The report form's tables (TemplateTable.key -> rows). */
+  tables?: Record<string, string[][]>;
+  /** The period's costs per cost category (CostCategory.key -> SEK). */
+  costs?: Record<string, number>;
 }
 
 export interface StatusChange {
@@ -65,6 +69,11 @@ export interface ReportDraft {
   /** The figures as typed so far (indicator_sv -> value), and the spend. */
   outcomes: Record<string, string>;
   spentThisPeriod: string;
+  /** The report form's tables as typed (TemplateTable.key -> rows). */
+  tables: Record<string, string[][]>;
+  /** The period's costs per cost category as typed (CostCategory.key ->
+   * amount in SEK), for a report form with cost categories. */
+  costs: Record<string, string>;
   updatedAt: string;
 }
 
@@ -74,6 +83,8 @@ export const EMPTY_REPORT_DRAFT: ReportDraft = {
   checklist: {},
   outcomes: {},
   spentThisPeriod: "",
+  tables: {},
+  costs: {},
   updatedAt: "",
 };
 
@@ -109,6 +120,16 @@ function writeJson(key: string, value: unknown) {
   notifyDataChanged();
 }
 
+function sanitizeTables(value: unknown): Record<string, string[][]> {
+  if (!value || typeof value !== "object") return {};
+  const out: Record<string, string[][]> = {};
+  for (const [key, rows] of Object.entries(value as Record<string, unknown>)) {
+    if (!Array.isArray(rows)) continue;
+    out[key] = rows.filter(Array.isArray).map((row) => (row as unknown[]).map((cell) => (typeof cell === "string" ? cell : "")));
+  }
+  return out;
+}
+
 function sanitizeDraft(value: unknown): ReportDraft {
   const v = (value && typeof value === "object" ? value : {}) as Partial<ReportDraft>;
   const record = (x: unknown) => (x && typeof x === "object" ? (x as Record<string, never>) : {});
@@ -119,6 +140,8 @@ function sanitizeDraft(value: unknown): ReportDraft {
     ownerId: typeof v.ownerId === "string" && v.ownerId ? v.ownerId : undefined,
     outcomes: record(v.outcomes),
     spentThisPeriod: typeof v.spentThisPeriod === "string" ? v.spentThisPeriod : "",
+    tables: sanitizeTables(v.tables),
+    costs: record(v.costs),
     updatedAt: typeof v.updatedAt === "string" ? v.updatedAt : "",
   };
 }
@@ -252,7 +275,12 @@ export function useReportingSubmissions() {
       outcomes: Record<string, number>,
       note: string,
       spentThisPeriodSEK?: number,
-      content?: { sections?: Record<string, string>; deviations?: Record<string, string> }
+      content?: {
+        sections?: Record<string, string>;
+        deviations?: Record<string, string>;
+        tables?: Record<string, string[][]>;
+        costs?: Record<string, number>;
+      }
     ) => {
       const key = storageKey(projectId, eventId);
       const stored = read();
@@ -348,7 +376,10 @@ export function useReportingSubmissions() {
               note_en: history[history.length - 1].note,
               financials:
                 history[history.length - 1].spentThisPeriodSEK !== undefined
-                  ? { spentThisPeriodSEK: history[history.length - 1].spentThisPeriodSEK! }
+                  ? {
+                      spentThisPeriodSEK: history[history.length - 1].spentThisPeriodSEK!,
+                      ...(history[history.length - 1].costs ? { byCategory: history[history.length - 1].costs } : {}),
+                    }
                   : undefined,
             };
         return withCurrentDeadline(statusOverride ? { ...withHistory, status: statusOverride } : withHistory);

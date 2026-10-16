@@ -97,7 +97,20 @@ Old addresses (`/demo`, `/projektbank`, `/bevakning`, grants under
   kept in `public/mallar/` (the portal's .rtf saved as .docx), and the user
   can upload another version — a Word document laid out as the template
   when there is no file, or a field-by-field document to paste into a web
-  form. A call using a form also takes its evaluation criteria.
+  form. A call using a form also takes its evaluation criteria. The
+  **Rapportmall** column names the report form a grant's reports follow
+  (`lib/data/reportTemplates.ts`: Horizon Europe's periodic report Part B,
+  ESF+'s reports in Projektrummet+): its numbered sections with what the
+  application promised beside them, its tables (work packages taken from
+  the application) and the costs per the funder's cost categories
+  (`lib/data/costCategories.ts`, flat rates calculated), exported the same
+  way. The application states its budget per the same categories and
+  exports it as an Excel workbook with formulas (`lib/export/exportBudget.ts`).
+  **Datacenter › Mallar** (`/datacenter/mallar`) adds a form from the
+  funder's Word template — headings, instructions, tables and page limits
+  read as a proposal (`lib/export/templateOutline.ts`), reviewed, saved in
+  the browser — and chooses per call which form its application and
+  reports follow.
 - **Beviljade referensprojekt / "Lär av vinnarna"** (`/referensprojekt`) —
   **real data**: an anonymised municipality's actual register of 74
   EU-funded projects 2014-2027 (fund, budget, EU share, role, theme), with aggregated
