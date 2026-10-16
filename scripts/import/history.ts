@@ -75,7 +75,13 @@ function listing(names: string[]): string {
 
 function rulesText(m: MunicipalityMatchConfig): string {
   const count = ["", "den enda", "de två", "de tre", "de fyra", "de fem", "de sex"][m.unitPics.length] ?? `de ${m.unitPics.length}`;
-  const pics = m.pic ? (m.unitPics.length > 0 ? `PIC (kommunen eller en av ${count} enheterna), ` : "PIC, ") : "";
+  const pics = m.pic
+    ? m.unitPics.length > 0
+      ? `PIC (kommunen eller en av ${count} enheterna), `
+      : "PIC, "
+    : m.unitPics.length > 0
+      ? `enheters PIC (${m.unitPics.map((u) => u.name).join(", ")}), `
+      : "";
   const own = m.excluded.filter((e) => !COMMON_EXCLUSIONS.includes(e)).map((e) => e.name);
   const common = "universitet, regioner, länsstyrelser, kommunalförbund och kyrkor";
   return [

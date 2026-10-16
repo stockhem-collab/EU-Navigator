@@ -41,9 +41,9 @@ export const uppsalaPreset: OrgPreset = {
 };
 
 // Lidingö stad (checked 2026-10-16): organisationsnummer and VAT number in
-// the EU VIES register (name "LIDINGÖ KOMMUN"). No PIC yet: none of the
-// sources ties one to the organisationsnummer; fill in from the Funding &
-// Tenders Portal's participant register when known.
+// the EU VIES register (name "LIDINGÖ KOMMUN"). Unit PICs from Andreas
+// (Funding & Tenders Portal, 2026-10-16). The city's own PIC is not known
+// yet; none of the sources ties one to the organisationsnummer.
 export const lidingoPreset: OrgPreset = {
   organisationName: "Lidingö stad",
   orgNumber: "212000-0191",
@@ -52,5 +52,9 @@ export const lidingoPreset: OrgPreset = {
   country: "Sverige",
   website: "https://www.lidingo.se",
   pic: "",
-  units: [],
+  units: [
+    { name: "Omsorgs- och socialförvaltningen", pic: "937902313" },
+    { name: "Källängens skola", pic: "943033710" },
+    { name: "Högsätra F-6", pic: "944116424" },
+  ],
 };
