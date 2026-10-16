@@ -27,6 +27,7 @@ export interface ImportedTexts {
   fieldPeriod: string;
   fieldTotal: string;
   fieldEu: string;
+  fieldNationalGrant: string;
   fieldPartners: string;
   fieldThemes: string;
   openInSource: string;
@@ -57,6 +58,7 @@ export interface ImportedTexts {
   historyTab: string;
   historyTitle: string;
   historyIntro: (name: string) => string;
+  historyNoProjects: (name: string) => string;
   historyRules: (sure: string, from: string) => string;
   historyNone: string;
   statProjects: string;
@@ -77,6 +79,12 @@ export interface ImportedTexts {
   peersTitle: string;
   peersIntro: string;
   colMunicipality: string;
+  vinnovaTitle: string;
+  vinnovaIntro: (name: string, count: number, total: string) => string;
+  vinnovaNone: (name: string) => string;
+  colCoordinator: string;
+  colGrant: string;
+  colVinnova: string;
   callStatus: { open: string; planned: string; upcoming: string; expected: string };
   opens: string;
   closes: string;
@@ -115,6 +123,7 @@ export const importedSv: ImportedTexts = {
   fieldPeriod: "Projektperiod",
   fieldTotal: "Total budget",
   fieldEu: "EU-bidrag",
+  fieldNationalGrant: "Bidrag från Vinnova",
   fieldPartners: "Organisationer",
   fieldThemes: "Tema",
   openInSource: "Visa i källan",
@@ -149,6 +158,8 @@ export const importedSv: ImportedTexts = {
   historyTab: "Er EU-historik",
   historyTitle: "Er EU-historik",
   historyIntro: (name) => `${name}s EU-finansierade projekt sedan 2014, hittade i Kohesio, Keep.eu, CORDIS och ESF-rådets projektbank.`,
+  historyNoProjects: (name) =>
+    `Källorna visar inga projekt sedan 2014 där ${name} är stödmottagare eller partner med sitt organisationsnummer, momsnummer eller PIC. Projekt där kommunen deltar under ett annat namn eller som partner i Kohesio syns inte här; jämförelsen nedan visar vad andra kommuner har fått.`,
   historyRules: (sure, from) => `Säkra träffar: ${sure}. Projekt som slutade före ${from} räknas inte.`,
   historyNone: "Ingen historik är importerad.",
   statProjects: "Projekt",
@@ -168,6 +179,13 @@ export const importedSv: ImportedTexts = {
   colReason: "Varför",
   peersTitle: "Jämfört med de största kommunerna",
   peersIntro: "Samma sökning för de tio största kommunerna. EU-bidraget är kommunens egen andel.",
+  vinnovaTitle: "Nationell innovationsfinansiering (Vinnova)",
+  vinnovaIntro: (name, count, total) =>
+    `${name} har varit koordinator i ${count} Vinnovaprojekt sedan 2014, med ${total} i beviljat bidrag. Vinnova anger inget organisationsnummer, så träffen bygger på att koordinatorns namn är exakt kommunens. Bidragen är nationella och ingår inte i EU-siffrorna ovan.`,
+  vinnovaNone: (name) => `${name} har inte varit koordinator i något Vinnovaprojekt sedan 2014 enligt Vinnovas öppna data.`,
+  colCoordinator: "Koordinator",
+  colGrant: "Beviljat bidrag",
+  colVinnova: "Vinnova (nationellt)",
   colMunicipality: "Kommun",
   callStatus: { open: "Öppen", planned: "Planerad", upcoming: "Kommande", expected: "Förväntad" },
   opens: "Öppnar",
@@ -207,6 +225,7 @@ export const importedEn: ImportedTexts = {
   fieldPeriod: "Project period",
   fieldTotal: "Total budget",
   fieldEu: "EU contribution",
+  fieldNationalGrant: "Vinnova grant",
   fieldPartners: "Organisations",
   fieldThemes: "Theme",
   openInSource: "View in source",
@@ -241,6 +260,8 @@ export const importedEn: ImportedTexts = {
   historyTab: "Your EU history",
   historyTitle: "Your EU history",
   historyIntro: (name) => `${name}'s EU-funded projects since 2014, found in Kohesio, Keep.eu, CORDIS and the ESF Council's project bank.`,
+  historyNoProjects: (name) =>
+    `The sources show no projects since 2014 where ${name} is beneficiary or partner under its organisation number, VAT number or PIC. Projects where the municipality takes part under another name, or as a partner in Kohesio, don't show here; the comparison below shows what other municipalities received.`,
   historyRules: (sure, from) => `Sure matches: ${sure}. Projects that ended before ${from} are not counted.`,
   historyNone: "No history has been imported.",
   statProjects: "Projects",
@@ -260,6 +281,13 @@ export const importedEn: ImportedTexts = {
   colReason: "Why",
   peersTitle: "Compared with the largest municipalities",
   peersIntro: "The same search for the ten largest municipalities. The EU contribution is the municipality's own share.",
+  vinnovaTitle: "National innovation funding (Vinnova)",
+  vinnovaIntro: (name, count, total) =>
+    `${name} has coordinated ${count} Vinnova ${count === 1 ? "project" : "projects"} since 2014, with ${total} in grants. Vinnova gives no organisation number, so a project is matched when the coordinator's name is exactly the municipality's. The grants are national and not part of the EU figures above.`,
+  vinnovaNone: (name) => `${name} has not coordinated any Vinnova project since 2014 according to Vinnova's open data.`,
+  colCoordinator: "Coordinator",
+  colGrant: "Grant",
+  colVinnova: "Vinnova (national)",
   colMunicipality: "Municipality",
   callStatus: { open: "Open", planned: "Planned", upcoming: "Upcoming", expected: "Expected" },
   opens: "Opens",

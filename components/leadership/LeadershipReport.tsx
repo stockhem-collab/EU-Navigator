@@ -84,6 +84,7 @@ export default function LeadershipReport({ view }: { view: LeadershipView | null
     [view]
   );
   const own = peers.find((p) => p.reference) ?? null;
+  const hasVinnova = peers.some((p) => p.vinnova);
   const others = peers.filter((p) => !p.reference);
   const ranked = peers.filter((p) => p.perCapitaSek !== null);
   const ownRank = own ? ranked.indexOf(own) + 1 : 0;
@@ -191,6 +192,7 @@ export default function LeadershipReport({ view }: { view: LeadershipView | null
                       <th className={thNum}>{lr.colPerCapita}</th>
                       <th className={thNum}>{lr.colPeriod1420}</th>
                       <th className={thNum}>{lr.colPeriod2127}</th>
+                      {hasVinnova && <th className={thNum}>{lr.colVinnova}</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -212,6 +214,18 @@ export default function LeadershipReport({ view }: { view: LeadershipView | null
                           {fmtSEK(p.byPeriod["2021-2027"].sek, lang)}
                           <span className="block text-xs font-normal text-navy-400">{lr.colProjects.toLowerCase()}: {p.byPeriod["2021-2027"].projects}</span>
                         </td>
+                        {hasVinnova && (
+                          <td className={tdNum}>
+                            {p.vinnova ? (
+                              <>
+                                {fmtSEK(p.vinnova.grantSek, lang)}
+                                <span className="block text-xs font-normal text-navy-400">{lr.colProjects.toLowerCase()}: {p.vinnova.projects}</span>
+                              </>
+                            ) : (
+                              "–"
+                            )}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

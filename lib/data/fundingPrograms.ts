@@ -299,6 +299,25 @@ export const fundingPrograms: FundingProgram[] = [
     management: "direct",
   },
   {
+    id: "cerv",
+    name: "Citizens, Equality, Rights and Values (CERV)",
+    name_sv: "Medborgare, jämlikhet, rättigheter och värden (CERV)",
+    shortName: "CERV",
+    logoLetter: "C",
+    description_sv:
+      "Stödjer arbete för grundläggande rättigheter, jämställdhet och medborgarnas deltagande. Området Daphne finansierar insatser mot våld mot kvinnor och barn och mot våld i nära relationer.",
+    description_en:
+      "Supports work for fundamental rights, equality and citizens' participation. The Daphne strand funds action against violence against women and children and domestic violence.",
+    sectors: ["social"],
+    keywords: ["våld", "nära relationer", "barn", "jämställdhet", "rättigheter", "daphne", "violence", "children", "gender equality", "rights"],
+    geographicScope: "eu-wide",
+    typicalCoFinancingRate: 0.9,
+    typicalDurationYears: [1, 2],
+    status: "active",
+    themes: ["social-inkludering", "samarbete-lander"],
+    management: "direct",
+  },
+  {
     id: "kreativa-europa",
     name: "Creative Europe",
     name_sv: "Kreativa Europa",

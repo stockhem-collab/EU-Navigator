@@ -286,6 +286,13 @@
     "maxGrantSEK": 0,
     "grantRangeStated": false,
     "requiresPartnership": false,
+    "eligibleRegions": [
+      "uppsala",
+      "sodermanland",
+      "ostergotland",
+      "orebro",
+      "vastmanland"
+    ],
     "eligibleApplicants_sv": "Privat, offentlig och idéburen sektor i Östra Mellansverige.",
     "eligibleApplicants_en": "Privat, offentlig och idéburen sektor i Östra Mellansverige.",
     "priorities_sv": [],
@@ -332,6 +339,13 @@
     "maxGrantSEK": 0,
     "grantRangeStated": false,
     "requiresPartnership": false,
+    "eligibleRegions": [
+      "uppsala",
+      "sodermanland",
+      "ostergotland",
+      "orebro",
+      "vastmanland"
+    ],
     "eligibleApplicants_sv": "Privat, offentlig och idéburen sektor i Östra Mellansverige.",
     "eligibleApplicants_en": "Privat, offentlig och idéburen sektor i Östra Mellansverige.",
     "priorities_sv": [],
@@ -1240,6 +1254,335 @@
     "link": "https://cinea.ec.europa.eu/news-events/news/life-calls-proposals-2026-eu6015-million-greener-more-competitive-europe-2026-04-22_en",
     "description_sv": "Kapacitetsuppbyggnad och marknadsinsatser för energieffektivisering och förnybar energi. 2026 års budget var 85,5 MEUR.",
     "comment_sv": "Stödnivå och datum bekräftas när utlysningen publiceras.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "a1-kompetensutveckling-av-yrkesverksamma-stockholm",
+    "programId": "esf",
+    "title_sv": "A1 Kompetensutveckling av yrkesverksamma – Stockholm",
+    "title_en": "A1 Kompetensutveckling av yrkesverksamma – Stockholm",
+    "status": "upcoming",
+    "sourceStatus": "planned",
+    "opens": {
+      "date": "2026-12-15",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-03-11",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-03-11",
+    "deadlineMonthsFromNow": 5,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleRegions": [
+      "stockholm"
+    ],
+    "eligibleApplicants_sv": "Offentlig, idéburen och privat sektor i Stockholms län.",
+    "eligibleApplicants_en": "Offentlig, idéburen och privat sektor i Stockholms län.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "utbildning-kompetens",
+      "arbetsmarknad"
+    ],
+    "themes": [
+      "kompetens-entreprenorskap"
+    ],
+    "sectors": [
+      "education"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "applicationTemplateId": "esf-ansokan-om-stod",
+    "reportTemplateId": "esf-rapport",
+    "link": "https://www.esf.se/utlysningar/utlysningsplan/",
+    "description_sv": "Kompetensutveckling för anställda i region Stockholm, till exempel ny teknik och AI i arbetet, språk i yrket och strategisk kompetensförsörjning utifrån arbetsgivares behov.",
+    "comment_sv": "Enligt ESF-rådets utlysningsplan (läst 2026-10-16). Budget ej angiven.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "a2-individer-utanfor-arbetsmarknaden-och-unga-som-riskerar-s",
+    "programId": "esf",
+    "title_sv": "A2 Individer utanför arbetsmarknaden och unga som riskerar studieavbrott – Stockholm",
+    "title_en": "A2 Individer utanför arbetsmarknaden och unga som riskerar studieavbrott – Stockholm",
+    "status": "upcoming",
+    "sourceStatus": "planned",
+    "opens": {
+      "date": "2026-12-15",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-03-11",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-03-11",
+    "deadlineMonthsFromNow": 5,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleRegions": [
+      "stockholm"
+    ],
+    "eligibleApplicants_sv": "Offentlig, idéburen och privat sektor i Stockholms län.",
+    "eligibleApplicants_en": "Offentlig, idéburen och privat sektor i Stockholms län.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "unga",
+      "socialtjanst-inkludering",
+      "arbetsmarknad",
+      "utbildning-kompetens"
+    ],
+    "themes": [
+      "social-inkludering"
+    ],
+    "sectors": [
+      "social"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "applicationTemplateId": "esf-ansokan-om-stod",
+    "reportTemplateId": "esf-rapport",
+    "link": "https://www.esf.se/utlysningar/utlysningsplan/",
+    "description_sv": "Insatser för personer som står utanför arbetsmarknaden och för unga från 13 år som riskerar att avbryta sina studier, till exempel vägledning, samverkan mellan skola och socialtjänst och vägar till arbete eller studier.",
+    "comment_sv": "Enligt ESF-rådets utlysningsplan (läst 2026-10-16). Budget ej angiven.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "cerv-2026-daphne-children",
+    "programId": "cerv",
+    "title_sv": "Integrerade system för barnskydd mot våld (CERV-2026-DAPHNE-CHILDREN)",
+    "title_en": "Integrerade system för barnskydd mot våld (CERV-2026-DAPHNE-CHILDREN)",
+    "status": "open",
+    "sourceStatus": "open",
+    "opens": {
+      "date": "2026-07-07",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2026-11-05",
+      "preliminary": false
+    },
+    "deadlineDate": "2026-11-05",
+    "deadlineMonthsFromNow": 1,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Offentliga och ideella organisationer i EU-länder; partnerskap enligt utlysningstexten.",
+    "eligibleApplicants_en": "Offentliga och ideella organisationer i EU-länder; partnerskap enligt utlysningstexten.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "unga",
+      "socialtjanst-inkludering",
+      "natverk-samverkan"
+    ],
+    "themes": [
+      "social-inkludering"
+    ],
+    "sectors": [
+      "social"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/cerv-2026-daphne-children",
+    "description_sv": "Stärka integrerade system för barnskydd och samordnade, barncentrerade insatser mot våld mot barn, genom samverkan mellan sektorer.",
+    "comment_sv": "Klumpsummebidrag. Datum från EU:s Funding & Tenders Portal (2026-10-16).",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "cerv-2026-daphne-prevention",
+    "programId": "cerv",
+    "title_sv": "Förebygga könsrelaterat våld (CERV-2026-DAPHNE-PREVENTION)",
+    "title_en": "Förebygga könsrelaterat våld (CERV-2026-DAPHNE-PREVENTION)",
+    "status": "open",
+    "sourceStatus": "open",
+    "opens": {
+      "date": "2026-07-07",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2026-11-05",
+      "preliminary": false
+    },
+    "deadlineDate": "2026-11-05",
+    "deadlineMonthsFromNow": 1,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Offentliga och ideella organisationer i EU-länder; partnerskap enligt utlysningstexten.",
+    "eligibleApplicants_en": "Offentliga och ideella organisationer i EU-länder; partnerskap enligt utlysningstexten.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "jamstalldhet",
+      "socialtjanst-inkludering",
+      "natverk-samverkan"
+    ],
+    "themes": [
+      "social-inkludering"
+    ],
+    "sectors": [
+      "social"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/cerv-2026-daphne-prevention",
+    "description_sv": "Förebyggande arbete mot könsrelaterat våld och våld i nära relationer, till exempel utbildning av personal, samverkan och tidiga insatser.",
+    "comment_sv": "Klumpsummebidrag. Datum från EU:s Funding & Tenders Portal (2026-10-16).",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "erasmus-2027-ackrediterade-mobilitetsprojekt-for-skolor-ka12",
+    "programId": "erasmus",
+    "title_sv": "Erasmus+ 2027 – ackrediterade mobilitetsprojekt för skolor, KA121-SCH (prel.)",
+    "title_en": "Erasmus+ 2027 – ackrediterade mobilitetsprojekt för skolor, KA121-SCH (prel.)",
+    "status": "upcoming",
+    "sourceStatus": "expected",
+    "opens": {
+      "date": "2026-11",
+      "preliminary": true
+    },
+    "closes": {
+      "date": "2027-02",
+      "preliminary": true
+    },
+    "deadlineDate": "2027-02-28",
+    "deadlineMonthsFromNow": 4,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Skolor och skolhuvudmän med Erasmusackreditering för skolutbildning.",
+    "eligibleApplicants_en": "Skolor och skolhuvudmän med Erasmusackreditering för skolutbildning.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "ungdom",
+      "utbildning-kompetens",
+      "skolor-byggnader"
+    ],
+    "themes": [
+      "kompetens-entreprenorskap"
+    ],
+    "sectors": [
+      "education"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://erasmus-plus.ec.europa.eu/programme-guide/erasmusplus-programme-guide",
+    "description_sv": "Lärare och skolledare fortbildar sig och gör jobbskuggning i andra EU-länder, och elever gör utbyten. Bidraget betalas som enhetsbelopp för resor, uppehälle och kurser.",
+    "comment_sv": "Datum antagna utifrån tidigare års mönster; bekräftas när 2027 års utlysning publiceras. Söks via Universitets- och högskolerådet.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "erasmus-2027-samarbetspartnerskap-for-skolutbildning-ka220-s",
+    "programId": "erasmus",
+    "title_sv": "Erasmus+ 2027 – samarbetspartnerskap för skolutbildning, KA220-SCH (prel.)",
+    "title_en": "Erasmus+ 2027 – samarbetspartnerskap för skolutbildning, KA220-SCH (prel.)",
+    "status": "upcoming",
+    "sourceStatus": "expected",
+    "opens": {
+      "date": "2026-11",
+      "preliminary": true
+    },
+    "closes": {
+      "date": "2027-03",
+      "preliminary": true
+    },
+    "deadlineDate": "2027-03-31",
+    "deadlineMonthsFromNow": 5,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 1302348,
+    "maxGrantSEK": 4341160,
+    "originalGrantRange": {
+      "min": 120000,
+      "max": 400000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2026
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Konsortium med minst tre organisationer från tre länder i Erasmus+.",
+    "eligibleApplicants_en": "Konsortium med minst tre organisationer från tre länder i Erasmus+.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "utbildning-kompetens",
+      "konsortiesamarbete",
+      "unga"
+    ],
+    "themes": [
+      "kompetens-entreprenorskap"
+    ],
+    "sectors": [
+      "education"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://erasmus-plus.ec.europa.eu/programme-guide/erasmusplus-programme-guide",
+    "description_sv": "Skolor och skolhuvudmän utvecklar tillsammans nya arbetssätt, till exempel i matematik, elevhälsa och digital kompetens, och tar fram material som andra kan använda. Klumpsumma på 120 000, 250 000 eller 400 000 euro.",
+    "comment_sv": "Datum antagna utifrån tidigare års mönster; bekräftas när 2027 års utlysning publiceras.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "erasmus-ackreditering-for-skolutbildning-ka120-sch-prel",
+    "programId": "erasmus",
+    "title_sv": "Erasmus+ ackreditering för skolutbildning, KA120-SCH (prel.)",
+    "title_en": "Erasmus+ ackreditering för skolutbildning, KA120-SCH (prel.)",
+    "status": "upcoming",
+    "sourceStatus": "expected",
+    "closes": {
+      "date": "2027-10",
+      "preliminary": true
+    },
+    "deadlineDate": "2027-10-31",
+    "deadlineMonthsFromNow": 12,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Skolor och skolhuvudmän som vill bedriva långsiktigt utbytesarbete.",
+    "eligibleApplicants_en": "Skolor och skolhuvudmän som vill bedriva långsiktigt utbytesarbete.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "ungdom",
+      "utbildning-kompetens"
+    ],
+    "themes": [
+      "kompetens-entreprenorskap"
+    ],
+    "sectors": [
+      "education"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://erasmus-plus.ec.europa.eu/programme-guide/erasmusplus-programme-guide",
+    "description_sv": "En Erasmusplan för skolans internationalisering godkänns för hela programperioden och ger sedan förenklad tillgång till mobilitetsbidrag varje år.",
+    "comment_sv": "Ger inget bidrag i sig utan rätt att söka KA121. Datum antaget utifrån tidigare års mönster.",
     "extractionSource": "call-list"
   }
 ]

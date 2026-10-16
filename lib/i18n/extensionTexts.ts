@@ -87,6 +87,7 @@ export interface ExtensionTexts {
     colPerCapita: string;
     colPeriod1420: string;
     colPeriod2127: string;
+    colVinnova: string;
     colRank: string;
     rankLine: (name: string, rank: number, of: number, perCapita: string, median: string) => string;
     perCapitaUnit: string;
@@ -249,6 +250,7 @@ export const extensionSv: ExtensionTexts = {
     colPerCapita: "Kr per invånare",
     colPeriod1420: "2014–2020",
     colPeriod2127: "2021–2027",
+    colVinnova: "Vinnova (nationellt)",
     colRank: "Plats",
     rankLine: (name, rank, of, perCapita, median) =>
       `${name} har plats ${rank} av ${of} räknat i EU-bidrag per invånare: ${perCapita} mot medianen ${median}.`,
@@ -414,6 +416,7 @@ export const extensionEn: ExtensionTexts = {
     colPerCapita: "SEK per inhabitant",
     colPeriod1420: "2014–2020",
     colPeriod2127: "2021–2027",
+    colVinnova: "Vinnova (national)",
     colRank: "Rank",
     rankLine: (name, rank, of, perCapita, median) =>
       `${name} ranks ${rank} of ${of} in EU grants per inhabitant: ${perCapita} against a median of ${median}.`,

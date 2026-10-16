@@ -52,6 +52,12 @@ export default function HistoryPage({ history }: { history: HistoryView | null }
               </div>
             </section>
 
+            {history.projects.length === 0 && (
+              <p className="mt-4 rounded-md border border-gold-300 bg-gold-50 px-3 py-2 text-sm text-navy-700">
+                {it.historyNoProjects(history.municipality.name)}
+              </p>
+            )}
+
             <h2 className="mt-8 text-lg font-bold text-navy-800">{it.byProgramTitle}</h2>
             <div className="mt-3 overflow-x-auto rounded-xl border border-navy-100 bg-white">
               <table className="w-full text-sm">
@@ -167,6 +173,58 @@ export default function HistoryPage({ history }: { history: HistoryView | null }
               </>
             )}
 
+            {history.vinnova && (
+              <section className="mt-8" data-testid="history-vinnova">
+                <h2 className="text-lg font-bold text-navy-800">{it.vinnovaTitle}</h2>
+                <p className="mt-1 text-sm text-navy-500">
+                  {history.vinnova.projects.length > 0
+                    ? it.vinnovaIntro(history.municipality.name, history.vinnova.projects.length, fmtSEK(history.vinnova.totalSek, lang))
+                    : it.vinnovaNone(history.municipality.name)}
+                </p>
+                {history.vinnova.projects.length > 0 && (
+                  <div className="mt-3 overflow-x-auto rounded-xl border border-navy-100 bg-white">
+                    <table className="w-full text-sm">
+                      <thead className="border-b border-navy-100">
+                        <tr>
+                          <th className={th}>{it.colProject}</th>
+                          <th className={th}>{it.colProgram}</th>
+                          <th className={th}>{it.colPeriod}</th>
+                          <th className={th}>{it.colGrant}</th>
+                          <th className={th}>{it.colSource}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {history.vinnova.projects.map((p) => (
+                          <tr key={p.id} className="border-b border-navy-50 last:border-0">
+                            <td className={`${td} font-semibold text-navy-800`}>
+                              {p.title}
+                              <p className="text-xs font-normal text-navy-400">
+                                {it.colCoordinator}: {p.coordinator}
+                              </p>
+                            </td>
+                            <td className={td}>{p.programme}</td>
+                            <td className={`${td} whitespace-nowrap`}>
+                              {p.startDate?.slice(0, 4)}–{p.endDate?.slice(0, 4)}
+                            </td>
+                            <td className={`${td} whitespace-nowrap`}>{p.grantSek !== null ? fmtSEK(p.grantSek, lang) : "–"}</td>
+                            <td className={`${td} whitespace-nowrap`}>
+                              {p.url ? (
+                                <a href={p.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-navy-600 hover:text-navy-900">
+                                  Vinnova {p.diarienummer} ↗
+                                </a>
+                              ) : (
+                                `Vinnova ${p.diarienummer}`
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+            )}
+
             {history.peers.length > 0 && (
               <>
                 <h2 className="mt-8 text-lg font-bold text-navy-800">{it.peersTitle}</h2>
@@ -178,6 +236,7 @@ export default function HistoryPage({ history }: { history: HistoryView | null }
                         <th className={th}>{it.colMunicipality}</th>
                         <th className={th}>{it.statProjects}</th>
                         <th className={th}>{it.colEu}</th>
+                        {history.vinnova && <th className={th}>{it.colVinnova}</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -188,6 +247,20 @@ export default function HistoryPage({ history }: { history: HistoryView | null }
                           <td className={td}>
                             <span title={fmtMoney(m.euContributionEur, "EUR", lang)}>{fmtSEK(m.euContributionSek, lang)}</span>
                           </td>
+                          {history.vinnova && (
+                            <td className={td}>
+                              {m.vinnova ? (
+                                <>
+                                  {fmtSEK(m.vinnova.grantSek, lang)}
+                                  <span className="block text-xs font-normal text-navy-400">
+                                    {it.statProjects.toLowerCase()}: {m.vinnova.projects}
+                                  </span>
+                                </>
+                              ) : (
+                                "–"
+                              )}
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>

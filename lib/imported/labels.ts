@@ -9,7 +9,13 @@ const SOURCE_LABELS: Record<SourceSystem, { sv: string; en: string }> = {
   "keep-eu": { sv: "Keep.eu", en: "Keep.eu" },
   cordis: { sv: "CORDIS", en: "CORDIS" },
   esf: { sv: "ESF-projektbanken", en: "ESF project bank" },
+  vinnova: { sv: "Vinnova", en: "Vinnova" },
 };
+
+/** Sources whose amounts are not EU funding (Vinnova: national grants). */
+export function isNationalSource(source: SourceSystem): boolean {
+  return source === "vinnova";
+}
 
 export const IMPORTED_SOURCES = Object.keys(SOURCE_LABELS) as SourceSystem[];
 

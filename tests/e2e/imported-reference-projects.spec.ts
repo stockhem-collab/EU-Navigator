@@ -57,5 +57,5 @@ test("the API pages and filters on the server", async ({ request }) => {
   expect(data.total).toBeGreaterThan(5);
   expect(data.projects).toHaveLength(5);
   for (const p of data.projects) expect(p.source).toBe("keep-eu");
-  expect(data.options.sources.map((s: { id: string }) => s.id).sort()).toEqual(["cordis", "esf", "keep-eu", "kohesio"]);
+  expect(data.options.sources.map((s: { id: string }) => s.id).sort()).toEqual(["cordis", "esf", "keep-eu", "kohesio", "vinnova"]);
 });

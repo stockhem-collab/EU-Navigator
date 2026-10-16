@@ -39,3 +39,26 @@ export const uppsalaPreset: OrgPreset = {
     { name: "Uppsala kommun Fritid", pic: "928710205" },
   ],
 };
+
+// Lidingö stad (checked 2026-10-16): organisationsnummer and VAT number in
+// the EU VIES register (name "LIDINGÖ KOMMUN"). Unit PICs from Andreas
+// (Funding & Tenders Portal, 2026-10-16). The city's own PIC is not known
+// yet; none of the sources ties one to the organisationsnummer.
+export const lidingoPreset: OrgPreset = {
+  organisationName: "Lidingö stad",
+  orgNumber: "212000-0191",
+  vatNumber: "SE212000019101",
+  orgType: "Kommun",
+  country: "Sverige",
+  website: "https://www.lidingo.se",
+  pic: "",
+  units: [
+    { name: "Omsorgs- och socialförvaltningen", pic: "937902313" },
+    { name: "Utbildningsförvaltningen", pic: "944692507" },
+    { name: "Källängens skola", pic: "943033710" },
+    { name: "Högsätra F-6", pic: "944116424" },
+    { name: "Käppala skola", pic: "908470476" },
+    { name: "Hersby gymnasium", pic: "946977342" },
+    { name: "Lidingö särskola", pic: "945056742" },
+  ],
+};
