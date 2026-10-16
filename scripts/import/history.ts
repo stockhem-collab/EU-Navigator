@@ -6,7 +6,10 @@
 // - <profile>-peers.json: projects per programme for the municipality and its
 //   comparison group.
 // Sure hits on PIC, momsnummer or organisationsnummer only; name matches are
-// candidates and never counted. Run npm run import:all first.
+// candidates and never counted. Vinnova projects (national funding, matched
+// on the coordinator's exact name since Vinnova gives no organisationsnummer)
+// are listed apart and kept out of the EU figures. Run npm run import:all
+// first.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -31,7 +34,8 @@ import {
 } from "../../lib/data/municipalities";
 import { DemoProfileId, isDemoProfileId } from "../../lib/data/demoProfiles";
 import { GeneratedDataset } from "../../lib/integrations/core/types";
-import { readGenerated, SOURCES, writeGenerated } from "./generated";
+import { findVinnovaProjects, VinnovaProject, vinnovaTotals } from "../../lib/integrations/municipality/vinnova";
+import { EU_SOURCES, readGenerated, writeGenerated } from "./generated";
 import { peersFile } from "./peers";
 import { main } from "./run";
 
@@ -40,6 +44,7 @@ const SOURCE_LABEL: Record<string, string> = {
   esf: "ESF-rådets projektbank",
   "keep-eu": "keep.eu",
   cordis: "CORDIS",
+  vinnova: "Vinnova",
 };
 
 function money(m: Money | null): string {
@@ -61,6 +66,10 @@ function link(title: string, url: string | null): string {
 
 function projectLine(p: HistoryProject): string {
   return `| ${link(p.title, p.sourceUrl)} | ${SOURCE_LABEL[p.sourceSystem]} | ${cell(p.programmeName)} | ${period(p)} | ${p.partners.map((x) => x.sourceRole).join(", ")} | ${money(p.euContribution)} | ${p.matchedOn} ${p.matchedValue} |`;
+}
+
+function vinnovaLine(p: VinnovaProject): string {
+  return `| ${link(p.title, p.sourceUrl)} | ${p.diarienummer} | ${cell(p.programmeName)} | ${period(p)} | ${cell(p.coordinator)} | ${money(p.grant)} |`;
 }
 
 function candidateLine(c: CandidateEntry): string {
@@ -102,13 +111,14 @@ function markdown(
   m: MunicipalityMatchConfig,
   checklist: string | null,
   r: Reconciliation,
+  vinnova: VinnovaProject[],
   generatedAt: string,
 ): string {
   const amountDeviations = r.both.filter((b) => b.amount.status === "avviker").length;
   const out: string[] = [
     checklist ? `# ${m.name} – avstämning mot kontrollistan` : `# ${m.name} – EU-projekt i källorna`,
     "",
-    `Genererad ${generatedAt.slice(0, 10)} av \`npm run history:${id}\` från \`lib/data/generated/\` (${SOURCES.map((s) => SOURCE_LABEL[s]).join(", ")})${checklist ? ` och \`${checklist}\`` : ""}. Ändra inte för hand; kör skriptet igen.`,
+    `Genererad ${generatedAt.slice(0, 10)} av \`npm run history:${id}\` från \`lib/data/generated/\` (${EU_SOURCES.map((s) => SOURCE_LABEL[s]).join(", ")} och Vinnova)${checklist ? ` och \`${checklist}\`` : ""}. Ändra inte för hand; kör skriptet igen.`,
     "",
     rulesText(m),
     "",
@@ -177,14 +187,26 @@ function markdown(
     "|---|---|---|---|",
     ...r.before2014.map((row) => `| ${row.row} | ${cell(row.name)} | ${cell(row.programme)} | ${cell(row.period)} |`),
     "",
+    "## Vinnova (nationell finansiering)",
+    "",
+    `Projekt där ${m.name} är koordinator enligt Vinnovas öppna data (data.vinnova.se). Vinnova anger inget organisationsnummer, så träffen bygger på att koordinatorns namn är exakt kommunens; kommunala bolag räknas inte. Bidragen är nationella och ingår inte i EU-siffrorna ovan.`,
+    "",
+    `${vinnova.length} projekt, ${money(vinnova.length ? { amount: vinnovaTotals(vinnova).grantSek, currency: "SEK" } : null)} i beviljat bidrag.`,
+    "",
+    "| Projekt | Diarienummer | Program | Period | Koordinator | Beviljat bidrag |",
+    "|---|---|---|---|---|---|",
+    ...vinnova.map(vinnovaLine),
+    "",
   ];
   return out.join("\n");
 }
 
-function runProfile(id: DemoProfileId, profile: MunicipalityProfile, datasets: GeneratedDataset[]) {
+function runProfile(id: DemoProfileId, profile: MunicipalityProfile, all: GeneratedDataset[]) {
   const { match, checklist } = profile;
   const rates = readEurSekRates();
+  const datasets = all.filter((ds) => EU_SOURCES.includes(ds.source));
   const result = findMunicipalityProjects(datasets, match, rates);
+  const vinnova = findVinnovaProjects(all.find((ds) => ds.source === "vinnova"), match);
   const rows = checklist ? parseChecklist(readCsv(path.join(ROOT, checklist), ",")) : [];
   const rec = reconcile(
     result,
@@ -227,17 +249,22 @@ function runProfile(id: DemoProfileId, profile: MunicipalityProfile, datasets: G
     })),
     excludedOrganisations: result.excludedOrganisations,
     before2014: result.before2014.map((p) => ({ id: p.id, title: p.title, endDate: p.endDate })),
+    vinnova: {
+      rule: "koordinatorns namn är exakt kommunens (Vinnova anger inget organisationsnummer); nationella bidrag, ingår inte i EU-siffrorna",
+      projects: vinnova,
+    },
   });
 
   fs.mkdirSync(path.join(ROOT, path.dirname(report)), { recursive: true });
-  fs.writeFileSync(path.join(ROOT, report), markdown(id, match, checklist, rec, generatedAt));
+  fs.writeFileSync(path.join(ROOT, report), markdown(id, match, checklist, rec, vinnova, generatedAt));
 
-  const peers = peersFile(profile, datasets, rates);
+  const peers = peersFile(profile, all, rates);
   const peersJson = writeGenerated(`${id}-peers.json`, peers);
 
   console.log(`\n[history:${id}]`);
   console.log(`  säkra träffar    ${result.projects.length} (före 2014 bortlämnade: ${result.before2014.length})`);
   console.log(`  kandidater       ${rec.candidates.length}`);
+  console.log(`  Vinnova          ${vinnova.length} (${vinnovaTotals(vinnova).grantSek.toLocaleString("sv-SE")} kr)`);
   if (checklist) {
     console.log(`  finns i båda     ${rec.both.length}`);
     console.log(`  bara i källorna  ${rec.sourcesOnly.length}`);
@@ -247,7 +274,7 @@ function runProfile(id: DemoProfileId, profile: MunicipalityProfile, datasets: G
   console.log(`  jämförelse`);
   for (const m of peers.municipalities) {
     console.log(
-      `    ${m.name.padEnd(20)} projekt ${String(m.projects).padStart(3)}  EU-bidrag ${m.euContributionEur.toLocaleString("sv-SE").padStart(12)} EUR  kandidater ${m.candidates.length}`,
+      `    ${m.name.padEnd(20)} projekt ${String(m.projects).padStart(3)}  EU-bidrag ${m.euContributionEur.toLocaleString("sv-SE").padStart(12)} EUR  kandidater ${String(m.candidates.length).padStart(3)}  Vinnova ${String(m.vinnova.projects).padStart(3)}`,
     );
   }
   console.log(`  skriven fil      ${json}`);

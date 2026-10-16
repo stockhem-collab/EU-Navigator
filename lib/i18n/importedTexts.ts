@@ -27,6 +27,7 @@ export interface ImportedTexts {
   fieldPeriod: string;
   fieldTotal: string;
   fieldEu: string;
+  fieldNationalGrant: string;
   fieldPartners: string;
   fieldThemes: string;
   openInSource: string;
@@ -78,6 +79,12 @@ export interface ImportedTexts {
   peersTitle: string;
   peersIntro: string;
   colMunicipality: string;
+  vinnovaTitle: string;
+  vinnovaIntro: (name: string, count: number, total: string) => string;
+  vinnovaNone: (name: string) => string;
+  colCoordinator: string;
+  colGrant: string;
+  colVinnova: string;
   callStatus: { open: string; planned: string; upcoming: string; expected: string };
   opens: string;
   closes: string;
@@ -116,6 +123,7 @@ export const importedSv: ImportedTexts = {
   fieldPeriod: "Projektperiod",
   fieldTotal: "Total budget",
   fieldEu: "EU-bidrag",
+  fieldNationalGrant: "Bidrag från Vinnova",
   fieldPartners: "Organisationer",
   fieldThemes: "Tema",
   openInSource: "Visa i källan",
@@ -171,6 +179,13 @@ export const importedSv: ImportedTexts = {
   colReason: "Varför",
   peersTitle: "Jämfört med de största kommunerna",
   peersIntro: "Samma sökning för de tio största kommunerna. EU-bidraget är kommunens egen andel.",
+  vinnovaTitle: "Nationell innovationsfinansiering (Vinnova)",
+  vinnovaIntro: (name, count, total) =>
+    `${name} har varit koordinator i ${count} Vinnovaprojekt sedan 2014, med ${total} i beviljat bidrag. Vinnova anger inget organisationsnummer, så träffen bygger på att koordinatorns namn är exakt kommunens. Bidragen är nationella och ingår inte i EU-siffrorna ovan.`,
+  vinnovaNone: (name) => `${name} har inte varit koordinator i något Vinnovaprojekt sedan 2014 enligt Vinnovas öppna data.`,
+  colCoordinator: "Koordinator",
+  colGrant: "Beviljat bidrag",
+  colVinnova: "Vinnova (nationellt)",
   colMunicipality: "Kommun",
   callStatus: { open: "Öppen", planned: "Planerad", upcoming: "Kommande", expected: "Förväntad" },
   opens: "Öppnar",
@@ -210,6 +225,7 @@ export const importedEn: ImportedTexts = {
   fieldPeriod: "Project period",
   fieldTotal: "Total budget",
   fieldEu: "EU contribution",
+  fieldNationalGrant: "Vinnova grant",
   fieldPartners: "Organisations",
   fieldThemes: "Theme",
   openInSource: "View in source",
@@ -265,6 +281,13 @@ export const importedEn: ImportedTexts = {
   colReason: "Why",
   peersTitle: "Compared with the largest municipalities",
   peersIntro: "The same search for the ten largest municipalities. The EU contribution is the municipality's own share.",
+  vinnovaTitle: "National innovation funding (Vinnova)",
+  vinnovaIntro: (name, count, total) =>
+    `${name} has coordinated ${count} Vinnova ${count === 1 ? "project" : "projects"} since 2014, with ${total} in grants. Vinnova gives no organisation number, so a project is matched when the coordinator's name is exactly the municipality's. The grants are national and not part of the EU figures above.`,
+  vinnovaNone: (name) => `${name} has not coordinated any Vinnova project since 2014 according to Vinnova's open data.`,
+  colCoordinator: "Coordinator",
+  colGrant: "Grant",
+  colVinnova: "Vinnova (national)",
   colMunicipality: "Municipality",
   callStatus: { open: "Open", planned: "Planned", upcoming: "Upcoming", expected: "Expected" },
   opens: "Opens",

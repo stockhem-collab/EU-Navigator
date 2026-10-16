@@ -57,8 +57,14 @@ export interface ReferenceIndex {
   projects: IndexProject[];
   organisations: IndexOrganisation[];
   partners: IndexPartner[];
-  /** Per demo profile (lib/data/demoProfiles.ts): lib/data/generated/
-   * <id>-history.json and <id>-peers.json, as written. */
+}
+
+/** data/app/kommunhistorik.json.gz: per demo profile (lib/data/
+ * demoProfiles.ts), lib/data/generated/<id>-history.json and
+ * <id>-peers.json as written. Kept apart from the index so the history
+ * pages read a small file. */
+export interface ReferenceProfiles {
+  generatedAt: string;
   profiles: Partial<Record<string, { history: unknown; peers: unknown }>>;
 }
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { countryName, sourceLabel } from "@/lib/imported/labels";
+import { countryName, isNationalSource, sourceLabel } from "@/lib/imported/labels";
 import type { ReferenceListResponse, ReferenceProjectCard } from "@/lib/imported/types";
 import SekAmountText from "./SekAmountText";
 
@@ -135,7 +135,7 @@ export function ImportedProjectCard({ project, children }: { project: ReferenceP
         <p className="text-xs font-semibold uppercase text-navy-400">{program?.shortName ?? project.programme}</p>
         <div className="flex flex-wrap gap-2">
           <span className="badge bg-navy-100 text-navy-700">{it.sourceBadge(sourceLabel(project.source, lang))}</span>
-          {project.period === "2014-2020" && <span className="badge bg-navy-100 text-navy-500">{rp.periodLegacyBadge}</span>}
+          {project.period === "2014-2020" && !isNationalSource(project.source) && <span className="badge bg-navy-100 text-navy-500">{rp.periodLegacyBadge}</span>}
         </div>
       </div>
       <h3 className="mt-1 font-bold text-navy-900">
@@ -160,7 +160,7 @@ export function ImportedProjectCard({ project, children }: { project: ReferenceP
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-navy-400">{it.fieldEu}</dt>
+          <dt className="text-xs text-navy-400">{isNationalSource(project.source) ? it.fieldNationalGrant : it.fieldEu}</dt>
           <dd className="font-semibold text-navy-800">
             <SekAmountText amount={project.euContribution} fallback={rp.noBudgetDisclosed} />
           </dd>

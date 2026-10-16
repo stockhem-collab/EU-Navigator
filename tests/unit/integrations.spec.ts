@@ -14,9 +14,13 @@ import { cordisOrganisationType, cordisRole, isCitiesMission, transformCordis } 
 import { transformEsf } from "../../lib/integrations/esf/transform";
 import { keepRole, transformKeepEu } from "../../lib/integrations/keep-eu/transform";
 import { diarienummerFromLocalId, transformKohesio } from "../../lib/integrations/kohesio/transform";
+import { transformVinnova, VinnovaProject } from "../../lib/integrations/vinnova/transform";
+import { findVinnovaProjects } from "../../lib/integrations/municipality/vinnova";
+import { lidingoMatch, uppsalaMatch } from "../../lib/data/municipalities";
+import type { GeneratedDataset } from "../../lib/integrations/core/types";
 
-// Import transforms for Kohesio, keep.eu, CORDIS and ESF-rådet's
-// projektbank (scripts/import/): the value parsing they share, and each
+// Import transforms for Kohesio, keep.eu, CORDIS, ESF-rådet's
+// projektbank and Vinnova (scripts/import/): the value parsing they share, and each
 // source's mapping of dates, empty values, amounts and roles.
 
 test.describe("values", () => {
@@ -342,5 +346,80 @@ test.describe("esf", () => {
       period: "2021-2027",
     });
     expect(result.partners[0]).toMatchObject({ role: "coordinator", organisationId: "esf:orgnr-2120003005" });
+  });
+});
+
+test.describe("vinnova", () => {
+  const row = (over: Partial<VinnovaProject>): VinnovaProject => ({
+    Diarienummer: "2024-01000",
+    Ärenderubrik: "Rätt till insyn ",
+    ÄrenderubrikEngelska: "x",
+    DiarienummerProgram: "2023-00001",
+    MalSvenska: "Ett verktyg som maskerar allmänna handlingar.",
+    ResultatSvenska: "",
+    MalEngelska: "",
+    ResultatEngelska: "",
+    Projektreferat: "planerat",
+    BeviljatBidrag: 1960540,
+    ProjektStart: "2024-06-03T00:00:00",
+    ProjektSlut: "2025-11-30T00:00:00",
+    KoordinatorOrg: "Lidingö kommun",
+    KoordinatorArb: "Lidingö stad",
+    Status: "Avslutat",
+    ...over,
+  });
+  const programs = [{ Diarienummer: "2023-00001", Titel: "Innovationer i offentlig sektor" }];
+
+  test("one project per diarienummer, the coordinator as its only organisation, the grant in kronor", () => {
+    const result = transformVinnova(
+      [
+        row({}),
+        row({ Diarienummer: "2024-00708", Ärenderubrik: "Framtidens mobilitet", KoordinatorOrg: "LIDINGÖ KOMMUN", BeviljatBidrag: 700000, Status: "Beslutat" }),
+        row({ Diarienummer: "2010-01996", ProjektStart: "2010-12-01T00:00:00", ProjektSlut: "2011-06-30T00:00:00" }),
+        row({}),
+      ],
+      programs,
+    );
+    expect(result.skipped).toEqual({ "slutade före 2014": 1, dubblett: 1 });
+    expect(result.projects).toHaveLength(2);
+    const p = result.projects[0];
+    expect(p).toMatchObject({
+      id: "vinnova:2024-01000",
+      sourceSystem: "vinnova",
+      programId: null,
+      programmeName: "Vinnova – Innovationer i offentlig sektor",
+      period: "2021-2027",
+      title: "Rätt till insyn",
+      titleEn: null,
+      startDate: "2024-06-03",
+      endDate: "2025-11-30",
+      euContribution: { amount: 1960540, currency: "SEK" },
+      status: "closed",
+      country: "SE",
+    });
+    expect(result.projects[1].status).toBe("ongoing");
+    // Same organisation whatever the case.
+    expect(result.organisations).toHaveLength(1);
+    expect(result.organisations[0].organisationType).toBeNull();
+    expect(result.partners.map((pp) => [pp.role, pp.sourceName])).toEqual([
+      ["coordinator", "Lidingö kommun (Lidingö stad)"],
+      ["coordinator", "LIDINGÖ KOMMUN (Lidingö stad)"],
+    ]);
+  });
+
+  test("a municipality's projects are those it coordinated under its exact name", () => {
+    const result = transformVinnova(
+      [
+        row({}),
+        row({ Diarienummer: "2022-03264", KoordinatorOrg: "Uppsala kommun Arenor & Fastigheter AB" }),
+        row({ Diarienummer: "2022-01163", KoordinatorOrg: "Uppsala Kommun" }),
+        row({ Diarienummer: "2023-00002", KoordinatorOrg: "Gaia Arkitektur AB" }),
+      ],
+      programs,
+    );
+    const ds: GeneratedDataset = { source: "vinnova", generatedAt: "", ...result };
+    expect(findVinnovaProjects(ds, lidingoMatch).map((p) => p.diarienummer)).toEqual(["2024-01000"]);
+    expect(findVinnovaProjects(ds, uppsalaMatch).map((p) => p.diarienummer)).toEqual(["2022-01163"]);
+    expect(findVinnovaProjects(undefined, uppsalaMatch)).toEqual([]);
   });
 });

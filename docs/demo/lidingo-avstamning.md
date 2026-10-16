@@ -1,6 +1,6 @@
 # Lidingö stad – EU-projekt i källorna
 
-Genererad 2026-10-16 av `npm run history:lidingo` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS). Ändra inte för hand; kör skriptet igen.
+Genererad 2026-10-16 av `npm run history:lidingo` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS och Vinnova). Ändra inte för hand; kör skriptet igen.
 
 Säker träff kräver Lidingö stads enheters PIC (Omsorgs- och socialförvaltningen, Utbildningsförvaltningen, Källängens skola, Högsätra F-6, Käppala skola, Hersby gymnasium, Lidingö särskola), momsnummer eller organisationsnummer hos en partner i projektet. Namnlika träffar är kandidater för manuell granskning och räknas inte. Universitet, regioner, länsstyrelser, kommunalförbund och kyrkor räknas aldrig. Projekt som slutade före 2014 visas inte i historiken.
 
@@ -50,3 +50,16 @@ Namnlika träffar och projekt som bara kopplas via kontrollistans diarienummer. 
 
 | Rad | Projekt | Program | Period |
 |---|---|---|---|
+
+## Vinnova (nationell finansiering)
+
+Projekt där Lidingö stad är koordinator enligt Vinnovas öppna data (data.vinnova.se). Vinnova anger inget organisationsnummer, så träffen bygger på att koordinatorns namn är exakt kommunens; kommunala bolag räknas inte. Bidragen är nationella och ingår inte i EU-siffrorna ovan.
+
+4 projekt, 3 264 047 SEK i beviljat bidrag.
+
+| Projekt | Diarienummer | Program | Period | Koordinator | Beviljat bidrag |
+|---|---|---|---|---|---|
+| [Designa mobila gränssnitt/vyer av ledningssystemet anpassat för chefer & medarbetare inom vård och omsorg](https://www.vinnova.se/sok/?q=2014-03048) | 2014-03048 | Vinnova – Innovationsprojekt för offentlig verksamhet | 2014-08-01 – 2015-01-31 | LIDINGÖ KOMMUN (stöd- och omsorgsförvaltningen) | 104 597 SEK |
+| [Framtidens mobilitet för ökad frihet hos en åldrande befolkning](https://www.vinnova.se/sok/?q=2024-00708) | 2024-00708 | Vinnova – Innovationer för ett hållbart mobilitetssystem | 2024-05-02 – 2025-01-30 | Lidingö kommun (Lidingö Stad) | 700 000 SEK |
+| [Rätt till insyn](https://www.vinnova.se/sok/?q=2024-01000) | 2024-01000 | Vinnova – Innovationsprojekt för offentlig verksamhet | 2024-06-03 – 2025-11-20 | Lidingö kommun (Lidingö stad) | 1 960 540 SEK |
+| [Förstudie om stöd för unga med multiproblematik](https://www.vinnova.se/sok/?q=2024-03941) | 2024-03941 | Vinnova – Impact Innovation - övergripande SustainGov | 2025-01-15 – 2025-09-15 | Lidingö kommun (Lidingö stad Omsorgs- & socialförvaltningen) | 498 910 SEK |

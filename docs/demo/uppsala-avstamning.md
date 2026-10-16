@@ -1,6 +1,6 @@
 # Uppsala kommun – avstämning mot kontrollistan
 
-Genererad 2026-10-16 av `npm run history:uppsala` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS) och `data/kontrollista.csv`. Ändra inte för hand; kör skriptet igen.
+Genererad 2026-10-16 av `npm run history:uppsala` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS och Vinnova) och `data/kontrollista.csv`. Ändra inte för hand; kör skriptet igen.
 
 Säker träff kräver Uppsala kommuns PIC (kommunen eller en av de fyra enheterna), momsnummer eller organisationsnummer hos en partner i projektet. Namnlika träffar är kandidater för manuell granskning och räknas inte. Uppsala universitet, Region Uppsala, SLU och Länsstyrelsen i Uppsala län räknas aldrig, inte heller andra universitet, regioner, länsstyrelser, kommunalförbund och kyrkor. Uppsala Stadshus AB och dotterbolagen listas bara som kandidater. Projekt som slutade före 2014 visas inte i historiken.
 
@@ -71,3 +71,26 @@ Namnlika träffar och projekt som bara kopplas via kontrollistans diarienummer. 
 |---|---|---|---|
 | 19 | BASAAR | Interreg 2007–2013 | 2007 – 2013 |
 | 20 | EXPAT | Interreg 2007–2013 | 2007 – 2013 |
+
+## Vinnova (nationell finansiering)
+
+Projekt där Uppsala kommun är koordinator enligt Vinnovas öppna data (data.vinnova.se). Vinnova anger inget organisationsnummer, så träffen bygger på att koordinatorns namn är exakt kommunens; kommunala bolag räknas inte. Bidragen är nationella och ingår inte i EU-siffrorna ovan.
+
+14 projekt, 18 844 836 SEK i beviljat bidrag.
+
+| Projekt | Diarienummer | Program | Period | Koordinator | Beviljat bidrag |
+|---|---|---|---|---|---|
+| [Den lokala cirkulära livsmedelskedjan - drivkraft för hållbar samhällsutveckling](https://www.vinnova.se/sok/?q=2016-00377) | 2016-00377 | Vinnova – Utmaningsdriven innovation - UDI | 2016-04-07 – 2017-01-19 | Uppsala kommun (KOMMUNLEDNINGSKONTORET) | 479 920 SEK |
+| [Klimathjälpen](https://www.vinnova.se/sok/?q=2016-05034) | 2016-05034 | Vinnova – Testbäddar inom miljöteknik - TM | 2016-12-01 – 2017-09-29 | Uppsala kommun (KOMMUNLEDNINGSKONTORET) | 1 256 870 SEK |
+| [SimplyCITY - Marketplace for user-centered sustainability services](https://www.vinnova.se/sok/?q=2018-02501) | 2018-02501 | Vinnova – EP DUT | 2018-10-01 – 2021-03-31 | Uppsala Kommun (Avd. Näringsliv) | 1 353 337 SEK |
+| [Konstnärskap som en väg till ökad innovationskraft](https://www.vinnova.se/sok/?q=2019-05117) | 2019-05117 | Vinnova – Framväxande arbetssätt | 2019-12-02 – 2021-06-30 | Uppsala kommun (Kommunledningskontoret) | 300 000 SEK |
+| [E-lärande för innovationskraft](https://www.vinnova.se/sok/?q=2020-02859) | 2020-02859 | Vinnova – Innovationsledning och organisering | 2020-08-31 – 2021-06-30 | Uppsala kommun (Kommunledningskontoret) | 3 161 000 SEK |
+| [Förstudie: mätning av gång- och cykeltrafikflöden i centrala Uppsala via IoT](https://www.vinnova.se/sok/?q=2020-04128) | 2020-04128 | Vinnova – SIP - Internet of Things Sverige | 2021-01-14 – 2022-03-13 | Uppsala kommun (Kommunsstyrelsen) | 300 000 SEK |
+| [Ett lärandeprojekt för innovationsledning med stöd av digital teknik](https://www.vinnova.se/sok/?q=2021-02447) | 2021-02447 | Vinnova – Innovationsprojekt för offentlig verksamhet | 2021-07-01 – 2022-12-31 | Uppsala Kommun (Uppsala kommun Kommunledningskontoret) | 4 454 300 SEK |
+| [Uppsala kommun testar coworking och hybridarbete](https://www.vinnova.se/sok/?q=2022-00335) | 2022-00335 | Vinnova – Innovationsprojekt för offentlig verksamhet | 2022-03-01 – 2022-12-31 | Uppsala Kommun (Uppsala kommun Kommunledningskontoret) | 45 000 SEK |
+| [Det rörliga samhällets epos](https://www.vinnova.se/sok/?q=2022-01163) | 2022-01163 | Vinnova – Framväxande arbetssätt | 2022-05-13 – 2023-04-30 | Uppsala Kommun (Uppsala kommun Stadsbyggnadsförvaltningen) | 1 294 920 SEK |
+| [Färdplan för mobilitetshubbar](https://www.vinnova.se/sok/?q=2022-01397) | 2022-01397 | Vinnova – Klimat i byggd miljö | 2022-08-23 – 2023-02-28 | Uppsala Kommun (Uppsala kommun Stadsbyggnadsförvaltningen) | 281 411 SEK |
+| [Den lokala arbetshubben - samhällsutveckling på distans](https://www.vinnova.se/sok/?q=2022-01304) | 2022-01304 | Vinnova – Innovationer för ett hållbart mobilitetssystem | 2022-09-01 – 2024-05-20 | Uppsala Kommun (Uppsala kommun Stadsbyggnadsförvaltningen) | 1 999 000 SEK |
+| [AI- baserat rutinstöd, RiTA-Rätt information till användaren](https://www.vinnova.se/sok/?q=2023-02828) | 2023-02828 | Vinnova – Innovationsprojekt för offentlig verksamhet | 2023-11-06 – 2024-05-31 | Uppsala Kommun (Uppsala kommun Arbetsmarknadsförvaltningen) | 494 830 SEK |
+| [Stadsbyggnadskontakten - Förbättrad dialog under genomförandet av stora omställningsprojekt](https://www.vinnova.se/sok/?q=2026-00945) | 2026-00945 | Vinnova – Impact Innovation - övergripande ShiftSweden | 2026-07-01 – 2028-06-30 | Uppsala Kommun (Uppsala kommun Stadsbyggnadsförvaltningen) | 2 999 993 SEK |
+| [En starkare röst för äldre med vård- och omsorgsbehov](https://www.vinnova.se/sok/?q=2026-02204) | 2026-02204 | Vinnova – Impact Innovation - övergripande SustainGov | 2026-10-01 – 2027-03-31 | Uppsala Kommun (Uppsala kommun Vård- & omsorgsförvaltningen) | 424 255 SEK |
