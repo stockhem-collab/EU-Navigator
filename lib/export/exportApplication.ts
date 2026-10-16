@@ -14,7 +14,7 @@ import { ResolvedApplicationBudget } from "@/lib/matching/applicationBudget";
 
 function resolvedText(row: ProjectLogicRow, sectionDrafts: Record<string, string>, lang: Lang): string {
   const aiText = lang === "sv" ? row.content_sv : row.content_en;
-  return sectionDrafts[row.label_sv] ?? aiText;
+  return sectionDrafts[row.key] ?? aiText;
 }
 
 export async function buildApplicationDocx(

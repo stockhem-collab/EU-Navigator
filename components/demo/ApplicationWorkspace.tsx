@@ -5,7 +5,27 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { MatchResult, ProjectInput, ReadinessBreakdown } from "@/lib/types";
-import { assessedApplicationText, generateProjectLogic, generateReviewerNotes, ProjectLogicRow } from "@/lib/matching/generateWorkspace";
+import {
+  assessedApplicationText,
+  generateProjectLogic,
+  generateReviewerNotes,
+  ProjectLogicRow,
+  sectionDraftFor,
+} from "@/lib/matching/generateWorkspace";
+import { applicationTemplateFor } from "@/lib/data/callTemplates";
+import {
+  TemplateExportInput,
+  buildTemplateDocx,
+  buildWebFormDocx,
+  estimatePages,
+  fillInstructions,
+  fillPlaceholders,
+  filledRows,
+} from "@/lib/export/exportTemplate";
+import { fillFunderDocx } from "@/lib/export/fillDocx";
+import { useAttachments } from "@/lib/hooks/useAttachments";
+import TemplatePanel from "@/components/demo/TemplatePanel";
+import TemplateTableEditor from "@/components/demo/TemplateTableEditor";
 import { computeGapAnalysis } from "@/lib/matching/gapAnalysis";
 import { computeReadiness, textSignals } from "@/lib/matching/readiness";
 import ConfirmButton from "@/components/ConfirmButton";
@@ -72,7 +92,16 @@ export default function ApplicationWorkspace({
 
   const [tab, setTab] = useState<Tab>("application");
 
+  const tp = t.tpl;
   const logic = generateProjectLogic(project, match.call, match.program);
+  // The funder's shared form, when the call uses one (not the seed calls'
+  // own inline sections, which keep the simpler export).
+  const callTemplate = applicationTemplateFor(match.call);
+  const sharedTemplate = callTemplate && !callTemplate.id.startsWith("call:") ? callTemplate : undefined;
+  const funderFileKey = `funder-template:${match.call.id}`;
+  const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
+  const funderFile = sharedTemplate?.format === "docx" ? attachmentsFor(funderFileKey).at(-1) : undefined;
+  const [exportNotice, setExportNotice] = useState<{ ok: boolean; lines: string[] } | null>(null);
 
   // Editable draft of the AI-generated project logic. Persisted per (project,
   // call) when the project was saved in the Projektbank — see useApplication.
@@ -80,6 +109,8 @@ export default function ApplicationWorkspace({
     sectionDrafts,
     setSection,
     resetSection,
+    tables,
+    setTable,
     versions,
     saveVersion,
     restoreVersion,
@@ -112,7 +143,11 @@ export default function ApplicationWorkspace({
   // The assessment reads what the application actually says — the project
   // description plus every section the user has written or edited — and
   // is recomputed on every keystroke (see assessedApplicationText).
-  const assessedText = useMemo(() => assessedApplicationText(project, sectionDrafts), [project, sectionDrafts]);
+  // Table cells count as written text too.
+  const assessedText = useMemo(() => {
+    const tableText = Object.fromEntries(Object.entries(tables).map(([key, rows]) => [`table:${key}`, filledRows(rows).map((r) => r.join(" ")).join("\n")]));
+    return assessedApplicationText(project, { ...sectionDrafts, ...tableText });
+  }, [project, sectionDrafts, tables]);
   const readiness = useMemo(() => computeReadiness(project, scoredMatch, assessedText), [project, scoredMatch, assessedText]);
   const coach = useMemo(() => analyzeSection(project, scoredMatch, assessedText), [project, scoredMatch, assessedText]);
   const notes = useMemo(() => generateReviewerNotes(project, match.call, assessedText), [project, match.call, assessedText]);
@@ -196,14 +231,75 @@ export default function ApplicationWorkspace({
   // Every section's currently *displayed* text (an override, or the AI
   // suggestion when there isn't one) — what a saved version or an export
   // should actually contain.
-  const resolveSection = (row: { label_sv: string; content_sv: string; content_en: string }) =>
-    sectionDrafts[row.label_sv] ?? (lang === "sv" ? row.content_sv : row.content_en);
+  const resolveSection = (row: ProjectLogicRow) =>
+    sectionDraftFor(sectionDrafts, row) ?? (lang === "sv" ? row.content_sv : row.content_en);
+  const resolvedSections = () => Object.fromEntries(logic.map((row) => [row.key, resolveSection(row)]));
 
-  const handleExport = async () => {
-    const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
-    const blob = await buildApplicationDocx(project, match, logic, resolved, budgetFigures, lang);
-    downloadBlob(blob, `ansokan-${match.call.id}.docx`);
+  // Exports the application the way the call's form takes it in — see
+  // lib/export/exportTemplate.ts — or, for a call without a shared form,
+  // the project-logic document as before. `suffix` names a saved version.
+  const exportApplication = async (
+    sections: Record<string, string>,
+    tableRows: Record<string, string[][]>,
+    figures: typeof budgetFigures,
+    suffix = ""
+  ) => {
+    const filename = `ansokan-${match.call.id}${suffix ? `-${suffix}` : ""}.docx`;
+    setExportNotice(null);
+    if (!sharedTemplate) {
+      const blob = await buildApplicationDocx(project, match, logic, sections, figures, lang);
+      downloadBlob(blob, filename);
+      return;
+    }
+    const input: TemplateExportInput = {
+      template: sharedTemplate,
+      call: match.call,
+      projectTitle: project.title,
+      organisationName: project.municipality,
+      sections: logic.filter((row) => row.section).map((row) => ({ section: row.section!, text: sections[row.key] ?? "" })),
+      tables: tableRows,
+      budget: figures,
+      lang,
+    };
+    if (sharedTemplate.format === "web-form") {
+      downloadBlob(await buildWebFormDocx(input), filename);
+      return;
+    }
+    // The user's upload wins over the template kept in the app.
+    const fileUrl = funderFile?.dataUrl ?? sharedTemplate.funderFile?.url;
+    if (!fileUrl) {
+      downloadBlob(await buildTemplateDocx(input), filename);
+      return;
+    }
+    try {
+      const response = await fetch(fileUrl);
+      if (!response.ok) throw new Error(`${response.status}`);
+      const { sections: fillSections, tables: fillTables, options } = fillInstructions(input);
+      const result = await fillFunderDocx(await response.arrayBuffer(), fillSections, fillTables, fillPlaceholders(input), options);
+      downloadBlob(
+        new Blob([new Uint8Array(result.bytes)], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }),
+        filename
+      );
+      setExportNotice({
+        ok: result.missing.length === 0,
+        lines: [
+          tp.fillResult(result.filled.length),
+          ...(result.missing.length > 0 ? [tp.fillMissing(result.missing.join(", "))] : []),
+          ...(funderFile ? [tp.fillInstructionsNote] : []),
+        ],
+      });
+    } catch {
+      setExportNotice({ ok: false, lines: [tp.exportFailed] });
+    }
   };
+
+  const handleExport = () => exportApplication(resolvedSections(), tables, budgetFigures);
+
+  // The whole application's estimated length in the funder's layout.
+  const estimatedPages = logic.reduce((sum, row) => {
+    const rows = (row.section?.tables ?? []).reduce((n, tb) => n + filledRows(tables[tb.key]).length, 0);
+    return sum + estimatePages(resolveSection(row), rows);
+  }, 0);
 
   // Turns this ad-hoc, never-saved intake into a real Projektbank entry —
   // carrying over everything already typed into the draft, not just the
@@ -212,22 +308,21 @@ export default function ApplicationWorkspace({
   // right here, not an instruction with no matching control anywhere in
   // the app.
   const handleSaveAsNewProject = () => {
-    const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
     const entry = projectInputToProjectBankEntry(project, readiness);
     addImported([entry]);
-    seedApplicationDraft(entry.id, match.call.id, resolved, budget);
+    seedApplicationDraft(entry.id, match.call.id, resolvedSections(), budget, tables);
     onSavedAsProject?.(entry.id);
   };
 
   // An ad-hoc, unpersisted draft's edits live only in this component's
   // state (see useApplication) — leaving without a warning would silently
   // discard everything typed so far.
-  const hasUnsavedDraft = !isPersisted && (Object.keys(sectionDrafts).length > 0 || hasApplicationBudget(budget));
+  const hasUnsavedDraft =
+    !isPersisted && (Object.keys(sectionDrafts).length > 0 || Object.keys(tables).length > 0 || hasApplicationBudget(budget));
 
   const handleSaveVersion = (name: string) => {
     if (!name.trim()) return;
-    const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
-    saveVersion(name.trim(), resolved);
+    saveVersion(name.trim(), resolvedSections());
     setVersionName("");
   };
 
@@ -236,10 +331,9 @@ export default function ApplicationWorkspace({
   // text only for a row saveVersion wouldn't have seen yet (a call template
   // that gained a section after this version was saved).
   const handleExportVersion = async (version: ApplicationVersion) => {
-    const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, version.sectionDrafts[row.label_sv] ?? resolveSection(row)]));
+    const resolved = Object.fromEntries(logic.map((row) => [row.key, sectionDraftFor(version.sectionDrafts, row) ?? resolveSection(row)]));
     const versionBudget = version.budget ? resolveApplicationBudget(project, match, version.budget) : budgetFigures;
-    const blob = await buildApplicationDocx(project, match, logic, resolved, versionBudget, lang);
-    downloadBlob(blob, `ansokan-${match.call.id}-${version.name.toLowerCase().replace(/\s+/g, "-")}.docx`);
+    await exportApplication(resolved, version.tables ?? tables, versionBudget, version.name.toLowerCase().replace(/\s+/g, "-"));
   };
 
   // The single most impactful thing to fix right now, surfaced ambiently in
@@ -349,8 +443,25 @@ export default function ApplicationWorkspace({
             onClick={handleExport}
             className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-navy-200 bg-white px-3 py-2 text-sm font-semibold text-navy-700 transition hover:bg-navy-50"
           >
-            {ws.exportButton}
+            {sharedTemplate
+              ? sharedTemplate.format === "web-form"
+                ? tp.exportWebForm
+                : funderFile || sharedTemplate.funderFile
+                ? tp.exportFilled
+                : tp.exportDocx
+              : ws.exportButton}
           </button>
+          {exportNotice && (
+            <div
+              role="status"
+              data-testid="export-notice"
+              className={`mt-2 rounded-md p-3 text-xs ${exportNotice.ok ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}
+            >
+              {exportNotice.lines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
+          )}
 
           <div
             role="tablist"
@@ -395,15 +506,30 @@ export default function ApplicationWorkspace({
               <section>
                 <h2 className="text-lg font-bold text-navy-800">{ws.logicTitle}</h2>
                 <p className="mt-1 text-sm text-navy-500">{ws.logicHint}</p>
-                <p className="mt-1 text-xs text-navy-400">
-                  {hasCallTemplate ? ws.templateSourceNote(callTitle) : ws.templateGenericNote}
-                </p>
+                {sharedTemplate ? (
+                  <TemplatePanel
+                    template={sharedTemplate}
+                    estimatedPages={estimatedPages}
+                    funderFile={funderFile}
+                    onUploadFunderFile={(file) => addAttachment(funderFileKey, file)}
+                    onRemoveFunderFile={() => funderFile && removeAttachment(funderFileKey, funderFile.id)}
+                  />
+                ) : (
+                  <p className="mt-1 text-xs text-navy-400">
+                    {hasCallTemplate ? ws.templateSourceNote(callTitle) : ws.templateGenericNote}
+                  </p>
+                )}
                 <p className="mt-1 text-xs text-navy-400">{isPersisted ? ws.draftSavedNote : ws.draftNotSavedNote}</p>
                 <div className="mt-4 space-y-4">
                   {logic.map((row, index) => {
                     const content = lang === "sv" ? row.content_sv : row.content_en;
-                    const isEdited = sectionDrafts[row.label_sv] !== undefined;
-                    const signals = isEdited ? textSignals(sectionDrafts[row.label_sv]) : null;
+                    const draft = sectionDraftFor(sectionDrafts, row);
+                    const isEdited = draft !== undefined;
+                    const signals = isEdited ? textSignals(draft) : null;
+                    const section = row.section;
+                    const shown = draft ?? content;
+                    const overLimit = section?.maxChars !== undefined && shown.length > section.maxChars;
+                    const sectionTableRows = (section?.tables ?? []).reduce((n, tb) => n + filledRows(tables[tb.key]).length, 0);
                     const found = signals
                       ? [
                           signals.quantifiedEffect && ws.signalQuantified,
@@ -416,10 +542,16 @@ export default function ApplicationWorkspace({
                       (d) => d.action_sv && sectionForDimension[d.key] === index
                     );
                     return (
-                      <div key={row.label_sv} className="rounded-xl border border-navy-100 bg-white p-4">
+                      <div key={row.key} className="rounded-xl border border-navy-100 bg-white p-4">
+                        {section?.group && (index === 0 || logic[index - 1].section?.group?.number !== section.group.number) && (
+                          <p className="mb-2 text-xs font-semibold uppercase text-navy-400">
+                            {section.group.number}. {lang === "sv" ? section.group.label_sv : section.group.label_en}
+                          </p>
+                        )}
                         <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2">
-                            <label className="text-sm font-semibold text-navy-700">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <label htmlFor={`section-${index}`} className="text-sm font-semibold text-navy-700">
+                              {section?.number && sharedTemplate ? `${section.number} ` : ""}
                               {lang === "sv" ? row.label_sv : row.label_en}
                             </label>
                             <span
@@ -434,20 +566,67 @@ export default function ApplicationWorkspace({
                             message={ws.confirmResetField}
                             confirmLabel={t.confirm.yesReset}
                             cancelLabel={t.confirm.cancel}
-                            onConfirm={() => resetSection(row.label_sv)}
+                            onConfirm={() => resetSection(row.key, row.label_sv)}
                             skipConfirm={!isEdited}
                             danger
                             className="text-xs font-medium text-navy-400 hover:text-navy-700"
                           />
                         </div>
+                        {sharedTemplate && section && (
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                            {section.criterion_sv && (
+                              <span className="badge bg-navy-50 text-navy-600">
+                                {tp.criterion(lang === "sv" ? section.criterion_sv : section.criterion_en ?? section.criterion_sv)}
+                              </span>
+                            )}
+                            {section.indicativePages !== undefined && (
+                              <span className="badge bg-navy-50 text-navy-600">{tp.indicativePages(section.indicativePages)}</span>
+                            )}
+                            {section.required === false && <span className="badge bg-navy-50 text-navy-500">{tp.optional}</span>}
+                          </div>
+                        )}
+                        {sharedTemplate && section && (
+                          <details className="mt-2 rounded-md bg-navy-50/60 px-3 py-2" data-testid={`section-instructions-${index}`}>
+                            <summary className="cursor-pointer text-xs font-semibold text-navy-600">{tp.instructionsToggle}</summary>
+                            <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-navy-600">
+                              {(lang === "sv" ? section.instructions_sv : section.instructions_en)
+                                .split("\n")
+                                .filter(Boolean)
+                                .map((line) => (
+                                  <li key={line}>{line}</li>
+                                ))}
+                            </ul>
+                          </details>
+                        )}
                         <textarea
                           id={`section-${index}`}
                           aria-label={sectionLabel(row)}
-                          rows={3}
-                          value={sectionDrafts[row.label_sv] ?? content}
-                          onChange={(e) => setSection(row.label_sv, e.target.value)}
-                          className="mt-2 w-full rounded-md border border-navy-200 px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                          rows={sharedTemplate ? 6 : 3}
+                          value={shown}
+                          onChange={(e) => setSection(row.key, e.target.value, row.label_sv)}
+                          className={`mt-2 w-full rounded-md border px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500 ${
+                            overLimit ? "border-red-400" : "border-navy-200"
+                          }`}
                         />
+                        {sharedTemplate && (
+                          <p className={`mt-1 text-xs ${overLimit ? "font-semibold text-red-700" : "text-navy-400"}`} data-testid={`section-count-${index}`}>
+                            {section?.maxChars !== undefined ? tp.charCountOf(shown.length, section.maxChars) : tp.charCount(shown.length)}
+                            {overLimit && ` – ${tp.overCharLimit}`}
+                            {sharedTemplate.format === "docx" &&
+                              ` · ${tp.sectionPages(
+                                estimatePages(shown, sectionTableRows).toLocaleString(lang === "sv" ? "sv-SE" : "en-US", { maximumFractionDigits: 1 })
+                              )}`}
+                          </p>
+                        )}
+                        {sharedTemplate &&
+                          (section?.tables ?? []).map((table) => (
+                            <TemplateTableEditor
+                              key={table.key}
+                              table={table}
+                              rows={tables[table.key] ?? []}
+                              onChange={(rows) => setTable(table.key, rows)}
+                            />
+                          ))}
                         <div className="mt-2 flex flex-wrap items-center gap-1.5" data-testid={`section-assessment-${index}`}>
                           {!isEdited && <span className="text-xs text-navy-400">{ws.notAssessedNote}</span>}
                           {found.map((label) => (
