@@ -56,5 +56,6 @@ export const lidingoPreset: OrgPreset = {
     { name: "Omsorgs- och socialförvaltningen", pic: "937902313" },
     { name: "Källängens skola", pic: "943033710" },
     { name: "Högsätra F-6", pic: "944116424" },
+    { name: "Käppala skola", pic: "908470476" },
   ],
 };

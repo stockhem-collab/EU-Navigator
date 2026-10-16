@@ -2,7 +2,7 @@
 
 Genererad 2026-10-16 av `npm run history:lidingo` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS). Ändra inte för hand; kör skriptet igen.
 
-Säker träff kräver Lidingö stads enheters PIC (Omsorgs- och socialförvaltningen, Källängens skola, Högsätra F-6), momsnummer eller organisationsnummer hos en partner i projektet. Namnlika träffar är kandidater för manuell granskning och räknas inte. Universitet, regioner, länsstyrelser, kommunalförbund och kyrkor räknas aldrig. Projekt som slutade före 2014 visas inte i historiken.
+Säker träff kräver Lidingö stads enheters PIC (Omsorgs- och socialförvaltningen, Källängens skola, Högsätra F-6, Käppala skola), momsnummer eller organisationsnummer hos en partner i projektet. Namnlika träffar är kandidater för manuell granskning och räknas inte. Universitet, regioner, länsstyrelser, kommunalförbund och kyrkor räknas aldrig. Projekt som slutade före 2014 visas inte i historiken.
 
 Kommunen har ingen kontrollista i repot ännu, så alla säkra träffar står under "Bara i källorna". Lägg kommunens egen projektlista i `data/` och ange den i `municipalityProfiles` för att stämma av.
 
