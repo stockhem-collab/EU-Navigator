@@ -20,6 +20,9 @@ export interface TemplateTexts {
   funderFileRemove: string;
   funderFileTooLarge: string;
   funderFileWrongType: string;
+  funderFileRtf: string;
+  funderFileBundled: (name: string) => string;
+  funderFileBundledHint: string;
   funderFileInUse: (name: string) => string;
   criterion: (name: string) => string;
   indicativePages: (pages: number) => string;
@@ -61,6 +64,9 @@ export const templateSv: TemplateTexts = {
   funderFileRemove: "Ta bort",
   funderFileTooLarge: "Filen är för stor (högst 3 MB).",
   funderFileWrongType: "Välj en Word-fil (.docx).",
+  funderFileRtf: "Mallen är en RTF-fil. Öppna den i Word, spara den som Word-dokument (.docx) och ladda upp den igen.",
+  funderFileBundled: (name) => `Exporten fyller i funderns mall ${name}, som finns i EU Navigator.`,
+  funderFileBundledHint: "Har utlysningen en annan version av mallen kan du ladda upp den i stället (.docx).",
   funderFileInUse: (name) => `Exporten fyller i ${name}.`,
   criterion: (name) => `Bedöms under ${name}`,
   indicativePages: (pages) => `ca ${pages.toLocaleString("sv-SE")} ${pages === 1 ? "sida" : "sidor"}`,
@@ -102,6 +108,9 @@ export const templateEn: TemplateTexts = {
   funderFileRemove: "Remove",
   funderFileTooLarge: "The file is too large (at most 3 MB).",
   funderFileWrongType: "Choose a Word file (.docx).",
+  funderFileRtf: "The template is an RTF file. Open it in Word, save it as a Word document (.docx) and upload it again.",
+  funderFileBundled: (name) => `The export fills in the funder's template ${name}, kept in EU Navigator.`,
+  funderFileBundledHint: "If the call has another version of the template, you can upload it instead (.docx).",
   funderFileInUse: (name) => `The export fills in ${name}.`,
   criterion: (name) => `Assessed under ${name}`,
   indicativePages: (pages) => `about ${pages.toLocaleString("en-US")} ${pages === 1 ? "page" : "pages"}`,

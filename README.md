@@ -92,10 +92,12 @@ Old addresses (`/demo`, `/projektbank`, `/bevakning`, grants under
   funder's instructions, the criterion each is assessed under, character
   counts and an estimated page count against the page limit, and the
   form's tables (e.g. Part B's 3.1a–h). Export follows how the funder takes
-  the application in: a Word document laid out as the template, the
-  funder's own uploaded .docx filled in under its headings
-  (`lib/export/fillDocx.ts`), or a field-by-field document to paste into a
-  web form. A call using a form also takes its evaluation criteria.
+  the application in: the funder's own Word template filled in under its
+  headings and in its tables (`lib/export/fillDocx.ts`) — Part B V5.1 is
+  kept in `public/mallar/` (the portal's .rtf saved as .docx), and the user
+  can upload another version — a Word document laid out as the template
+  when there is no file, or a field-by-field document to paste into a web
+  form. A call using a form also takes its evaluation criteria.
 - **Beviljade referensprojekt / "Lär av vinnarna"** (`/referensprojekt`) —
   **real data**: an anonymised municipality's actual register of 74
   EU-funded projects 2014-2027 (fund, budget, EU share, role, theme), with aggregated

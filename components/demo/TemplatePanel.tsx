@@ -32,7 +32,7 @@ export default function TemplatePanel({ template, estimatedPages, funderFile, on
   const handleFile = async (file: File | undefined) => {
     if (!file) return;
     if (!/\.docx$/i.test(file.name)) {
-      setUploadError(tp.funderFileWrongType);
+      setUploadError(/\.rtf$/i.test(file.name) ? tp.funderFileRtf : tp.funderFileWrongType);
       return;
     }
     setUploadError((await onUploadFunderFile(file)) === "too-large" ? tp.funderFileTooLarge : null);
@@ -88,12 +88,17 @@ export default function TemplatePanel({ template, estimatedPages, funderFile, on
               </div>
             ) : (
               <>
-                <p className="mt-1 text-xs text-navy-500">{tp.funderFileHint}</p>
+                {template.funderFile && (
+                  <p className="mt-1 text-sm text-navy-700" data-testid="funder-file-bundled">
+                    {tp.funderFileBundled(template.funderFile.fileName)}
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-navy-500">{template.funderFile ? tp.funderFileBundledHint : tp.funderFileHint}</p>
                 <label className="mt-2 inline-block cursor-pointer rounded-md border border-navy-200 bg-white px-3 py-1.5 text-sm font-semibold text-navy-700 hover:bg-navy-50">
                   {tp.funderFileUpload}
                   <input
                     type="file"
-                    accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    accept=".docx,.rtf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/rtf"
                     className="sr-only"
                     data-testid="funder-file-input"
                     onChange={(e) => {

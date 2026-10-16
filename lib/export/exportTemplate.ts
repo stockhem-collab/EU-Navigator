@@ -2,7 +2,7 @@ import type { Paragraph as ParagraphType, Table as TableType } from "docx";
 import { ApplicationTemplateSection, CallTemplate, FundingCall, Lang, TemplateTable } from "@/lib/types";
 import { fmtSEK } from "@/lib/format";
 import { ResolvedApplicationBudget } from "@/lib/matching/applicationBudget";
-import { FillSection, FillTable } from "@/lib/export/fillDocx";
+import { FillOptions, FillSection, FillTable } from "@/lib/export/fillDocx";
 
 // Exports an application the way its funder's form takes it in (see
 // CallTemplate.format):
@@ -77,22 +77,60 @@ export function estimatePages(text: string, tableRows: number): number {
   return wordCount(text) / WORDS_PER_PAGE + (tableRows + 2) / TABLE_ROWS_PER_PAGE;
 }
 
-/** The headings and table titles to fill in a funder's .docx. */
-export function fillInstructions(input: TemplateExportInput): { sections: FillSection[]; tables: FillTable[] } {
+/** What to fill in a funder's .docx: the headings, the tables and — for a
+ * template the app knows (CallTemplate.funderFile) — the title, the list
+ * of participants and what to leave out. */
+export function fillInstructions(input: TemplateExportInput): {
+  sections: FillSection[];
+  tables: FillTable[];
+  options: FillOptions;
+} {
   const lang = input.template.language ?? input.lang;
+  const file = input.template.funderFile;
   const sections: FillSection[] = [];
   const tables: FillTable[] = [];
+  const remove: FillSection[] = [];
+  if (input.template.participantsList && file?.participantsTitle) {
+    tables.push({ title: file.participantsTitle, rows: [[pick(lang, "1 (Koordinator)", "1 (Coordinator)"), input.organisationName, ""]] });
+  }
   for (const content of input.sections) {
-    if (isLeftOut(content, input.tables)) continue;
     const s = content.section;
-    sections.push({ number: s.number, heading: pick(lang, s.label_sv, s.label_en), text: content.text });
+    const heading = { number: s.number, heading: pick(lang, s.label_sv, s.label_en), text: content.text };
+    if (isLeftOut(content, input.tables)) {
+      remove.push(heading);
+      continue;
+    }
+    sections.push(heading);
     for (const table of s.tables ?? []) {
       // The title's own label ("Table 3.1a"), without its description.
-      const title = pick(lang, table.title_sv, table.title_en).split(":")[0];
-      tables.push({ title, rows: filledRows(input.tables[table.key]) });
+      const title = table.docx?.title ?? pick(lang, table.title_sv, table.title_en).split(":")[0];
+      tables.push({
+        title,
+        rows: filledRows(input.tables[table.key]),
+        columns: lang === "sv" ? table.columns_sv : table.columns_en,
+        mode: table.docx?.mode,
+      });
     }
   }
-  return { sections, tables };
+  return {
+    sections,
+    tables,
+    options: {
+      startsAt: file?.startsAt,
+      paragraphs: file?.titleParagraph ? [{ text: file.titleParagraph, value: input.projectTitle }] : [],
+      remove,
+    },
+  };
+}
+
+/** The template's placeholders and their values, e.g. "[insert call
+ * identifier]" in the page header. */
+export function fillPlaceholders(input: TemplateExportInput): Record<string, string> {
+  return {
+    "[insert call identifier]": callIdentifier(input.call),
+    "[insert call name]": callName(input.call, "en"),
+    ...(input.template.pageLimit ? { "[Page limit]": String(input.template.pageLimit) } : {}),
+  };
 }
 
 function textParagraphs(docx: Docx, text: string): ParagraphType[] {

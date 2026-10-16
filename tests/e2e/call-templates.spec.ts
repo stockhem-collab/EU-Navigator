@@ -6,13 +6,14 @@ import JSZip from "jszip";
 // sections with their instructions, limits and tables, and exports the
 // application the way the funder takes it in.
 
-test("a Horizon Europe call follows Part B: instructions, tables and a Word export", async ({ page }) => {
+test("a Horizon Europe call follows Part B: instructions, tables and the funder's template filled in", async ({ page }) => {
   await page.goto("/ansokan?project=pb-4&call=horizon-miss-2027-04-cit-03");
   await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
 
   const panel = page.getByTestId("template-panel");
   await expect(panel).toContainText("Horisont Europa RIA/IA – Part B");
   await expect(page.getByTestId("template-page-estimate")).toContainText("av högst 40 sidor");
+  await expect(page.getByTestId("funder-file-bundled")).toContainText("Part B HE RIA IA V5.1.docx");
 
   await expect(page.getByText("1.1 Mål och ambition")).toBeVisible();
   await expect(page.getByText("Bedöms under Excellens").first()).toBeVisible();
@@ -35,13 +36,21 @@ test("a Horizon Europe call follows Part B: instructions, tables and a Word expo
 
   const [download] = await Promise.all([
     page.waitForEvent("download"),
-    page.getByRole("button", { name: "Exportera enligt mallen (.docx)" }).click(),
+    page.getByRole("button", { name: "Exportera i funderns Word-mall (.docx)" }).click(),
   ]);
   const zip = await JSZip.loadAsync(fs.readFileSync((await download.path())!));
-  const xml = await zip.file("word/document.xml")!.async("string");
-  expect(xml).toContain("1.1 Objectives and ambition");
-  expect(xml).toContain("minska utsläppen vid tre resenoder");
-  expect(xml).toContain("Projektledning");
+  const text = (await zip.file("word/document.xml")!.async("string")).replace(/<w:tab\/>/g, " ").replace(/<[^>]+>/g, "");
+  expect(text.indexOf("minska utsläppen vid tre resenoder")).toBeGreaterThan(text.indexOf("1.1 Objectives and ambition"));
+  expect(text).toContain("Projektledning");
+  expect(text).not.toContain("Instructions, please remove");
+  await expect(page.getByTestId("export-notice")).toContainText("fylldes i funderns mall");
+});
+
+test("a template saved as RTF is turned away with how to save it as .docx", async ({ page }) => {
+  await page.goto("/ansokan?project=pb-4&call=horizon-miss-2027-04-cit-03");
+  await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
+  await page.getByTestId("funder-file-input").setInputFiles({ name: "Tpl_Part B.rtf", mimeType: "application/rtf", buffer: Buffer.from("{\\rtf1}") });
+  await expect(page.getByTestId("template-panel")).toContainText("spara den som Word-dokument (.docx)");
 });
 
 test("an ESF+ call exports field by field for Projektrummet+", async ({ page }) => {

@@ -17,9 +17,9 @@ import {
   TemplateExportInput,
   buildTemplateDocx,
   buildWebFormDocx,
-  callIdentifier,
   estimatePages,
   fillInstructions,
+  fillPlaceholders,
   filledRows,
 } from "@/lib/export/exportTemplate";
 import { fillFunderDocx } from "@/lib/export/fillDocx";
@@ -265,24 +265,27 @@ export default function ApplicationWorkspace({
       downloadBlob(await buildWebFormDocx(input), filename);
       return;
     }
-    if (!funderFile) {
+    // The user's upload wins over the template kept in the app.
+    const fileUrl = funderFile?.dataUrl ?? sharedTemplate.funderFile?.url;
+    if (!fileUrl) {
       downloadBlob(await buildTemplateDocx(input), filename);
       return;
     }
     try {
-      const data = await (await fetch(funderFile.dataUrl)).arrayBuffer();
-      const { sections: fillSections, tables: fillTables } = fillInstructions(input);
-      const result = await fillFunderDocx(data, fillSections, fillTables, {
-        "[insert call identifier]": callIdentifier(match.call),
-        "[insert call name]": match.call.title_en.replace(/\s*\([A-Z][A-Z0-9-]{6,}\)\s*$/, ""),
-      });
-      downloadBlob(new Blob([new Uint8Array(result.bytes)], { type: funderFile.mimeType }), filename);
+      const response = await fetch(fileUrl);
+      if (!response.ok) throw new Error(`${response.status}`);
+      const { sections: fillSections, tables: fillTables, options } = fillInstructions(input);
+      const result = await fillFunderDocx(await response.arrayBuffer(), fillSections, fillTables, fillPlaceholders(input), options);
+      downloadBlob(
+        new Blob([new Uint8Array(result.bytes)], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }),
+        filename
+      );
       setExportNotice({
         ok: result.missing.length === 0,
         lines: [
           tp.fillResult(result.filled.length),
           ...(result.missing.length > 0 ? [tp.fillMissing(result.missing.join(", "))] : []),
-          tp.fillInstructionsNote,
+          ...(funderFile ? [tp.fillInstructionsNote] : []),
         ],
       });
     } catch {
@@ -443,7 +446,7 @@ export default function ApplicationWorkspace({
             {sharedTemplate
               ? sharedTemplate.format === "web-form"
                 ? tp.exportWebForm
-                : funderFile
+                : funderFile || sharedTemplate.funderFile
                 ? tp.exportFilled
                 : tp.exportDocx
               : ws.exportButton}

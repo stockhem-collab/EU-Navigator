@@ -4,8 +4,9 @@ import { applicationTemplateFor, callTemplates, findCallTemplate } from "../../l
 import { fundingCalls } from "../../lib/data/fundingCalls";
 import { findProgram } from "../../lib/data/fundingPrograms";
 import { generateProjectLogic, sectionDraftFor } from "../../lib/matching/generateWorkspace";
-import { fillDocumentXml, fillFunderDocx } from "../../lib/export/fillDocx";
-import { buildTemplateDocx, buildWebFormDocx, estimatePages, fillInstructions, TemplateExportInput } from "../../lib/export/exportTemplate";
+import fs from "node:fs";
+import { fillDocumentXml, fillFunderDocx, replacePlaceholders } from "../../lib/export/fillDocx";
+import { buildTemplateDocx, buildWebFormDocx, estimatePages, fillInstructions, fillPlaceholders, TemplateExportInput } from "../../lib/export/exportTemplate";
 import { ProjectInput } from "../../lib/types";
 
 const project: ProjectInput = {
@@ -191,4 +192,81 @@ test.describe("filling the funder's own Word template", () => {
     expect(result.missing).toEqual(["1.1 Objectives and ambition"]);
     expect(result.xml).toBe(xml);
   });
+});
+
+// The Part B template from the Funding & Tenders Portal (V5.1, the portal's
+// .rtf saved as .docx), as kept in the app.
+test.describe("filling Horizon Europe's own Part B template", () => {
+  const partB = () => fs.readFileSync("public/mallar/horizon-europe-part-b-ria-ia-v5.1.docx");
+  const tables: Record<string, string[][]> = {
+    "he-3.1a": [["1", "Project management", "1", "UPPS", "12", "1", "36"]],
+    "he-3.1b": [
+      ["1", "Project management", "Coordinate the project.", "T1.1 Coordination"],
+      ["2", "Pilots", "Run three pilots.", "T2.1 Pilot A"],
+    ],
+    "he-3.1c": [["D1.1", "Data management plan", "First DMP", "1", "UPPS", "DMP", "PU", "6"]],
+    "he-3.1f": [["1/UPPS", "WP1: 10, WP2: 6", ""], ["2/KTH", "AP2: 34,5", ""]],
+    "he-3.1g": [["1/UPPS", "20 000", "Survey of travellers"]],
+    "he-2.3-canvas": [["Needs A", "Results A", "Measures A", "Targets A", "Outcomes A", "Impacts A"]],
+  };
+
+  async function fill(input: TemplateExportInput) {
+    const { sections, tables: fillTables, options } = fillInstructions(input);
+    const result = await fillFunderDocx(partB(), sections, fillTables, fillPlaceholders(input), options);
+    const xml = await documentText(result.bytes);
+    const text = xml.replace(/<w:tab\/>/g, " ").replace(/<[^>]+>/g, "");
+    return { result, xml, text };
+  }
+
+  test("every section and table is found and filled in the template's structure", async () => {
+    const input = { ...exportInput("he-ria-ia-part-b"), tables };
+    const { result, xml, text } = await fill(input);
+    expect(result.missing).toEqual([]);
+    expect(result.filled).toEqual(expect.arrayContaining(["1.1 Objectives and ambition", "3.2 Capacity of participants and consortium as a whole", "Table 3.1f", "List of participants"]));
+
+    // Only the structure to submit is kept, without the instruction pages.
+    expect(text).not.toContain("Instructions, please remove");
+    expect(text.indexOf("Proposal template Part B: technical description")).toBe(text.lastIndexOf("Proposal template Part B: technical description"));
+    expect(text).toContain("Klimatsmarta resenoder");
+    expect(text).not.toContain("Title of the Proposal");
+    expect(text).toContain("Uppsala kommun");
+
+    // The text replaces "Insert here text for your proposal", in order.
+    expect(text).not.toContain("Insert here text");
+    expect(text.indexOf("Text för he-1.1")).toBeGreaterThan(text.indexOf("1.1 Objectives and ambition"));
+    expect(text.indexOf("Text för he-1.1")).toBeLessThan(text.indexOf("1.2 Methodology"));
+    // The landscape page for the impact canvas keeps its section breaks.
+    expect(xml.match(/<w:sectPr/g)!.length).toBe(3);
+    expect(text).toContain("Needs A");
+
+    // One work package description per work package.
+    expect(text.match(/Work package number/g)!.length).toBe(3);
+    expect(text).toContain("Run three pilots.");
+    // Staff effort: one column per work package, with totals.
+    expect(text).toMatch(/WP1\s*WP2\s*Total Person-Months/);
+    expect(text).toContain("40.5");
+    expect(text).toContain("50.5");
+    expect(text).toContain("Survey of travellers");
+
+    const zip = await JSZip.loadAsync(result.bytes);
+    const headers = await Promise.all(Object.keys(zip.files).filter((n) => /word\/(header|footer)\d+\.xml/.test(n)).map((n) => zip.file(n)!.async("string")));
+    const headerText = headers.join("").replace(/<[^>]+>/g, "");
+    expect(headerText).toContain(fillPlaceholders(input)["[insert call identifier]"]);
+    expect(headerText).not.toContain("insert call");
+    expect(headerText).not.toContain("[Page limit]");
+  });
+
+  test("the optional impact summary is taken out when it isn't used", async () => {
+    const { text } = await fill(exportInput("he-ria-ia-part-b"));
+    expect(text).not.toContain("2.3 Summary");
+    expect(text).not.toContain("KEY ELEMENT OF THE IMPACT SECTION");
+    expect(text).toContain("3. Quality and efficiency of the implementation");
+  });
+});
+
+test("placeholders spread over several runs are replaced", () => {
+  const xml =
+    '<w:hdr><w:p><w:r><w:t xml:space="preserve">Call: [</w:t></w:r><w:r><w:t>insert call identifier</w:t></w:r><w:r><w:t xml:space="preserve">] — x</w:t></w:r></w:p></w:hdr>';
+  const out = replacePlaceholders(xml, { "[insert call identifier]": "HORIZON-1" });
+  expect(out.replace(/<[^>]+>/g, "")).toBe("Call: HORIZON-1 — x");
 });

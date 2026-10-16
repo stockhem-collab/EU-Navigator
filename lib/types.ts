@@ -202,6 +202,14 @@ export interface TemplateTable {
   columns_en: string[];
   note_sv?: string;
   note_en?: string;
+  /** How the table sits in the funder's Word template, when it differs
+   * from a title followed by a table with one row per row. */
+  docx?: {
+    /** The title as the template words it, when it isn't title_en. */
+    title?: string;
+    /** See FillTableMode in lib/export/fillDocx.ts. */
+    mode?: "rows" | "repeat" | "combine" | "matrix";
+  };
 }
 
 /** How a funder takes in the application: a Word document uploaded as PDF
@@ -238,6 +246,19 @@ export interface CallTemplate {
   /** Something the user should know about the template itself. */
   note_sv?: string;
   note_en?: string;
+  /** The funder's own Word file, kept in the app (under public/) and
+   * filled in at export unless the user uploads another version. */
+  funderFile?: {
+    url: string;
+    fileName: string;
+    /** Where the structure to submit starts; the instruction pages before
+     * it are left out of the export. */
+    startsAt?: string;
+    /** The paragraph to replace with the project's title. */
+    titleParagraph?: string;
+    /** The title of the list of participants. */
+    participantsTitle?: string;
+  };
   /** The evaluation criteria the form's sections are assessed against —
    * given to calls using the template that don't state their own. */
   evaluationCriteria?: EvaluationCriterion[];
