@@ -887,6 +887,22 @@ export interface TranslationTree {
     currentTasksHint: string;
     currentTasksNone: string;
     currentTasksViewAll: string;
+    greeting: (part: "morning" | "day" | "evening" | null, name: string | null) => string;
+    findCall: string;
+    nextUpTitle: string;
+    nextUpReport: string;
+    nextUpApplication: string;
+    nextUpTask: string;
+    nextUpNone: string;
+    nextUpNoneHint: string;
+    nextUpOpen: string;
+    emptyTasksCta: string;
+    emptyApplicationsCta: string;
+    shortcutsTitle: string;
+    shortcutProjects: string;
+    shortcutHistory: string;
+    shortcutPartners: string;
+    shortcutKnowledge: string;
   };
   applications: {
     statusLabels: Record<ApplicationStatus, string>;
@@ -2000,6 +2016,25 @@ export const translations: Record<Lang, TranslationTree> = {
       currentTasksHint: "Öppna uppgifter i projekten, snarast förfallande först.",
       currentTasksNone: "Inga öppna uppgifter just nu. Lägg till uppgifter på ett projekts sida.",
       currentTasksViewAll: "Visa projekt →",
+      greeting: (part, name) => {
+        const hello = part === "morning" ? "God morgon" : part === "day" ? "God dag" : part === "evening" ? "God kväll" : "Välkommen";
+        return name ? `${hello}, ${name}` : hello;
+      },
+      findCall: "Hitta utlysning",
+      nextUpTitle: "Nästa att göra",
+      nextUpReport: "Rapport som kräver åtgärd",
+      nextUpApplication: "Ansökan med närmast deadline",
+      nextUpTask: "Uppgift som ska göras snart",
+      nextUpNone: "Inget brådskande just nu",
+      nextUpNoneHint: "Alla rapporter är i fas. Ett bra läge att leta nya utlysningar.",
+      nextUpOpen: "Öppna",
+      emptyTasksCta: "Gå till Projekt",
+      emptyApplicationsCta: "Hitta en utlysning",
+      shortcutsTitle: "Genvägar",
+      shortcutProjects: "Alla projekt och idéer",
+      shortcutHistory: "Projekt ni redan fått stöd för",
+      shortcutPartners: "Hitta partner till ett projekt",
+      shortcutKnowledge: "Program, utlysningar och referensprojekt",
     },
     applications: {
       statusLabels: {
@@ -3128,6 +3163,25 @@ export const translations: Record<Lang, TranslationTree> = {
       currentTasksHint: "Open tasks in the projects, soonest due first.",
       currentTasksNone: "No open tasks right now. Add tasks on a project's page.",
       currentTasksViewAll: "View project →",
+      greeting: (part, name) => {
+        const hello = part === "morning" ? "Good morning" : part === "day" ? "Good afternoon" : part === "evening" ? "Good evening" : "Welcome";
+        return name ? `${hello}, ${name}` : hello;
+      },
+      findCall: "Find a call",
+      nextUpTitle: "Next up",
+      nextUpReport: "Report needing action",
+      nextUpApplication: "Application with the nearest deadline",
+      nextUpTask: "Task due soon",
+      nextUpNone: "Nothing urgent right now",
+      nextUpNoneHint: "All reports are on track. A good time to look for new calls.",
+      nextUpOpen: "Open",
+      emptyTasksCta: "Go to Projects",
+      emptyApplicationsCta: "Find a call",
+      shortcutsTitle: "Shortcuts",
+      shortcutProjects: "All projects and ideas",
+      shortcutHistory: "Projects you have already been funded for",
+      shortcutPartners: "Find partners for a project",
+      shortcutKnowledge: "Programmes, calls and reference projects",
     },
     applications: {
       statusLabels: {
