@@ -3,6 +3,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import KnowledgeTabs from "@/components/KnowledgeTabs";
+import PageHeader from "@/components/PageHeader";
 import { useMemo } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useCandidateDecisions } from "@/lib/hooks/useCandidateDecisions";
@@ -43,13 +44,12 @@ export default function HistoryPage({ history: imported }: { history: HistoryVie
       <Header />
       <main className="page">
         <KnowledgeTabs />
-        <h1 className="text-2xl font-bold text-navy-900">{it.historyTitle}</h1>
+        <PageHeader title={it.historyTitle} subtitle={history ? it.historyIntro(history.municipality.name) : undefined} />
         {!history ? (
           <p className="mt-4 text-sm text-navy-500">{it.historyNone}</p>
         ) : (
           <>
-            <p className="mt-2 text-sm text-navy-600">{it.historyIntro(history.municipality.name)}</p>
-            <p className="mt-3 rounded-md bg-navy-50 px-3 py-2 text-xs text-navy-700">
+            <p className="mt-4 rounded-md bg-navy-50 px-3 py-2 text-xs text-navy-700">
               {it.historyRules(history.rules.sureMatch, history.rules.historyFrom)}
             </p>
 

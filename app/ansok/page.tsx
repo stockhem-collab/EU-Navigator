@@ -4,6 +4,9 @@ import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
+import { IconName } from "@/components/Icon";
+import PageHeader, { HeaderToggle } from "@/components/PageHeader";
+import StatCard from "@/components/StatCard";
 import Footer from "@/components/Footer";
 import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
 import FundingOpportunities from "@/components/calls/FundingOpportunities";
@@ -77,11 +80,11 @@ function ApplyPageInner() {
 
   const count = (pred: (r: ApplicationRecord) => boolean) => rows.filter((r) => pred(r.record)).length;
   const inGroup = (group: ApplicationStatusGroup) => (r: ApplicationRecord) => APPLICATION_STATUS_GROUPS[group].includes(r.status);
-  const stats: { key: ApplicationStatusGroup; label: string; value: number }[] = [
-    { key: "draft", label: a.statActive, value: count(inGroup("draft")) },
-    { key: "withFunder", label: a.statWithFunder, value: count(inGroup("withFunder")) },
-    { key: "awarded", label: a.statAwarded, value: count(inGroup("awarded")) },
-    { key: "closed", label: a.statClosed, value: count(inGroup("closed")) },
+  const stats: { key: ApplicationStatusGroup; label: string; value: number; icon: IconName }[] = [
+    { key: "draft", label: a.statActive, value: count(inGroup("draft")), icon: "application" },
+    { key: "withFunder", label: a.statWithFunder, value: count(inGroup("withFunder")), icon: "inbox" },
+    { key: "awarded", label: a.statAwarded, value: count(inGroup("awarded")), icon: "award" },
+    { key: "closed", label: a.statClosed, value: count(inGroup("closed")), icon: "layers" },
   ];
 
   // In progress: soonest deadline first. Decided / all: most recently
@@ -114,20 +117,12 @@ function ApplyPageInner() {
     <>
       <Header />
       <main className="page">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-navy-900">{a.title}</h1>
-            <p className="mt-2 text-sm text-navy-600">{a.subtitle}</p>
-          </div>
-        </div>
-
-        {/* Applies to the whole page — the applications and the projects
-            matched under Hitta finansiering — and is remembered across
-            Översikt, Projekt, Ansöka and Rapportera. */}
-        <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-navy-700">
-          <input type="checkbox" checked={onlyMineAndShared} onChange={(e) => setOnlyMineAndShared(e.target.checked)} />
-          {t.grants.onlyMineAndSharedToggle}
-        </label>
+        <PageHeader title={a.title} subtitle={a.subtitle}>
+          {/* Applies to the whole page — the applications and the projects
+              matched under Hitta finansiering — and is remembered across
+              Översikt, Projekt, Ansöka and Rapportera. */}
+          <HeaderToggle checked={onlyMineAndShared} onChange={setOnlyMineAndShared} label={t.grants.onlyMineAndSharedToggle} />
+        </PageHeader>
 
         <section id="applications" className="mt-8" aria-labelledby="applications-heading">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -140,19 +135,15 @@ function ApplyPageInner() {
             {stats.map((st) => {
               const active = filter === st.key;
               return (
-                <button
+                <StatCard
                   key={st.key}
-                  type="button"
-                  aria-pressed={active}
+                  value={hydrated ? st.value : "…"}
+                  label={st.label}
+                  icon={st.icon}
+                  pressed={active}
                   // A second click goes back to the default list.
                   onClick={() => setFilter(active ? "active" : st.key)}
-                  className={`rounded-xl border p-4 text-left transition ${
-                    active ? "border-navy-800 bg-navy-800 text-white" : "border-navy-100 bg-white hover:border-navy-300 hover:shadow-sm"
-                  }`}
-                >
-                  <p className={`text-2xl font-extrabold ${active ? "text-white" : "text-navy-900"}`}>{hydrated ? st.value : "…"}</p>
-                  <p className={`text-xs ${active ? "text-navy-200" : "text-navy-500"}`}>{st.label}</p>
-                </button>
+                />
               );
             })}
           </div>
@@ -193,7 +184,7 @@ function ApplyPageInner() {
                         {program.logoLetter}
                       </span>
                       <div className="min-w-0">
-                        <p className="flex items-center gap-2 text-xs font-semibold uppercase text-navy-400">
+                        <p className="flex flex-wrap items-center gap-x-2 text-xs font-medium text-navy-500">
                           <Link href={`/projekt/${entry.id}`} className="hover:underline">
                             {lang === "sv" ? entry.title_sv : entry.title_en}
                           </Link>
