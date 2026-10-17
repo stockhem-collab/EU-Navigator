@@ -8,6 +8,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
+import PageHeader from "@/components/PageHeader";
 import Footer from "@/components/Footer";
 import KnowledgeTabs from "@/components/KnowledgeTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -133,8 +134,7 @@ function EuDatabaseInner() {
       <Header />
       <main className="page">
         <KnowledgeTabs />
-        <h1 className="text-2xl font-bold text-navy-900">{db.title}</h1>
-        <p className="mt-2 text-sm text-navy-600">{db.subtitle}</p>
+        <PageHeader title={db.title} subtitle={db.subtitle} />
 
         <div role="group" aria-label={db.themeFilterLabel} className="mt-6 flex flex-wrap items-center gap-2">
           <span className="mr-1 text-xs font-semibold uppercase text-navy-400">{db.themeFilterLabel}</span>

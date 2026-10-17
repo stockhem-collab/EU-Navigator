@@ -6,6 +6,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
 import UnreadDot from "@/components/UnreadDot";
+import Icon, { IconName } from "@/components/Icon";
+import PageHeader, { HeaderToggle, headerButtonClass } from "@/components/PageHeader";
+import StatCard from "@/components/StatCard";
 import { useNotifications } from "@/components/NotificationsProvider";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
@@ -23,30 +26,6 @@ import { ProjectBankEntry } from "@/lib/types";
 import { useOnlyMineAndShared } from "@/lib/hooks/useOnlyMineAndShared";
 
 const LIST_LIMIT = 5;
-
-// Small line icons (24×24, stroke) for the figures, the "next up" card and
-// the shortcuts — drawn inline like the bell in the header, no icon library.
-const ICONS = {
-  application: "M9 12h6m-6 4h4M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm7 0v5h5",
-  alert: "M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z",
-  calendar: "M8 3v4m8-4v4M4 10h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z",
-  task: "m9 12 2 2 4-4M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z",
-  bell: "M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0a3 3 0 1 1-6 0m6 0H9",
-  check: "M20 6 9 17l-5-5",
-  folder: "M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z",
-  history: "M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5m4-1v5l3 2",
-  partners: "M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1m20 0v-1a4 4 0 0 0-3-3.9M15 3.1a4 4 0 0 1 0 7.8M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z",
-  book: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Zm0 0A2.5 2.5 0 0 0 6.5 22H20v-5",
-  search: "m21 21-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z",
-};
-
-function Icon({ name, className = "h-5 w-5" }: { name: keyof typeof ICONS; className?: string }) {
-  return (
-    <svg aria-hidden viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d={ICONS[name]} />
-    </svg>
-  );
-}
 
 function dayPart(date: Date): "morning" | "day" | "evening" {
   const h = date.getHours();
@@ -114,7 +93,7 @@ export default function OversiktPage() {
     (n) => notifications.isUnread(n.id) && (!n.projectId || inScope(projectBank.find((p) => p.id === n.projectId)))
   );
 
-  const stats: { label: string; value: number; href: string; warn: boolean; icon: keyof typeof ICONS }[] = [
+  const stats: { label: string; value: number; href: string; warn: boolean; icon: IconName }[] = [
     { label: ov.statActiveApplications, value: applications.length, href: "/ansok#applications", warn: false, icon: "application" },
     { label: ov.statReportsAttention, value: visibleReports.filter((x) => x.state === "attention").length, href: "/rapportera#attention", warn: true, icon: "alert" },
     { label: ov.statReportsUpcoming, value: visibleReports.filter((x) => x.state === "upcoming").length, href: "/rapportera#upcoming", warn: false, icon: "calendar" },
@@ -174,7 +153,7 @@ export default function OversiktPage() {
     return null;
   })();
 
-  const shortcuts: { href: string; icon: keyof typeof ICONS; label: string; hint: string }[] = [
+  const shortcuts: { href: string; icon: IconName; label: string; hint: string }[] = [
     { href: "/projekt", icon: "folder", label: t.nav.projects, hint: ov.shortcutProjects },
     { href: "/historik", icon: "history", label: t.imported.historyTab, hint: ov.shortcutHistory },
     { href: "/partnersok", icon: "partners", label: t.ext.partners.tab, hint: ov.shortcutPartners },
@@ -185,65 +164,33 @@ export default function OversiktPage() {
     <>
       <Header />
       <main className="page">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 px-6 py-7 text-white shadow-sm sm:px-8 sm:py-8">
-          <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/5" />
-          <div aria-hidden className="pointer-events-none absolute -bottom-24 right-24 h-56 w-56 rounded-full bg-gold-400/10" />
-          <div className="relative flex flex-wrap items-end justify-between gap-6">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gold-300">
-                {ov.title}
-                {orgName && <span className="text-navy-100"> · {orgName}</span>}
-              </p>
-              <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{ov.greeting(now ? dayPart(now) : null, currentUser?.firstName ?? null)}</h1>
-              <p className="mt-2 text-sm text-navy-100">
-                {todayLabel && <span>{todayLabel}. </span>}
-                {ov.subtitle}
-              </p>
-            </div>
-            <div className="flex flex-col items-start gap-3 sm:items-end">
-              <Link
-                href="/ansok#find-funding"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-navy-800 shadow-sm transition hover:bg-navy-50"
-              >
-                <Icon name="search" className="h-4 w-4" />
-                {ov.findCall}
-              </Link>
-              <label className="flex items-center gap-2 text-sm text-navy-100">
-                <input type="checkbox" className="accent-gold-400" checked={onlyMineAndShared} onChange={(e) => setOnlyMineAndShared(e.target.checked)} />
-                {ap.onlyMineAndSharedToggle}
-              </label>
-            </div>
-          </div>
-        </div>
+        <PageHeader
+          large
+          eyebrow={
+            <>
+              {ov.title}
+              {orgName && <span className="text-navy-100"> · {orgName}</span>}
+            </>
+          }
+          title={ov.greeting(now ? dayPart(now) : null, currentUser?.firstName ?? null)}
+          subtitle={
+            <>
+              {todayLabel && <span>{todayLabel}. </span>}
+              {ov.subtitle}
+            </>
+          }
+        >
+          <Link href="/ansok#find-funding" className={headerButtonClass}>
+            <Icon name="search" className="h-4 w-4" />
+            {ov.findCall}
+          </Link>
+          <HeaderToggle checked={onlyMineAndShared} onChange={setOnlyMineAndShared} label={ap.onlyMineAndSharedToggle} />
+        </PageHeader>
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {stats.map((st) => {
-            const highlight = st.warn && st.value > 0;
-            const zero = st.value === 0;
-            return (
-              <a
-                key={st.label}
-                href={st.href}
-                className={`group flex items-start gap-3 rounded-xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md ${
-                  highlight ? "border-amber-200 bg-amber-50 hover:border-amber-300" : "border-navy-100 bg-white hover:border-navy-200"
-                }`}
-              >
-                <span
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                    highlight ? "bg-amber-100 text-amber-700" : zero ? "bg-navy-50 text-navy-300" : "bg-navy-50 text-navy-600"
-                  }`}
-                >
-                  <Icon name={st.icon} />
-                </span>
-                <span className="min-w-0">
-                  <span className={`block text-2xl font-extrabold leading-none ${highlight ? "text-amber-800" : zero ? "text-navy-300" : "text-navy-900"}`}>
-                    {st.value}
-                  </span>
-                  <span className="mt-1 block text-xs text-navy-500">{st.label}</span>
-                </span>
-              </a>
-            );
-          })}
+          {stats.map((st) => (
+            <StatCard key={st.label} value={st.value} label={st.label} icon={st.icon} href={st.href} warn={st.warn} />
+          ))}
         </div>
 
         {(ongoingHydrated || tasksHydrated) && (
@@ -506,7 +453,7 @@ function CountChip({ n }: { n: number }) {
   return <span className="rounded-full bg-navy-50 px-2 py-0.5 text-xs font-semibold text-navy-500">{n}</span>;
 }
 
-function EmptyState({ icon, text, children }: { icon: keyof typeof ICONS; text: string; children?: React.ReactNode }) {
+function EmptyState({ icon, text, children }: { icon: IconName; text: string; children?: React.ReactNode }) {
   return (
     <div className="mt-4 flex items-start gap-3 rounded-xl border border-dashed border-navy-100 bg-navy-50/40 p-4">
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-navy-400 shadow-sm">

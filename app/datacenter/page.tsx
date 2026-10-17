@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { applicationStatusGroup } from "@/lib/matching/applications";
 import Header from "@/components/Header";
+import PageHeader, { headerButtonClass } from "@/components/PageHeader";
+import StatCard from "@/components/StatCard";
 import Footer from "@/components/Footer";
 import DatacenterTabs from "@/components/DatacenterTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -38,21 +40,6 @@ function useNowStamp(): string | null {
 // A figure, and — when there's a list behind it — a shortcut to that list,
 // here or elsewhere, like the figures on Översikt and Rapportera. Figures
 // that only state a fact (last sync, coverage) aren't links.
-function StatTile({ label, value, href }: { label: string; value: string | number; href?: string }) {
-  const content = (
-    <>
-      <p className="text-2xl font-extrabold text-navy-900">{value}</p>
-      <p className="mt-1 text-sm text-navy-500">{label}</p>
-    </>
-  );
-  if (!href) return <div className="rounded-xl border border-navy-100 bg-white p-5">{content}</div>;
-  return (
-    <Link href={href} className="rounded-xl border border-navy-100 bg-white p-5 transition hover:border-navy-300 hover:shadow-sm">
-      {content}
-    </Link>
-  );
-}
-
 export default function DatacenterPage() {
   const { t, lang } = useLanguage();
   const dc = t.datacenter;
@@ -100,18 +87,11 @@ export default function DatacenterPage() {
       <Header />
       <main className="page">
         <DatacenterTabs />
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-navy-900">{dc.title}</h1>
-            <p className="mt-2 text-sm text-navy-600">{dc.subtitle}</p>
-          </div>
-          <Link
-            href="/datacenter/import-utlysning"
-            className="shrink-0 rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
-          >
+        <PageHeader title={dc.title} subtitle={dc.subtitle}>
+          <Link href="/datacenter/import-utlysning" className={headerButtonClass}>
             {dc.importCallButton}
           </Link>
-        </div>
+        </PageHeader>
 
         <section className="mt-8" aria-labelledby="portfolio-heading">
           <h2 id="portfolio-heading" className="text-lg font-bold text-navy-800">
@@ -183,20 +163,20 @@ export default function DatacenterPage() {
           </div>
         </section>
 
-        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          <StatTile label={dc.statProjectIdeas} value={projectBank.length} href="/projekt" />
-          <StatTile label={dc.statActiveProjects} value={activeProjects.length} href="/projekt" />
-          <StatTile label={dc.statPrograms} value={fundingPrograms.length} href="/eu-databas" />
-          <StatTile label={dc.statCalls} value={fundingCalls.length} href="/eu-databas" />
-          <StatTile label={dc.statOpenCalls} value={openCalls.length} href="/eu-databas" />
-          <StatTile label={dc.statUpcomingCalls} value={upcomingCalls.length} href="/eu-databas" />
-          <StatTile label={dc.statReferenceProjects} value={fundedProjects.length} href="/referensprojekt" />
-          <StatTile label={dc.statDocuments} value={docs.length} href="/eu-databas" />
-          <StatTile label={dc.statDocumentsNeedUpdate} value={docsNeedingUpdate.length} href="#documents-needing-update" />
-          <StatTile label={dc.statLastSync} value={lastSync ?? "…"} />
-          <StatTile label={dc.statUpcomingReports} value={upcomingReportsCount} href="/rapportera#upcoming" />
-          <StatTile label={dc.statReportsNeedingRevision} value={reportsNeedingRevisionCount} href="#reporting-attention" />
-          <StatTile label={dc.statStructuredEligibility} value={`${callsWithStructuredEligibility} / ${fundingCalls.length}`} />
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <StatCard icon="folder" label={dc.statProjectIdeas} value={projectBank.length} href="/projekt" />
+          <StatCard icon="chart" label={dc.statActiveProjects} value={activeProjects.length} href="/projekt" />
+          <StatCard icon="book" label={dc.statPrograms} value={fundingPrograms.length} href="/eu-databas" />
+          <StatCard icon="search" label={dc.statCalls} value={fundingCalls.length} href="/eu-databas" />
+          <StatCard icon="inbox" label={dc.statOpenCalls} value={openCalls.length} href="/eu-databas" />
+          <StatCard icon="calendar" label={dc.statUpcomingCalls} value={upcomingCalls.length} href="/eu-databas" />
+          <StatCard icon="award" label={dc.statReferenceProjects} value={fundedProjects.length} href="/referensprojekt" />
+          <StatCard icon="application" label={dc.statDocuments} value={docs.length} href="/eu-databas" />
+          <StatCard icon="alert" warn label={dc.statDocumentsNeedUpdate} value={docsNeedingUpdate.length} href="#documents-needing-update" />
+          <StatCard icon="clock" label={dc.statLastSync} value={lastSync ?? "…"} />
+          <StatCard icon="calendar" label={dc.statUpcomingReports} value={upcomingReportsCount} href="/rapportera#upcoming" />
+          <StatCard icon="alert" warn label={dc.statReportsNeedingRevision} value={reportsNeedingRevisionCount} href="#reporting-attention" />
+          <StatCard icon="layers" label={dc.statStructuredEligibility} value={`${callsWithStructuredEligibility} / ${fundingCalls.length}`} />
         </div>
 
         <section id="documents-needing-update" className="mt-10">

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import Header from "@/components/Header";
+import PageHeader from "@/components/PageHeader";
 import Footer from "@/components/Footer";
 import DatacenterTabs from "@/components/DatacenterTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -85,8 +86,7 @@ export default function CofinancingPage() {
       <Header />
       <main className="page">
         <DatacenterTabs />
-        <h1 className="text-2xl font-bold text-navy-900">{cf.title}</h1>
-        <p className="mt-2 max-w-3xl text-sm text-navy-600">{cf.intro}</p>
+        <PageHeader title={cf.title} subtitle={cf.intro} />
 
         <section className="mt-6 rounded-xl border border-navy-100 bg-white p-5" aria-labelledby="cf-assumptions">
           <h2 id="cf-assumptions" className="text-sm font-semibold uppercase text-navy-400">

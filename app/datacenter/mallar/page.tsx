@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Header from "@/components/Header";
+import PageHeader from "@/components/PageHeader";
 import Footer from "@/components/Footer";
 import DatacenterTabs from "@/components/DatacenterTabs";
 import ConfirmButton from "@/components/ConfirmButton";
@@ -96,10 +97,9 @@ export default function TemplatesPage() {
       <Header />
       <main className="page">
         <DatacenterTabs />
-        <h1 className="text-2xl font-bold text-navy-900">{tl.title}</h1>
-        <p className="mt-1 max-w-3xl text-sm text-navy-600">{tl.intro}</p>
+        <PageHeader title={tl.title} subtitle={tl.intro} />
 
-        <section className="card mt-6" aria-labelledby="upload-title">
+        <section className="mt-6 rounded-2xl border border-navy-100 bg-white p-5 shadow-sm" aria-labelledby="upload-title">
           <h2 id="upload-title" className="text-lg font-semibold text-navy-900">
             {tl.uploadTitle}
           </h2>
@@ -262,7 +262,7 @@ export default function TemplatesPage() {
           )}
         </section>
 
-        <section className="card mt-6" aria-labelledby="list-title">
+        <section className="mt-6 rounded-2xl border border-navy-100 bg-white p-5 shadow-sm" aria-labelledby="list-title">
           <h2 id="list-title" className="text-lg font-semibold text-navy-900">
             {tl.listTitle}
           </h2>
@@ -293,7 +293,7 @@ export default function TemplatesPage() {
           </ul>
         </section>
 
-        <section className="card mt-6" aria-labelledby="assign-title">
+        <section className="mt-6 rounded-2xl border border-navy-100 bg-white p-5 shadow-sm" aria-labelledby="assign-title">
           <h2 id="assign-title" className="text-lg font-semibold text-navy-900">
             {tl.assignTitle}
           </h2>

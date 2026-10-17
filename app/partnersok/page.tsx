@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
+import PageHeader from "@/components/PageHeader";
 import Footer from "@/components/Footer";
 import KnowledgeTabs from "@/components/KnowledgeTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -127,8 +128,7 @@ function PartnerSearchInner() {
       <Header />
       <main className="page">
         <KnowledgeTabs />
-        <h1 className="text-2xl font-bold text-navy-900">{ps.title}</h1>
-        <p className="mt-2 max-w-3xl text-sm text-navy-600">{ps.intro}</p>
+        <PageHeader title={ps.title} subtitle={ps.intro} />
 
         <div className="mt-6 flex flex-wrap gap-3">
           <input

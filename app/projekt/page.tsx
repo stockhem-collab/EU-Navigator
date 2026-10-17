@@ -4,6 +4,7 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
+import PageHeader from "@/components/PageHeader";
 import Footer from "@/components/Footer";
 import StatusBadge from "@/components/StatusBadge";
 import LinkedReportingBadge from "@/components/LinkedReportingBadge";
@@ -109,12 +110,7 @@ function ProjectsPageInner() {
     <>
       <Header />
       <main className="page">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-navy-900">{pb.title}</h1>
-            <p className="mt-2 max-w-2xl text-sm text-navy-600">{pb.subtitle}</p>
-          </div>
-        </div>
+        <PageHeader title={pb.title} subtitle={pb.subtitle} />
 
         {/* The two ways a project gets into the system, side by side: the
             form, one at a time, or a file, several at once. Applying for

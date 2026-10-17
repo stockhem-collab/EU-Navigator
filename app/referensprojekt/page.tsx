@@ -4,6 +4,7 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
+import PageHeader from "@/components/PageHeader";
 import Footer from "@/components/Footer";
 import KnowledgeTabs from "@/components/KnowledgeTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -82,8 +83,7 @@ function ReferenceProjectsInner() {
       <Header />
       <main className="page">
         <KnowledgeTabs />
-        <h1 className="text-2xl font-bold text-navy-900">{rp.title}</h1>
-        <p className="mt-2 text-sm text-navy-600">{rp.subtitle}</p>
+        <PageHeader title={rp.title} subtitle={rp.subtitle} />
 
         <Link
           href="/ansokan"
