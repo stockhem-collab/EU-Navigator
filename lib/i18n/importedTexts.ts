@@ -76,6 +76,12 @@ export interface ImportedTexts {
   candidatesTitle: string;
   candidatesIntro: string;
   colReason: string;
+  colDecision: string;
+  confirmMatch: string;
+  rejectMatch: string;
+  undoDecision: string;
+  confirmedManually: string;
+  rejectedTitle: (count: number) => string;
   peersTitle: string;
   peersIntro: string;
   colMunicipality: string;
@@ -175,8 +181,15 @@ export const importedSv: ImportedTexts = {
   colMatchedOn: "Hittat via",
   roles: { coordinator: "Koordinator", partner: "Partner", "associated-partner": "Associerad partner" },
   candidatesTitle: "Möjliga träffar, inte bekräftade",
-  candidatesIntro: "Namnlika organisationer och projekttitlar som nämner kommunen. De räknas inte in i summorna ovan förrän de är bekräftade.",
+  candidatesIntro:
+    "Namnlika organisationer och projekttitlar som nämner kommunen. De räknas inte in i summorna ovan förrän de är bekräftade. Bekräfta eller avfärda dem här; valet sparas i den här webbläsaren.",
   colReason: "Varför",
+  colDecision: "Bekräfta eller avfärda",
+  confirmMatch: "Bekräfta",
+  rejectMatch: "Avfärda",
+  undoDecision: "Ångra",
+  confirmedManually: "Bekräftad manuellt",
+  rejectedTitle: (count) => `Avfärdade träffar (${count})`,
   peersTitle: "Jämfört med de största kommunerna",
   peersIntro: "Samma sökning för de tio största kommunerna. EU-bidraget är kommunens egen andel.",
   vinnovaTitle: "Nationell innovationsfinansiering (Vinnova)",
@@ -277,8 +290,15 @@ export const importedEn: ImportedTexts = {
   colMatchedOn: "Found via",
   roles: { coordinator: "Coordinator", partner: "Partner", "associated-partner": "Associated partner" },
   candidatesTitle: "Possible matches, not confirmed",
-  candidatesIntro: "Organisations with similar names and project titles naming the municipality. Not counted in the totals above until confirmed.",
+  candidatesIntro:
+    "Organisations with similar names and project titles naming the municipality. Not counted in the totals above until confirmed. Confirm or reject them here; the choice is saved in this browser.",
   colReason: "Why",
+  colDecision: "Confirm or reject",
+  confirmMatch: "Confirm",
+  rejectMatch: "Reject",
+  undoDecision: "Undo",
+  confirmedManually: "Confirmed manually",
+  rejectedTitle: (count) => `Rejected matches (${count})`,
   peersTitle: "Compared with the largest municipalities",
   peersIntro: "The same search for the ten largest municipalities. The EU contribution is the municipality's own share.",
   vinnovaTitle: "National innovation funding (Vinnova)",

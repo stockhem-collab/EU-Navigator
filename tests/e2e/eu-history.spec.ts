@@ -26,3 +26,36 @@ test("the EU history view lists the municipality's projects, candidates and peer
   await expect(peers.getByText("Stockholms stad")).toBeVisible();
   await expect(peers.getByText("Uppsala kommun")).toBeVisible();
 });
+
+// Possible matches can be confirmed (then counted as the municipality's own)
+// or rejected (set aside, can be undone); the choice survives a reload.
+test("possible matches can be confirmed and rejected", async ({ page }) => {
+  await page.goto("/historik");
+  const candidates = page.getByTestId("history-candidates");
+  await expect(page.getByTestId("history-project-count")).toHaveText("14");
+  const before = await candidates.locator("tbody tr").count();
+
+  await candidates.getByRole("button", { name: /^Bekräfta: COBEN/ }).click();
+  await expect(page.getByTestId("history-project-count")).toHaveText("15");
+  const projects = page.getByTestId("history-projects");
+  await expect(projects.getByText(/COBEN/)).toBeVisible();
+  await expect(projects.getByText("Bekräftad manuellt")).toBeVisible();
+  await expect(candidates.locator("tbody tr")).toHaveCount(before - 1);
+
+  await candidates.getByRole("button", { name: /^Avfärda: / }).first().click();
+  await expect(candidates.locator("tbody tr")).toHaveCount(before - 2);
+  const rejected = page.getByTestId("history-rejected");
+  await expect(rejected.getByText("Avfärdade träffar (1)")).toBeVisible();
+  await expect(page.getByTestId("history-project-count")).toHaveText("15");
+
+  await page.reload();
+  await expect(page.getByTestId("history-project-count")).toHaveText("15");
+  await expect(page.getByTestId("history-rejected")).toBeVisible();
+
+  await rejected.getByText("Avfärdade träffar (1)").click();
+  await rejected.getByRole("button", { name: /^Ångra/ }).click();
+  await expect(page.getByTestId("history-rejected")).toHaveCount(0);
+  await projects.getByRole("button", { name: "Ångra" }).click();
+  await expect(page.getByTestId("history-project-count")).toHaveText("14");
+  await expect(candidates.locator("tbody tr")).toHaveCount(before);
+});
