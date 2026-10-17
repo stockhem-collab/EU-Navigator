@@ -3,18 +3,40 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import KnowledgeTabs from "@/components/KnowledgeTabs";
+import { useMemo } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useCandidateDecisions } from "@/lib/hooks/useCandidateDecisions";
+import { candidateAsProject, summariseHistory } from "@/lib/imported/historySummary";
 import { fmtSEK } from "@/lib/format";
 import { fmtMoney, sourceLabel } from "@/lib/imported/labels";
-import type { HistoryView } from "@/lib/imported/server";
+import type { HistoryCandidateRow, HistoryView } from "@/lib/imported/server";
 import SekAmountText from "./SekAmountText";
 
 const th = "px-3 py-2 text-left text-xs font-semibold uppercase text-navy-400";
 const td = "px-3 py-2 align-top";
+const actionBtn = "rounded-md border px-2 py-1 text-xs font-semibold";
 
-export default function HistoryPage({ history }: { history: HistoryView | null }) {
+export default function HistoryPage({ history: imported }: { history: HistoryView | null }) {
   const { t, lang } = useLanguage();
   const it = t.imported;
+  const { decisions, decide } = useCandidateDecisions(imported?.profile ?? "uppsala");
+
+  // Confirmed possible matches count as the municipality's own projects;
+  // rejected ones are set aside in a list of their own.
+  const { history, rejected } = useMemo(() => {
+    if (!imported) return { history: null, rejected: [] as HistoryCandidateRow[] };
+    const confirmed = imported.candidates.filter((c) => decisions[c.id] === "confirmed").map(candidateAsProject);
+    const projects = [...imported.projects, ...confirmed].sort((a, b) => (b.startDate ?? "").localeCompare(a.startDate ?? ""));
+    return {
+      history: {
+        ...imported,
+        projects,
+        candidates: imported.candidates.filter((c) => !decisions[c.id]),
+        ...summariseHistory(projects),
+      },
+      rejected: imported.candidates.filter((c) => decisions[c.id] === "rejected"),
+    };
+  }, [imported, decisions]);
 
   return (
     <>
@@ -104,6 +126,14 @@ export default function HistoryPage({ history }: { history: HistoryView | null }
                         <p className="text-xs font-normal text-navy-400">
                           {it.colMatchedOn}: {p.matchedOn}
                         </p>
+                        {p.confirmedManually && (
+                          <p className="mt-1 flex flex-wrap items-center gap-2 text-xs font-normal">
+                            <span className="rounded bg-gold-100 px-1.5 py-0.5 font-semibold text-navy-700">{it.confirmedManually}</span>
+                            <button type="button" className="text-navy-500 underline hover:text-navy-900" onClick={() => decide(p.id, null)}>
+                              {it.undoDecision}
+                            </button>
+                          </p>
+                        )}
                       </td>
                       <td className={td}>{p.programme}</td>
                       <td className={`${td} whitespace-nowrap`}>
@@ -141,6 +171,9 @@ export default function HistoryPage({ history }: { history: HistoryView | null }
                         <th className={th}>{it.colReason}</th>
                         <th className={th}>{it.colEu}</th>
                         <th className={th}>{it.colSource}</th>
+                        <th className={th}>
+                          <span className="sr-only">{it.colDecision}</span>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -165,12 +198,56 @@ export default function HistoryPage({ history }: { history: HistoryView | null }
                               sourceLabel(c.source, lang)
                             )}
                           </td>
+                          <td className={`${td} whitespace-nowrap`}>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                className={`${actionBtn} border-navy-700 bg-navy-700 text-white hover:bg-navy-900`}
+                                aria-label={`${it.confirmMatch}: ${c.acronym ?? c.title}`}
+                                onClick={() => decide(c.id, "confirmed")}
+                              >
+                                {it.confirmMatch}
+                              </button>
+                              <button
+                                type="button"
+                                className={`${actionBtn} border-navy-200 text-navy-600 hover:bg-navy-50`}
+                                aria-label={`${it.rejectMatch}: ${c.acronym ?? c.title}`}
+                                onClick={() => decide(c.id, "rejected")}
+                              >
+                                {it.rejectMatch}
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               </>
+            )}
+
+            {rejected.length > 0 && (
+              <details className="mt-4 rounded-xl border border-navy-100 bg-white px-4 py-3 text-sm" data-testid="history-rejected">
+                <summary className="cursor-pointer font-semibold text-navy-700">{it.rejectedTitle(rejected.length)}</summary>
+                <ul className="mt-2 space-y-2">
+                  {rejected.map((c) => (
+                    <li key={c.id} className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-navy-600">
+                        {c.acronym ? `${c.acronym}: ` : ""}
+                        {c.title}
+                      </span>
+                      <button
+                        type="button"
+                        className="text-xs text-navy-500 underline hover:text-navy-900"
+                        aria-label={`${it.undoDecision}: ${c.acronym ?? c.title}`}
+                        onClick={() => decide(c.id, null)}
+                      >
+                        {it.undoDecision}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </details>
             )}
 
             {history.vinnova && (

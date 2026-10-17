@@ -21,6 +21,7 @@ import { DEFAULT_PROFILE, type DemoProfileId } from "@/lib/data/demoProfiles";
 import { significantWords } from "@/lib/matching/similarProjects";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import type { Sector } from "@/lib/types";
+import { summariseHistory } from "./historySummary";
 import { conceptsInText, projectThemes, searchableText, termOccurs, type ThemeMatch } from "./themes";
 import type {
   AmountStats,
@@ -613,7 +614,11 @@ export interface HistoryRow {
   role: string | null;
   matchedOn: string;
   euContribution: SekAmount | null;
+  /** The EU contribution in euro, for the totals' tooltip; 0 when unknown. */
+  eur: number;
   url: string | null;
+  /** A possible match the user confirmed on the page. */
+  confirmedManually?: boolean;
 }
 
 export interface HistoryCandidateRow {
@@ -621,11 +626,15 @@ export interface HistoryCandidateRow {
   source: SourceSystem;
   title: string;
   acronym: string | null;
+  programId: string | null;
   programme: string;
   period: string | null;
+  startDate: string | null;
+  endDate: string | null;
   organisationName: string | null;
   reason: string;
   euContribution: SekAmount | null;
+  eur: number;
   url: string | null;
 }
 
@@ -654,6 +663,7 @@ export interface VinnovaRow {
 }
 
 export interface HistoryView {
+  profile: DemoProfileId;
   generatedAt: string;
   municipality: { name: string; orgNumber: string; pic: string | null };
   rules: { sureMatch: string; candidates: string; historyFrom: string };
@@ -718,21 +728,18 @@ export function historyView(profile: DemoProfileId = DEFAULT_PROFILE): HistoryVi
       role: p.partners[0]?.role ?? null,
       matchedOn: `${p.matchedOn} ${p.matchedValue}`,
       euContribution: toSek(p.euContribution, startYear(p.startDate), rates),
+      eur: toEur(p.euContribution, startYear(p.startDate), rates) ?? 0,
       url: p.sourceUrl,
     }))
     .sort((a, b) => (b.startDate ?? "").localeCompare(a.startDate ?? ""));
 
-  const byProgram = new Map<string, HistoryView["byProgram"][number]>();
-  for (const p of projects) {
-    const key = p.programId ?? p.programme;
-    const entry = byProgram.get(key) ?? { programId: p.programId, programme: p.programme, projects: 0, sek: 0, eur: 0 };
-    entry.projects += 1;
-    entry.sek += p.euContribution?.sek ?? 0;
-    entry.eur += toEur(p.euContribution?.original ?? null, startYear(p.startDate), rates) ?? 0;
-    byProgram.set(key, entry);
-  }
+  // Candidates carry only the source's programme name; take the programme id
+  // a sure match with the same name has, so a confirmed candidate joins it.
+  const programIdByName = new Map<string, string>();
+  for (const p of history.projects) if (p.programId) programIdByName.set(p.programmeName, p.programId);
 
   return {
+    profile,
     generatedAt: history.generatedAt,
     municipality: { name: history.municipality.name, orgNumber: history.municipality.orgNumber, pic: history.municipality.pic ?? null },
     rules: history.rules,
@@ -742,16 +749,18 @@ export function historyView(profile: DemoProfileId = DEFAULT_PROFILE): HistoryVi
       source: c.sourceSystem,
       title: c.title,
       acronym: c.acronym,
-      programme: c.programmeName,
+      programId: programIdByName.get(c.programmeName) ?? null,
+      programme: (programIdByName.has(c.programmeName) && findProgram(programIdByName.get(c.programmeName)!)?.shortName) || c.programmeName,
       period: c.period,
+      startDate: c.startDate,
+      endDate: c.endDate,
       organisationName: c.organisationName,
       reason: c.reason,
       euContribution: toSek(c.euContribution, startYear(c.startDate), rates),
+      eur: c.euContributionEur ?? toEur(c.euContribution, startYear(c.startDate), rates) ?? 0,
       url: c.sourceUrl,
     })),
-    totalSek: projects.reduce((s, p) => s + (p.euContribution?.sek ?? 0), 0),
-    totalEur: [...byProgram.values()].reduce((s, p) => s + p.eur, 0),
-    byProgram: [...byProgram.values()].sort((a, b) => b.sek - a.sek),
+    ...summariseHistory(projects),
     peers: (peers?.municipalities ?? [])
       .map((m) => ({
         name: m.name,
