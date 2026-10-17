@@ -237,7 +237,7 @@ function ApplyPageInner() {
           )}
         </section>
 
-        <section className="mb-16 mt-12 border-t border-navy-100 pt-8" aria-labelledby="find-funding-heading">
+        <section id="find-funding" className="mb-16 mt-12 border-t border-navy-100 pt-8" aria-labelledby="find-funding-heading">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 id="find-funding-heading" className="text-lg font-bold text-navy-800">
               {a.findFundingTitle}
