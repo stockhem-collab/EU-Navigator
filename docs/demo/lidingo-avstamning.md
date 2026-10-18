@@ -1,6 +1,6 @@
 # Lidingö stad – EU-projekt i källorna
 
-Genererad 2026-10-16 av `npm run history:lidingo` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS och Vinnova). Ändra inte för hand; kör skriptet igen.
+Genererad 2026-10-18 av `npm run history:lidingo` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS, EU:s Financial Transparency System och Vinnova). Ändra inte för hand; kör skriptet igen.
 
 Säker träff kräver Lidingö stads enheters PIC (Omsorgs- och socialförvaltningen, Utbildningsförvaltningen, Källängens skola, Högsätra F-6, Käppala skola, Hersby gymnasium, Lidingö särskola), momsnummer eller organisationsnummer hos en partner i projektet. Namnlika träffar är kandidater för manuell granskning och räknas inte. Universitet, regioner, länsstyrelser, kommunalförbund och kyrkor räknas aldrig. Projekt som slutade före 2014 visas inte i historiken.
 

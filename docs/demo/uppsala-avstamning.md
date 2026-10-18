@@ -1,6 +1,6 @@
 # Uppsala kommun – avstämning mot kontrollistan
 
-Genererad 2026-10-16 av `npm run history:uppsala` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS och Vinnova) och `data/kontrollista.csv`. Ändra inte för hand; kör skriptet igen.
+Genererad 2026-10-18 av `npm run history:uppsala` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS, EU:s Financial Transparency System och Vinnova) och `data/kontrollista.csv`. Ändra inte för hand; kör skriptet igen.
 
 Säker träff kräver Uppsala kommuns PIC (kommunen eller en av de fyra enheterna), momsnummer eller organisationsnummer hos en partner i projektet. Namnlika träffar är kandidater för manuell granskning och räknas inte. Uppsala universitet, Region Uppsala, SLU och Länsstyrelsen i Uppsala län räknas aldrig, inte heller andra universitet, regioner, länsstyrelser, kommunalförbund och kyrkor. Uppsala Stadshus AB och dotterbolagen listas bara som kandidater. Projekt som slutade före 2014 visas inte i historiken.
 
@@ -9,7 +9,7 @@ Säker träff kräver Uppsala kommuns PIC (kommunen eller en av de fyra enhetern
 - Finns i båda: 14 (varav 0 med beloppsavvikelse)
 - Bara i källorna: 0
 - Bara i kontrollistan: 1
-- Osäkra kandidater: 4 (varav 4 som kontrollistan tar upp)
+- Osäkra kandidater: 5 (varav 4 som kontrollistan tar upp)
 - Förväntas inte i källorna ("Ingen"): 2
 - Före 2014, visas inte i historiken: 2
 
@@ -51,6 +51,7 @@ Namnlika träffar och projekt som bara kopplas via kontrollistans diarienummer. 
 
 | Projekt | Källa | Organisation i källan | Varför kandidat | Period | EU-bidrag | I kontrollistan |
 |---|---|---|---|---|---|---|
+| DEMONSTRATION AND EVALUATION OF SUSTAINABLE ON-SITE REMEDIATION TECHNOLOGIES FOR PFAS-CONTAMINATED GROUNDWATER | EU:s Financial Transparency System | UPPSALA VATTEN OCH AVFALL AB | kommunalt bolag | ? – ? | 62 278 EUR | nej |
 | [Delivering Community Benefits of Civic Energy](http://www.northsearegion.eu/) | keep.eu | Uppsala Municipality | namnvariant | 2016-10-01 – 2022-09-30 | 211 609 EUR | ja, rad 8 "COBEN – Delivering Community Benefits of Civic Energy" (akronym COBEN) |
 | [Innovationskompetens](https://kohesio.ec.europa.eu/en/projects/Q4039648) | Kohesio | Äldreförvaltningen, Uppsala kommun | namnvariant | 2018-10-01 – 2020-09-30 | 864 335 EUR | ja, rad 13 "Innovationskompetens" (diarienummer 2018/00076) |
 | [Siri- förstudie Uppsala kommun](https://kohesio.ec.europa.eu/en/projects/Q4040148) | Kohesio | Arbetsmarknadsavdelningen | projekttitel | 2021-02-01 – 2021-09-30 | 18 065 EUR | ja, rad 14 "Siri – förstudie Uppsala kommun" (diarienummer 2020/00692) |
