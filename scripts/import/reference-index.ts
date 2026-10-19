@@ -10,6 +10,7 @@ import zlib from "node:zlib";
 import { GENERATED_DIR, ROOT } from "../../lib/integrations/core/files";
 import type { IndexOrganisation, IndexPartner, IndexProject, ReferenceIndex, ReferenceProfiles } from "../../lib/imported/types";
 import { municipalityProfiles } from "../../lib/data/municipalities";
+import { HISTORY_ONLY_SOURCES } from "../../lib/imported/labels";
 import { readGenerated } from "./generated";
 import { main } from "./run";
 
@@ -36,10 +37,12 @@ function readJson(name: string): unknown {
 }
 
 export function buildReferenceIndex(): ReferenceIndex {
-  // FTS and Erasmus+ feed only the municipalities' history and comparison:
-  // FTS titles are budget commitments, not project descriptions to search,
-  // and Erasmus+ would add thousands of school exchanges to the index.
-  const datasets = readGenerated().filter((ds) => ds.source !== "fts" && ds.source !== "erasmus");
+  // FTS, Erasmus+ and Tillväxtverket feed only the municipalities' history
+  // and comparison: FTS titles are budget commitments, not project
+  // descriptions to search, Erasmus+ would add thousands of school exchanges
+  // to the index. Tillväxtverket's projektbank is so far read for the
+  // comparison only.
+  const datasets = readGenerated().filter((ds) => !HISTORY_ONLY_SOURCES.includes(ds.source));
   const projects: IndexProject[] = [];
   const organisations: IndexOrganisation[] = [];
   const partners: IndexPartner[] = [];

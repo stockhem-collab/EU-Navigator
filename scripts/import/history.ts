@@ -5,7 +5,9 @@
 //   its checklist when it has one → docs/demo/<profile>-avstamning.md
 // - <profile>-peers.json: projects per programme for the municipality and its
 //   comparison group.
-// Sure hits on PIC, momsnummer or organisationsnummer only; name matches are
+// Sure hits on PIC, momsnummer, organisationsnummer, or a name that says the
+// organisation is the municipality ("Arbetsmarknadsförvaltningen, Stockholms
+// stad") when it has no organisationsnummer; other name matches are
 // candidates and never counted. Vinnova projects (national funding, matched
 // on the coordinator's exact name since Vinnova gives no organisationsnummer)
 // are listed apart and kept out of the EU figures. Run npm run import:all
@@ -46,6 +48,7 @@ const SOURCE_LABEL: Record<string, string> = {
   cordis: "CORDIS",
   fts: "EU:s Financial Transparency System",
   erasmus: "Erasmus+ projektlistor",
+  tillvaxtverket: "Tillväxtverkets projektbank",
   vinnova: "Vinnova",
 };
 
@@ -96,8 +99,8 @@ function rulesText(m: MunicipalityMatchConfig): string {
   const own = m.excluded.filter((e) => !COMMON_EXCLUSIONS.includes(e)).map((e) => e.name);
   const common = "universitet, regioner, länsstyrelser, kommunalförbund och kyrkor";
   return [
-    `Säker träff kräver ${m.name}s ${pics}momsnummer eller organisationsnummer hos en partner i projektet.`,
-    "Namnlika träffar är kandidater för manuell granskning och räknas inte.",
+    `Säker träff kräver ${m.name}s ${pics}momsnummer eller organisationsnummer hos en partner i projektet, eller en partner utan organisationsnummer vars namn säger att den är kommunen eller en av dess förvaltningar ("${m.placeNames[0]} kommun", "Utbildningsförvaltningen, ${m.name}", "City of ${m.placeNames[0]}").`,
+    "Andra namnlika träffar är kandidater för manuell granskning och räknas inte.",
     own.length > 0
       ? `${listing(own)} räknas aldrig, inte heller andra ${common}.`
       : `${common[0].toUpperCase()}${common.slice(1)} räknas aldrig.`,
@@ -233,7 +236,8 @@ function runProfile(id: DemoProfileId, profile: MunicipalityProfile, all: Genera
       nuts: match.nuts,
     },
     rules: {
-      sureMatch: "PIC (kommunen eller enhet), momsnummer eller organisationsnummer hos en partner",
+      sureMatch:
+        "PIC (kommunen eller enhet), momsnummer eller organisationsnummer hos en partner, eller en partner utan organisationsnummer vars namn säger att den är kommunen eller en av dess förvaltningar",
       candidates: checklist
         ? "namnlika organisationer, projekttitlar som nämner kommunen, kommunala bolag, diarienummer ur kontrollistan; räknas inte"
         : "namnlika organisationer, projekttitlar som nämner kommunen, kommunala bolag; räknas inte",
@@ -273,7 +277,7 @@ function runProfile(id: DemoProfileId, profile: MunicipalityProfile, all: Genera
     console.log(`  bara i listan    ${rec.checklistOnly.length}`);
     console.log(`  "Ingen"          ${rec.notExpected.length}, före 2014: ${rec.before2014.length}`);
   }
-  console.log(`  jämförelse`);
+  console.log(`  jämförelse (${peers.groups.map((g) => `${g.label}: ${g.members.length}`).join(", ")})`);
   for (const m of peers.municipalities) {
     console.log(
       `    ${m.name.padEnd(20)} projekt ${String(m.projects).padStart(3)}  EU-bidrag ${m.euContributionEur.toLocaleString("sv-SE").padStart(12)} EUR  kandidater ${String(m.candidates.length).padStart(3)}  Vinnova ${String(m.vinnova.projects).padStart(3)}`,
