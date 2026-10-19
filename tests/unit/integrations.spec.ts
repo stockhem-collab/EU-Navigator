@@ -12,6 +12,7 @@ import {
 } from "../../lib/integrations/core/values";
 import { cordisOrganisationType, cordisRole, isCitiesMission, transformCordis } from "../../lib/integrations/cordis/transform";
 import { transformEsf } from "../../lib/integrations/esf/transform";
+import { ftsProgramme, transformFts } from "../../lib/integrations/fts/transform";
 import { keepRole, transformKeepEu } from "../../lib/integrations/keep-eu/transform";
 import { diarienummerFromLocalId, transformKohesio } from "../../lib/integrations/kohesio/transform";
 import { transformVinnova, VinnovaProject } from "../../lib/integrations/vinnova/transform";
@@ -20,7 +21,7 @@ import { lidingoMatch, uppsalaMatch } from "../../lib/data/municipalities";
 import type { GeneratedDataset } from "../../lib/integrations/core/types";
 
 // Import transforms for Kohesio, keep.eu, CORDIS, ESF-rådet's
-// projektbank and Vinnova (scripts/import/): the value parsing they share, and each
+// projektbank, the EU Financial Transparency System and Vinnova (scripts/import/): the value parsing they share, and each
 // source's mapping of dates, empty values, amounts and roles.
 
 test.describe("values", () => {
@@ -346,6 +347,74 @@ test.describe("esf", () => {
       period: "2021-2027",
     });
     expect(result.partners[0]).toMatchObject({ role: "coordinator", organisationId: "esf:orgnr-2120003005" });
+  });
+});
+
+test.describe("fts", () => {
+  const ftsRow = (over: Record<string, unknown>) => ({
+    Year: 2022,
+    "Reference of the Legal Commitment (LC)": "SI2.123456",
+    "Name of beneficiary": "MALMO KOMMUN*CITY OF MALMO",
+    "VAT number of beneficiary": "SE212000112401",
+    Coordinator: "Yes",
+    City: "MALMO",
+    "Beneficiary country": "Sweden",
+    "Beneficiary’s contracted amount (EUR)": 1000,
+    "Project ID": "N/A - Not applicable",
+    "Project Acronym": "N/A - Not applicable",
+    "Subject of grant or contract": "LIFE20 CCA/SE/001234 - COASTAL ADAPTATION",
+    "Responsible department": "CINEA - European Climate, Infrastructure and Environment Executive Agency",
+    "Programme name": "2.0.4 - Fisheries governance, international agreements and integrated maritime policy",
+    "Project start date": new Date(Date.UTC(2022, 8, 1)),
+    "Project end date": new Date(Date.UTC(2026, 7, 31)),
+    "Type of contract*": "Action Grant",
+    ...over,
+  });
+
+  test("one project per legal commitment; a beneficiary's budget lines are summed", () => {
+    const result = transformFts([
+      ftsRow({}),
+      ftsRow({ "Beneficiary’s contracted amount (EUR)": 500, Year: 2023 }),
+      ftsRow({ "Name of beneficiary": "HELSINGBORGS KOMMUN*HELSINGBORGS STAD", "VAT number of beneficiary": "SE212000115701", Coordinator: "No", "Beneficiary’s contracted amount (EUR)": 200 }),
+    ]);
+    expect(result.projects).toHaveLength(1);
+    expect(result.projects[0]).toMatchObject({
+      id: "fts:SI2.123456",
+      sourceSystem: "fts",
+      programId: "life",
+      period: "2021-2027",
+      acronym: null,
+      startDate: "2022-09-01",
+      euContribution: { amount: 1700, currency: "EUR" },
+    });
+    expect(result.partners).toHaveLength(2);
+    expect(result.partners[0]).toMatchObject({ role: "coordinator", euContribution: { amount: 1500, currency: "EUR" } });
+    expect(result.partners[1]).toMatchObject({ role: "partner" });
+    const malmo = result.organisations.find((o) => o.name === "MALMO KOMMUN")!;
+    expect(malmo).toMatchObject({ vatNumber: "SE212000112401", organisationNumber: "2120001124" });
+  });
+
+  test("leaves out Horizon, procurement and beneficiaries outside Sweden", () => {
+    const result = transformFts([
+      ftsRow({ "Programme name": "1.0.11 - Horizon Europe" }),
+      ftsRow({ "Type of contract*": "Advisory: Studies" }),
+      ftsRow({ "Beneficiary country": "Denmark" }),
+    ]);
+    expect(result.projects).toHaveLength(0);
+    expect(result.skipped).toEqual({
+      "Horisont/Euratom (finns i CORDIS)": 1,
+      "inte ett projektbidrag (upphandling, pris, ersättning)": 1,
+      "stödmottagare utanför Sverige": 1,
+    });
+  });
+
+  test("programme from the budget heading and the subject", () => {
+    expect(ftsProgramme("1.0.221 - Connecting Europe Facility (CEF) - Transport", "2019-SE-TM-0001")).toEqual({ programId: "cef", programmeName: "Connecting Europe Facility (CEF)" });
+    expect(ftsProgramme("1.1.83 - Information and Communications Technology (ICT)", "WIFI4EU INITIATIVE FOR THE FINANCING")).toEqual({ programId: null, programmeName: "WiFi4EU" });
+    expect(ftsProgramme("3.0.SPEC - Actions financed under the prerogatives of the Commission", "STO/ GÖTEBORGS STAD - EUROPÉ DIRECT INFORMATION CENTRE, 2019 GRANT").programmeName).toBe("Europe Direct");
+    expect(ftsProgramme("2.2.352 - Rights and Values", "TOWN TWINNING").programId).toBe("cerv");
+    expect(ftsProgramme("3.0.7 - Culture and audiovisual media", "NETWORKS OF TWINNED TOWNS : SUSTAINABLE AGEING")).toEqual({ programId: null, programmeName: "Europa för medborgarna" });
+    expect(ftsProgramme("1.1.82 - Transport", "BALTIC LINK").programId).toBe("cef");
   });
 });
 

@@ -5,8 +5,10 @@
 // partners; an adapter maps between the two when the app starts reading
 // generated data.
 
-/** "vinnova" is national (Swedish) innovation funding, not EU funding. */
-export type SourceSystem = "kohesio" | "keep-eu" | "cordis" | "esf" | "vinnova";
+/** "vinnova" is national (Swedish) innovation funding, not EU funding.
+ * "fts" is the EU Financial Transparency System (programmes the Commission
+ * manages itself). */
+export type SourceSystem = "kohesio" | "keep-eu" | "cordis" | "esf" | "fts" | "vinnova";
 
 export type CurrencyCode = "EUR" | "SEK";
 

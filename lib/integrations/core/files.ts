@@ -21,13 +21,21 @@ export function rawFile(name: string): string {
   return file;
 }
 
-/** Newest file in data/raw/ matching a pattern, e.g. esf_projektbanken_*.csv. */
-export function latestRawFile(pattern: RegExp): string {
-  const matches = fs.existsSync(RAW_DIR)
-    ? fs.readdirSync(RAW_DIR).filter((f) => pattern.test(f)).sort()
+/** Every file in data/raw/ (or a folder in it) matching a pattern, sorted
+ * by name. */
+export function rawFiles(pattern: RegExp, dir = ""): string[] {
+  const folder = path.join(RAW_DIR, dir);
+  const matches = fs.existsSync(folder)
+    ? fs.readdirSync(folder).filter((f) => pattern.test(f)).sort()
     : [];
-  if (matches.length === 0) throw new Error(`No file in data/raw/ matches ${pattern}`);
-  return path.join(RAW_DIR, matches[matches.length - 1]);
+  if (matches.length === 0) throw new Error(`No file in ${path.relative(ROOT, folder)}/ matches ${pattern}`);
+  return matches.map((f) => path.join(folder, f));
+}
+
+/** Newest file in data/raw/ matching a pattern, e.g. vinnova_projekt_*.json. */
+export function latestRawFile(pattern: RegExp): string {
+  const matches = rawFiles(pattern);
+  return matches[matches.length - 1];
 }
 
 export function fileInfo(file: string): ImportFileInfo {

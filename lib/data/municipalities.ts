@@ -276,8 +276,9 @@ export const municipalityProfiles: Record<DemoProfileId, MunicipalityProfile> = 
     peers: peerMunicipalities,
     checklist: "data/kontrollista.csv",
     peerCaveats: [
-      "ESF-rådets projektbank-exporten (data/raw/esf_projektbanken_*.csv) gäller bara Uppsala. För övriga kommuner kommer ESF+-projekten bara från Kohesio, som kan sakna nyligen beviljade projekt.",
-      "Kohesio har ingen PIC; där räknas bara stödmottagare med kommunens organisationsnummer. Förvaltningar som står utan organisationsnummer blir kandidater.",
+      "ESF+ 2021–2027 kommer från ESF-rådets projektbank för hela landet och från Kohesio. Socialfonden 2014–2020 kommer bara från Kohesio, där förvaltningar ofta står utan organisationsnummer och därför blir kandidater som inte räknas.",
+      "Kohesio och ESF-rådets projektbank anger bara projektägaren; projekt där kommunen är samverkanspart syns inte.",
+      "Program som kommissionen själv förvaltar (LIFE, CEF, Digital Europe, Creative Europe, CERV, Europe Direct, WiFi4EU) kommer från EU:s Financial Transparency System, matchade på momsnummer. Erasmus+ via Universitets- och högskolerådet (skolprojekt) ingår inte.",
       "Linköping, Örebro, Jönköping och Norrköping har ingen PIC som källorna knyter till organisationsnumret; CORDIS-träffar för dem kräver momsnummer.",
     ],
   },
@@ -286,8 +287,9 @@ export const municipalityProfiles: Record<DemoProfileId, MunicipalityProfile> = 
     peers: lidingoPeers,
     checklist: null,
     peerCaveats: [
-      "ESF+-projekten kommer bara från Kohesio (ingen export ur ESF-rådets projektbank för de här kommunerna ännu), som kan sakna nyligen beviljade projekt.",
-      "Kohesio har ingen PIC och anger bara projektägaren; där räknas bara stödmottagare med kommunens organisationsnummer. Projekt där kommunen är partner syns inte, och förvaltningar utan organisationsnummer blir kandidater.",
+      "ESF+ 2021–2027 kommer från ESF-rådets projektbank för hela landet och från Kohesio. Socialfonden 2014–2020 kommer bara från Kohesio, där förvaltningar utan organisationsnummer blir kandidater som inte räknas.",
+      "Kohesio och ESF-rådets projektbank anger bara projektägaren; projekt där kommunen är samverkanspart syns inte.",
+      "Program som kommissionen själv förvaltar (LIFE, CEF, Digital Europe, Creative Europe, CERV, Europe Direct, WiFi4EU) kommer från EU:s Financial Transparency System, matchade på momsnummer. Erasmus+ via Universitets- och högskolerådet (skolprojekt) ingår inte.",
       "Ingen av kommunerna har en PIC som källorna knyter till organisationsnumret; CORDIS-träffar kräver momsnummer.",
     ],
   },
