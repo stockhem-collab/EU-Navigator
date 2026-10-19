@@ -163,7 +163,7 @@ export const importedSv: ImportedTexts = {
     `I euro: ${range}, median ${median}. ${spread === "p10-p90" ? "Spannet visar de mittersta 80 procenten (10:e–90:e percentilen)." : "Spannet visar minsta och största belopp."} EU-bidrag per projekt.`,
   historyTab: "Er EU-historik",
   historyTitle: "Er EU-historik",
-  historyIntro: (name) => `${name}s EU-finansierade projekt sedan 2014, hittade i Kohesio, Keep.eu, CORDIS, ESF-rådets projektbank och EU:s Financial Transparency System.`,
+  historyIntro: (name) => `${name}s EU-finansierade projekt sedan 2014, hittade i Kohesio, Keep.eu, CORDIS, ESF-rådets projektbank, EU:s Financial Transparency System och Erasmus+ projektlistor.`,
   historyNoProjects: (name) =>
     `Källorna visar inga projekt sedan 2014 där ${name} är stödmottagare eller partner med sitt organisationsnummer, momsnummer eller PIC. Projekt där kommunen deltar under ett annat namn eller som partner i Kohesio syns inte här; jämförelsen nedan visar vad andra kommuner har fått.`,
   historyRules: (sure, from) => `Säkra träffar: ${sure}. Projekt som slutade före ${from} räknas inte.`,
@@ -272,7 +272,7 @@ export const importedEn: ImportedTexts = {
     `In euro: ${range}, median ${median}. ${spread === "p10-p90" ? "The span shows the middle 80 per cent (10th–90th percentile)." : "The span shows the smallest and largest amount."} EU contribution per project.`,
   historyTab: "Your EU history",
   historyTitle: "Your EU history",
-  historyIntro: (name) => `${name}'s EU-funded projects since 2014, found in Kohesio, Keep.eu, CORDIS, the ESF Council's project bank and the EU Financial Transparency System.`,
+  historyIntro: (name) => `${name}'s EU-funded projects since 2014, found in Kohesio, Keep.eu, CORDIS, the ESF Council's project bank, the EU Financial Transparency System and the Erasmus+ project lists.`,
   historyNoProjects: (name) =>
     `The sources show no projects since 2014 where ${name} is beneficiary or partner under its organisation number, VAT number or PIC. Projects where the municipality takes part under another name, or as a partner in Kohesio, don't show here; the comparison below shows what other municipalities received.`,
   historyRules: (sure, from) => `Sure matches: ${sure}. Projects that ended before ${from} are not counted.`,

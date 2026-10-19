@@ -4,7 +4,7 @@ import path from "node:path";
 import { GENERATED_DIR, ROOT } from "../../lib/integrations/core/files";
 import { GeneratedDataset, SourceSystem } from "../../lib/integrations/core/types";
 
-export const SOURCES: SourceSystem[] = ["kohesio", "esf", "keep-eu", "cordis", "fts", "vinnova"];
+export const SOURCES: SourceSystem[] = ["kohesio", "esf", "keep-eu", "cordis", "fts", "erasmus", "vinnova"];
 /** The sources of EU funding; Vinnova is national and kept apart in the
  * municipality history. */
 export const EU_SOURCES: SourceSystem[] = SOURCES.filter((s) => s !== "vinnova");

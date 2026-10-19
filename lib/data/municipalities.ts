@@ -278,7 +278,8 @@ export const municipalityProfiles: Record<DemoProfileId, MunicipalityProfile> = 
     peerCaveats: [
       "ESF+ 2021–2027 kommer från ESF-rådets projektbank för hela landet och från Kohesio. Socialfonden 2014–2020 kommer bara från Kohesio, där förvaltningar ofta står utan organisationsnummer och därför blir kandidater som inte räknas.",
       "Kohesio och ESF-rådets projektbank anger bara projektägaren; projekt där kommunen är samverkanspart syns inte.",
-      "Program som kommissionen själv förvaltar (LIFE, CEF, Digital Europe, Creative Europe, CERV, Europe Direct, WiFi4EU) kommer från EU:s Financial Transparency System, matchade på momsnummer. Erasmus+ via Universitets- och högskolerådet (skolprojekt) ingår inte.",
+      "Program som kommissionen själv förvaltar (LIFE, CEF, Digital Europe, Creative Europe, CERV, Europe Direct, WiFi4EU) kommer från EU:s Financial Transparency System, matchade på momsnummer.",
+      "Erasmus+ kommer från EU:s projektlistor, som saknar organisationsnummer. Kommunen känns igen på namnet (\"Uppsala kommun Fritid\") eller på att skolan är en av kommunens egna enligt Skolverkets skolenhetsregister. Bidraget räknas bara där kommunen är koordinator och är då hela projektets bidrag; som partner räknas projektet men inget belopp. Friskolor, kommunalförbund och kommunala bolag räknas inte.",
       "Linköping, Örebro, Jönköping och Norrköping har ingen PIC som källorna knyter till organisationsnumret; CORDIS-träffar för dem kräver momsnummer.",
     ],
   },
@@ -289,7 +290,8 @@ export const municipalityProfiles: Record<DemoProfileId, MunicipalityProfile> = 
     peerCaveats: [
       "ESF+ 2021–2027 kommer från ESF-rådets projektbank för hela landet och från Kohesio. Socialfonden 2014–2020 kommer bara från Kohesio, där förvaltningar utan organisationsnummer blir kandidater som inte räknas.",
       "Kohesio och ESF-rådets projektbank anger bara projektägaren; projekt där kommunen är samverkanspart syns inte.",
-      "Program som kommissionen själv förvaltar (LIFE, CEF, Digital Europe, Creative Europe, CERV, Europe Direct, WiFi4EU) kommer från EU:s Financial Transparency System, matchade på momsnummer. Erasmus+ via Universitets- och högskolerådet (skolprojekt) ingår inte.",
+      "Program som kommissionen själv förvaltar (LIFE, CEF, Digital Europe, Creative Europe, CERV, Europe Direct, WiFi4EU) kommer från EU:s Financial Transparency System, matchade på momsnummer.",
+      "Erasmus+ kommer från EU:s projektlistor, som saknar organisationsnummer. Kommunen känns igen på namnet (\"Uppsala kommun Fritid\") eller på att skolan är en av kommunens egna enligt Skolverkets skolenhetsregister. Bidraget räknas bara där kommunen är koordinator och är då hela projektets bidrag; som partner räknas projektet men inget belopp. Friskolor, kommunalförbund och kommunala bolag räknas inte.",
       "Ingen av kommunerna har en PIC som källorna knyter till organisationsnumret; CORDIS-träffar kräver momsnummer.",
     ],
   },

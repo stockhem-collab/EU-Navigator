@@ -7,8 +7,8 @@
 
 /** "vinnova" is national (Swedish) innovation funding, not EU funding.
  * "fts" is the EU Financial Transparency System (programmes the Commission
- * manages itself). */
-export type SourceSystem = "kohesio" | "keep-eu" | "cordis" | "esf" | "fts" | "vinnova";
+ * manages itself). "erasmus" is the Erasmus+ project lists. */
+export type SourceSystem = "kohesio" | "keep-eu" | "cordis" | "esf" | "fts" | "erasmus" | "vinnova";
 
 export type CurrencyCode = "EUR" | "SEK";
 
@@ -92,6 +92,9 @@ export interface ImportedOrganisation {
   picNumber: string | null;
   /** Swedish organisationsnummer, 10 digits without dash. */
   organisationNumber: string | null;
+  /** Set when the import derived the organisationsnummer rather than read
+   * it from the source, e.g. from Skolverket's school-unit register. */
+  organisationNumberSource?: string | null;
   website: string | null;
 }
 

@@ -32,9 +32,10 @@ export function rawFiles(pattern: RegExp, dir = ""): string[] {
   return matches.map((f) => path.join(folder, f));
 }
 
-/** Newest file in data/raw/ matching a pattern, e.g. vinnova_projekt_*.json. */
-export function latestRawFile(pattern: RegExp): string {
-  const matches = rawFiles(pattern);
+/** Newest file in data/raw/ (or a folder in it) matching a pattern, e.g.
+ * vinnova_projekt_*.json. */
+export function latestRawFile(pattern: RegExp, dir = ""): string {
+  const matches = rawFiles(pattern, dir);
   return matches[matches.length - 1];
 }
 

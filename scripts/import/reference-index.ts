@@ -36,9 +36,10 @@ function readJson(name: string): unknown {
 }
 
 export function buildReferenceIndex(): ReferenceIndex {
-  // FTS feeds only the municipalities' history and comparison: its titles
-  // are budget commitments, not project descriptions to search.
-  const datasets = readGenerated().filter((ds) => ds.source !== "fts");
+  // FTS and Erasmus+ feed only the municipalities' history and comparison:
+  // FTS titles are budget commitments, not project descriptions to search,
+  // and Erasmus+ would add thousands of school exchanges to the index.
+  const datasets = readGenerated().filter((ds) => ds.source !== "fts" && ds.source !== "erasmus");
   const projects: IndexProject[] = [];
   const organisations: IndexOrganisation[] = [];
   const partners: IndexPartner[] = [];

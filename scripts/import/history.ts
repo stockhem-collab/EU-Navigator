@@ -45,6 +45,7 @@ const SOURCE_LABEL: Record<string, string> = {
   "keep-eu": "keep.eu",
   cordis: "CORDIS",
   fts: "EU:s Financial Transparency System",
+  erasmus: "Erasmus+ projektlistor",
   vinnova: "Vinnova",
 };
 

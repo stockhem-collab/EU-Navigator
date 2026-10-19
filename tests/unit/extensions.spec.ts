@@ -61,11 +61,12 @@ test.describe("leadership report", () => {
     expect(view!.peers.filter((p) => p.reference).map((p) => p.name)).toEqual(["Lidingö stad"]);
     for (const p of view!.peers) expect(p.population).toBeGreaterThan(30_000);
     expect(view!.peers.find((p) => p.name === "Södertälje kommun")!.projects).toBeGreaterThan(0);
-    // Vinnova is counted apart: Lidingö has no EU projects but coordinated
+    // Vinnova is counted apart: Lidingö's only EU projects are Erasmus+
+    // exchanges (Hersby gymnasium, the youth unit), and it coordinated
     // Vinnova projects (Rätt till insyn and others).
     const own = view!.peers.find((p) => p.reference)!;
-    expect(own.projects).toBe(0);
-    expect(own.euContributionSek).toBe(0);
+    expect(own.projects).toBeGreaterThan(0);
+    expect(own.byProgram.map((b) => b.key)).toEqual(["erasmus"]);
     expect(own.vinnova!.projects).toBeGreaterThanOrEqual(3);
   });
 });
