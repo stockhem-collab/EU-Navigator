@@ -24,7 +24,8 @@ test("switching the demo municipality to Lidingö and back to Uppsala", async ({
 
   await page.goto("/historik");
   await expect(page.getByText(/Lidingö stads EU-finansierade projekt sedan 2014/)).toBeVisible();
-  await expect(page.getByTestId("history-project-count")).toHaveText("0");
+  // Lidingö's sure matches are all Erasmus+ projects.
+  await expect(page.getByTestId("history-project-count")).toHaveText("19");
   await expect(page.getByTestId("history-peers").getByText("Södertälje kommun")).toBeVisible();
 
   await page.goto("/installningar/organisation");
@@ -35,5 +36,5 @@ test("switching the demo municipality to Lidingö and back to Uppsala", async ({
   await expect(page.getByPlaceholder("212000-0142")).toHaveValue("212000-3005");
 
   await page.goto("/historik");
-  await expect(page.getByTestId("history-project-count")).toHaveText("14");
+  await expect(page.getByTestId("history-project-count")).toHaveText("89");
 });

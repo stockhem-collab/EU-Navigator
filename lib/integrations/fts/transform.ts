@@ -1,10 +1,11 @@
 // EU Financial Transparency System (FTS) yearly datasets → normalised data.
 // FTS lists what the Commission itself commits (direct and indirect
-// management): LIFE, CEF, Digital Europe, Creative Europe, CERV, central
-// Erasmus+ actions, Europe Direct, WiFi4EU … with the beneficiary's
-// momsnummer. Rows are read only for beneficiaries in Sweden and only for
-// action grants (no procurement, prizes or expert fees). Horizon 2020,
-// Horizon Europe and Euratom are left out because CORDIS already has them.
+// management): LIFE, CEF, Digital Europe, Creative Europe, CERV, Europe
+// Direct, WiFi4EU … with the beneficiary's momsnummer. Rows are read only
+// for beneficiaries in Sweden and only for action grants (no procurement,
+// prizes or expert fees). Horizon 2020, Horizon Europe and Euratom are left
+// out because CORDIS already has them, and Erasmus+ because the Erasmus+
+// project lists (lib/integrations/erasmus) have every action of it.
 //
 // One project per legal commitment (LC); a commitment can run over several
 // budget lines and years, and the beneficiary's amount is the sum of its
@@ -45,6 +46,7 @@ function value(v: unknown): string | null {
 }
 
 const LEFT_OUT = /Horizon 2020|Horizon Europe|Euratom/i;
+const ERASMUS = /Erasmus\+|Lifelong learning/i;
 
 /** The app's programme id and a readable programme name. FTS names budget
  * headings ("2.0.4 - Fisheries governance …"), not programmes, so the
@@ -98,6 +100,10 @@ export function transformFts(rows: FtsRow[]): TransformResult {
     const heading = value(row[FTS_COL.programme]) ?? "";
     if (LEFT_OUT.test(heading)) {
       skipped.add("Horisont/Euratom (finns i CORDIS)");
+      continue;
+    }
+    if (ERASMUS.test(heading)) {
+      skipped.add("Erasmus+ (finns i Erasmus+-projektlistorna)");
       continue;
     }
     const lc = value(row[FTS_COL.lc]);

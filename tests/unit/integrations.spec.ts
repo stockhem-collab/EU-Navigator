@@ -13,6 +13,8 @@ import {
 import { cordisOrganisationType, cordisRole, isCitiesMission, transformCordis } from "../../lib/integrations/cordis/transform";
 import { transformEsf } from "../../lib/integrations/esf/transform";
 import { ftsProgramme, transformFts } from "../../lib/integrations/fts/transform";
+import { MunicipalRegister, SkolverketRegister } from "../../lib/integrations/erasmus/municipal";
+import { ErasmusRow, transformErasmus } from "../../lib/integrations/erasmus/transform";
 import { keepRole, transformKeepEu } from "../../lib/integrations/keep-eu/transform";
 import { diarienummerFromLocalId, transformKohesio } from "../../lib/integrations/kohesio/transform";
 import { transformVinnova, VinnovaProject } from "../../lib/integrations/vinnova/transform";
@@ -408,6 +410,12 @@ test.describe("fts", () => {
     });
   });
 
+  test("leaves out Erasmus+, which comes from the Erasmus+ project lists", () => {
+    const result = transformFts([ftsRow({ "Programme name": "2.2.32 - Erasmus+" })]);
+    expect(result.projects).toHaveLength(0);
+    expect(result.skipped).toEqual({ "Erasmus+ (finns i Erasmus+-projektlistorna)": 1 });
+  });
+
   test("programme from the budget heading and the subject", () => {
     expect(ftsProgramme("1.0.221 - Connecting Europe Facility (CEF) - Transport", "2019-SE-TM-0001")).toEqual({ programId: "cef", programmeName: "Connecting Europe Facility (CEF)" });
     expect(ftsProgramme("1.1.83 - Information and Communications Technology (ICT)", "WIFI4EU INITIATIVE FOR THE FINANCING")).toEqual({ programId: null, programmeName: "WiFi4EU" });
@@ -415,6 +423,129 @@ test.describe("fts", () => {
     expect(ftsProgramme("2.2.352 - Rights and Values", "TOWN TWINNING").programId).toBe("cerv");
     expect(ftsProgramme("3.0.7 - Culture and audiovisual media", "NETWORKS OF TWINNED TOWNS : SUSTAINABLE AGEING")).toEqual({ programId: null, programmeName: "Europa för medborgarna" });
     expect(ftsProgramme("1.1.82 - Transport", "BALTIC LINK").programId).toBe("cef");
+  });
+});
+
+test.describe("erasmus", () => {
+  const register = new MunicipalRegister({
+    fetchedAt: "2026-10-19T00:00:00Z",
+    units: [
+      { code: "1", name: "Lundellska skolan" },
+      { code: "2", name: "Katedralskolan" },
+      { code: "3", name: "Katedralskolan 1" },
+      { code: "4", name: "Dragonskolan GY1" },
+      { code: "5", name: "Kunskapsskolan Uppsala" },
+      { code: "6", name: "Habo skola" },
+    ],
+    municipalities: [
+      { orgNumber: "2120003005", municipalityCode: "0380", name: "Uppsala", unitCodes: ["1", "2"] },
+      { orgNumber: "2120000449", municipalityCode: "0580", name: "Linköping", unitCodes: ["3"] },
+      { orgNumber: "2120002763", municipalityCode: "2480", name: "Umeå", unitCodes: ["4"] },
+      { orgNumber: "2120001850", municipalityCode: "0643", name: "Habo", unitCodes: ["6"] },
+      { orgNumber: "2120000209", municipalityCode: "0305", name: "Håbo", unitCodes: [] },
+      { orgNumber: "2120001215", municipalityCode: "1480", name: "Göteborg", unitCodes: [] },
+    ],
+  } satisfies SkolverketRegister);
+  const school = "School/Institute/Educational centre – General education (secondary level)";
+  const match = (name: string, address = "", type = school) => register.match({ name, type, address })?.municipality ?? null;
+
+  test("municipality from its name, also in English and without accents", () => {
+    expect(match("Uppsala kommun Fritid", "", "Local Public body")).toBe("Uppsala");
+    expect(match("City of Gothenburg", "", "Other")).toBe("Göteborg");
+    expect(match("UMEA KOMMUN", "", "")).toBe("Umeå");
+    expect(match("Habo Kommun", "", "")).toBe("Habo");
+    expect(match("Håbo kommun", "", "")).toBe("Håbo");
+    expect(match("Region Uppsala", "", "Regional Public body")).toBeNull();
+    expect(match("Uppsala kommuns bostadsbolag AB", "", "Other")).toBeNull();
+  });
+
+  test("schools through Skolverket's register, checked against the address town", () => {
+    expect(match("Lundellska skolan", "Kungsgatan 1, 753 21, Uppsala")).toBe("Uppsala");
+    expect(match("Lundellska skolan")).toBe("Uppsala");
+    expect(match("Katedralskolan", "Platengatan 20, 582 20, LINKÖPING")).toBe("Linköping");
+    expect(match("Katedralskolan Uppsala", "Skolgatan 2, 753 75, Uppsala")).toBe("Uppsala");
+    expect(match("Katedralskolan")).toBeNull();
+    expect(match("Dragonskolan", "Dragongatan 1, 903 22, Umeå")).toBe("Umeå");
+    expect(match("Lundellska skolan", "Storgatan 1, 582 20, Linköping")).toBeNull();
+    expect(match("Kunskapsskolan Uppsala", "Gatan 1, 753 20, Uppsala")).toBeNull();
+    expect(match("Lundellska skolan", "", "Small and medium sized enterprise")).toBeNull();
+  });
+
+  const row = (over: Partial<ErasmusRow>): ErasmusRow => ({
+    "Key Action": "Learning Mobility of Individuals",
+    "Action Type": "School education staff mobility",
+    "Call year": "2019",
+    "Project Identifier": "2019-1-SE01-KA101-060000",
+    "Project Title": "Teachers abroad",
+    "Project Status": "finalized",
+    "EU Grant award in euros (This amount represents the grant awarded after the selection stage and is indicative.)": "25000.00",
+    "Results Platform Project Card": "https://erasmus-plus.ec.europa.eu/projects/search/details/2019-1-SE01-KA101-060000",
+    "Coordinating organisation name": "Lundellska skolan",
+    "Coordinating organisation type": school,
+    "Coordinator's address": "Kungsgatan 1, 753 21, Uppsala",
+    "Coordinator's country": "SE",
+    "Partner 1 name": "Liceo Roma",
+    "Partner 1 organisation type": school,
+    "Partner 1 address": "Via 1, 00100, Roma",
+    "Partner 1 country": "IT",
+    "Partner 2 name": "",
+    "Partner 2 organisation type": "",
+    "Partner 2 address": "",
+    "Partner 2 country": "",
+    ...over,
+  });
+
+  test("Swedish participants only; the grant goes on the coordinator", () => {
+    const result = transformErasmus(
+      [
+        row({}),
+        row({
+          "Project Identifier": "2022-1-IT02-KA220-SCH-000001",
+          "Call year": "2022",
+          "Coordinating organisation name": "Liceo Roma",
+          "Coordinator's address": "Via 1, 00100, Roma",
+          "Coordinator's country": "IT",
+          "Partner 1 name": "Uppsala kommun",
+          "Partner 1 organisation type": "Local Public body",
+          "Partner 1 address": "Stationsgatan 12, 753 75, Uppsala",
+          "Partner 1 country": "SE",
+        }),
+      ],
+      register,
+    );
+    expect(result.projects.map((p) => p.id)).toEqual(["erasmus:2019-1-SE01-KA101-060000", "erasmus:2022-1-IT02-KA220-SCH-000001"]);
+    expect(result.projects[0]).toMatchObject({
+      sourceSystem: "erasmus",
+      programId: "erasmus",
+      period: "2014-2020",
+      startDate: "2019-01-01",
+      status: "closed",
+      euContribution: { amount: 25000, currency: "EUR" },
+    });
+    expect(result.partners).toHaveLength(2);
+    expect(result.partners[0]).toMatchObject({ role: "coordinator", euContribution: { amount: 25000, currency: "EUR" } });
+    expect(result.partners[1]).toMatchObject({ role: "partner", euContribution: null });
+    const lundellska = result.organisations.find((o) => o.name === "Lundellska skolan")!;
+    expect(lundellska).toMatchObject({ city: "Uppsala", organisationNumber: "2120003005" });
+    expect(lundellska.organisationNumberSource).toContain("Skolverket");
+  });
+
+  test("leaves out accreditations, projects without Swedes and repeats", () => {
+    const result = transformErasmus(
+      [
+        row({ "Action Type": "Erasmus accreditation in school education" }),
+        row({ "Coordinator's country": "NO" }),
+        row({}),
+        row({}),
+      ],
+      register,
+    );
+    expect(result.projects).toHaveLength(1);
+    expect(result.skipped).toEqual({
+      "ackreditering (inget bidrag)": 1,
+      "ingen svensk deltagare": 1,
+      "samma projekt i flera filer": 1,
+    });
   });
 });
 

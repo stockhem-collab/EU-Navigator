@@ -133,7 +133,8 @@ export function sureMatch(
   if (vat && ids.vat && vat === ids.vat) return { key: "momsnummer", value: vat };
   const orgNumber = organisationNumberOf(org);
   if (orgNumber && orgNumber === ids.orgNumber) {
-    return { key: "organisationsnummer", value: orgNumber };
+    const derived = org.organisationNumberSource;
+    return { key: "organisationsnummer", value: derived ? `${orgNumber} (${derived})` : orgNumber };
   }
   return null;
 }
