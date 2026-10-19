@@ -11,6 +11,7 @@ const SOURCE_LABELS: Record<SourceSystem, { sv: string; en: string }> = {
   esf: { sv: "ESF-projektbanken", en: "ESF project bank" },
   fts: { sv: "EU:s transparenssystem (FTS)", en: "EU Financial Transparency System" },
   erasmus: { sv: "Erasmus+", en: "Erasmus+" },
+  tillvaxtverket: { sv: "Tillväxtverkets projektbank", en: "Tillväxtverket project bank" },
   vinnova: { sv: "Vinnova", en: "Vinnova" },
 };
 
@@ -19,10 +20,13 @@ export function isNationalSource(source: SourceSystem): boolean {
   return source === "vinnova";
 }
 
-/** The sources in the reference index. FTS and Erasmus+ are read only for
- * the municipalities' history and comparison. */
+/** Read only for the municipalities' history and comparison, not the
+ * reference index. */
+export const HISTORY_ONLY_SOURCES: SourceSystem[] = ["fts", "erasmus", "tillvaxtverket"];
+
+/** The sources in the reference index. */
 export const IMPORTED_SOURCES = (Object.keys(SOURCE_LABELS) as SourceSystem[]).filter(
-  (s) => s !== "fts" && s !== "erasmus",
+  (s) => !HISTORY_ONLY_SOURCES.includes(s),
 );
 
 export function sourceLabel(source: SourceSystem, lang: Lang): string {

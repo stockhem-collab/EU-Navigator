@@ -17,6 +17,7 @@ import { MunicipalRegister, SkolverketRegister } from "../../lib/integrations/er
 import { ErasmusRow, transformErasmus } from "../../lib/integrations/erasmus/transform";
 import { keepRole, transformKeepEu } from "../../lib/integrations/keep-eu/transform";
 import { diarienummerFromLocalId, transformKohesio } from "../../lib/integrations/kohesio/transform";
+import { kohesioCaseIds, transformTillvaxtverket, TVV_COL } from "../../lib/integrations/tillvaxtverket/transform";
 import { transformVinnova, VinnovaProject } from "../../lib/integrations/vinnova/transform";
 import { findVinnovaProjects } from "../../lib/integrations/municipality/vinnova";
 import { lidingoMatch, uppsalaMatch } from "../../lib/data/municipalities";
@@ -546,6 +547,55 @@ test.describe("erasmus", () => {
       "ingen svensk deltagare": 1,
       "samma projekt i flera filer": 1,
     });
+  });
+});
+
+test.describe("tillväxtverket", () => {
+  const row = (extra: Record<string, unknown>) => ({
+    [TVV_COL.id]: "20360001",
+    [TVV_COL.beneficiary]: "Uppsala kommun",
+    [TVV_COL.web]: "UPPGIFT SAKNAS",
+    [TVV_COL.name]: "Integration i Uppsala",
+    [TVV_COL.summary]: "Ett projekt.",
+    [TVV_COL.start]: "2023-01-01",
+    [TVV_COL.end]: "2025-12-31",
+    [TVV_COL.fund]: "AMIF",
+    [TVV_COL.goal]: "EU 2027",
+    [TVV_COL.programme]: "AMIF",
+    [TVV_COL.euSek]: 750000,
+    [TVV_COL.totalSek]: 1000000,
+    [TVV_COL.rate]: "75",
+    [TVV_COL.orgnr]: "2120003005",
+    [TVV_COL.cci]: "2021SE65AMPR001",
+    ...extra,
+  });
+
+  test("keeps projects Kohesio and keep.eu lack, with the beneficiary's organisationsnummer", () => {
+    const inKohesio = kohesioCaseIds(["2021SE16RFPR004_20360002", "2021SE05SFPR001_22-002-S01"]);
+    expect([...inKohesio]).toEqual(["20360002"]);
+    const result = transformTillvaxtverket(
+      [
+        row({ [TVV_COL.id]: "Deltotal" }),
+        row({}),
+        row({ [TVV_COL.id]: "20360002", [TVV_COL.fund]: "ERUF" }),
+        row({ [TVV_COL.id]: "20360003", [TVV_COL.goal]: "EU ETC", [TVV_COL.programme]: "AURORA" }),
+        row({ [TVV_COL.id]: "20360004", [TVV_COL.fund]: "ERUF", [TVV_COL.cci]: "2021SE16RFPR004" }),
+      ],
+      inKohesio,
+    );
+    expect(result.projects.map((p) => [p.id, p.programId, p.programmeName])).toEqual([
+      ["tillvaxtverket:20360001", "amif", "Asyl-, migrations- och integrationsfonden"],
+      ["tillvaxtverket:20360004", "erdf", "Europeiska regionala utvecklingsfonden"],
+    ]);
+    expect(result.projects[0]).toMatchObject({
+      period: "2021-2027",
+      euContribution: { amount: 750000, currency: "SEK" },
+      coFinancingRate: 0.75,
+      startDate: "2023-01-01",
+    });
+    expect(result.organisations).toHaveLength(1);
+    expect(result.organisations[0]).toMatchObject({ organisationNumber: "2120003005", website: null });
+    expect(result.skipped).toMatchObject({ "finns i Kohesio": 1, "Interreg (finns i keep.eu)": 1 });
   });
 });
 

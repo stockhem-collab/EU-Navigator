@@ -83,7 +83,8 @@ export interface ImportedTexts {
   confirmedManually: string;
   rejectedTitle: (count: number) => string;
   peersTitle: string;
-  peersIntro: string;
+  peersIntro: (group: string) => string;
+  peerGroupLabel: string;
   colMunicipality: string;
   vinnovaTitle: string;
   vinnovaIntro: (name: string, count: number, total: string) => string;
@@ -163,9 +164,9 @@ export const importedSv: ImportedTexts = {
     `I euro: ${range}, median ${median}. ${spread === "p10-p90" ? "Spannet visar de mittersta 80 procenten (10:e–90:e percentilen)." : "Spannet visar minsta och största belopp."} EU-bidrag per projekt.`,
   historyTab: "Er EU-historik",
   historyTitle: "Er EU-historik",
-  historyIntro: (name) => `${name}s EU-finansierade projekt sedan 2014, hittade i Kohesio, Keep.eu, CORDIS, ESF-rådets projektbank, EU:s Financial Transparency System och Erasmus+ projektlistor.`,
+  historyIntro: (name) => `${name}s EU-finansierade projekt sedan 2014, hittade i Kohesio, Keep.eu, CORDIS, ESF-rådets och Tillväxtverkets projektbanker, EU:s Financial Transparency System och Erasmus+ projektlistor.`,
   historyNoProjects: (name) =>
-    `Källorna visar inga projekt sedan 2014 där ${name} är stödmottagare eller partner med sitt organisationsnummer, momsnummer eller PIC. Projekt där kommunen deltar under ett annat namn eller som partner i Kohesio syns inte här; jämförelsen nedan visar vad andra kommuner har fått.`,
+    `Källorna visar inga projekt sedan 2014 där ${name} är stödmottagare eller partner med sitt organisationsnummer, momsnummer, PIC eller kommunens namn. Projekt där kommunen deltar under ett annat namn eller som partner i Kohesio syns inte här; jämförelsen nedan visar vad andra kommuner har fått.`,
   historyRules: (sure, from) => `Säkra träffar: ${sure}. Projekt som slutade före ${from} räknas inte.`,
   historyNone: "Ingen historik är importerad.",
   statProjects: "Projekt",
@@ -190,8 +191,9 @@ export const importedSv: ImportedTexts = {
   undoDecision: "Ångra",
   confirmedManually: "Bekräftad manuellt",
   rejectedTitle: (count) => `Avfärdade träffar (${count})`,
-  peersTitle: "Jämfört med de största kommunerna",
-  peersIntro: "Samma sökning för de tio största kommunerna. EU-bidraget är kommunens egen andel.",
+  peersTitle: "Jämfört med andra kommuner",
+  peersIntro: (group) => `Samma sökning för jämförelsegruppen. ${group} EU-bidraget är kommunens egen andel.`,
+  peerGroupLabel: "Jämför med",
   vinnovaTitle: "Nationell innovationsfinansiering (Vinnova)",
   vinnovaIntro: (name, count, total) =>
     `${name} har varit koordinator i ${count} Vinnovaprojekt sedan 2014, med ${total} i beviljat bidrag. Vinnova anger inget organisationsnummer, så träffen bygger på att koordinatorns namn är exakt kommunens. Bidragen är nationella och ingår inte i EU-siffrorna ovan.`,
@@ -272,9 +274,9 @@ export const importedEn: ImportedTexts = {
     `In euro: ${range}, median ${median}. ${spread === "p10-p90" ? "The span shows the middle 80 per cent (10th–90th percentile)." : "The span shows the smallest and largest amount."} EU contribution per project.`,
   historyTab: "Your EU history",
   historyTitle: "Your EU history",
-  historyIntro: (name) => `${name}'s EU-funded projects since 2014, found in Kohesio, Keep.eu, CORDIS, the ESF Council's project bank, the EU Financial Transparency System and the Erasmus+ project lists.`,
+  historyIntro: (name) => `${name}'s EU-funded projects since 2014, found in Kohesio, Keep.eu, CORDIS, the ESF Council's and Tillväxtverket's project banks, the EU Financial Transparency System and the Erasmus+ project lists.`,
   historyNoProjects: (name) =>
-    `The sources show no projects since 2014 where ${name} is beneficiary or partner under its organisation number, VAT number or PIC. Projects where the municipality takes part under another name, or as a partner in Kohesio, don't show here; the comparison below shows what other municipalities received.`,
+    `The sources show no projects since 2014 where ${name} is beneficiary or partner under its organisation number, VAT number, PIC or the municipality's name. Projects where the municipality takes part under another name, or as a partner in Kohesio, don't show here; the comparison below shows what other municipalities received.`,
   historyRules: (sure, from) => `Sure matches: ${sure}. Projects that ended before ${from} are not counted.`,
   historyNone: "No history has been imported.",
   statProjects: "Projects",
@@ -299,8 +301,9 @@ export const importedEn: ImportedTexts = {
   undoDecision: "Undo",
   confirmedManually: "Confirmed manually",
   rejectedTitle: (count) => `Rejected matches (${count})`,
-  peersTitle: "Compared with the largest municipalities",
-  peersIntro: "The same search for the ten largest municipalities. The EU contribution is the municipality's own share.",
+  peersTitle: "Compared with other municipalities",
+  peersIntro: (group) => `The same search for the comparison group. ${group} The EU contribution is the municipality's own share.`,
+  peerGroupLabel: "Compare with",
   vinnovaTitle: "National innovation funding (Vinnova)",
   vinnovaIntro: (name, count, total) =>
     `${name} has coordinated ${count} Vinnova ${count === 1 ? "project" : "projects"} since 2014, with ${total} in grants. Vinnova gives no organisation number, so a project is matched when the coordinator's name is exactly the municipality's. The grants are national and not part of the EU figures above.`,

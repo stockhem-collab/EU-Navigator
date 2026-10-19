@@ -7,8 +7,10 @@
 
 /** "vinnova" is national (Swedish) innovation funding, not EU funding.
  * "fts" is the EU Financial Transparency System (programmes the Commission
- * manages itself). "erasmus" is the Erasmus+ project lists. */
-export type SourceSystem = "kohesio" | "keep-eu" | "cordis" | "esf" | "fts" | "erasmus" | "vinnova";
+ * manages itself). "erasmus" is the Erasmus+ project lists. "tillvaxtverket"
+ * is Tillväxtverket's projektbank (regional fund 2021–2027 and the home
+ * affairs funds). */
+export type SourceSystem = "kohesio" | "keep-eu" | "cordis" | "esf" | "fts" | "erasmus" | "tillvaxtverket" | "vinnova";
 
 export type CurrencyCode = "EUR" | "SEK";
 

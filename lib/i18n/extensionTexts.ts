@@ -79,7 +79,8 @@ export interface ExtensionTexts {
     cofinancingPeak: (sek: string, year: number) => string;
     cofinancingLink: string;
     peersTitle: string;
-    peersIntro: (name: string) => string;
+    peersIntro: (name: string, group: string) => string;
+    peerGroupLabel: string;
     colMunicipality: string;
     colPopulation: string;
     colProjects: string;
@@ -240,9 +241,10 @@ export const extensionSv: ExtensionTexts = {
     cofinancingLine: (a, p) => `${a} för beviljade projekt och ${p} för ansökningar hos finansiären.`,
     cofinancingPeak: (sek, year) => `Kommunen ligger som mest ute med ${sek} i väntan på utbetalningar (${year}).`,
     cofinancingLink: "Se medfinansiering och likviditet per år",
-    peersTitle: "Jämförelse med de största kommunerna",
-    peersIntro: (name) =>
-      `EU-bidrag till ${name} och de tio största kommunerna sedan 2014, i säkra träffar på organisationsnummer, momsnummer eller PIC. Per invånare gör kommuner av olika storlek jämförbara.`,
+    peersTitle: "Jämförelse med andra kommuner",
+    peersIntro: (name, group) =>
+      `EU-bidrag till ${name} och jämförelsegruppen sedan 2014, i säkra träffar på organisationsnummer, momsnummer, PIC eller ett namn som säger att det är kommunen. ${group} Per invånare gör kommuner av olika storlek jämförbara.`,
+    peerGroupLabel: "Jämför med",
     colMunicipality: "Kommun",
     colPopulation: "Invånare",
     colProjects: "Projekt",
@@ -406,9 +408,10 @@ export const extensionEn: ExtensionTexts = {
     cofinancingLine: (a, p) => `${a} for awarded projects and ${p} for applications with the funder.`,
     cofinancingPeak: (sek, year) => `At most, the municipality has ${sek} paid out while waiting for payments (${year}).`,
     cofinancingLink: "See co-financing and liquidity per year",
-    peersTitle: "Compared with the largest municipalities",
-    peersIntro: (name) =>
-      `EU grants to ${name} and the ten largest municipalities since 2014, counting sure matches on registration number, VAT number or PIC. Per inhabitant makes municipalities of different size comparable.`,
+    peersTitle: "Compared with other municipalities",
+    peersIntro: (name, group) =>
+      `EU grants to ${name} and the comparison group since 2014, counting sure matches on registration number, VAT number, PIC or a name that says it is the municipality. ${group} Per inhabitant makes municipalities of different size comparable.`,
+    peerGroupLabel: "Compare with",
     colMunicipality: "Municipality",
     colPopulation: "Inhabitants",
     colProjects: "Projects",

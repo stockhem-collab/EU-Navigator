@@ -1,7 +1,10 @@
 // Projects per programme for a demo municipality and its comparison group
 // (lib/data/municipalities.ts) → lib/data/generated/<profile>-peers.json,
-// written by scripts/import/history.ts. Same rules as the history: sure hits
-// on PIC, momsnummer or organisationsnummer only; name matches are listed as
+// written by scripts/import/history.ts. The profile's comparison groups (the
+// ten largest municipalities, the SKR kommungrupp …) share one list of
+// municipalities; each group names its members by kommunkod. Same rules as
+// the history: sure hits on PIC, momsnummer, organisationsnummer or a name
+// that says it is the municipality; other name matches are listed as
 // candidates and not counted. Vinnova projects (national funding) are counted
 // apart, per municipality, and never added to the EU figures.
 
@@ -78,6 +81,13 @@ function totals(projects: HistoryProject[], rates: ReturnType<typeof readEurSekR
   };
 }
 
+/** Every municipality in any of the profile's groups, once. */
+function uniquePeers(profile: MunicipalityProfile): MunicipalityMatchConfig[] {
+  const seen = new Map<string, MunicipalityMatchConfig>();
+  for (const g of profile.peerGroups) for (const m of g.peers) if (!seen.has(m.kommunkod)) seen.set(m.kommunkod, m);
+  return [...seen.values()];
+}
+
 export function peersFile(
   profile: MunicipalityProfile,
   all: GeneratedDataset[],
@@ -121,7 +131,8 @@ export function peersFile(
     sources: EU_SOURCES,
     nationalSources: vinnovaData ? ["vinnova"] : [],
     rules: {
-      sureMatch: "PIC, momsnummer eller organisationsnummer hos en partner i projektet",
+      sureMatch:
+        "PIC, momsnummer eller organisationsnummer hos en partner i projektet, eller en partner utan organisationsnummer vars namn säger att den är kommunen eller en av dess förvaltningar",
       candidates: "namnlika organisationer och projekttitlar; listas men räknas inte",
       historyFrom: HISTORY_FROM,
       amount:
@@ -130,6 +141,12 @@ export function peersFile(
         "Vinnovaprojekt där kommunen är koordinator, på exakt namn (Vinnova anger inget organisationsnummer). Nationella bidrag i kronor, redovisas för sig.",
       caveats: profile.peerCaveats,
     },
-    municipalities: [run(profile.match, true), ...profile.peers.map((m) => run(m, false))],
+    groups: profile.peerGroups.map((g) => ({
+      id: g.id,
+      label: g.label,
+      description: g.description,
+      members: g.peers.map((m) => m.kommunkod),
+    })),
+    municipalities: [run(profile.match, true), ...uniquePeers(profile).map((m) => run(m, false))],
   };
 }

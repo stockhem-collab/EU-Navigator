@@ -1,15 +1,15 @@
 # Uppsala kommun – avstämning mot kontrollistan
 
-Genererad 2026-10-19 av `npm run history:uppsala` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS, EU:s Financial Transparency System, Erasmus+ projektlistor och Vinnova) och `data/kontrollista.csv`. Ändra inte för hand; kör skriptet igen.
+Genererad 2026-10-19 av `npm run history:uppsala` från `lib/data/generated/` (Kohesio, ESF-rådets projektbank, keep.eu, CORDIS, EU:s Financial Transparency System, Erasmus+ projektlistor, Tillväxtverkets projektbank och Vinnova) och `data/kontrollista.csv`. Ändra inte för hand; kör skriptet igen.
 
-Säker träff kräver Uppsala kommuns PIC (kommunen eller en av de fyra enheterna), momsnummer eller organisationsnummer hos en partner i projektet. Namnlika träffar är kandidater för manuell granskning och räknas inte. Uppsala universitet, Region Uppsala, SLU och Länsstyrelsen i Uppsala län räknas aldrig, inte heller andra universitet, regioner, länsstyrelser, kommunalförbund och kyrkor. Uppsala Stadshus AB och dotterbolagen listas bara som kandidater. Projekt som slutade före 2014 visas inte i historiken.
+Säker träff kräver Uppsala kommuns PIC (kommunen eller en av de fyra enheterna), momsnummer eller organisationsnummer hos en partner i projektet, eller en partner utan organisationsnummer vars namn säger att den är kommunen eller en av dess förvaltningar ("Uppsala kommun", "Utbildningsförvaltningen, Uppsala kommun", "City of Uppsala"). Andra namnlika träffar är kandidater för manuell granskning och räknas inte. Uppsala universitet, Region Uppsala, SLU och Länsstyrelsen i Uppsala län räknas aldrig, inte heller andra universitet, regioner, länsstyrelser, kommunalförbund och kyrkor. Uppsala Stadshus AB och dotterbolagen listas bara som kandidater. Projekt som slutade före 2014 visas inte i historiken.
 
 ## Sammanfattning
 
-- Finns i båda: 14 (varav 0 med beloppsavvikelse)
-- Bara i källorna: 75
+- Finns i båda: 16 (varav 0 med beloppsavvikelse)
+- Bara i källorna: 76
 - Bara i kontrollistan: 1
-- Osäkra kandidater: 5 (varav 4 som kontrollistan tar upp)
+- Osäkra kandidater: 3 (varav 2 som kontrollistan tar upp)
 - Förväntas inte i källorna ("Ingen"): 2
 - Före 2014, visas inte i historiken: 2
 
@@ -23,10 +23,12 @@ Säker träff kräver Uppsala kommuns PIC (kommunen eller en av de fyra enhetern
 | Uppsalamodell av allaktivitetshus i Gottsunda | [Uppsalamodell av allaktivitetshus i Gottsunda](https://kohesio.ec.europa.eu/en/projects/Q7362476) (Kohesio) | projektnamn (100 % av orden) | organisationsnummer 2120003005 | **lika**: 804 573,06 EUR | lika |
 | Fast Care – utbildning för personer från Ukraina | [Fast Care, Utbildning för personer från Ukraina](https://kohesio.ec.europa.eu/en/projects/Q7362425) (Kohesio) | projektnamn (100 % av orden) | organisationsnummer 2120003005 | **lika**: 211 507,92 EUR | lika |
 | LOWINFOOD – minskat matsvinn i livsmedelskedjan | [Multi-actor design of low-waste food value chains through the demonstration of innovative solutions to reduce food loss and waste](https://cordis.europa.eu/project/id/101000439) (CORDIS) | CORDIS-id 101000439 | pic 951881080 | **lika**: 90 001,25 EUR | lika |
+| COBEN – Delivering Community Benefits of Civic Energy | [Delivering Community Benefits of Civic Energy](http://www.northsearegion.eu/) (keep.eu) | akronym COBEN | namn "Uppsala Municipality" | **lika**: 211 609 EUR | lika |
 | Effektivare mottagande | [Effektivare mottagande](https://kohesio.ec.europa.eu/en/projects/Q4039446) (Kohesio) | projektnamn (100 % av orden) | organisationsnummer 2120003005 | **lika**: 412 804,77 EUR | lika |
 | Minskad klimatpåverkan från plast inom kommunal verksamhet | [Minskad klimatpåverkan från plast inom kommunal verksamhet](https://kohesio.ec.europa.eu/en/projects/Q2660425) (Kohesio) | projektnamn (100 % av orden) | organisationsnummer 2120003005 | **lika**: 350 276,05 EUR | lika |
 | Lokalt klimatarbete, regionalt lärande och färdplaner mot en koldioxidsnål ekonomi | [LOKALT KLIMATARBETE, REGIONALT LÄRANDE OCH FÄRDPLANER MOT EN KOLDIOXIDSNÅL EKONOMI](https://kohesio.ec.europa.eu/en/projects/Q2660037) (Kohesio) | projektnamn (100 % av orden) | organisationsnummer 2120003005 | **lika**: 193 232,26 EUR | lika |
 | Sammanhållen och träffsäker hållbar stadsbyggnadsprocess – förstudie | [Sammanhållen och träffsäker hållbar stadsbyggnadsprocess - förstudie](https://kohesio.ec.europa.eu/en/projects/Q2660533) (Kohesio) | projektnamn (100 % av orden) | organisationsnummer 2120003005 | **lika**: 20 132,71 EUR | lika |
+| Innovationskompetens | [Innovationskompetens](https://kohesio.ec.europa.eu/en/projects/Q4039648) (Kohesio) | diarienummer 2018/00076 | namn "Äldreförvaltningen, Uppsala kommun" | **lika**: 864 334,85 EUR | lika |
 | Kompetensutveckling AMF | Kompetensutveckling AMF (ESF-rådets projektbank) | diarienummer 24-030-S04 | organisationsnummer 2120003005 | **jämförs inte**: kontrollistan anger "Beviljat ESF-stöd inkl. nationell medfinansiering", källan anger EU-bidrag | lika |
 | Yrkesvägledning för framtiden | Yrkesvägledning för framtiden (ESF-rådets projektbank) | diarienummer 24-056-S07 | organisationsnummer 2120003005 | **jämförs inte**: kontrollistan anger "Beviljat ESF-stöd inkl. nationell medfinansiering", källan anger EU-bidrag | lika |
 | Framtidskraft | Framtidskraft (ESF-rådets projektbank) | diarienummer 24-063-S05 | organisationsnummer 2120003005 | **jämförs inte**: kontrollistan anger "Beviljat ESF-stöd inkl. nationell medfinansiering", källan anger EU-bidrag | lika |
@@ -113,6 +115,7 @@ Säkra träffar som kontrollistan saknar.
 | [Let the water give you wings](https://erasmus-plus.ec.europa.eu/projects/search/details/2025-3-SE02-KA152-YOU-000386296) | Erasmus+ projektlistor | Erasmus+ | 2025-01-01 – ? | Coordinator | 60 250 EUR | organisationsnummer 2120003005 (namnet "Uppsala kommun Fritid") |
 | [Internationalisering i skola](https://erasmus-plus.ec.europa.eu/projects/search/details/2025-1-SE01-KA122-SCH-000314555) | Erasmus+ projektlistor | Erasmus+ | 2025-01-01 – ? | Coordinator | 51 111 EUR | organisationsnummer 2120003005 (Skolverket: kommunal skolenhet "Västra Stenhagenskolan" i Uppsala) |
 | [READ-Y: Reading Empowerment and Digital development for Youth](https://erasmus-plus.ec.europa.eu/projects/search/details/2025-1-FI01-KA220-SCH-000357781) | Erasmus+ projektlistor | Erasmus+ | 2025-01-01 – ? | Partner | – | organisationsnummer 2120003005 (Skolverket: kommunal skolenhet "Ramsta skola" i Uppsala) |
+| MOSAIK - Metoder och stöd för föräldrar (TLM) för att aktivt motverka kriminalitet hos barn | Tillväxtverkets projektbank | Asyl-, migrations- och integrationsfonden | 2025-01-01 – 2027-12-31 | Stödmottagare | 6 284 895 SEK | organisationsnummer 2120003005 |
 
 ## 3. Bara i kontrollistan
 
@@ -127,8 +130,6 @@ Namnlika träffar och projekt som bara kopplas via kontrollistans diarienummer. 
 | Projekt | Källa | Organisation i källan | Varför kandidat | Period | EU-bidrag | I kontrollistan |
 |---|---|---|---|---|---|---|
 | DEMONSTRATION AND EVALUATION OF SUSTAINABLE ON-SITE REMEDIATION TECHNOLOGIES FOR PFAS-CONTAMINATED GROUNDWATER | EU:s Financial Transparency System | UPPSALA VATTEN OCH AVFALL AB | kommunalt bolag | ? – ? | 62 278 EUR | nej |
-| [Delivering Community Benefits of Civic Energy](http://www.northsearegion.eu/) | keep.eu | Uppsala Municipality | namnvariant | 2016-10-01 – 2022-09-30 | 211 609 EUR | ja, rad 8 "COBEN – Delivering Community Benefits of Civic Energy" (akronym COBEN) |
-| [Innovationskompetens](https://kohesio.ec.europa.eu/en/projects/Q4039648) | Kohesio | Äldreförvaltningen, Uppsala kommun | namnvariant | 2018-10-01 – 2020-09-30 | 864 335 EUR | ja, rad 13 "Innovationskompetens" (diarienummer 2018/00076) |
 | [Siri- förstudie Uppsala kommun](https://kohesio.ec.europa.eu/en/projects/Q4040148) | Kohesio | Arbetsmarknadsavdelningen | projekttitel | 2021-02-01 – 2021-09-30 | 18 065 EUR | ja, rad 14 "Siri – förstudie Uppsala kommun" (diarienummer 2020/00692) |
 | [Språkstöd KIVO-C](https://kohesio.ec.europa.eu/en/projects/Q4039262) | Kohesio | Arbetsmarknadsförvaltningen | diarienummer i kontrollistan | 2016-08-01 – 2020-01-31 | 580 174 EUR | ja, rad 15 "Språkstöd KIVO-C" (diarienummer 2015/00969) |
 

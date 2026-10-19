@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import PeerGroupPicker from "@/components/imported/PeerGroupPicker";
 import { useEffect, useMemo, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -174,7 +175,10 @@ export default function LeadershipReport({ view }: { view: LeadershipView | null
             <p className="mt-2 text-sm text-navy-500">{lr.noPeers}</p>
           ) : (
             <>
-              <p className="mt-1 max-w-3xl text-sm text-navy-500">{lr.peersIntro(own.name)}</p>
+              <PeerGroupPicker label={lr.peerGroupLabel} groups={view.peerGroups} active={view.peerGroup} />
+              <p className="mt-2 max-w-3xl text-sm text-navy-500">
+                {lr.peersIntro(own.name, view.peerGroups.find((g) => g.id === view.peerGroup)?.description ?? "")}
+              </p>
               {own.perCapitaSek !== null && (
                 <p className="mt-3 rounded-md bg-gold-50 px-3 py-2 text-sm font-semibold text-navy-800" data-testid="lr-rank">
                   {lr.rankLine(own.name, ownRank, ranked.length, `${fmtInt(own.perCapitaSek)} ${lr.perCapitaUnit}`, `${fmtInt(othersMedian)} ${lr.perCapitaUnit}`)}

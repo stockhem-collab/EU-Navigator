@@ -11,6 +11,7 @@ import { candidateAsProject, summariseHistory } from "@/lib/imported/historySumm
 import { fmtSEK } from "@/lib/format";
 import { fmtMoney, sourceLabel } from "@/lib/imported/labels";
 import type { HistoryCandidateRow, HistoryView } from "@/lib/imported/server";
+import PeerGroupPicker from "./PeerGroupPicker";
 import SekAmountText from "./SekAmountText";
 
 const th = "px-3 py-2 text-left text-xs font-semibold uppercase text-navy-400";
@@ -305,7 +306,10 @@ export default function HistoryPage({ history: imported }: { history: HistoryVie
             {history.peers.length > 0 && (
               <>
                 <h2 className="mt-8 text-lg font-bold text-navy-800">{it.peersTitle}</h2>
-                <p className="mt-1 text-sm text-navy-500">{it.peersIntro}</p>
+                <PeerGroupPicker label={it.peerGroupLabel} groups={history.peerGroups} active={history.peerGroup} />
+                <p className="mt-2 text-sm text-navy-500">
+                  {it.peersIntro(history.peerGroups.find((g) => g.id === history.peerGroup)?.description ?? "")}
+                </p>
                 <div className="mt-3 overflow-x-auto rounded-xl border border-navy-100 bg-white">
                   <table className="w-full text-sm" data-testid="history-peers">
                     <thead className="border-b border-navy-100">

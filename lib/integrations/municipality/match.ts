@@ -1,11 +1,15 @@
 // Finds one municipality's projects in the generated source data
-// (lib/data/generated/<källa>.json). A project is a sure hit only when one
-// of its partners carries the municipality's PIC, momsnummer or
-// organisationsnummer. Names never make a sure hit: an organisation written
-// like the municipality, or a project title naming it, makes the project a
-// candidate for manual review. Organisations on the exclusion list (the
-// university, the region …) are never candidates, and projects that ended
-// before 2014 are left out.
+// (lib/data/generated/<källa>.json). A project is a sure hit when one of its
+// partners carries the municipality's PIC, momsnummer or
+// organisationsnummer, or, for a partner with no organisationsnummer or
+// momsnummer of its own, when its name says it is the municipality:
+// "Uppsala kommun", "Arbetsmarknadsförvaltningen, Stockholms stad", "City of
+// Gothenburg" (see namesMunicipality). Any other name likeness (a name
+// variant, a place name next to a municipal word, a project title naming
+// the municipality) makes the project a candidate for manual review.
+// Organisations on the exclusion list (the university, the region …) and
+// municipal companies are never sure hits, and projects that ended before
+// 2014 are left out.
 
 import { convert, EurSekRates } from "../core/currency";
 import {
@@ -22,8 +26,8 @@ import type { MunicipalityMatchConfig } from "../../data/municipalities";
 /** Projects that ended before this date are not part of the history. */
 export const HISTORY_FROM = "2014-01-01";
 
-export type SureMatchKey = "pic" | "momsnummer" | "organisationsnummer";
-const KEY_ORDER: SureMatchKey[] = ["pic", "momsnummer", "organisationsnummer"];
+export type SureMatchKey = "pic" | "momsnummer" | "organisationsnummer" | "namn";
+const KEY_ORDER: SureMatchKey[] = ["pic", "momsnummer", "organisationsnummer", "namn"];
 
 export type CandidateReason =
   | "namnvariant"
@@ -178,6 +182,46 @@ export function nameCandidateReason(
   return null;
 }
 
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Never the municipality itself, whatever place name it carries. */
+const NOT_THE_MUNICIPALITY =
+  /(^| )(ab|hb|kb|ek för)( |$)|aktiebolag|förening|forening|förbund|forbund|stiftelse|församling|forsamling|mission|kyrk|church|parish/;
+
+/** True when the name says the organisation is the municipality or one of
+ * its departments: "<ort>s kommun", "<ort>s stad" (also "Malmö stads
+ * miljöförvaltning", "Stadsbyggnadskontoret, Stockholms stad"), "City of
+ * <ort>", "Municipality of <ort>", "<ort> Municipality", "<ort> City
+ * Council". Companies, associations, foundations, parishes and names on the
+ * exclusion list never are. */
+export function namesMunicipality(name: string, config: MunicipalityMatchConfig): boolean {
+  if (config.excluded.some((e) => e.pattern.test(name))) return false;
+  const norm = normaliseName(name);
+  if (NOT_THE_MUNICIPALITY.test(norm)) return false;
+  const company = config.companies;
+  if (company && [company.name, ...company.subsidiaries].some((n) => norm.includes(normaliseName(n)))) return false;
+  const places = [...new Set(config.placeNames.map((p) => escapeRegExp(normaliseName(p))))].join("|");
+  return new RegExp(
+    `(^| )(${places})s? (kommuns?|stads?|kommunes)( |$)|(^| )(municipality|city|kommun) (of )?(${places})( |$)|(^| )(${places}) (municipality|city council)( |$)`,
+    "u",
+  ).test(norm);
+}
+
+/** A sure hit on the name (namesMunicipality), only for an organisation
+ * without an organisationsnummer or momsnummer: one with another number is
+ * someone else. */
+function nameMatch(
+  org: ImportedOrganisation,
+  pp: ImportedProjectPartner,
+  config: MunicipalityMatchConfig,
+): { key: SureMatchKey; value: string } | null {
+  if (organisationNumberOf(org) || org.vatNumber) return null;
+  const name = [pp.sourceName, org.name, ...(org.sourceNames ?? [])].find((n) => n && namesMunicipality(n, config));
+  return name ? { key: "namn", value: `"${name}"` } : null;
+}
+
 /** "Uppsala kommun", "Stockholms stad" … in a project title. */
 function titleNamesMunicipality(title: string, config: MunicipalityMatchConfig): boolean {
   const norm = normaliseName(title);
@@ -266,12 +310,12 @@ export function findMunicipalityProjects(
       for (const pp of list) {
         const org = orgs.get(pp.organisationId);
         if (!org) continue;
-        const m = sureMatch(org, ids);
+        const m = sureMatch(org, ids) ?? nameMatch(org, pp, config);
         if (m) hits.push({ pp, ...m });
       }
       if (hits.length > 0) {
         const eu = hits.reduce<Money | null>((sum, h) => addMoney(sum, h.pp.euContribution), null);
-        // PIC first, then momsnummer, then organisationsnummer.
+        // PIC first, then momsnummer, organisationsnummer, name.
         const best = [...hits].sort((a, b) => KEY_ORDER.indexOf(a.key) - KEY_ORDER.indexOf(b.key))[0];
         sure.set(p.id, {
           id: p.id,

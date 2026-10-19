@@ -36,6 +36,10 @@ test("the leadership report ranks the municipality per inhabitant", async ({ pag
   await expect(page.getByTestId("lr-rank")).toContainText(/Uppsala kommun har plats \d+ av 11/);
   await expect(page.getByTestId("lr-peers").locator("tbody tr")).toHaveCount(11);
   await expect(page.getByTestId("lr-submitted")).toHaveText("3");
+
+  await page.getByTestId("peer-groups").getByRole("link", { name: "Kommungrupp: Större stad" }).click();
+  await expect(page.getByTestId("lr-rank")).toContainText(/Uppsala kommun har plats \d+ av 23/);
+  await expect(page.getByTestId("lr-peers").locator("tbody tr")).toHaveCount(23);
 });
 
 test("co-financing shows own financing per year and exports a decision brief", async ({ page }) => {

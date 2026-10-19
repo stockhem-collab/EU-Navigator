@@ -36,5 +36,5 @@ test("switching the demo municipality to Lidingö and back to Uppsala", async ({
   await expect(page.getByPlaceholder("212000-0142")).toHaveValue("212000-3005");
 
   await page.goto("/historik");
-  await expect(page.getByTestId("history-project-count")).toHaveText("89");
+  await expect(page.getByTestId("history-project-count")).toHaveText("92");
 });

@@ -672,6 +672,9 @@ export interface HistoryView {
   totalSek: number;
   totalEur: number;
   byProgram: { programId: string | null; programme: string; projects: number; sek: number; eur: number }[];
+  /** The comparison groups to choose between, and the one shown. */
+  peerGroups: PeerGroupOption[];
+  peerGroup: string | null;
   peers: PeerRow[];
   peerCaveats: string[];
   /** Kept apart from the EU history above; null when not imported. */
@@ -689,6 +692,9 @@ interface HistoryFile {
 
 interface PeersFile {
   rules?: { caveats?: string[]; vinnova?: string };
+  /** Comparison groups; the first is the default. Absent in older files,
+   * where every municipality is one group. */
+  groups?: { id: string; label: string; description: string; members: string[] }[];
   municipalities: {
     name: string;
     reference: boolean;
@@ -708,11 +714,37 @@ interface PeersFile {
   }[];
 }
 
-export function historyView(profile: DemoProfileId = DEFAULT_PROFILE): HistoryView | null {
+/** A comparison group to choose on the page. */
+export interface PeerGroupOption {
+  id: string;
+  label: string;
+  description: string;
+}
+
+/** The chosen group's municipalities (the profile's own first), or the
+ * first group when `group` names none. */
+function selectPeers(
+  file: PeersFile | null,
+  group: string | null | undefined,
+): { municipalities: PeersFile["municipalities"]; groups: PeerGroupOption[]; group: string | null } {
+  if (!file) return { municipalities: [], groups: [], group: null };
+  const groups = file.groups ?? [];
+  const chosen = groups.find((g) => g.id === group) ?? groups[0];
+  if (!chosen) return { municipalities: file.municipalities, groups: [], group: null };
+  const members = new Set(chosen.members);
+  return {
+    municipalities: file.municipalities.filter((m) => m.reference || (m.kommunkod && members.has(m.kommunkod))),
+    groups: groups.map(({ id, label, description }) => ({ id, label, description })),
+    group: chosen.id,
+  };
+}
+
+export function historyView(profile: DemoProfileId = DEFAULT_PROFILE, group?: string | null): HistoryView | null {
   const { profiles, rates } = loadProfiles();
   const history = (profiles.profiles[profile]?.history ?? null) as HistoryFile | null;
   if (!history) return null;
   const peers = (profiles.profiles[profile]?.peers ?? null) as PeersFile | null;
+  const selected = selectPeers(peers, group);
 
   const projects: HistoryRow[] = history.projects
     .map((p) => ({
@@ -761,7 +793,9 @@ export function historyView(profile: DemoProfileId = DEFAULT_PROFILE): HistoryVi
       url: c.sourceUrl,
     })),
     ...summariseHistory(projects),
-    peers: (peers?.municipalities ?? [])
+    peerGroups: selected.groups,
+    peerGroup: selected.group,
+    peers: selected.municipalities
       .map((m) => ({
         name: m.name,
         reference: m.reference,
@@ -820,19 +854,24 @@ export interface LeadershipPeer {
 export interface LeadershipView {
   generatedAt: string;
   populationYear: number;
+  peerGroups: PeerGroupOption[];
+  peerGroup: string | null;
   peers: LeadershipPeer[];
   caveats: string[];
 }
 
-export function leadershipView(profile: DemoProfileId = DEFAULT_PROFILE): LeadershipView | null {
+export function leadershipView(profile: DemoProfileId = DEFAULT_PROFILE, group?: string | null): LeadershipView | null {
   const { profiles } = loadProfiles();
   const peers = (profiles.profiles[profile]?.peers ?? null) as (PeersFile & { generatedAt?: string }) | null;
   if (!peers?.municipalities?.length) return null;
+  const selected = selectPeers(peers, group);
   return {
     generatedAt: peers.generatedAt ?? profiles.generatedAt,
     populationYear: POPULATION_YEAR,
+    peerGroups: selected.groups,
+    peerGroup: selected.group,
     caveats: [...(peers.rules?.caveats ?? []), ...(peers.rules?.vinnova ? [peers.rules.vinnova] : [])],
-    peers: peers.municipalities.map((m) => {
+    peers: selected.municipalities.map((m) => {
       const population = populationOf(m.kommunkod);
       // Kronor per euro for this municipality's own mix of years.
       const sekPerEur = m.euContributionEur > 0 ? m.euContributionSek / m.euContributionEur : 0;
