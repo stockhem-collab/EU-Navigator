@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import PageHeader from "@/components/PageHeader";
@@ -14,6 +14,8 @@ import { countryName, sourceLabel } from "@/lib/imported/labels";
 import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import type { OrganisationType } from "@/lib/integrations/core/types";
 import type { PartnerSearchHit, PartnerSearchResponse } from "@/lib/imported/types";
+import Pagination, { totalPagesFor } from "@/components/Pagination";
+import { pageFromParams, useReplaceQuery } from "@/lib/hooks/useQueryState";
 
 const PAGE_SIZE = 25;
 
@@ -67,15 +69,37 @@ function PartnerSearchInner() {
     onlyCoordinators: searchParams.get("role") === "coordinator",
     excludeOwn: true,
   });
+  const replaceQuery = useReplaceQuery();
   const [result, setResult] = useState<PartnerSearchResponse | null>(null);
   const [hits, setHits] = useState<PartnerSearchHit[]>([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(pageFromParams(searchParams));
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [openOrgs, setOpenOrgs] = useState<string[]>([]);
-  const key = queryString(filters, own, 1);
-  const set = (patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch }));
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const key = queryString(filters, own, page);
+  // Every filter change goes back to page 1.
+  const set = (patch: Partial<Filters>) => {
+    setFilters((f) => ({ ...f, ...patch }));
+    setPage(1);
+  };
 
-  // A new search starts over from page 1; typing waits for a pause.
+  // The search and page live in the URL, so a link or a reload opens the
+  // same list. Defaults are left out.
+  useEffect(() => {
+    const value = (v: string) => (v === "all" ? null : v);
+    replaceQuery({
+      q: filters.q.trim() || null,
+      type: value(filters.type),
+      country: value(filters.country),
+      program: value(filters.program),
+      sector: value(filters.sector),
+      period: value(filters.period),
+      role: filters.onlyCoordinators ? "coordinator" : null,
+      sida: page > 1 ? String(page) : null,
+    });
+  }, [filters, page, replaceQuery]);
+
+  // One page at a time from the server; typing waits for a pause.
   useEffect(() => {
     let cancelled = false;
     setState("loading");
@@ -87,8 +111,11 @@ function PartnerSearchInner() {
         if (cancelled) return;
         setResult(data);
         setHits(data.organisations);
-        setPage(1);
         setState("ready");
+        // A page past the end (an old link, or fewer hits than before)
+        // goes to the last page there is.
+        const last = totalPagesFor(data.total, PAGE_SIZE);
+        if (page > last) setPage(last);
       } catch {
         if (!cancelled) setState("error");
       }
@@ -97,20 +124,13 @@ function PartnerSearchInner() {
       cancelled = true;
       window.clearTimeout(timer);
     };
+    // The query string carries the page and the filters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  const loadMore = async () => {
-    setState("loading");
-    try {
-      const res = await fetch(`/api/partnersok?${queryString(filters, own, page + 1)}`);
-      if (!res.ok) throw new Error(String(res.status));
-      const data: PartnerSearchResponse = await res.json();
-      setHits((prev) => [...prev, ...data.organisations]);
-      setPage(page + 1);
-      setState("ready");
-    } catch {
-      setState("error");
-    }
+  const goTo = (next: number) => {
+    setPage(next);
+    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const typeLabel = (type: string) => (type === "unknown" ? ps.typeUnknown : (ps.types[type as OrganisationType] ?? type));
@@ -195,17 +215,19 @@ function PartnerSearchInner() {
           )}
         </div>
 
-        <div className="mt-6" aria-live="polite">
+        <div ref={resultsRef} className="mt-6 scroll-mt-4" aria-live="polite">
           {state === "error" && <p className="text-sm text-red-700">{ps.loadError}</p>}
           {result && (
             <p className="text-sm text-navy-500" data-testid="partner-result-count">
               {ps.resultCount(result.total, result.matchedProjects)}
+              {result.total > PAGE_SIZE &&
+                ` · ${t.ext.pager.range((page - 1) * PAGE_SIZE + 1, Math.min(page * PAGE_SIZE, result.total), result.total)}`}
             </p>
           )}
           {state === "ready" && result?.total === 0 && <p className="mt-3 text-sm text-navy-500">{ps.none}</p>}
         </div>
 
-        <ul className="mt-3 space-y-3" data-testid="partner-results">
+        <ul className={`mt-3 space-y-3 ${state === "loading" ? "opacity-60" : ""}`} data-testid="partner-results">
           {hits.map((org) => {
             const isOpen = openOrgs.includes(org.organisationId);
             return (
@@ -266,15 +288,9 @@ function PartnerSearchInner() {
           })}
         </ul>
 
-        {state === "loading" && <p className="mt-4 text-sm text-navy-500">{ps.loading}</p>}
-        {state === "ready" && result && hits.length < result.total && (
-          <button
-            type="button"
-            onClick={loadMore}
-            className="mt-5 w-full rounded-xl border border-dashed border-navy-200 bg-white py-2.5 text-sm font-semibold text-navy-600 transition hover:bg-navy-50"
-          >
-            {ps.loadMore}
-          </button>
+        {state === "loading" && hits.length === 0 && <p className="mt-4 text-sm text-navy-500">{ps.loading}</p>}
+        {result && (
+          <Pagination page={page} pageSize={PAGE_SIZE} total={result.total} onPageChange={goTo} disabled={state === "loading"} />
         )}
         <p className="mb-16 mt-6 text-xs text-navy-500">{ps.sourceNote}</p>
       </main>

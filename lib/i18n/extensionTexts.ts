@@ -5,6 +5,13 @@
 import type { OrganisationType } from "@/lib/integrations/core/types";
 
 export interface ExtensionTexts {
+  pager: {
+    label: string;
+    previous: string;
+    next: string;
+    page: (n: number) => string;
+    range: (from: number, to: number, total: number) => string;
+  };
   calls: {
     showOutdated: (n: number) => string;
     closedStatus: string;
@@ -35,7 +42,6 @@ export interface ExtensionTexts {
     none: string;
     loading: string;
     loadError: string;
-    loadMore: string;
     roleSummary: (coordinator: number, partner: number, associated: number) => string;
     projectCount: (n: number) => string;
     latestYear: (year: number) => string;
@@ -153,6 +159,14 @@ export interface ExtensionTexts {
 }
 
 export const extensionSv: ExtensionTexts = {
+  pager: {
+    label: "Sidor",
+    previous: "Föregående",
+    next: "Nästa",
+    page: (n) => `Sida ${n}`,
+    range: (from, to, total) =>
+      `Visar ${from.toLocaleString("sv-SE")}–${to.toLocaleString("sv-SE")} av ${total.toLocaleString("sv-SE")}`,
+  },
   calls: {
     showOutdated: (n) => `Visa inaktuella utlysningar (${n})`,
     closedStatus: "Stängd",
@@ -193,7 +207,6 @@ export const extensionSv: ExtensionTexts = {
     none: "Inga organisationer matchar sökningen.",
     loading: "Söker …",
     loadError: "Partnersöket kunde inte hämtas.",
-    loadMore: "Visa fler",
     roleSummary: (c, p, a) =>
       [c > 0 && `koordinator i ${c}`, p > 0 && `partner i ${p}`, a > 0 && `associerad i ${a}`]
         .filter(Boolean)
@@ -320,6 +333,14 @@ export const extensionSv: ExtensionTexts = {
 };
 
 export const extensionEn: ExtensionTexts = {
+  pager: {
+    label: "Pages",
+    previous: "Previous",
+    next: "Next",
+    page: (n) => `Page ${n}`,
+    range: (from, to, total) =>
+      `Showing ${from.toLocaleString("en-US")}–${to.toLocaleString("en-US")} of ${total.toLocaleString("en-US")}`,
+  },
   calls: {
     showOutdated: (n) => `Show outdated calls (${n})`,
     closedStatus: "Closed",
@@ -360,7 +381,6 @@ export const extensionEn: ExtensionTexts = {
     none: "No organisations match the search.",
     loading: "Searching …",
     loadError: "The partner search could not be loaded.",
-    loadMore: "Show more",
     roleSummary: (c, p, a) =>
       [c > 0 && `coordinator in ${c}`, p > 0 && `partner in ${p}`, a > 0 && `associated in ${a}`]
         .filter(Boolean)
