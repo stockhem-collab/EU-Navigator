@@ -162,13 +162,237 @@ export interface EvaluationCriterion {
  * matching their own real instructions. Left undefined on most calls today:
  * populating it accurately requires the call's real application-form text,
  * which isn't available for every illustrative call in this dataset — see
- * the one seeded example (Horizon Europe) for what a real one looks like. */
+ * the one seeded example (Horizon Europe) for what a real one looks like.
+ * Calls from the call list point to a shared CallTemplate instead (see
+ * FundingCall.applicationTemplateId). */
 export interface ApplicationTemplateSection {
+  /** Stable key the draft text is saved under — never the label, which may
+   * be reworded when the funder updates the form. */
   key: string;
   label_sv: string;
   label_en: string;
+  /** The funder's own instructions for the section, one point per line. */
   instructions_sv: string;
   instructions_en: string;
+  /** The section's number in the funder's form, e.g. "1.1". */
+  number?: string;
+  /** The main heading the section sits under in the form ("1 Excellence"),
+   * when the form groups its sections. */
+  group?: { number: string; label_sv: string; label_en: string };
+  /** The evaluation criterion the section is assessed under. */
+  criterion_sv?: string;
+  criterion_en?: string;
+  /** The funder's indicative length in pages, for page-limited forms. */
+  indicativePages?: number;
+  /** The field's character limit, for web forms. */
+  maxChars?: number;
+  /** False for sections the form marks as optional. Undefined = required. */
+  required?: boolean;
+  /** Tables the form asks for in this section. */
+  tables?: TemplateTable[];
+  /** For a report form: the reports the section belongs to. Undefined =
+   * every report. */
+  reportTypes?: ReportingEventType[];
+  /** For a report form: the application sections (keys) whose text shows
+   * beside this section, as what was promised. */
+  fromApplication?: string[];
+}
+
+/** A cost category of a funder's budget or financial report (e.g. Horizon
+ * Europe's "A. Personnel costs", ESF+'s "Resor och logi"). */
+export interface CostCategory {
+  key: string;
+  /** The funder's own code, e.g. "A" or "C.1". */
+  code?: string;
+  label_sv: string;
+  label_en: string;
+  note_sv?: string;
+  note_en?: string;
+  /** A category calculated as a flat rate of others — e.g. Horizon
+   * Europe's indirect costs, 25 % of the direct costs except
+   * subcontracting. Undefined percent = set in the decision; entered. */
+  flatRate?: { percent?: number; of: string[] };
+}
+
+/** A table a funder's form asks for (e.g. Horizon Europe's 3.1a "List of
+ * work packages"): its columns, filled in row by row in the workspace. */
+export interface TemplateTable {
+  key: string;
+  title_sv: string;
+  title_en: string;
+  columns_sv: string[];
+  columns_en: string[];
+  note_sv?: string;
+  note_en?: string;
+  /** For a report form: an application table whose rows start this one
+   * (e.g. the work packages of Part B's 3.1a), with the columns to take. */
+  fromApplicationTable?: { key: string; columns: number[] };
+  /** How the table sits in the funder's Word template, when it differs
+   * from a title followed by a table with one row per row. */
+  docx?: {
+    /** The title as the template words it, when it isn't title_en. */
+    title?: string;
+    /** See FillTableMode in lib/export/fillDocx.ts. */
+    mode?: "rows" | "repeat" | "combine" | "matrix";
+  };
+}
+
+/** How a funder takes in the application: a Word document uploaded as PDF
+ * (e.g. Horizon Europe Part B) or a web form filled in field by field (e.g.
+ * ESF-rådet's Projektrummet+). Decides how the application is exported. */
+export type CallTemplateFormat = "docx" | "web-form";
+
+/** A funder's application or report form, shared by every call that uses
+ * it — the forms follow the programme and type of action, not the single
+ * call. A call points to one with applicationTemplateId (the call list's
+ * Ansökningsmall column) and reportTemplateId (Rapportmall). See
+ * lib/data/callTemplates.ts. */
+export interface CallTemplate {
+  id: string;
+  /** What the form is for. Undefined = an application form. */
+  kind?: "application" | "report";
+  format: CallTemplateFormat;
+  /** The language the funder's form is in — the export uses its headings.
+   * Undefined = the language the user works in. */
+  language?: Lang;
+  title_sv: string;
+  title_en: string;
+  /** The funder's version of the form, as it states it. */
+  version: string;
+  sourceUrl?: string;
+  /** Where the applicant fills in or uploads it, e.g. "Projektrummet+". */
+  submittedIn?: string;
+  /** Page limit for the whole document, for page-limited forms. */
+  pageLimit?: number;
+  /** A higher page limit that applies to some calls (e.g. lump-sum topics). */
+  pageLimitAlternative?: { pages: number; when_sv: string; when_en: string };
+  /** The form's formatting rules, shown with the page estimate. */
+  formatting_sv?: string;
+  formatting_en?: string;
+  /** Whether the form starts with a list of participants. */
+  participantsList?: boolean;
+  /** Something the user should know about the template itself. */
+  note_sv?: string;
+  note_en?: string;
+  /** The funder's own Word file, kept in the app (under public/) and
+   * filled in at export unless the user uploads another version. */
+  funderFile?: {
+    url: string;
+    fileName: string;
+    /** Where the structure to submit starts; the instruction pages before
+     * it are left out of the export. */
+    startsAt?: string;
+    /** The paragraph to replace with the project's title. */
+    titleParagraph?: string;
+    /** The title of the list of participants. */
+    participantsTitle?: string;
+  };
+  /** The form's cost categories — the budget an application states, or
+   * the costs a report declares. */
+  costCategories?: CostCategory[];
+  /** The currency the funder works in; amounts are kept in SEK and shown
+   * converted. */
+  currency?: "SEK" | "EUR";
+  /** A form added in Datacenter (Mallar), kept in this browser. */
+  custom?: boolean;
+  /** The evaluation criteria the form's sections are assessed against —
+   * given to calls using the template that don't state their own. */
+  evaluationCriteria?: EvaluationCriterion[];
+  /** What a complete application with this form needs besides the form
+   * itself: annexes, certificates, declarations and formal conditions (see
+   * lib/data/applicationRequirements.ts). Shared by every call using the
+   * form; a call adds or removes its own (FundingCall.requirementChanges). */
+  requirements?: ApplicationRequirement[];
+  sections: ApplicationTemplateSection[];
+}
+
+// ---------------------------------------------------------------------------
+// Application requirements — what a call asks for to count an application
+// as complete: the form, the budget, annexes, certificates, declarations,
+// eligibility conditions and the submission itself. Listed in the
+// Ansökningsstudio's Krav tab with a status per application; see
+// lib/data/applicationRequirements.ts.
+// ---------------------------------------------------------------------------
+export type RequirementKind = "form" | "budget" | "annex" | "certificate" | "declaration" | "eligibility" | "submission";
+
+/** When the requirement is due: with the application, after the call has
+ * closed (e.g. ESF's confirmation within 24 hours) or before the grant
+ * agreement is signed (not counted in the application's completeness). */
+export type RequirementDue = "with-application" | "after-close" | "before-agreement";
+
+/** Who in the organisation usually provides it. */
+export type RequirementOwner = "applicant" | "signatory" | "finance" | "procurement" | "partners" | "hr";
+
+/** What the app can check on its own, so the status follows the
+ * application instead of being ticked by hand. */
+export type RequirementCheck =
+  | { type: "form" }
+  | { type: "page-limit" }
+  | { type: "section"; key: string }
+  | { type: "cost-categories" }
+  | { type: "budget" }
+  | { type: "submitted" }
+  | { type: "partner-countries"; min: number }
+  // Reports: the report's sections, its outcomes for the commitments, the
+  // period's costs and one of the call's required documents.
+  | { type: "report-sections" }
+  | { type: "report-indicators" }
+  | { type: "report-spend" }
+  | { type: "report-document"; index: number };
+
+export interface ApplicationRequirement {
+  /** Stable id — a call removes a form's requirement by it. */
+  id: string;
+  kind: RequirementKind;
+  title_sv: string;
+  title_en: string;
+  /** What it is and why it is asked for, in a sentence or two. */
+  why_sv: string;
+  why_en: string;
+  /** False = recommended, not counted as missing. */
+  mandatory: boolean;
+  /** When it only applies to some applicants ("offentliga aktörer", "om de
+   * minimis används") — the user marks it not applicable otherwise. */
+  condition_sv?: string;
+  condition_en?: string;
+  /** Public bodies are exempt — not applicable for one. */
+  exemptPublicBodies?: boolean;
+  owner?: RequirementOwner;
+  /** How long it usually takes to get in place, in days — warns when the
+   * deadline is closer than that. */
+  leadTimeDays?: number;
+  due?: RequirementDue;
+  /** For "after-close": how many hours after the deadline. */
+  dueOffsetHours?: number;
+  check?: RequirementCheck;
+  /** For a report requirement: the kinds of report it applies to;
+   * undefined = every report. */
+  reports?: ("interim" | "final")[];
+  /** The funder's template or page for it. */
+  link?: { url: string; label_sv: string; label_en: string };
+  /** Where the requirement is stated, and when it was last checked. */
+  source: { document: string; url?: string; section?: string; checkedAt: string };
+}
+
+/** A call's own changes to its form's requirements — from
+ * data/utlysningskrav.csv. */
+export interface RequirementChanges {
+  add?: ApplicationRequirement[];
+  /** Requirement ids of the form or programme that don't apply. */
+  remove?: string[];
+  /** The call's page limit, when it differs from the form's (e.g. 45 pages
+   * for a lump-sum topic). */
+  pageLimit?: number;
+}
+
+/** Where the user is with one requirement in one application. */
+export type RequirementStatus = "todo" | "in-progress" | "done" | "not-applicable";
+
+export interface RequirementState {
+  status: RequirementStatus;
+  /** Why it doesn't apply, or anything else worth noting. */
+  note?: string;
+  updatedAt: string; // ISO
 }
 
 /** Structured applicant-eligibility categories — the typed alternative to
@@ -282,6 +506,21 @@ export interface FundingCall {
    * ApplicationTemplateSection. Undefined = no call-specific structure on
    * file; the workspace falls back to the generic project-logic template. */
   applicationTemplate?: ApplicationTemplateSection[];
+  /** This call's own additions to and exceptions from its form's
+   * requirements for a complete application (see ApplicationRequirement),
+   * from data/utlysningskrav.csv. */
+  requirementChanges?: RequirementChanges;
+  /** The call's own changes to what its reports require — from
+   * data/utlysningskrav.csv (Gäller: rapport, delrapport, slutrapport). */
+  reportRequirementChanges?: RequirementChanges;
+  /** The shared funder form this call's applications follow (a
+   * CallTemplate id, from the call list's Ansökningsmall column). Ignored
+   * when applicationTemplate is set. Undefined = no form on file. */
+  applicationTemplateId?: string;
+  /** The shared funder form this call's reports follow (a report
+   * CallTemplate id, from the call list's Rapportmall column). Undefined =
+   * the standard report sections. */
+  reportTemplateId?: string;
   /** This call's post-award reporting obligation, when known — see
    * ReportingRequirement (defined further down, alongside Grant).
    * Undefined = not on file yet. */
@@ -517,13 +756,14 @@ export interface Commitment {
 export type ReportingEventType = "interim" | "final" | "sustainability";
 export type ReportingEventStatus = "upcoming" | "submitted" | "approved" | "revision-requested";
 
-/** A reporting event's economic summary — deliberately narrow (spend for
- * this period, compared against the project's total awarded amount)
- * rather than a fund-specific cost-category breakdown (personnel,
- * overhead, travel, …) that varies by fund and that this app has no real
- * source to populate honestly. */
+/** A reporting event's economic summary: the spend for the period, and —
+ * when the call's report form has cost categories (CallTemplate
+ * .costCategories) — the same spend per category. */
 export interface FinancialOutcome {
   spentThisPeriodSEK: number;
+  /** The period's costs per cost category (CostCategory.key -> SEK), when
+   * the call's report form declares costs that way. */
+  byCategory?: Record<string, number>;
 }
 
 /** The outturn reported for one Commitment indicator as of one specific
@@ -594,6 +834,8 @@ export interface Grant {
    * is a later, separate long-tail follow-up rather than part of this
    * core cycle. */
   reportingEvents: ReportingEvent[];
+  /** Requirements the user added for the grant's reports. */
+  ownReportRequirements?: ApplicationRequirement[];
 }
 
 // ---------------------------------------------------------------------------
@@ -755,8 +997,11 @@ export interface ApplicationVersion {
   name: string;
   createdAt: string; // ISO
   /** Every section's fully resolved text at save time (project-logic row
-   * label -> text), not just the user's overrides. */
+   * key -> text), not just the user's overrides. */
   sectionDrafts: Record<string, string>;
+  /** The form's tables at save time (table key -> rows of cells). Absent on
+   * versions saved before applications had tables. */
+  tables?: Record<string, string[][]>;
   /** The application's own amounts at save time (see ApplicationBudget).
    * Absent on versions saved before applications had amounts of their own. */
   budget?: { eligibleBudgetSEK?: number; requestedGrantSEK?: number };

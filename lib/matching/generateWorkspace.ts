@@ -1,8 +1,13 @@
 import { ApplicationTemplateSection, FundingCall, FundingProgram, ProjectInput } from "@/lib/types";
+import { applicationTemplateFor, TemplateRegistry } from "@/lib/data/callTemplates";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import { textSignals } from "@/lib/matching/readiness";
 
 export interface ProjectLogicRow {
+  /** Stable key the section's draft text is saved under. */
+  key: string;
+  /** The funder's form section this row is, when the call has a form. */
+  section?: ApplicationTemplateSection;
   label_sv: string;
   label_en: string;
   content_sv: string;
@@ -62,6 +67,8 @@ function generateTemplatedSection(
   }
 
   return {
+    key: section.key,
+    section,
     label_sv: section.label_sv,
     label_en: section.label_en,
     content_sv: `${base_sv} ${tail_sv}`,
@@ -72,52 +79,67 @@ function generateTemplatedSection(
 export function generateProjectLogic(
   project: ProjectInput,
   call: FundingCall,
-  program: FundingProgram
+  program: FundingProgram,
+  registry?: TemplateRegistry
 ): ProjectLogicRow[] {
-  if (call.applicationTemplate && call.applicationTemplate.length > 0) {
-    return call.applicationTemplate.map((section) => generateTemplatedSection(section, project, call, program));
+  const template = applicationTemplateFor(call, registry);
+  if (template) {
+    return template.sections.map((section) => generateTemplatedSection(section, project, call, program));
   }
 
   const sectorSv = sectorLabel(project.sector, "sv");
   const sectorEn = sectorLabel(project.sector, "en");
   return [
     {
+      key: "problem",
       label_sv: "Problem",
       label_en: "Problem",
       content_sv: `${project.municipality || "Kommunen"} har idag ett omotiverat stort behov inom ${sectorSv} som inte kan lösas fullt ut inom ordinarie budget.`,
       content_en: `${project.municipality || "The municipality"} currently has a significant unmet need in ${sectorEn} that cannot be fully addressed within the regular budget.`,
     },
     {
+      key: "goal",
       label_sv: "Mål",
       label_en: "Goal",
       content_sv: `Genomföra "${project.title}" och därigenom uppnå mätbar förbättring inom ${sectorSv} under perioden ${project.startYear}–${project.endYear}.`,
       content_en: `Deliver "${project.title}" and achieve measurable improvement in ${sectorEn} during ${project.startYear}–${project.endYear}.`,
     },
     {
+      key: "activities",
       label_sv: "Aktiviteter",
       label_en: "Activities",
       content_sv: project.description || "Aktiviteter enligt projektbeskrivningen.",
       content_en: project.description || "Activities as described in the project description.",
     },
     {
+      key: "outputs",
       label_sv: "Outputs",
       label_en: "Outputs",
       content_sv: `Genomförda leveranser kopplade till ${call.title_sv} och utlysningens stödberättigade aktiviteter.`,
       content_en: `Delivered outputs aligned with ${call.title_en}'s eligible activities.`,
     },
     {
+      key: "outcomes",
       label_sv: "Effekter (outcomes)",
       label_en: "Outcomes",
       content_sv: `Långsiktig förbättring av kommunens förmåga inom ${sectorSv}, i linje med ${program.name_sv}s prioriteringar.`,
       content_en: `Long-term improvement of the municipality's capability in ${sectorEn}, aligned with ${program.shortName}'s priorities.`,
     },
     {
+      key: "indicators",
       label_sv: "Indikatorer",
       label_en: "Indicators",
       content_sv: "Budgetutfall, tidplan, antal genomförda aktiviteter, samt en programspecifik effektindikator (definieras i ansökan).",
       content_en: "Budget outturn, schedule adherence, number of completed activities, and one programme-specific impact indicator (to be defined in the application).",
     },
   ];
+}
+
+/** A section's saved draft text: under its key, or — for drafts saved
+ * before sections had keys — under its Swedish label. Undefined = the
+ * section still shows the suggestion. */
+export function sectionDraftFor(drafts: Record<string, string>, row: Pick<ProjectLogicRow, "key" | "label_sv">): string | undefined {
+  return drafts[row.key] ?? drafts[row.label_sv];
 }
 
 // `text` as for computeReadiness: the description plus the user's own

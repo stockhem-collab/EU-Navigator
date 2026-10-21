@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
+import PageHeader, { HeaderToggle } from "@/components/PageHeader";
+import StatCard from "@/components/StatCard";
 import Footer from "@/components/Footer";
 import LinkedReportingBadge from "@/components/LinkedReportingBadge";
 import UnreadDot from "@/components/UnreadDot";
@@ -71,37 +73,20 @@ export default function ReportPage() {
     <>
       <Header />
       <main className="page">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-navy-900">{r.title}</h1>
-            <p className="mt-2 text-sm text-navy-600">{r.subtitle}</p>
-          </div>
-          <label className="flex shrink-0 items-center gap-2 text-sm font-semibold text-navy-700">
-            <input type="checkbox" checked={onlyMineAndShared} onChange={(e) => setOnlyMineAndShared(e.target.checked)} />
-            {ap.onlyMineAndSharedToggle}
-          </label>
-        </div>
+        <PageHeader title={r.title} subtitle={r.subtitle}>
+          <HeaderToggle checked={onlyMineAndShared} onChange={setOnlyMineAndShared} label={ap.onlyMineAndSharedToggle} />
+        </PageHeader>
 
         {/* Each figure is a shortcut to its own list below, as on Översikt. */}
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: r.statAttention, value: attention.length, warn: attention.length > 0, href: "#attention" },
-            { label: r.statUpcoming, value: upcoming.length, warn: false, href: "#upcoming" },
+            { label: r.statAttention, value: attention.length, warn: true, href: "#attention", icon: "alert" as const },
+            { label: r.statUpcoming, value: upcoming.length, warn: false, href: "#upcoming", icon: "calendar" as const },
             // The done list is folded away — its shortcut unfolds it.
-            { label: r.statDone, value: done.length, warn: false, href: "#done", onClick: () => setShowDone(true) },
-            { label: r.statGrants, value: visibleGrants.length, warn: false, href: "#grants" },
+            { label: r.statDone, value: done.length, warn: false, href: "#done", onClick: () => setShowDone(true), icon: "check" as const },
+            { label: r.statGrants, value: visibleGrants.length, warn: false, href: "#grants", icon: "award" as const },
           ].map((st) => (
-            <a
-              key={st.label}
-              href={st.href}
-              onClick={st.onClick}
-              className={`rounded-xl border p-4 transition hover:shadow-sm ${
-                st.warn ? "border-amber-200 bg-amber-50 hover:border-amber-300" : "border-navy-100 bg-white hover:border-navy-300"
-              }`}
-            >
-              <p className={`text-2xl font-extrabold ${st.warn ? "text-amber-800" : "text-navy-900"}`}>{ready ? st.value : "…"}</p>
-              <p className="text-xs text-navy-500">{st.label}</p>
-            </a>
+            <StatCard key={st.label} value={ready ? st.value : "…"} label={st.label} icon={st.icon} href={st.href} onClick={st.onClick} warn={st.warn} />
           ))}
         </div>
 
@@ -238,7 +223,7 @@ function ReportRow({
           {program?.logoLetter ?? "?"}
         </span>
         <div className="min-w-0">
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase text-navy-400">
+          <p className="flex flex-wrap items-center gap-x-2 text-xs font-medium text-navy-500">
             {entry ? (
               <Link href={`/projekt/${entry.id}`} className="hover:underline">
                 {lang === "sv" ? entry.title_sv : entry.title_en}

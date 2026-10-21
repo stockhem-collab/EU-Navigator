@@ -2,15 +2,32 @@
 // planned, upcoming and expected) — into the app's FundingCall shape.
 // Columns: Namn, Program, Länk, Öppnar, Stänger, Minsta bidrag, Största
 // bidrag, Valuta, Stödnivå (%), Vem får söka, Beskrivning, Status, Tema,
-// Kommentar, Taggar. Dates may be months and preliminary ("2027-04 (prel.)");
+// Kommentar, Taggar, Ansökningsmall, Rapportmall. Dates may be months and preliminary ("2027-04 (prel.)");
 // euro amounts are converted at the yearly average rate of the year the
 // call opens (data/vaxelkurs.csv). Taggar holds hand-set tags (labels or
 // ids from lib/data/tags.ts, comma-separated); when it is empty the tags are
-// suggested from the call's name and description.
+// suggested from the call's name and description. Ansökningsmall names
+// the funder's application form the call uses (a CallTemplate id from
+// lib/data/callTemplates.ts); the call then takes the form's evaluation
+// criteria too. Rapportmall names the report form the grant's reports
+// follow (a report CallTemplate id).
 
-import type { CallDate, CallSourceStatus, FundingCall, FundTheme, Sector } from "../../types";
+import type {
+  ApplicationRequirement,
+  CallDate,
+  CallSourceStatus,
+  FundingCall,
+  FundTheme,
+  RequirementChanges,
+  RequirementDue,
+  RequirementKind,
+  RequirementOwner,
+  Sector,
+  SwedishRegion,
+} from "../../types";
 import { convert, eurSekRate, type EurSekRates } from "../core/currency";
 import { parseAmount } from "../core/values";
+import { findCallTemplate } from "../../data/callTemplates";
 
 const STATUS: Record<string, CallSourceStatus> = {
   öppen: "open",
@@ -36,10 +53,26 @@ export function programIdFor(program: string): string | null {
   if (/socialfonden|esf/.test(p)) return "esf";
   if (/\blife\b/.test(p)) return "life";
   if (/regionalfonden|erdf/.test(p)) return "erdf";
+  if (/interreg/.test(p) && /central baltic/.test(p)) return "interreg-central-baltic";
+  if (/interreg/.test(p) && /östersjö|baltic sea/.test(p)) return "interreg-baltic-sea";
   if (/interreg/.test(p)) return null;
+  if (/\bcerv\b/.test(p)) return "cerv";
   if (/erasmus/.test(p)) return "erasmus";
   if (/digital europe|digitala europa/.test(p)) return "digital-europe";
   return null;
+}
+
+/** ESF+ calls are announced per region; the region is the last part of the
+ * call name ("A1 … – Stockholm"). The counties follow ESF-rådets eight
+ * regions. */
+const ESF_REGIONS: Record<string, SwedishRegion[]> = {
+  stockholm: ["stockholm"],
+  "östra mellansverige": ["uppsala", "sodermanland", "ostergotland", "orebro", "vastmanland"],
+};
+
+export function esfRegionsFor(name: string): SwedishRegion[] | undefined {
+  const region = name.split(/\s+–\s+/).pop()?.trim().toLowerCase() ?? "";
+  return ESF_REGIONS[region];
 }
 
 /** "2026-02-04", "2027-04 (prel.)" → a CallDate; null for an empty cell. */
@@ -83,13 +116,16 @@ export interface CallListOptions {
   tagIdFor: (label: string) => string | undefined;
   /** The eufonder.se themes for a Tema value (lib/data/fundThemes). */
   themesFromTema: (tema: string) => FundTheme[] | undefined;
+  /** The rows of data/utlysningskrav.csv — each call's own requirements
+   * for a complete application (see requirementChangesFromList). */
+  requirements?: Record<string, string>[];
   now?: Date;
 }
 
 export function callsFromList(records: Record<string, string>[], options: CallListOptions): FundingCall[] {
-  const { rates, suggestTags, tagIdFor, themesFromTema, now = new Date() } = options;
+  const { rates, suggestTags, tagIdFor, themesFromTema, requirements = [], now = new Date() } = options;
   const seen = new Set<string>();
-  return records
+  const calls = records
     .filter((r) => (r["Namn"] ?? "").trim())
     .map((r, i) => {
       const row = i + 2; // header is row 1
@@ -133,6 +169,13 @@ export function callsFromList(records: Record<string, string>[], options: CallLi
           if (!tagId) throw new Error(`Rad ${row}: okänd tagg "${label}"`);
           return tagId;
         });
+      const templateId = (r["Ansökningsmall"] ?? "").trim();
+      const template = findCallTemplate(templateId);
+      if (templateId && (!template || template.kind === "report")) throw new Error(`Rad ${row}: okänd ansökningsmall "${templateId}"`);
+      const reportTemplateId = (r["Rapportmall"] ?? "").trim();
+      if (reportTemplateId && findCallTemplate(reportTemplateId)?.kind !== "report") {
+        throw new Error(`Rad ${row}: okänd rapportmall "${reportTemplateId}"`);
+      }
       const consortium = /konsorti|minst tre|tre (?:partner|organisationer)/i.test(who);
       const deadlineDate = lastDayOf(closes);
 
@@ -155,6 +198,7 @@ export function callsFromList(records: Record<string, string>[], options: CallLi
           ? { originalGrantRange: { min, max, currency: "EUR" as const, rate: eurSekRate(rates, rateYear), rateYear } }
           : {}),
         requiresPartnership: consortium,
+        ...(programId === "esf" && esfRegionsFor(name) ? { eligibleRegions: esfRegionsFor(name) } : {}),
         ...(consortium && /tre länder/i.test(who) ? { minPartnerCountries: 3 } : {}),
         eligibleApplicants_sv: who,
         eligibleApplicants_en: who,
@@ -165,8 +209,10 @@ export function callsFromList(records: Record<string, string>[], options: CallLi
         tags: handTags.length > 0 ? handTags : suggestTags(`${name} ${description}`),
         ...(themesFromTema(tema) ? { themes: themesFromTema(tema) } : {}),
         ...(sector ? { sectors: [sector] } : {}),
-        evaluationCriteria: [],
+        evaluationCriteria: template?.evaluationCriteria ? [...template.evaluationCriteria] : [],
         documents: [],
+        ...(template ? { applicationTemplateId: template.id } : {}),
+        ...(reportTemplateId ? { reportTemplateId } : {}),
         ...(r["Länk"]?.trim() ? { link: r["Länk"].trim() } : {}),
         ...(description ? { description_sv: description } : {}),
         ...(comment ? { comment_sv: comment } : {}),
@@ -174,4 +220,130 @@ export function callsFromList(records: Record<string, string>[], options: CallLi
       };
       return call;
     });
+  const ids = calls.map((c) => c.id);
+  const changes = requirementChangesFromList(requirements, ids);
+  const reportChanges = requirementChangesFromList(requirements, ids, "report");
+  return calls.map((c) => ({
+    ...c,
+    ...(changes[c.id] ? { requirementChanges: changes[c.id] } : {}),
+    ...(reportChanges[c.id] ? { reportRequirementChanges: reportChanges[c.id] } : {}),
+  }));
+}
+
+const KINDS: Record<string, RequirementKind> = {
+  formulär: "form",
+  budget: "budget",
+  bilaga: "annex",
+  intyg: "certificate",
+  deklaration: "declaration",
+  behörighet: "eligibility",
+  inlämning: "submission",
+};
+
+const OWNERS: Record<string, RequirementOwner> = {
+  sökande: "applicant",
+  firmatecknare: "signatory",
+  ekonomi: "finance",
+  inköp: "procurement",
+  partner: "partners",
+  hr: "hr",
+};
+
+// Gäller: what the row is a requirement for — the application (the
+// default) or the reports, all of them or one kind.
+const APPLIES: Record<string, { scope: "application" | "report"; reports?: ("interim" | "final")[] }> = {
+  "": { scope: "application" },
+  ansökan: { scope: "application" },
+  rapport: { scope: "report" },
+  delrapport: { scope: "report", reports: ["interim"] },
+  slutrapport: { scope: "report", reports: ["final"] },
+};
+
+const DUE: Record<string, RequirementDue> = {
+  "med ansökan": "with-application",
+  "efter stängning": "after-close",
+  "före avtal": "before-agreement",
+};
+
+/** Reads data/utlysningskrav.csv — each call's own changes to its form's
+ * requirements for a complete application. Columns: Utlysning (the call's
+ * id), Åtgärd ("lägg till", "ta bort" or "sidgräns"), Krav-id, Typ
+ * (formulär, budget, bilaga, intyg, deklaration, behörighet, inlämning),
+ * Titel, Beskrivning, Villkor, Obligatorisk (ja/nej), Undantag offentliga
+ * organ (ja), Ansvarig (sökande, firmatecknare, ekonomi, inköp, partner,
+ * hr), Ledtid (dagar), Lämnas (med ansökan, efter stängning, före avtal),
+ * Länk, Länktext, Sidgräns, Källa, Källänk, Kontrollerad, Gäller (ansökan
+ * — the default —, rapport, delrapport or slutrapport). "ta bort" names a
+ * requirement of the form or programme that doesn't apply to the call;
+ * "sidgräns" sets the call's page limit. The texts are Swedish only, like
+ * the call list itself. `scope` picks the rows for the application or for
+ * the reports. */
+export function requirementChangesFromList(
+  rows: Record<string, string>[],
+  callIds: string[],
+  scope: "application" | "report" = "application"
+): Record<string, RequirementChanges> {
+  const out: Record<string, RequirementChanges> = {};
+  rows.forEach((r, i) => {
+    const row = i + 2;
+    const callId = (r["Utlysning"] ?? "").trim();
+    if (!callId) return;
+    if (!callIds.includes(callId)) throw new Error(`utlysningskrav.csv rad ${row}: okänd utlysning "${callId}"`);
+    const applies = APPLIES[(r["Gäller"] ?? "").trim().toLowerCase()];
+    if (!applies) throw new Error(`utlysningskrav.csv rad ${row}: okänt värde i Gäller "${r["Gäller"]}"`);
+    if (applies.scope !== scope) return;
+    const changes = (out[callId] ??= {});
+    const action = (r["Åtgärd"] ?? "").trim().toLowerCase();
+    const id = (r["Krav-id"] ?? "").trim();
+    if (action === "sidgräns") {
+      const pages = Number((r["Sidgräns"] ?? "").trim());
+      if (!Number.isInteger(pages) || pages <= 0) throw new Error(`utlysningskrav.csv rad ${row}: ogiltig sidgräns`);
+      changes.pageLimit = pages;
+      return;
+    }
+    if (!id) throw new Error(`utlysningskrav.csv rad ${row}: Krav-id saknas`);
+    if (action === "ta bort") {
+      changes.remove = [...(changes.remove ?? []), id];
+      return;
+    }
+    if (action !== "lägg till") throw new Error(`utlysningskrav.csv rad ${row}: okänd åtgärd "${r["Åtgärd"]}"`);
+    const kind = KINDS[(r["Typ"] ?? "").trim().toLowerCase()];
+    if (!kind) throw new Error(`utlysningskrav.csv rad ${row}: okänd typ "${r["Typ"]}"`);
+    const title = (r["Titel"] ?? "").trim();
+    if (!title) throw new Error(`utlysningskrav.csv rad ${row}: titel saknas`);
+    const ownerText = (r["Ansvarig"] ?? "").trim().toLowerCase();
+    const owner = OWNERS[ownerText];
+    if (ownerText && !owner) throw new Error(`utlysningskrav.csv rad ${row}: okänd ansvarig "${r["Ansvarig"]}"`);
+    const dueText = (r["Lämnas"] ?? "").trim().toLowerCase();
+    const due = DUE[dueText];
+    if (dueText && !due) throw new Error(`utlysningskrav.csv rad ${row}: okänt värde i Lämnas "${r["Lämnas"]}"`);
+    const lead = Number((r["Ledtid (dagar)"] ?? "").trim());
+    const why = (r["Beskrivning"] ?? "").trim();
+    const condition = (r["Villkor"] ?? "").trim();
+    const url = (r["Länk"] ?? "").trim();
+    const sourceUrl = (r["Källänk"] ?? "").trim();
+    const requirement: ApplicationRequirement = {
+      id,
+      kind,
+      title_sv: title,
+      title_en: title,
+      why_sv: why,
+      why_en: why,
+      mandatory: (r["Obligatorisk"] ?? "").trim().toLowerCase() !== "nej",
+      ...(condition ? { condition_sv: condition, condition_en: condition } : {}),
+      ...((r["Undantag offentliga organ"] ?? "").trim().toLowerCase() === "ja" ? { exemptPublicBodies: true } : {}),
+      ...(owner ? { owner } : {}),
+      ...(lead > 0 ? { leadTimeDays: lead } : {}),
+      ...(due && due !== "with-application" ? { due } : {}),
+      ...(applies.reports ? { reports: applies.reports } : {}),
+      ...(url ? { link: { url, label_sv: (r["Länktext"] ?? "").trim() || title, label_en: (r["Länktext"] ?? "").trim() || title } } : {}),
+      source: {
+        document: (r["Källa"] ?? "").trim() || "Utlysningen",
+        ...(sourceUrl ? { url: sourceUrl } : {}),
+        checkedAt: (r["Kontrollerad"] ?? "").trim(),
+      },
+    };
+    changes.add = [...(changes.add ?? []), requirement];
+  });
+  return out;
 }

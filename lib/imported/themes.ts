@@ -7,7 +7,7 @@
 // find English-language projects — deterministic and explainable, no AI.
 
 import type { Sector } from "@/lib/types";
-import type { ProgrammePeriod } from "@/lib/integrations/core/types";
+import type { ProgrammePeriod, SourceSystem } from "@/lib/integrations/core/types";
 
 export interface SectorCodes {
   /** Kohesio/ESF+ categories of intervention, 2014–2020 numbering. */
@@ -105,7 +105,7 @@ export const ALL_SECTORS = Object.keys(SECTOR_CODES) as Sector[];
 
 /** The fields of an imported project the theme translation reads. */
 export interface ThemedProject {
-  source: "kohesio" | "keep-eu" | "cordis" | "esf";
+  source: SourceSystem;
   period: ProgrammePeriod | null;
   tags?: string[];
   category?: { code: string; label: string | null } | null;
@@ -129,7 +129,8 @@ export function cordisTopics(project: ThemedProject): string[] {
 }
 
 /** The app themes an imported project falls under, with the source code
- * behind each. */
+ * behind each. Vinnova has no classification of its own, so its projects
+ * get none and are found by their words only. */
 export function projectThemes(project: ThemedProject): ThemeMatch[] {
   const out: ThemeMatch[] = [];
   for (const sector of ALL_SECTORS) {
@@ -149,7 +150,7 @@ export function projectThemes(project: ThemedProject): ThemeMatch[] {
     } else if (project.source === "cordis") {
       const topic = cordisTopics(project).find((t) => codes.cordisTopics.some((re) => re.test(t)));
       if (topic) out.push({ sector, code_sv: `CORDIS-ämne ${topic}`, code_en: `CORDIS topic ${topic}`, label: null });
-    } else {
+    } else if (project.source === "keep-eu") {
       const theme = (project.tags ?? []).find((t) => codes.keepEuThemes.includes(t));
       if (theme) out.push({ sector, code_sv: `Keep.eu-tema "${theme}"`, code_en: `Keep.eu theme "${theme}"`, label: theme });
     }
@@ -245,7 +246,10 @@ function stemMatches(stem: string, word: string): boolean {
 /** Lowercased text as a padded, single-spaced word string, for the
  * word-start searches below. */
 export function searchableText(text: string): string {
-  return ` ${text.toLowerCase().replace(/[^a-z0-9åäöéü\s-]/g, " ").replace(/\s+/g, " ")} `;
+  // One pass: every run of other characters (spaces included) becomes one
+  // space. Twice as fast as replacing and then collapsing, which matters
+  // for the ~30 000 project summaries.
+  return ` ${text.toLowerCase().replace(/[^-a-z0-9åäöéü]+/g, " ")} `;
 }
 
 /** Whether a term ("heat wave*", "ai") occurs in a searchableText. */

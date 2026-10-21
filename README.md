@@ -85,6 +85,32 @@ Old addresses (`/demo`, `/projektbank`, `/bevakning`, grants under
   the same readiness measure for the project against its best match.
   Includes a dual-compliance check against the organisation's own
   internal process (`Organisationens regelverk`).
+- **Funders' application forms** (`lib/data/callTemplates.ts`) — a call
+  in `data/utlysningar.csv` names the form it uses in the **Ansökningsmall**
+  column (today Horizon Europe RIA/IA Part B and ESF+ Projektrummet+). The
+  Ansökningsstudio then shows the form's numbered sections with the
+  funder's instructions, the criterion each is assessed under, character
+  counts and an estimated page count against the page limit, and the
+  form's tables (e.g. Part B's 3.1a–h). Export follows how the funder takes
+  the application in: the funder's own Word template filled in under its
+  headings and in its tables (`lib/export/fillDocx.ts`) — Part B V5.1 is
+  kept in `public/mallar/` (the portal's .rtf saved as .docx), and the user
+  can upload another version — a Word document laid out as the template
+  when there is no file, or a field-by-field document to paste into a web
+  form. A call using a form also takes its evaluation criteria. The
+  **Rapportmall** column names the report form a grant's reports follow
+  (`lib/data/reportTemplates.ts`: Horizon Europe's periodic report Part B,
+  ESF+'s reports in Projektrummet+): its numbered sections with what the
+  application promised beside them, its tables (work packages taken from
+  the application) and the costs per the funder's cost categories
+  (`lib/data/costCategories.ts`, flat rates calculated), exported the same
+  way. The application states its budget per the same categories and
+  exports it as an Excel workbook with formulas (`lib/export/exportBudget.ts`).
+  **Datacenter › Mallar** (`/datacenter/mallar`) adds a form from the
+  funder's Word template — headings, instructions, tables and page limits
+  read as a proposal (`lib/export/templateOutline.ts`), reviewed, saved in
+  the browser — and chooses per call which form its application and
+  reports follow.
 - **Beviljade referensprojekt / "Lär av vinnarna"** (`/referensprojekt`) —
   **real data**: an anonymised municipality's actual register of 74
   EU-funded projects 2014-2027 (fund, budget, EU share, role, theme), with aggregated
@@ -99,8 +125,9 @@ Old addresses (`/demo`, `/projektbank`, `/bevakning`, grants under
   (documents needing an update, projects with incomplete information).
 - **Ledningsrapport** (`/datacenter/ledningsrapport`) — one printable page
   for leadership: the own portfolio (applications, success rate, grants,
-  reporting, co-financing) and EU grants per inhabitant against the ten
-  largest municipalities (peers.json, population in `lib/data/population.ts`).
+  reporting, co-financing) and EU grants per inhabitant against the demo
+  municipality's comparison group (`<profile>-peers.json`, population in
+  `lib/data/population.ts`).
 - **Medfinansiering** (`/datacenter/medfinansiering`) — own co-financing
   per year for grants and applications with the funder, how much is paid
   out before the grant arrives (advance and payment lag adjustable), the

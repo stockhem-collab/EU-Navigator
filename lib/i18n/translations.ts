@@ -1,10 +1,14 @@
 import { ApplicationStatus, Lang } from "@/lib/types";
 import { ImportedTexts, importedEn, importedSv } from "./importedTexts";
 import { ExtensionTexts, extensionEn, extensionSv } from "./extensionTexts";
+import { TemplateTexts, templateEn, templateSv } from "./templateTexts";
+import { RequirementTexts, requirementEn, requirementSv } from "./requirementTexts";
 
 export interface TranslationTree {
   imported: ImportedTexts;
   ext: ExtensionTexts;
+  tpl: TemplateTexts;
+  req: RequirementTexts;
   confirm: {
     yesRemove: string;
     yesReset: string;
@@ -729,6 +733,13 @@ export interface TranslationTree {
     addUnitButton: string;
     removeUnitLabel: string;
     unitPicPlaceholder: string;
+    profileTitle: string;
+    profileHint: string;
+    profileActive: string;
+    profileSwitch: (name: string) => string;
+    confirmProfileSwitch: (from: string, to: string) => string;
+    yesProfileSwitch: string;
+    profileSwitchFailed: string;
     applyPreset: (name: string) => string;
     confirmApplyPreset: (name: string) => string;
     yesApplyPreset: string;
@@ -878,6 +889,22 @@ export interface TranslationTree {
     currentTasksHint: string;
     currentTasksNone: string;
     currentTasksViewAll: string;
+    greeting: (part: "morning" | "day" | "evening" | null, name: string | null) => string;
+    findCall: string;
+    nextUpTitle: string;
+    nextUpReport: string;
+    nextUpApplication: string;
+    nextUpTask: string;
+    nextUpNone: string;
+    nextUpNoneHint: string;
+    nextUpOpen: string;
+    emptyTasksCta: string;
+    emptyApplicationsCta: string;
+    shortcutsTitle: string;
+    shortcutProjects: string;
+    shortcutHistory: string;
+    shortcutPartners: string;
+    shortcutKnowledge: string;
   };
   applications: {
     statusLabels: Record<ApplicationStatus, string>;
@@ -976,6 +1003,8 @@ export const translations: Record<Lang, TranslationTree> = {
   sv: {
     imported: importedSv,
     ext: extensionSv,
+    tpl: templateSv,
+    req: requirementSv,
     confirm: {
       yesRemove: "Ja, ta bort",
       yesReset: "Ja, återställ",
@@ -1830,6 +1859,15 @@ export const translations: Record<Lang, TranslationTree> = {
       addUnitButton: "+ Lägg till enhet",
       removeUnitLabel: "Ta bort",
       unitPicPlaceholder: "Eget PIC",
+      profileTitle: "Demokommun",
+      profileHint:
+        "Varje kommun har egna organisationsuppgifter, projekt, idéer och ansökningar i den här webbläsaren, och egen EU-historik och jämförelse. Inget försvinner när du byter; byt tillbaka när du vill.",
+      profileActive: "Aktiv",
+      profileSwitch: (name) => `Byt till ${name}`,
+      confirmProfileSwitch: (from, to) =>
+        `Byta demokommun till ${to}? ${from}s uppgifter sparas i webbläsaren och kommer tillbaka när du byter tillbaka.`,
+      yesProfileSwitch: "Ja, byt",
+      profileSwitchFailed: "Det gick inte att byta: webbläsarens lagring är full. Ta bort stora bilagor och försök igen.",
       applyPreset: (name) => `Fyll i ${name}s uppgifter`,
       confirmApplyPreset: (name) =>
         `Fylla i grunduppgifter och PIC-nummer för ${name}? Befintliga grunduppgifter skrivs över och enheter med egna PIC-nummer läggs till.`,
@@ -1981,6 +2019,25 @@ export const translations: Record<Lang, TranslationTree> = {
       currentTasksHint: "Öppna uppgifter i projekten, snarast förfallande först.",
       currentTasksNone: "Inga öppna uppgifter just nu. Lägg till uppgifter på ett projekts sida.",
       currentTasksViewAll: "Visa projekt →",
+      greeting: (part, name) => {
+        const hello = part === "morning" ? "God morgon" : part === "day" ? "God dag" : part === "evening" ? "God kväll" : "Välkommen";
+        return name ? `${hello}, ${name}` : hello;
+      },
+      findCall: "Hitta utlysning",
+      nextUpTitle: "Nästa att göra",
+      nextUpReport: "Rapport som kräver åtgärd",
+      nextUpApplication: "Ansökan med närmast deadline",
+      nextUpTask: "Uppgift som ska göras snart",
+      nextUpNone: "Inget brådskande just nu",
+      nextUpNoneHint: "Alla rapporter är i fas. Ett bra läge att leta nya utlysningar.",
+      nextUpOpen: "Öppna",
+      emptyTasksCta: "Gå till Projekt",
+      emptyApplicationsCta: "Hitta en utlysning",
+      shortcutsTitle: "Genvägar",
+      shortcutProjects: "Alla projekt och idéer",
+      shortcutHistory: "Projekt ni redan fått stöd för",
+      shortcutPartners: "Hitta partner till ett projekt",
+      shortcutKnowledge: "Program, utlysningar och referensprojekt",
     },
     applications: {
       statusLabels: {
@@ -2100,6 +2157,8 @@ export const translations: Record<Lang, TranslationTree> = {
   en: {
     imported: importedEn,
     ext: extensionEn,
+    tpl: templateEn,
+    req: requirementEn,
     confirm: {
       yesRemove: "Yes, remove",
       yesReset: "Yes, reset",
@@ -2948,6 +3007,15 @@ export const translations: Record<Lang, TranslationTree> = {
       addUnitButton: "+ Add unit",
       removeUnitLabel: "Remove",
       unitPicPlaceholder: "Own PIC",
+      profileTitle: "Demo municipality",
+      profileHint:
+        "Each municipality has its own organisation details, projects, ideas and applications in this browser, and its own EU history and comparison. Nothing is lost when you switch; switch back whenever you like.",
+      profileActive: "Active",
+      profileSwitch: (name) => `Switch to ${name}`,
+      confirmProfileSwitch: (from, to) =>
+        `Switch the demo municipality to ${to}? ${from}'s data is kept in the browser and comes back when you switch back.`,
+      yesProfileSwitch: "Yes, switch",
+      profileSwitchFailed: "Could not switch: the browser's storage is full. Remove large attachments and try again.",
       applyPreset: (name) => `Fill in ${name}'s details`,
       confirmApplyPreset: (name) =>
         `Fill in registry details and PIC numbers for ${name}? Existing registry details are overwritten and units with their own PIC are added.`,
@@ -3099,6 +3167,25 @@ export const translations: Record<Lang, TranslationTree> = {
       currentTasksHint: "Open tasks in the projects, soonest due first.",
       currentTasksNone: "No open tasks right now. Add tasks on a project's page.",
       currentTasksViewAll: "View project →",
+      greeting: (part, name) => {
+        const hello = part === "morning" ? "Good morning" : part === "day" ? "Good afternoon" : part === "evening" ? "Good evening" : "Welcome";
+        return name ? `${hello}, ${name}` : hello;
+      },
+      findCall: "Find a call",
+      nextUpTitle: "Next up",
+      nextUpReport: "Report needing action",
+      nextUpApplication: "Application with the nearest deadline",
+      nextUpTask: "Task due soon",
+      nextUpNone: "Nothing urgent right now",
+      nextUpNoneHint: "All reports are on track. A good time to look for new calls.",
+      nextUpOpen: "Open",
+      emptyTasksCta: "Go to Projects",
+      emptyApplicationsCta: "Find a call",
+      shortcutsTitle: "Shortcuts",
+      shortcutProjects: "All projects and ideas",
+      shortcutHistory: "Projects you have already been funded for",
+      shortcutPartners: "Find partners for a project",
+      shortcutKnowledge: "Programmes, calls and reference projects",
     },
     applications: {
       statusLabels: {

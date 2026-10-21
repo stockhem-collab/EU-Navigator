@@ -19,7 +19,8 @@ test("intake -> results -> workspace happy path, with accessible tabs", async ({
   await expect(page.getByText(/\/100/)).toBeVisible();
 
   const tabs = page.locator('[role="tab"]');
-  await expect(tabs).toHaveCount(3);
+  // Krav, Ansökan, Bedömning, Process.
+  await expect(tabs).toHaveCount(4);
   await expect(tabs.filter({ hasText: /Ansökan/i })).toHaveAttribute("aria-selected", "true");
 
   const assessmentTab = tabs.filter({ hasText: /Bedömning/i });

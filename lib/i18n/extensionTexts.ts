@@ -55,6 +55,7 @@ export interface ExtensionTexts {
     overview: string;
     leadership: string;
     cofinancing: string;
+    templates: string;
   };
   leadership: {
     title: string;
@@ -84,7 +85,8 @@ export interface ExtensionTexts {
     cofinancingPeak: (sek: string, year: number) => string;
     cofinancingLink: string;
     peersTitle: string;
-    peersIntro: (name: string) => string;
+    peersIntro: (name: string, group: string) => string;
+    peerGroupLabel: string;
     colMunicipality: string;
     colPopulation: string;
     colProjects: string;
@@ -92,6 +94,7 @@ export interface ExtensionTexts {
     colPerCapita: string;
     colPeriod1420: string;
     colPeriod2127: string;
+    colVinnova: string;
     colRank: string;
     rankLine: (name: string, rank: number, of: number, perCapita: string, median: string) => string;
     perCapitaUnit: string;
@@ -222,6 +225,7 @@ export const extensionSv: ExtensionTexts = {
     overview: "Översikt",
     leadership: "Ledningsrapport",
     cofinancing: "Medfinansiering",
+    templates: "Mallar",
   },
   leadership: {
     title: "Ledningsrapport",
@@ -250,9 +254,10 @@ export const extensionSv: ExtensionTexts = {
     cofinancingLine: (a, p) => `${a} för beviljade projekt och ${p} för ansökningar hos finansiären.`,
     cofinancingPeak: (sek, year) => `Kommunen ligger som mest ute med ${sek} i väntan på utbetalningar (${year}).`,
     cofinancingLink: "Se medfinansiering och likviditet per år",
-    peersTitle: "Jämförelse med de största kommunerna",
-    peersIntro: (name) =>
-      `EU-bidrag till ${name} och de tio största kommunerna sedan 2014, i säkra träffar på organisationsnummer, momsnummer eller PIC. Per invånare gör kommuner av olika storlek jämförbara.`,
+    peersTitle: "Jämförelse med andra kommuner",
+    peersIntro: (name, group) =>
+      `EU-bidrag till ${name} och jämförelsegruppen sedan 2014, i säkra träffar på organisationsnummer, momsnummer, PIC eller ett namn som säger att det är kommunen. ${group} Per invånare gör kommuner av olika storlek jämförbara.`,
+    peerGroupLabel: "Jämför med",
     colMunicipality: "Kommun",
     colPopulation: "Invånare",
     colProjects: "Projekt",
@@ -260,6 +265,7 @@ export const extensionSv: ExtensionTexts = {
     colPerCapita: "Kr per invånare",
     colPeriod1420: "2014–2020",
     colPeriod2127: "2021–2027",
+    colVinnova: "Vinnova (nationellt)",
     colRank: "Plats",
     rankLine: (name, rank, of, perCapita, median) =>
       `${name} har plats ${rank} av ${of} räknat i EU-bidrag per invånare: ${perCapita} mot medianen ${median}.`,
@@ -393,6 +399,7 @@ export const extensionEn: ExtensionTexts = {
     overview: "Overview",
     leadership: "Leadership report",
     cofinancing: "Co-financing",
+    templates: "Templates",
   },
   leadership: {
     title: "Leadership report",
@@ -421,9 +428,10 @@ export const extensionEn: ExtensionTexts = {
     cofinancingLine: (a, p) => `${a} for awarded projects and ${p} for applications with the funder.`,
     cofinancingPeak: (sek, year) => `At most, the municipality has ${sek} paid out while waiting for payments (${year}).`,
     cofinancingLink: "See co-financing and liquidity per year",
-    peersTitle: "Compared with the largest municipalities",
-    peersIntro: (name) =>
-      `EU grants to ${name} and the ten largest municipalities since 2014, counting sure matches on registration number, VAT number or PIC. Per inhabitant makes municipalities of different size comparable.`,
+    peersTitle: "Compared with other municipalities",
+    peersIntro: (name, group) =>
+      `EU grants to ${name} and the comparison group since 2014, counting sure matches on registration number, VAT number, PIC or a name that says it is the municipality. ${group} Per inhabitant makes municipalities of different size comparable.`,
+    peerGroupLabel: "Compare with",
     colMunicipality: "Municipality",
     colPopulation: "Inhabitants",
     colProjects: "Projects",
@@ -431,6 +439,7 @@ export const extensionEn: ExtensionTexts = {
     colPerCapita: "SEK per inhabitant",
     colPeriod1420: "2014–2020",
     colPeriod2127: "2021–2027",
+    colVinnova: "Vinnova (national)",
     colRank: "Rank",
     rankLine: (name, rank, of, perCapita, median) =>
       `${name} ranks ${rank} of ${of} in EU grants per inhabitant: ${perCapita} against a median of ${median}.`,

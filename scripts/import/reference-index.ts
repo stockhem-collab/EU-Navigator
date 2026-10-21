@@ -8,29 +8,41 @@ import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 import { GENERATED_DIR, ROOT } from "../../lib/integrations/core/files";
-import type { IndexOrganisation, IndexPartner, IndexProject, ReferenceIndex } from "../../lib/imported/types";
+import type { IndexOrganisation, IndexPartner, IndexProject, ReferenceIndex, ReferenceProfiles } from "../../lib/imported/types";
+import { municipalityProfiles } from "../../lib/data/municipalities";
+import { HISTORY_ONLY_SOURCES } from "../../lib/imported/labels";
 import { readGenerated } from "./generated";
 import { main } from "./run";
 
 export const INDEX_FILE = path.join(ROOT, "data", "app", "referensdata.json.gz");
+/** The demo municipalities' history and comparison, in a file of their own. */
+export const PROFILES_FILE = path.join(ROOT, "data", "app", "kommunhistorik.json.gz");
 const SUMMARY_CHARS = 450;
+/** Vinnova has twice as many projects as the EU sources together; a shorter
+ * summary keeps the index, and the server's first search, from doubling. */
+const VINNOVA_SUMMARY_CHARS = 200;
 
-function shorten(text: string | null | undefined): string | null {
+function shorten(text: string | null | undefined, max = SUMMARY_CHARS): string | null {
   if (!text) return null;
   const t = text.replace(/\s+/g, " ").trim();
-  if (t.length <= SUMMARY_CHARS) return t;
-  const cut = t.slice(0, SUMMARY_CHARS);
-  return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), SUMMARY_CHARS - 40))} …`;
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), max - 40))} …`;
 }
 
 function readJson(name: string): unknown {
   const file = path.join(GENERATED_DIR, name);
-  if (!fs.existsSync(file)) throw new Error(`Missing lib/data/generated/${name}. Run npm run history:uppsala and history:peers first.`);
+  if (!fs.existsSync(file)) throw new Error(`Missing lib/data/generated/${name}. Run npm run history:all first.`);
   return JSON.parse(fs.readFileSync(file, "utf8"));
 }
 
 export function buildReferenceIndex(): ReferenceIndex {
-  const datasets = readGenerated();
+  // FTS, Erasmus+ and Tillväxtverket feed only the municipalities' history
+  // and comparison: FTS titles are budget commitments, not project
+  // descriptions to search, Erasmus+ would add thousands of school exchanges
+  // to the index. Tillväxtverket's projektbank is so far read for the
+  // comparison only.
+  const datasets = readGenerated().filter((ds) => !HISTORY_ONLY_SOURCES.includes(ds.source));
   const projects: IndexProject[] = [];
   const organisations: IndexOrganisation[] = [];
   const partners: IndexPartner[] = [];
@@ -40,7 +52,9 @@ export function buildReferenceIndex(): ReferenceIndex {
   for (const ds of datasets) {
     for (const p of ds.projects) {
       // The English description is kept separately only when the source
-      // also has one in another language (Kohesio, ESF).
+      // also has one in another language (Kohesio, ESF). Vinnova has both
+      // too, but its 20 000 projects would make the index a third larger;
+      // its English title is kept.
       const hasOwnLanguage = p.sourceSystem === "kohesio" || p.sourceSystem === "esf";
       projectIndex.set(p.id, projects.length);
       projects.push({
@@ -52,7 +66,7 @@ export function buildReferenceIndex(): ReferenceIndex {
         title: p.title,
         titleEn: p.titleEn && p.titleEn !== p.title ? p.titleEn : null,
         acronym: p.acronym ?? null,
-        summary: shorten(p.description),
+        summary: shorten(p.description, p.sourceSystem === "vinnova" ? VINNOVA_SUMMARY_CHARS : SUMMARY_CHARS),
         summaryEn: hasOwnLanguage ? shorten(p.descriptionEn) : null,
         startDate: p.startDate,
         endDate: p.endDate,
@@ -85,8 +99,18 @@ export function buildReferenceIndex(): ReferenceIndex {
     projects,
     organisations,
     partners,
-    history: readJson("uppsala-history.json"),
-    peers: readJson("peers.json"),
+  };
+}
+
+export function buildProfiles(): ReferenceProfiles {
+  return {
+    generatedAt: new Date().toISOString(),
+    profiles: Object.fromEntries(
+      Object.keys(municipalityProfiles).map((id) => [
+        id,
+        { history: readJson(`${id}-history.json`), peers: readJson(`${id}-peers.json`) },
+      ]),
+    ),
   };
 }
 
@@ -96,11 +120,14 @@ if (require.main === module) {
     const json = JSON.stringify(index);
     fs.mkdirSync(path.dirname(INDEX_FILE), { recursive: true });
     fs.writeFileSync(INDEX_FILE, zlib.gzipSync(json, { level: 9 }));
+    const profilesJson = JSON.stringify(buildProfiles());
+    fs.writeFileSync(PROFILES_FILE, zlib.gzipSync(profilesJson, { level: 9 }));
     const mb = (n: number) => `${(n / 1_000_000).toFixed(1)} MB`;
     console.log(`\n[referensindex]`);
     console.log(`  projekt        ${index.projects.length}`);
     console.log(`  organisationer ${index.organisations.length}`);
     console.log(`  partnerrader   ${index.partners.length}`);
     console.log(`  skriven fil    ${path.relative(ROOT, INDEX_FILE)} (${mb(fs.statSync(INDEX_FILE).size)}, okomprimerat ${mb(json.length)})`);
+    console.log(`  skriven fil    ${path.relative(ROOT, PROFILES_FILE)} (${mb(fs.statSync(PROFILES_FILE).size)})`);
   });
 }

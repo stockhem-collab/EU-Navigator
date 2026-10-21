@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { leadershipView, organisationTypeOf, searchPartners } from "../../lib/imported/server";
+import { historyView, leadershipView, organisationTypeOf, searchPartners } from "../../lib/imported/server";
 import { auditItemsFor } from "../../lib/data/auditChecklist";
 import { findProgram } from "../../lib/data/fundingPrograms";
 import { fundingCalls, isCallOutdated } from "../../lib/data/fundingCalls";
@@ -52,6 +52,38 @@ test.describe("leadership report", () => {
       expect(p.byPeriod["2014-2020"].projects + p.byPeriod["2021-2027"].projects).toBe(p.projects);
     }
     expect(view!.peers.filter((p) => p.reference).map((p) => p.name)).toEqual(["Uppsala kommun"]);
+  });
+
+  test("the Lidingö profile compares with its own group", () => {
+    const view = leadershipView("lidingo");
+    expect(view).not.toBeNull();
+    expect(view!.peers.length).toBe(10);
+    expect(view!.peers.filter((p) => p.reference).map((p) => p.name)).toEqual(["Lidingö stad"]);
+    for (const p of view!.peers) expect(p.population).toBeGreaterThan(30_000);
+    expect(view!.peers.find((p) => p.name === "Södertälje kommun")!.projects).toBeGreaterThan(0);
+    // Vinnova is counted apart: Lidingö's only EU projects are Erasmus+
+    // exchanges (Hersby gymnasium, the youth unit), and it coordinated
+    // Vinnova projects (Rätt till insyn and others).
+    const own = view!.peers.find((p) => p.reference)!;
+    expect(own.projects).toBeGreaterThan(0);
+    expect(own.byProgram.map((b) => b.key)).toEqual(["erasmus"]);
+    expect(own.vinnova!.projects).toBeGreaterThanOrEqual(3);
+  });
+
+  test("the SKR kommungrupp can be chosen as comparison group", () => {
+    const first = leadershipView("uppsala");
+    expect(first!.peerGroups.map((g) => g.id)).toEqual(["storsta", "kommungrupp"]);
+    expect(first!.peerGroup).toBe("storsta");
+    const view = leadershipView("uppsala", "kommungrupp");
+    expect(view!.peerGroup).toBe("kommungrupp");
+    expect(view!.peers.length).toBe(23);
+    expect(view!.peers.filter((p) => p.reference).map((p) => p.name)).toEqual(["Uppsala kommun"]);
+    for (const p of view!.peers) expect(p.population).toBeGreaterThan(40_000);
+    expect(view!.peers.some((p) => p.name === "Stockholms stad")).toBe(false);
+    expect(view!.peers.some((p) => p.name === "Växjö kommun")).toBe(true);
+    // An unknown group falls back to the first.
+    expect(leadershipView("uppsala", "okänd")!.peerGroup).toBe("storsta");
+    expect(historyView("lidingo", "kommungrupp")!.peers.length).toBe(43);
   });
 });
 

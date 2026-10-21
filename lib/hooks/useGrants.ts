@@ -11,10 +11,11 @@ import { notifyDataChanged } from "@/lib/hooks/useActivityLog";
 // new Grant to. The storage key predates the rename and is kept so existing
 // data still loads.
 const STORAGE_KEY = "eu-navigator-added-awarded-projects";
-// Edits to a grant after it's registered (today: its commitments), for
+// Edits to a grant after it's registered (its commitments and its own
+// report requirements), for
 // seeded and added grants alike — an overlay, like useProjectBank's.
 const OVERRIDES_KEY = "eu-navigator-grant-overrides";
-export type GrantEdit = Partial<Pick<Grant, "commitments">>;
+export type GrantEdit = Partial<Pick<Grant, "commitments" | "ownReportRequirements">>;
 
 function readOverrides(): Record<string, GrantEdit> {
   try {

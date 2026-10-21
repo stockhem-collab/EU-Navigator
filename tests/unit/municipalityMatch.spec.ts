@@ -8,16 +8,26 @@ import {
 import {
   findMunicipalityProjects,
   nameCandidateReason,
+  namesMunicipality,
   organisationNumberOf,
 } from "../../lib/integrations/municipality/match";
 import { checkAmount, linkRow, parseChecklist, reconcile } from "../../lib/integrations/municipality/reconcile";
-import { peerMunicipalities, uppsalaMatch } from "../../lib/data/municipalities";
-import { uppsalaPreset } from "../../lib/data/orgPresets";
+import {
+  kommunMatch,
+  lidingoMatch,
+  lidingoPeers,
+  municipalityProfiles,
+  peerMunicipalities,
+  uppsalaMatch,
+} from "../../lib/data/municipalities";
+import { KOMMUNER } from "../../lib/data/kommuner";
+import { lidingoPreset, uppsalaPreset } from "../../lib/data/orgPresets";
+import { DEMO_PROFILES } from "../../lib/data/demoProfiles";
 
 // Finding a municipality's projects in the generated source data
-// (scripts/import/uppsala-history.ts, peers.ts): sure hits only on
-// identifiers, names only as candidates, and the reconciliation with
-// data/kontrollista.csv.
+// (scripts/import/history.ts, peers.ts): sure hits on identifiers or a
+// name that says it is the municipality, other names only as candidates,
+// and the reconciliation with data/kontrollista.csv.
 
 const rates = { 2018: 10, 2020: 10, 2023: 11 };
 
@@ -93,6 +103,61 @@ test.describe("municipality config", () => {
     expect(peerMunicipalities).toHaveLength(10);
     for (const m of peerMunicipalities) expect(m.orgNumber).toMatch(/^212000-\d{4}$/);
   });
+
+  test("Lidingö's registry numbers come from its preset, peers in Stockholm county", () => {
+    expect(lidingoMatch.orgNumber).toBe(lidingoPreset.orgNumber);
+    expect(lidingoMatch.vatNumber).toBe("SE212000019101");
+    expect(lidingoMatch.pic).toBeNull();
+    expect(lidingoMatch.kommunkod).toBe("0186");
+    for (const m of lidingoPeers) {
+      expect(m.orgNumber).toMatch(/^212000-\d{4}$/);
+      expect(m.vatNumber).toBe(`SE${m.orgNumber.replace("-", "")}01`);
+      expect(m.lan).toBe("Stockholms län");
+    }
+  });
+
+  test("every demo profile has a municipality config of the same organisation", () => {
+    for (const { id, preset } of DEMO_PROFILES) {
+      expect(municipalityProfiles[id].match.name).toBe(preset.organisationName);
+      expect(municipalityProfiles[id].match.orgNumber).toBe(preset.orgNumber);
+    }
+  });
+});
+
+test.describe("all municipalities and comparison groups", () => {
+  test("290 municipalities with organisationsnummer, kommungrupp and population", () => {
+    expect(KOMMUNER).toHaveLength(290);
+    for (const k of KOMMUNER) {
+      expect(k.orgNumber).toMatch(/^2\d{5}-\d{4}$/);
+      expect(k.kommungrupp).toMatch(/^[ABC]\d$/);
+      expect(k.population).toBeGreaterThan(2000);
+    }
+    const uppsala = KOMMUNER.find((k) => k.kommunkod === "0380")!;
+    expect(uppsala.orgNumber).toBe(uppsalaMatch.orgNumber);
+    expect(uppsala.kommungruppNamn).toBe("Större stad");
+    expect(KOMMUNER.find((k) => k.kommunkod === "0180")!.officialName).toBe("Stockholms stad");
+    expect(KOMMUNER.find((k) => k.kommunkod === "0880")!.officialName).toBe("Kalmar kommun");
+  });
+
+  test("an accent-free name is a place name only when no other municipality shares it", () => {
+    const habo = kommunMatch(KOMMUNER.find((k) => k.name === "Håbo")!);
+    expect(habo.placeNames).toEqual(["Håbo"]);
+    expect(namesMunicipality("HABO KOMMUN", habo)).toBe(false);
+    expect(kommunMatch(KOMMUNER.find((k) => k.name === "Växjö")!).placeNames).toEqual(["Växjö", "Vaxjo"]);
+  });
+
+  test("each profile compares with its own group first, then its SKR kommungrupp", () => {
+    const uppsala = municipalityProfiles.uppsala.peerGroups;
+    expect(uppsala.map((g) => g.id)).toEqual(["storsta", "kommungrupp"]);
+    expect(uppsala[1].peers).toHaveLength(22);
+    expect(uppsala[1].peers.some((m) => m.kommunkod === "0380")).toBe(false);
+    // Municipalities in both groups keep their PIC.
+    expect(uppsala[1].peers.find((m) => m.kommunkod === "1980")!.pic).toBe("968814952");
+    const lidingo = municipalityProfiles.lidingo.peerGroups;
+    expect(lidingo.map((g) => g.id)).toEqual(["grannar", "kommungrupp"]);
+    expect(lidingo[1].label).toBe("Kommungrupp: Pendlingskommun nära storstad");
+    expect(lidingo[1].peers).toHaveLength(42);
+  });
 });
 
 test.describe("matching", () => {
@@ -108,7 +173,7 @@ test.describe("matching", () => {
     expect(r.candidates).toHaveLength(0);
   });
 
-  test("names are candidates, never sure hits; excluded organisations are neither", () => {
+  test("a name that says it is the municipality is a sure hit without an organisationsnummer; other names are candidates", () => {
     const ds = dataset("kohesio", [
       [project("1", "kohesio"), org("a", "kohesio", "Äldreförvaltningen, Uppsala kommun")],
       [project("2", "kohesio"), org("b", "kohesio", "Uppsala Municipality")],
@@ -116,13 +181,18 @@ test.describe("matching", () => {
       [project("4", "kohesio"), org("d", "kohesio", "Region Uppsala, Regionkontoret")],
       [project("5", "kohesio"), org("e", "kohesio", "Länsstyrelsen i Uppsala län")],
       [project("6", "kohesio", { title: "Siri- förstudie Uppsala kommun" }), org("f", "kohesio", "Arbetsmarknadsavdelningen")],
+      [project("7", "kohesio"), org("g", "kohesio", "Uppsala kommun", { organisationNumber: "5560000000" })],
+      [project("8", "kohesio"), org("h", "kohesio", "Kommunen i Uppsala")],
     ]);
     const r = findMunicipalityProjects([ds], uppsalaMatch, rates);
-    expect(r.projects).toHaveLength(0);
+    expect(r.projects.map((p) => [p.id, p.matchedOn, p.matchedValue])).toEqual([
+      ["kohesio:1", "namn", '"Äldreförvaltningen, Uppsala kommun"'],
+      ["kohesio:2", "namn", '"Uppsala Municipality"'],
+    ]);
     expect(r.candidates.map((c) => [c.projectId, c.reason])).toEqual([
-      ["kohesio:1", "namnvariant"],
-      ["kohesio:2", "namnvariant"],
       ["kohesio:6", "projekttitel"],
+      ["kohesio:7", "namnvariant"],
+      ["kohesio:8", "ortnamn och kommunord"],
     ]);
     expect(r.excludedOrganisations.map((e) => e.rule).sort()).toEqual([
       "Länsstyrelsen i Uppsala län",
@@ -147,6 +217,29 @@ test.describe("matching", () => {
     const r = findMunicipalityProjects([ds], uppsalaMatch, rates);
     expect(r.projects).toHaveLength(0);
     expect(r.before2014).toHaveLength(1);
+  });
+
+  test("which names say they are the municipality", () => {
+    const stockholm = peerMunicipalities.find((m) => m.name === "Stockholms stad")!;
+    for (const name of [
+      "Arbetsmarknadsförvaltningen, Stockholms stad",
+      "Utbildningsförvaltningen i Stockholms stad",
+      "Stockholm stads Kulturförvaltning",
+      "City of Stockholm",
+    ]) {
+      expect(namesMunicipality(name, stockholm), name).toBe(true);
+    }
+    for (const name of [
+      "Stockholms stads Bostadsförmedling AB",
+      "Stiftelsen Stockholms Stadsmission",
+      "Stockholms läns landsting",
+      "Stockholms Stadsarkiv",
+      "Kommunförbundet Stockholms län",
+    ]) {
+      expect(namesMunicipality(name, stockholm), name).toBe(false);
+    }
+    expect(namesMunicipality("Uppsala kommun Skolfastigheter", uppsalaMatch)).toBe(false);
+    expect(namesMunicipality("Municipality of Robertsfors", kommunMatch(KOMMUNER.find((k) => k.name === "Robertsfors")!))).toBe(true);
   });
 
   test("keep.eu national id and name rules", () => {

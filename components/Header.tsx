@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import NotificationBell from "@/components/NotificationBell";
 import { USER_COOKIE } from "@/lib/auth/shared";
+import { syncProfileCookie } from "@/lib/demoProfile";
 
 type NavKey = keyof ReturnType<typeof useLanguage>["t"]["nav"];
 
@@ -32,6 +33,12 @@ export default function Header() {
   // the only one seen logged out. There the menu is replaced by "Logga in".
   const loggedIn = pathname !== "/";
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const router = useRouter();
+  // Server-rendered pages read the demo profile from a cookie; put it back
+  // if it went missing so they match this browser's data.
+  useEffect(() => {
+    if (syncProfileCookie()) router.refresh();
+  }, [router]);
   useEffect(() => {
     const match = document.cookie.split("; ").find((c) => c.startsWith(`${USER_COOKIE}=`));
     setUserEmail(match ? decodeURIComponent(match.slice(USER_COOKIE.length + 1)) : null);

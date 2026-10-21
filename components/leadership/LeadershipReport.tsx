@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import PeerGroupPicker from "@/components/imported/PeerGroupPicker";
 import { useEffect, useMemo, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -84,6 +85,7 @@ export default function LeadershipReport({ view }: { view: LeadershipView | null
     [view]
   );
   const own = peers.find((p) => p.reference) ?? null;
+  const hasVinnova = peers.some((p) => p.vinnova);
   const others = peers.filter((p) => !p.reference);
   const ranked = peers.filter((p) => p.perCapitaSek !== null);
   const ownRank = own ? ranked.indexOf(own) + 1 : 0;
@@ -173,7 +175,10 @@ export default function LeadershipReport({ view }: { view: LeadershipView | null
             <p className="mt-2 text-sm text-navy-500">{lr.noPeers}</p>
           ) : (
             <>
-              <p className="mt-1 max-w-3xl text-sm text-navy-500">{lr.peersIntro(own.name)}</p>
+              <PeerGroupPicker label={lr.peerGroupLabel} groups={view.peerGroups} active={view.peerGroup} />
+              <p className="mt-2 max-w-3xl text-sm text-navy-500">
+                {lr.peersIntro(own.name, view.peerGroups.find((g) => g.id === view.peerGroup)?.description ?? "")}
+              </p>
               {own.perCapitaSek !== null && (
                 <p className="mt-3 rounded-md bg-gold-50 px-3 py-2 text-sm font-semibold text-navy-800" data-testid="lr-rank">
                   {lr.rankLine(own.name, ownRank, ranked.length, `${fmtInt(own.perCapitaSek)} ${lr.perCapitaUnit}`, `${fmtInt(othersMedian)} ${lr.perCapitaUnit}`)}
@@ -191,6 +196,7 @@ export default function LeadershipReport({ view }: { view: LeadershipView | null
                       <th className={thNum}>{lr.colPerCapita}</th>
                       <th className={thNum}>{lr.colPeriod1420}</th>
                       <th className={thNum}>{lr.colPeriod2127}</th>
+                      {hasVinnova && <th className={thNum}>{lr.colVinnova}</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -212,6 +218,18 @@ export default function LeadershipReport({ view }: { view: LeadershipView | null
                           {fmtSEK(p.byPeriod["2021-2027"].sek, lang)}
                           <span className="block text-xs font-normal text-navy-400">{lr.colProjects.toLowerCase()}: {p.byPeriod["2021-2027"].projects}</span>
                         </td>
+                        {hasVinnova && (
+                          <td className={tdNum}>
+                            {p.vinnova ? (
+                              <>
+                                {fmtSEK(p.vinnova.grantSek, lang)}
+                                <span className="block text-xs font-normal text-navy-400">{lr.colProjects.toLowerCase()}: {p.vinnova.projects}</span>
+                              </>
+                            ) : (
+                              "–"
+                            )}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

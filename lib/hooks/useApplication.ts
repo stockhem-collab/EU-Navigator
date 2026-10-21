@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApplicationRecord, ApplicationStatus, ApplicationVersion } from "@/lib/types";
+import { ApplicationRecord, ApplicationRequirement, ApplicationStatus, ApplicationVersion, RequirementState } from "@/lib/types";
 import {
   DRAFT_KEY_PREFIX,
   defaultApplicationId,
@@ -14,11 +14,13 @@ import {
 import { ApplicationBudget, sanitizeApplicationBudget } from "@/lib/matching/applicationBudget";
 
 interface ApplicationDraft {
-  /** Project-logic row label (Swedish label, used as a stable key) -> the
-   * user's edited text. A label absent here means "still using the AI
-   * suggestion as-is" — the same semantics the throwaway component state
-   * had before this hook existed. */
+  /** Section key (ProjectLogicRow.key) -> the user's edited text. A key
+   * absent here means "still using the AI suggestion as-is". Drafts saved
+   * before sections had keys are keyed by the Swedish label instead; they
+   * are read through sectionDraftFor and moved to the key on the next edit. */
   sectionDrafts: Record<string, string>;
+  /** The form's tables (TemplateTable.key -> rows of cells). */
+  tables: Record<string, string[][]>;
   updatedAt: string; // ISO
   /** Named, immutable checkpoints ("Utkast", "Slutgiltig version", ...) —
    * see ApplicationVersion. Separate from the live sectionDrafts above,
@@ -27,9 +29,71 @@ interface ApplicationDraft {
   /** The eligible budget and grant this application states, when set —
    * see ApplicationBudget. Empty = the project's figures. */
   budget: ApplicationBudget;
+  /** The budget per the form's cost categories, as typed
+   * (CostCategory.key -> amount in SEK). */
+  costs: Record<string, string>;
+  /** Where the user is with each of the call's requirements for a
+   * complete application (ApplicationRequirement.id -> state) — only the
+   * ones they set; the rest follow the application (see
+   * evaluateRequirements). */
+  requirementStates: Record<string, RequirementState>;
+  /** Requirements the user added to this application. */
+  ownRequirements: ApplicationRequirement[];
 }
 
-const EMPTY_DRAFT: ApplicationDraft = { sectionDrafts: {}, updatedAt: "", versions: [], budget: {} };
+const EMPTY_DRAFT: ApplicationDraft = {
+  sectionDrafts: {},
+  tables: {},
+  updatedAt: "",
+  versions: [],
+  budget: {},
+  costs: {},
+  requirementStates: {},
+  ownRequirements: [],
+};
+
+const REQUIREMENT_STATUSES = ["todo", "in-progress", "done", "not-applicable"];
+
+/** Keeps only well-formed requirement states from storage. */
+export function sanitizeRequirementStates(value: unknown): Record<string, RequirementState> {
+  if (!value || typeof value !== "object") return {};
+  const out: Record<string, RequirementState> = {};
+  for (const [id, state] of Object.entries(value as Record<string, unknown>)) {
+    const s = state as Partial<RequirementState> | null;
+    if (!s || typeof s.status !== "string" || !REQUIREMENT_STATUSES.includes(s.status)) continue;
+    out[id] = {
+      status: s.status,
+      ...(typeof s.note === "string" && s.note ? { note: s.note } : {}),
+      updatedAt: typeof s.updatedAt === "string" ? s.updatedAt : "",
+    };
+  }
+  return out;
+}
+
+/** Keeps only requirements with an id, a kind and a title. */
+export function sanitizeOwnRequirements(value: unknown): ApplicationRequirement[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (r): r is ApplicationRequirement => !!r && typeof r.id === "string" && typeof r.kind === "string" && typeof r.title_sv === "string" && !!r.source
+  );
+}
+
+/** Keeps only string amounts from storage. */
+function sanitizeCosts(value: unknown): Record<string, string> {
+  if (!value || typeof value !== "object") return {};
+  return Object.fromEntries(Object.entries(value as Record<string, unknown>).filter(([, v]) => typeof v === "string")) as Record<string, string>;
+}
+
+/** Keeps only well-formed tables (rows of string cells) from storage. */
+function sanitizeTables(value: unknown): Record<string, string[][]> {
+  if (!value || typeof value !== "object") return {};
+  const out: Record<string, string[][]> = {};
+  for (const [key, rows] of Object.entries(value as Record<string, unknown>)) {
+    if (!Array.isArray(rows)) continue;
+    out[key] = rows.filter(Array.isArray).map((row) => (row as unknown[]).map((cell) => (typeof cell === "string" ? cell : "")));
+  }
+  return out;
+}
 
 function storageKey(applicationId: string) {
   return `${DRAFT_KEY_PREFIX}${applicationId}`;
@@ -42,9 +106,13 @@ function readDraft(applicationId: string): ApplicationDraft {
     const parsed = JSON.parse(raw);
     return {
       sectionDrafts: parsed?.sectionDrafts && typeof parsed.sectionDrafts === "object" ? parsed.sectionDrafts : {},
+      tables: sanitizeTables(parsed?.tables),
       updatedAt: typeof parsed?.updatedAt === "string" ? parsed.updatedAt : "",
       versions: Array.isArray(parsed?.versions) ? parsed.versions : [],
       budget: sanitizeApplicationBudget(parsed?.budget),
+      costs: sanitizeCosts(parsed?.costs),
+      requirementStates: sanitizeRequirementStates(parsed?.requirementStates),
+      ownRequirements: sanitizeOwnRequirements(parsed?.ownRequirements),
     };
   } catch {
     return EMPTY_DRAFT;
@@ -71,10 +139,14 @@ export function seedApplicationDraft(
   customerProjectId: string,
   callId: string,
   sectionDrafts: Record<string, string>,
-  budget: ApplicationBudget = {}
+  budget: ApplicationBudget = {},
+  tables: Record<string, string[][]> = {},
+  costs: Record<string, string> = {},
+  requirementStates: Record<string, RequirementState> = {},
+  ownRequirements: ApplicationRequirement[] = []
 ) {
   const id = defaultApplicationId(customerProjectId, callId);
-  writeDraft(id, { sectionDrafts, updatedAt: new Date().toISOString(), versions: [], budget });
+  writeDraft(id, { sectionDrafts, tables, updatedAt: new Date().toISOString(), versions: [], budget, costs, requirementStates, ownRequirements });
   touchApplicationRecord(id, customerProjectId, callId);
 }
 
@@ -85,10 +157,26 @@ export function readApplicationBudget(applicationId: string): ApplicationBudget 
 }
 
 /** The sections a stored application's user has written or edited
- * (label -> text) — e.g. to suggest the grant's commitments from what the
+ * (key, or label for older drafts -> text; read with sectionDraftFor) — e.g. to suggest the grant's commitments from what the
  * application promised. */
 export function readApplicationSections(applicationId: string): Record<string, string> {
   return readDraft(applicationId).sectionDrafts;
+}
+
+/** A stored application's own requirement states and requirements — e.g.
+ * for Översikt's next step. */
+export function readApplicationRequirements(applicationId: string): {
+  states: Record<string, RequirementState>;
+  own: ApplicationRequirement[];
+} {
+  const draft = readDraft(applicationId);
+  return { states: draft.requirementStates, own: draft.ownRequirements };
+}
+
+/** A stored application's form tables — e.g. its work packages for the
+ * grant's reports. */
+export function readApplicationTables(applicationId: string): Record<string, string[][]> {
+  return readDraft(applicationId).tables;
 }
 
 /**
@@ -176,23 +264,41 @@ export function useApplication(customerProjectId: string | null, callId: string,
     [customerProjectId, callId, resolve, setDraft]
   );
 
+  // `legacyKey` is the section's Swedish label, which older drafts were
+  // saved under — removed on the first edit so the text lives under the
+  // section's key from then on.
   const setSection = useCallback(
-    (label: string, value: string) =>
-      commit((prev) => ({
-        ...prev,
-        sectionDrafts: { ...prev.sectionDrafts, [label]: value },
-        updatedAt: new Date().toISOString(),
-      })),
+    (key: string, value: string, legacyKey?: string) =>
+      commit((prev) => {
+        const sectionDrafts = { ...prev.sectionDrafts, [key]: value };
+        if (legacyKey && legacyKey !== key) delete sectionDrafts[legacyKey];
+        return { ...prev, sectionDrafts, updatedAt: new Date().toISOString() };
+      }),
     [commit]
   );
 
   const resetSection = useCallback(
-    (label: string) =>
+    (key: string, legacyKey?: string) =>
       commit((prev) => {
         const sectionDrafts = { ...prev.sectionDrafts };
-        delete sectionDrafts[label];
+        delete sectionDrafts[key];
+        if (legacyKey) delete sectionDrafts[legacyKey];
         return { ...prev, sectionDrafts, updatedAt: new Date().toISOString() };
       }),
+    [commit]
+  );
+
+  /** Replaces one of the form's tables (rows of cells). */
+  const setTable = useCallback(
+    (key: string, rows: string[][]) =>
+      commit((prev) => ({ ...prev, tables: { ...prev.tables, [key]: rows }, updatedAt: new Date().toISOString() })),
+    [commit]
+  );
+
+  /** Sets one cost category's amount in the budget per cost category. */
+  const setCost = useCallback(
+    (key: string, value: string) =>
+      commit((prev) => ({ ...prev, costs: { ...prev.costs, [key]: value }, updatedAt: new Date().toISOString() })),
     [commit]
   );
 
@@ -204,6 +310,40 @@ export function useApplication(customerProjectId: string | null, callId: string,
         budget: sanitizeApplicationBudget({ ...prev.budget, ...patch }),
         updatedAt: new Date().toISOString(),
       })),
+    [commit]
+  );
+
+  /** Sets (or, with null, clears back to automatic) where the user is with
+   * one requirement. */
+  const setRequirementState = useCallback(
+    (id: string, state: Omit<RequirementState, "updatedAt"> | null) =>
+      commit((prev) => {
+        const requirementStates = { ...prev.requirementStates };
+        if (state) requirementStates[id] = { status: state.status, ...(state.note ? { note: state.note } : {}), updatedAt: new Date().toISOString() };
+        else delete requirementStates[id];
+        return { ...prev, requirementStates, updatedAt: new Date().toISOString() };
+      }),
+    [commit]
+  );
+
+  const addOwnRequirement = useCallback(
+    (requirement: ApplicationRequirement) =>
+      commit((prev) => ({ ...prev, ownRequirements: [...prev.ownRequirements, requirement], updatedAt: new Date().toISOString() })),
+    [commit]
+  );
+
+  const removeOwnRequirement = useCallback(
+    (id: string) =>
+      commit((prev) => {
+        const requirementStates = { ...prev.requirementStates };
+        delete requirementStates[id];
+        return {
+          ...prev,
+          ownRequirements: prev.ownRequirements.filter((r) => r.id !== id),
+          requirementStates,
+          updatedAt: new Date().toISOString(),
+        };
+      }),
     [commit]
   );
 
@@ -222,6 +362,7 @@ export function useApplication(customerProjectId: string | null, callId: string,
         name,
         createdAt: new Date().toISOString(),
         sectionDrafts: resolvedSections,
+        tables: draftRef.current.tables,
         budget: { ...draftRef.current.budget },
       };
       commit((prev) => ({ ...prev, versions: [...prev.versions, version] }));
@@ -239,6 +380,8 @@ export function useApplication(customerProjectId: string | null, callId: string,
         return {
           ...prev,
           sectionDrafts: { ...version.sectionDrafts },
+          // Older versions didn't save tables — restoring one leaves them.
+          tables: version.tables ? sanitizeTables(version.tables) : prev.tables,
           // Older versions didn't save amounts — restoring one leaves them.
           budget: version.budget ? sanitizeApplicationBudget(version.budget) : prev.budget,
           updatedAt: new Date().toISOString(),
@@ -269,9 +412,18 @@ export function useApplication(customerProjectId: string | null, callId: string,
 
   return {
     sectionDrafts: draft.sectionDrafts,
+    tables: draft.tables,
+    setTable,
     versions: draft.versions,
     budget: draft.budget,
     setBudget,
+    costs: draft.costs,
+    setCost,
+    requirementStates: draft.requirementStates,
+    setRequirementState,
+    ownRequirements: draft.ownRequirements,
+    addOwnRequirement,
+    removeOwnRequirement,
     setSection,
     resetSection,
     saveVersion,

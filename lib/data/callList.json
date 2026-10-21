@@ -47,12 +47,65 @@
     "sectors": [
       "mobility"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
+    "reportTemplateId": "he-periodic-report",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-01",
     "description_sv": "Demonstration av energieffektiv stads- och förortstrafik ihop med delade mobilitetstjänster. 10 MEUR totalt, cirka 2 projekt.",
     "comment_sv": "Innovationsåtgärd: 100 % för offentliga ideella organisationer, 70 % för företag. Stänger om sex dagar – visa som exempel, inte som realistisk ansökan.",
-    "extractionSource": "call-list"
+    "extractionSource": "call-list",
+    "requirementChanges": {
+      "add": [
+        {
+          "id": "he-mission-cities",
+          "kind": "eligibility",
+          "title_sv": "Minst tre ledande städer och tre följestäder",
+          "title_en": "Minst tre ledande städer och tre följestäder",
+          "why_sv": "Minst tre ledande städer från olika EU- eller associerade länder, företrädda av kommunen eller med kommunens uttryckliga medgivande, och minst tre följestäder (de får vara från samma land som de ledande). Minst en av de ledande städerna ska vara en av de 112 städerna i EU:s stadsmission.",
+          "why_en": "Minst tre ledande städer från olika EU- eller associerade länder, företrädda av kommunen eller med kommunens uttryckliga medgivande, och minst tre följestäder (de får vara från samma land som de ledande). Minst en av de ledande städerna ska vara en av de 112 städerna i EU:s stadsmission.",
+          "mandatory": true,
+          "owner": "partners",
+          "leadTimeDays": 60,
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2026-04-CIT-01, Other eligible conditions",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-01",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "he-mission-platform",
+          "kind": "form",
+          "title_sv": "Samarbete med Cities Mission Platform i arbetsplanen",
+          "title_en": "Samarbete med Cities Mission Platform i arbetsplanen",
+          "why_sv": "Samarbetet med missionens plattform är avgörande och ska ha aktiviteter och resurser i arbetsplanen. Det formaliseras i ett samförståndsavtal (MoU) eller samarbetsavtal så snart som möjligt efter projektstart.",
+          "why_en": "Samarbetet med missionens plattform är avgörande och ska ha aktiviteter och resurser i arbetsplanen. Det formaliseras i ett samförståndsavtal (MoU) eller samarbetsavtal så snart som möjligt efter projektstart.",
+          "mandatory": true,
+          "owner": "applicant",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2026-04-CIT-01, Legal and financial set-up",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-01",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    }
   },
   {
     "id": "horizon-miss-2026-04-cit-02",
@@ -101,12 +154,95 @@
     "sectors": [
       "energy"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
+    "reportTemplateId": "he-periodic-report",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-02",
     "description_sv": "Omställning till lågtemperaturlösningar för uppvärmning i flerbostadshus. 6 MEUR totalt, cirka 3 projekt.",
     "comment_sv": "Relevant för Uppsalahem om bolagen räknas in.",
-    "extractionSource": "call-list"
+    "extractionSource": "call-list",
+    "requirementChanges": {
+      "add": [
+        {
+          "id": "he-mission-cities",
+          "kind": "eligibility",
+          "title_sv": "Minst två städer från olika länder som stödmottagare",
+          "title_en": "Minst två städer från olika länder som stödmottagare",
+          "why_sv": "Minst två städer från olika EU- eller associerade länder, företrädda av kommunen eller med kommunens uttryckliga medgivande, ska delta som stödmottagare. Minst en av dem ska vara en av de 112 städerna i EU:s stadsmission.",
+          "why_en": "Minst två städer från olika EU- eller associerade länder, företrädda av kommunen eller med kommunens uttryckliga medgivande, ska delta som stödmottagare. Minst en av dem ska vara en av de 112 städerna i EU:s stadsmission.",
+          "mandatory": true,
+          "owner": "partners",
+          "leadTimeDays": 60,
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2026-04-CIT-02, Other eligible conditions",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-02",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "he-ls-budget-table",
+          "kind": "budget",
+          "title_sv": "Detaljerad budgettabell (klumpsumma)",
+          "title_en": "Detaljerad budgettabell (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "why_en": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "mandatory": true,
+          "owner": "finance",
+          "leadTimeDays": 14,
+          "link": {
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/temp-form/af/detailed-budget-table_he-ls-euratom_en.xlsm",
+            "label_sv": "Detaljerad budgettabell (HE LS)",
+            "label_en": "Detaljerad budgettabell (HE LS)"
+          },
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2026-04-CIT-02 (bidragsform HORIZON-AG-LS) och General Annexes, E — Documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-02",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ],
+      "pageLimit": 45
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2026-04-CIT-02, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-02",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    }
   },
   {
     "id": "horizon-miss-2026-04-cit-neb-b4p-ccri-03",
@@ -155,12 +291,95 @@
     "sectors": [
       "climate"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
+    "reportTemplateId": "he-periodic-report",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-neb-b4p-ccri-03",
     "description_sv": "Cirkulär ekonomi i byggande, från enskilda byggnader till stadsnivå. 9,5 MEUR totalt, upp till 5 projekt.",
     "comment_sv": "Passar idén om cirkulärt byggande. Nästa liknande ämne är cirkulär logistik 2027.",
-    "extractionSource": "call-list"
+    "extractionSource": "call-list",
+    "requirementChanges": {
+      "add": [
+        {
+          "id": "he-mission-cities",
+          "kind": "eligibility",
+          "title_sv": "Minst tre städer från olika länder som stödmottagare",
+          "title_en": "Minst tre städer från olika länder som stödmottagare",
+          "why_sv": "Minst tre städer från olika EU- eller associerade länder, företrädda av kommunen eller med kommunens uttryckliga medgivande, ska delta som stödmottagare. Minst en av dem ska vara en av de 112 städerna i EU:s stadsmission.",
+          "why_en": "Minst tre städer från olika EU- eller associerade länder, företrädda av kommunen eller med kommunens uttryckliga medgivande, ska delta som stödmottagare. Minst en av dem ska vara en av de 112 städerna i EU:s stadsmission.",
+          "mandatory": true,
+          "owner": "partners",
+          "leadTimeDays": 60,
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2026-04-CIT-NEB-B4P-CCRI-03, Other eligible conditions",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-neb-b4p-ccri-03",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "he-ls-budget-table",
+          "kind": "budget",
+          "title_sv": "Detaljerad budgettabell (klumpsumma)",
+          "title_en": "Detaljerad budgettabell (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "why_en": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "mandatory": true,
+          "owner": "finance",
+          "leadTimeDays": 14,
+          "link": {
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/temp-form/af/detailed-budget-table_he-ls-euratom_en.xlsm",
+            "label_sv": "Detaljerad budgettabell (HE LS)",
+            "label_en": "Detaljerad budgettabell (HE LS)"
+          },
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2026-04-CIT-NEB-B4P-CCRI-03 (bidragsform HORIZON-AG-LS) och General Annexes, E — Documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-neb-b4p-ccri-03",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ],
+      "pageLimit": 45
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2026-04-CIT-NEB-B4P-CCRI-03, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-neb-b4p-ccri-03",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    }
   },
   {
     "id": "driving-urban-transitions-utlysning-2026",
@@ -232,6 +451,13 @@
     "maxGrantSEK": 0,
     "grantRangeStated": false,
     "requiresPartnership": false,
+    "eligibleRegions": [
+      "uppsala",
+      "sodermanland",
+      "ostergotland",
+      "orebro",
+      "vastmanland"
+    ],
     "eligibleApplicants_sv": "Privat, offentlig och idéburen sektor i Östra Mellansverige.",
     "eligibleApplicants_en": "Privat, offentlig och idéburen sektor i Östra Mellansverige.",
     "priorities_sv": [],
@@ -249,6 +475,8 @@
     ],
     "evaluationCriteria": [],
     "documents": [],
+    "applicationTemplateId": "esf-ansokan-om-stod",
+    "reportTemplateId": "esf-rapport",
     "link": "https://www.esf.se/utlysningar/utlysningsplan/",
     "description_sv": "Kompetensutveckling för anställda inom ramen för regionens prioriteringar, bland annat strategisk kompetensförsörjning utifrån arbetsgivares behov.",
     "comment_sv": "Preliminär enligt ESF-rådets utlysningsplan. Budget ej angiven.",
@@ -276,6 +504,13 @@
     "maxGrantSEK": 0,
     "grantRangeStated": false,
     "requiresPartnership": false,
+    "eligibleRegions": [
+      "uppsala",
+      "sodermanland",
+      "ostergotland",
+      "orebro",
+      "vastmanland"
+    ],
     "eligibleApplicants_sv": "Privat, offentlig och idéburen sektor i Östra Mellansverige.",
     "eligibleApplicants_en": "Privat, offentlig och idéburen sektor i Östra Mellansverige.",
     "priorities_sv": [],
@@ -295,6 +530,8 @@
     ],
     "evaluationCriteria": [],
     "documents": [],
+    "applicationTemplateId": "esf-ansokan-om-stod",
+    "reportTemplateId": "esf-rapport",
     "link": "https://www.esf.se/utlysningar/utlysningsplan/",
     "description_sv": "Insatser för personer som står långt från arbetsmarknaden, bland annat stödstrukturer, aktörssamverkan och unga.",
     "comment_sv": "Passar idén Vägar till jobb för unga och nyanlända. Preliminär, budget ej angiven.",
@@ -347,12 +584,95 @@
     "sectors": [
       "energy"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
+    "reportTemplateId": "he-periodic-report",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Mikronät för bättre integration och effektivitet i städers energisystem. 7 MEUR totalt, cirka 3 projekt.",
     "comment_sv": "Datum enligt arbetsprogrammet 2026–2027.",
-    "extractionSource": "call-list"
+    "extractionSource": "call-list",
+    "requirementChanges": {
+      "add": [
+        {
+          "id": "he-mission-cities",
+          "kind": "eligibility",
+          "title_sv": "Minst tre städer från olika länder som stödmottagare",
+          "title_en": "Minst tre städer från olika länder som stödmottagare",
+          "why_sv": "Minst tre städer från olika EU- eller associerade länder, företrädda av kommunen eller med kommunens uttryckliga medgivande, ska delta som stödmottagare. Minst en av dem ska vara en av de 112 städerna i EU:s stadsmission.",
+          "why_en": "Minst tre städer från olika EU- eller associerade länder, företrädda av kommunen eller med kommunens uttryckliga medgivande, ska delta som stödmottagare. Minst en av dem ska vara en av de 112 städerna i EU:s stadsmission.",
+          "mandatory": true,
+          "owner": "partners",
+          "leadTimeDays": 60,
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-01, Other eligible conditions",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-01",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "he-ls-budget-table",
+          "kind": "budget",
+          "title_sv": "Detaljerad budgettabell (klumpsumma)",
+          "title_en": "Detaljerad budgettabell (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "why_en": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "mandatory": true,
+          "owner": "finance",
+          "leadTimeDays": 14,
+          "link": {
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/temp-form/af/detailed-budget-table_he-ls-euratom_en.xlsm",
+            "label_sv": "Detaljerad budgettabell (HE LS)",
+            "label_en": "Detaljerad budgettabell (HE LS)"
+          },
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-01 (bidragsform HORIZON-AG-LS) och General Annexes, E — Documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-01",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ],
+      "pageLimit": 45
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-01, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-01",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    }
   },
   {
     "id": "horizon-miss-2027-04-cit-02",
@@ -401,11 +721,98 @@
     "sectors": [
       "energy"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
+    "reportTemplateId": "he-periodic-report",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Vätgas i stadens energi- och transportsystem. 5 MEUR, 1 projekt.",
-    "extractionSource": "call-list"
+    "extractionSource": "call-list",
+    "requirementChanges": {
+      "add": [
+        {
+          "id": "he-csa-form",
+          "kind": "form",
+          "title_sv": "Del B enligt CSA-mallen",
+          "title_en": "Del B enligt CSA-mallen",
+          "why_sv": "Ämnet är en samordnings- och stödåtgärd (CSA). Del B följer CSA-mallen, inte RIA/IA-mallen som studion visar; avsnitten skiljer sig något.",
+          "why_en": "Ämnet är en samordnings- och stödåtgärd (CSA). Del B följer CSA-mallen, inte RIA/IA-mallen som studion visar; avsnitten skiljer sig något.",
+          "mandatory": true,
+          "owner": "applicant",
+          "link": {
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/temp-form/af/af_he-csa_en.pdf",
+            "label_sv": "Ansökningsformulär HE CSA",
+            "label_en": "Ansökningsformulär HE CSA"
+          },
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-02 (åtgärdstyp HORIZON-CSA)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-02",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "he-ls-budget-table",
+          "kind": "budget",
+          "title_sv": "Detaljerad budgettabell (klumpsumma)",
+          "title_en": "Detaljerad budgettabell (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "why_en": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "mandatory": true,
+          "owner": "finance",
+          "leadTimeDays": 14,
+          "link": {
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/temp-form/af/detailed-budget-table_he-ls-euratom_en.xlsm",
+            "label_sv": "Detaljerad budgettabell (HE LS)",
+            "label_en": "Detaljerad budgettabell (HE LS)"
+          },
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-02 (bidragsform HORIZON-AG-LS) och General Annexes, E — Documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-02",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ],
+      "pageLimit": 28
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-02, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-02",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    }
   },
   {
     "id": "horizon-miss-2027-04-cit-03",
@@ -455,12 +862,110 @@
     "sectors": [
       "mobility"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
+    "reportTemplateId": "he-periodic-report",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Inkluderande och klimattåliga bytespunkter som flyttar resor till kollektivtrafik och delad mobilitet. 9 MEUR totalt, cirka 2 projekt.",
     "comment_sv": "Kan kopplas till spårvägen i mål och budget.",
-    "extractionSource": "call-list"
+    "extractionSource": "call-list",
+    "requirementChanges": {
+      "add": [
+        {
+          "id": "he-mission-cities",
+          "kind": "eligibility",
+          "title_sv": "Minst tre städer från olika länder som stödmottagare",
+          "title_en": "Minst tre städer från olika länder som stödmottagare",
+          "why_sv": "Minst tre städer från olika EU- eller associerade länder, företrädda av kommunen eller med kommunens uttryckliga medgivande, ska delta som stödmottagare. Minst en av dem ska vara en av de 112 städerna i EU:s stadsmission.",
+          "why_en": "Minst tre städer från olika EU- eller associerade länder, företrädda av kommunen eller med kommunens uttryckliga medgivande, ska delta som stödmottagare. Minst en av dem ska vara en av de 112 städerna i EU:s stadsmission.",
+          "mandatory": true,
+          "owner": "partners",
+          "leadTimeDays": 60,
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-03, Other eligible conditions",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-03",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "he-control-restriction",
+          "kind": "eligibility",
+          "title_sv": "Inga deltagare som kontrolleras från Kina",
+          "title_en": "Inga deltagare som kontrolleras från Kina",
+          "why_sv": "Enheter som direkt eller indirekt kontrolleras från Kina, eller av en juridisk person etablerad i Kina, får inte delta (begränsning för innovationsåtgärder i kritiska teknikområden).",
+          "why_en": "Enheter som direkt eller indirekt kontrolleras från Kina, eller av en juridisk person etablerad i Kina, får inte delta (begränsning för innovationsåtgärder i kritiska teknikområden).",
+          "mandatory": true,
+          "owner": "partners",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-03, Other eligible conditions",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-03",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "he-ls-budget-table",
+          "kind": "budget",
+          "title_sv": "Detaljerad budgettabell (klumpsumma)",
+          "title_en": "Detaljerad budgettabell (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "why_en": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "mandatory": true,
+          "owner": "finance",
+          "leadTimeDays": 14,
+          "link": {
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/temp-form/af/detailed-budget-table_he-ls-euratom_en.xlsm",
+            "label_sv": "Detaljerad budgettabell (HE LS)",
+            "label_en": "Detaljerad budgettabell (HE LS)"
+          },
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-03 (bidragsform HORIZON-AG-LS) och General Annexes, E — Documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-03",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ],
+      "pageLimit": 45
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-03, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-03",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    }
   },
   {
     "id": "horizon-miss-2027-04-cit-ccri-04",
@@ -509,12 +1014,110 @@
     "sectors": [
       "climate"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
+    "reportTemplateId": "he-periodic-report",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Cirkulära logistiklösningar i städer, till exempel för byggmaterial och återbruk. 7,5 MEUR totalt, cirka 3 projekt.",
     "comment_sv": "Realistisk nästa chans för idén om cirkulärt byggande.",
-    "extractionSource": "call-list"
+    "extractionSource": "call-list",
+    "requirementChanges": {
+      "add": [
+        {
+          "id": "he-mission-cities",
+          "kind": "eligibility",
+          "title_sv": "Minst tre städer från olika länder som stödmottagare",
+          "title_en": "Minst tre städer från olika länder som stödmottagare",
+          "why_sv": "Minst tre städer från olika EU- eller associerade länder, företrädda av kommunen eller med kommunens uttryckliga medgivande, ska delta som stödmottagare. Minst en av dem ska vara en av de 112 städerna i EU:s stadsmission.",
+          "why_en": "Minst tre städer från olika EU- eller associerade länder, företrädda av kommunen eller med kommunens uttryckliga medgivande, ska delta som stödmottagare. Minst en av dem ska vara en av de 112 städerna i EU:s stadsmission.",
+          "mandatory": true,
+          "owner": "partners",
+          "leadTimeDays": 60,
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-CCRI-04, Other eligible conditions",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-ccri-04",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "he-control-restriction",
+          "kind": "eligibility",
+          "title_sv": "Inga deltagare som kontrolleras från Kina",
+          "title_en": "Inga deltagare som kontrolleras från Kina",
+          "why_sv": "Enheter som direkt eller indirekt kontrolleras från Kina, eller av en juridisk person etablerad i Kina, får inte delta (begränsning för innovationsåtgärder i kritiska teknikområden).",
+          "why_en": "Enheter som direkt eller indirekt kontrolleras från Kina, eller av en juridisk person etablerad i Kina, får inte delta (begränsning för innovationsåtgärder i kritiska teknikområden).",
+          "mandatory": true,
+          "owner": "partners",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-CCRI-04, Other eligible conditions",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-ccri-04",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "he-ls-budget-table",
+          "kind": "budget",
+          "title_sv": "Detaljerad budgettabell (klumpsumma)",
+          "title_en": "Detaljerad budgettabell (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "why_en": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "mandatory": true,
+          "owner": "finance",
+          "leadTimeDays": 14,
+          "link": {
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/temp-form/af/detailed-budget-table_he-ls-euratom_en.xlsm",
+            "label_sv": "Detaljerad budgettabell (HE LS)",
+            "label_en": "Detaljerad budgettabell (HE LS)"
+          },
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-CCRI-04 (bidragsform HORIZON-AG-LS) och General Annexes, E — Documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-ccri-04",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ],
+      "pageLimit": 45
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-CCRI-04, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-ccri-04",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    }
   },
   {
     "id": "horizon-miss-2027-04-cit-05",
@@ -567,7 +1170,27 @@
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Städer upphandlar gemensamt utveckling av nya lösningar (PCP). Cirka 3 projekt.",
     "comment_sv": "Beloppsspannet är osäkert tolkat ur källan. Stödnivå för PCP behöver kontrolleras.",
-    "extractionSource": "call-list"
+    "extractionSource": "call-list",
+    "requirementChanges": {
+      "add": [
+        {
+          "id": "he-pcp-conditions",
+          "kind": "eligibility",
+          "title_sv": "Villkoren för förkommersiell upphandling (PCP)",
+          "title_en": "Villkoren för förkommersiell upphandling (PCP)",
+          "why_sv": "Ämnet är en PCP-åtgärd: de särskilda villkoren för åtgärder med PCP/PPI-upphandling i General Annexes avsnitt H gäller, bland annat för köpargruppen och upphandlingens upplägg.",
+          "why_en": "Ämnet är en PCP-åtgärd: de särskilda villkoren för åtgärder med PCP/PPI-upphandling i General Annexes avsnitt H gäller, bland annat för köpargruppen och upphandlingens upplägg.",
+          "mandatory": true,
+          "owner": "procurement",
+          "leadTimeDays": 60,
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-05, Other eligible conditions",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-05",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    }
   },
   {
     "id": "horizon-miss-2027-07-clima-cit-neb-01",
@@ -616,8 +1239,26 @@
     "sectors": [
       "climate"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
+    "reportTemplateId": "he-periodic-report",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Restaurering av ekosystem i staden, längs transportstråk och i bebyggd miljö. 10 MEUR totalt, upp till 4 projekt.",
     "comment_sv": "Passar idén om klimatanpassning mot skyfall och värmebölja.",
@@ -671,8 +1312,26 @@
     "sectors": [
       "climate"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
+    "reportTemplateId": "he-periodic-report",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Behandling och återvinning av avloppsvatten i städer och regioner. 9,5 MEUR totalt, cirka 3 projekt.",
     "comment_sv": "Relevant för Uppsala Vatten och Avfall om bolagen räknas in.",
@@ -725,8 +1384,26 @@
     "sectors": [
       "climate"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
+    "reportTemplateId": "he-periodic-report",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Demonstration av transformativa lösningar för klimatresiliens över nationsgränser. Upp till 5 projekt.",
     "comment_sv": "Stora projekt; kommunen passar som demonstrationsort i ett konsortium.",
@@ -779,11 +1456,78 @@
     "sectors": [
       "climate"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
+    "reportTemplateId": "he-periodic-report",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Forskning och tillämpning av AI för klimatanpassning i regioner och kommuner. 3 MEUR totalt, upp till 4 projekt.",
-    "extractionSource": "call-list"
+    "extractionSource": "call-list",
+    "requirementChanges": {
+      "add": [
+        {
+          "id": "he-ls-budget-table",
+          "kind": "budget",
+          "title_sv": "Detaljerad budgettabell (klumpsumma)",
+          "title_en": "Detaljerad budgettabell (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "why_en": "Ämnet finansieras med klumpsumma. Budgeten beskrivs i en detaljerad budgettabell som laddas upp i inlämningssystemet och ligger till grund för klumpsumman; kostnaderna ska följa de vanliga reglerna för stödberättigande kostnader.",
+          "mandatory": true,
+          "owner": "finance",
+          "leadTimeDays": 14,
+          "link": {
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/temp-form/af/detailed-budget-table_he-ls-euratom_en.xlsm",
+            "label_sv": "Detaljerad budgettabell (HE LS)",
+            "label_en": "Detaljerad budgettabell (HE LS)"
+          },
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-01-CLIMA-02 (bidragsform HORIZON-AG-LS) och General Annexes, E — Documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-01-clima-02",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ],
+      "pageLimit": 45
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-01-CLIMA-02, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-01-clima-02",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    }
   },
   {
     "id": "horizon-hlth-2027-01-envhlth-missclima-03",
@@ -832,8 +1576,26 @@
     "sectors": [
       "health"
     ],
-    "evaluationCriteria": [],
+    "evaluationCriteria": [
+      {
+        "name_sv": "Excellens",
+        "name_en": "Excellence",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Effekt",
+        "name_en": "Impact",
+        "maxPoints": 5
+      },
+      {
+        "name_sv": "Kvalitet och effektivitet i genomförandet",
+        "name_en": "Quality and efficiency of the implementation",
+        "maxPoints": 5
+      }
+    ],
     "documents": [],
+    "applicationTemplateId": "he-ria-ia-part-b",
+    "reportTemplateId": "he-periodic-report",
     "link": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-12-missions_horizon-2026-2027_en.pdf",
     "description_sv": "Verktyg och teknik som skyddar hälsan vid klimatförändringar, till exempel värmeböljor. Upp till 4 projekt.",
     "comment_sv": "Kan stödja idén om klimatanpassning med fokus på äldre.",
@@ -855,7 +1617,7 @@
       "preliminary": true
     },
     "deadlineDate": "2027-09-30",
-    "deadlineMonthsFromNow": 12,
+    "deadlineMonthsFromNow": 11,
     "budgetTotalSEK": 0,
     "minGrantSEK": 0,
     "maxGrantSEK": 0,
@@ -902,7 +1664,7 @@
       "preliminary": true
     },
     "deadlineDate": "2027-09-30",
-    "deadlineMonthsFromNow": 12,
+    "deadlineMonthsFromNow": 11,
     "budgetTotalSEK": 0,
     "minGrantSEK": 0,
     "maxGrantSEK": 0,
@@ -948,7 +1710,7 @@
       "preliminary": true
     },
     "deadlineDate": "2027-09-30",
-    "deadlineMonthsFromNow": 12,
+    "deadlineMonthsFromNow": 11,
     "budgetTotalSEK": 0,
     "minGrantSEK": 0,
     "maxGrantSEK": 0,
@@ -992,7 +1754,7 @@
       "preliminary": true
     },
     "deadlineDate": "2027-09-30",
-    "deadlineMonthsFromNow": 12,
+    "deadlineMonthsFromNow": 11,
     "budgetTotalSEK": 0,
     "minGrantSEK": 0,
     "maxGrantSEK": 0,
@@ -1020,6 +1782,743 @@
     "link": "https://cinea.ec.europa.eu/news-events/news/life-calls-proposals-2026-eu6015-million-greener-more-competitive-europe-2026-04-22_en",
     "description_sv": "Kapacitetsuppbyggnad och marknadsinsatser för energieffektivisering och förnybar energi. 2026 års budget var 85,5 MEUR.",
     "comment_sv": "Stödnivå och datum bekräftas när utlysningen publiceras.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "a1-kompetensutveckling-av-yrkesverksamma-stockholm",
+    "programId": "esf",
+    "title_sv": "A1 Kompetensutveckling av yrkesverksamma – Stockholm",
+    "title_en": "A1 Kompetensutveckling av yrkesverksamma – Stockholm",
+    "status": "upcoming",
+    "sourceStatus": "planned",
+    "opens": {
+      "date": "2026-12-15",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-03-11",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-03-11",
+    "deadlineMonthsFromNow": 5,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleRegions": [
+      "stockholm"
+    ],
+    "eligibleApplicants_sv": "Offentlig, idéburen och privat sektor i Stockholms län.",
+    "eligibleApplicants_en": "Offentlig, idéburen och privat sektor i Stockholms län.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "utbildning-kompetens",
+      "arbetsmarknad"
+    ],
+    "themes": [
+      "kompetens-entreprenorskap"
+    ],
+    "sectors": [
+      "education"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "applicationTemplateId": "esf-ansokan-om-stod",
+    "reportTemplateId": "esf-rapport",
+    "link": "https://www.esf.se/utlysningar/utlysningsplan/",
+    "description_sv": "Kompetensutveckling för anställda i region Stockholm, till exempel ny teknik och AI i arbetet, språk i yrket och strategisk kompetensförsörjning utifrån arbetsgivares behov.",
+    "comment_sv": "Enligt ESF-rådets utlysningsplan (läst 2026-10-16). Budget ej angiven.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "a2-individer-utanfor-arbetsmarknaden-och-unga-som-riskerar-s",
+    "programId": "esf",
+    "title_sv": "A2 Individer utanför arbetsmarknaden och unga som riskerar studieavbrott – Stockholm",
+    "title_en": "A2 Individer utanför arbetsmarknaden och unga som riskerar studieavbrott – Stockholm",
+    "status": "upcoming",
+    "sourceStatus": "planned",
+    "opens": {
+      "date": "2026-12-15",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2027-03-11",
+      "preliminary": false
+    },
+    "deadlineDate": "2027-03-11",
+    "deadlineMonthsFromNow": 5,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleRegions": [
+      "stockholm"
+    ],
+    "eligibleApplicants_sv": "Offentlig, idéburen och privat sektor i Stockholms län.",
+    "eligibleApplicants_en": "Offentlig, idéburen och privat sektor i Stockholms län.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "unga",
+      "socialtjanst-inkludering",
+      "arbetsmarknad",
+      "utbildning-kompetens"
+    ],
+    "themes": [
+      "social-inkludering"
+    ],
+    "sectors": [
+      "social"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "applicationTemplateId": "esf-ansokan-om-stod",
+    "reportTemplateId": "esf-rapport",
+    "link": "https://www.esf.se/utlysningar/utlysningsplan/",
+    "description_sv": "Insatser för personer som står utanför arbetsmarknaden och för unga från 13 år som riskerar att avbryta sina studier, till exempel vägledning, samverkan mellan skola och socialtjänst och vägar till arbete eller studier.",
+    "comment_sv": "Enligt ESF-rådets utlysningsplan (läst 2026-10-16). Budget ej angiven.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "cerv-2026-daphne-children",
+    "programId": "cerv",
+    "title_sv": "Integrerade system för barnskydd mot våld (CERV-2026-DAPHNE-CHILDREN)",
+    "title_en": "Integrerade system för barnskydd mot våld (CERV-2026-DAPHNE-CHILDREN)",
+    "status": "open",
+    "sourceStatus": "open",
+    "opens": {
+      "date": "2026-07-07",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2026-11-05",
+      "preliminary": false
+    },
+    "deadlineDate": "2026-11-05",
+    "deadlineMonthsFromNow": 1,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Offentliga och ideella organisationer i EU-länder; partnerskap enligt utlysningstexten.",
+    "eligibleApplicants_en": "Offentliga och ideella organisationer i EU-länder; partnerskap enligt utlysningstexten.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "unga",
+      "socialtjanst-inkludering",
+      "natverk-samverkan"
+    ],
+    "themes": [
+      "social-inkludering"
+    ],
+    "sectors": [
+      "social"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/cerv-2026-daphne-children",
+    "description_sv": "Stärka integrerade system för barnskydd och samordnade, barncentrerade insatser mot våld mot barn, genom samverkan mellan sektorer.",
+    "comment_sv": "Klumpsummebidrag. Datum från EU:s Funding & Tenders Portal (2026-10-16).",
+    "extractionSource": "call-list",
+    "requirementChanges": {
+      "add": [
+        {
+          "id": "cerv-page-limit",
+          "kind": "form",
+          "title_sv": "Del B högst 45 sidor",
+          "title_en": "Del B högst 45 sidor",
+          "why_sv": "Del B får vara högst 45 sidor (70 för prioritet 1). Bedömarna läser inte sidor därutöver.",
+          "why_en": "Del B får vara högst 45 sidor (70 för prioritet 1). Bedömarna läser inte sidor därutöver.",
+          "mandatory": true,
+          "owner": "applicant",
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-kpi-tool",
+          "kind": "form",
+          "title_sv": "KPI-verktyget ifyllt",
+          "title_en": "KPI-verktyget ifyllt",
+          "why_sv": "Projektets bidrag till programmets nyckeltal fylls i direkt i portalen; alla avsnitt ska vara ifyllda.",
+          "why_en": "Projektets bidrag till programmets nyckeltal fylls i direkt i portalen; alla avsnitt ska vara ifyllda.",
+          "mandatory": true,
+          "owner": "applicant",
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-budget-table",
+          "kind": "budget",
+          "title_sv": "Detaljerad budgettabell (klumpsumma)",
+          "title_en": "Detaljerad budgettabell (klumpsumma)",
+          "why_sv": "Mallen hämtas i inlämningssystemet och laddas upp ifylld som .xlsx. Den är underlaget för klumpsumman, så kostnaderna ska följa reglerna för stödberättigande kostnader.",
+          "why_en": "Mallen hämtas i inlämningssystemet och laddas upp ifylld som .xlsx. Den är underlaget för klumpsumman, så kostnaderna ska följa reglerna för stödberättigande kostnader.",
+          "mandatory": true,
+          "owner": "finance",
+          "leadTimeDays": 14,
+          "link": {
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/temp-form/af/detailed-budget-table_cerv-lsii_en.xlsm",
+            "label_sv": "Detaljerad budgettabell (CERV LSII)",
+            "label_en": "Detaljerad budgettabell (CERV LSII)"
+          },
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-cvs",
+          "kind": "annex",
+          "title_sv": "CV för projektets kärnteam",
+          "title_en": "CV för projektets kärnteam",
+          "why_sv": "Standard-CV för de personer som bär projektet.",
+          "why_en": "Standard-CV för de personer som bär projektet.",
+          "mandatory": true,
+          "owner": "hr",
+          "leadTimeDays": 7,
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-activity-report",
+          "kind": "annex",
+          "title_sv": "Verksamhetsberättelse för senaste året",
+          "title_en": "Verksamhetsberättelse för senaste året",
+          "why_sv": "Koordinatorns verksamhetsberättelse för förra året (inte en revisionsrapport eller balansräkning). Offentliga organ är undantagna.",
+          "why_en": "Koordinatorns verksamhetsberättelse för förra året (inte en revisionsrapport eller balansräkning). Offentliga organ är undantagna.",
+          "mandatory": true,
+          "exemptPublicBodies": true,
+          "owner": "applicant",
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-previous-projects",
+          "kind": "annex",
+          "title_sv": "Lista över tidigare projekt",
+          "title_en": "Lista över tidigare projekt",
+          "why_sv": "Koordinatorns viktigaste projekt de senaste fyra åren, enligt mallen i del B.",
+          "why_en": "Koordinatorns viktigaste projekt de senaste fyra åren, enligt mallen i del B.",
+          "mandatory": true,
+          "owner": "applicant",
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-child-protection",
+          "kind": "declaration",
+          "title_sv": "Barnskyddspolicy eller försäkran för offentliga organ",
+          "title_en": "Barnskyddspolicy eller försäkran för offentliga organ",
+          "why_sv": "Deltagare med aktiviteter som rör barn under 18 år behöver en barnskyddspolicy enligt Keeping Children Safe. Offentliga organ lämnar i stället en försäkran från behörig företrädare enligt mallen.",
+          "why_en": "Deltagare med aktiviteter som rör barn under 18 år behöver en barnskyddspolicy enligt Keeping Children Safe. Offentliga organ lämnar i stället en försäkran från behörig företrädare enligt mallen.",
+          "mandatory": true,
+          "condition_sv": "om projektet har aktiviteter med barn under 18 år",
+          "condition_en": "om projektet har aktiviteter med barn under 18 år",
+          "owner": "signatory",
+          "leadTimeDays": 14,
+          "link": {
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/temp-form/af/child-protection-policy-declaration_cerv_en.docx",
+            "label_sv": "Försäkran för offentliga organ (mall)",
+            "label_en": "Försäkran för offentliga organ (mall)"
+          },
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    },
+    "reportRequirementChanges": {
+      "add": [
+        {
+          "id": "cerv-r-progress",
+          "kind": "form",
+          "title_sv": "Lägesrapport",
+          "title_en": "Lägesrapport",
+          "why_sv": "Utöver slutrapporten lämnas en eller flera lägesrapporter som inte är kopplade till utbetalningar. Tidpunkterna står i bidragsavtalet (Data Sheet, punkt 4).",
+          "why_en": "Utöver slutrapporten lämnas en eller flera lägesrapporter som inte är kopplade till utbetalningar. Tidpunkterna står i bidragsavtalet (Data Sheet, punkt 4).",
+          "mandatory": true,
+          "owner": "applicant",
+          "reports": [
+            "interim"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Reporting and payment arrangements",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-r-lump-sum",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Bidraget är en klumpsumma utan krav på kostnadsredovisning. Slutrapporten visar vilka arbetspaket som är genomförda; utifrån den räknas det slutliga bidraget fram och restbeloppet betalas till koordinatorn.",
+          "why_en": "Bidraget är en klumpsumma utan krav på kostnadsredovisning. Slutrapporten visar vilka arbetspaket som är genomförda; utifrån den räknas det slutliga bidraget fram och restbeloppet betalas till koordinatorn.",
+          "mandatory": true,
+          "owner": "finance",
+          "reports": [
+            "final"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Budget och Reporting and payment arrangements",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-r-records",
+          "kind": "annex",
+          "title_sv": "Underlag för allt utfört arbete sparat",
+          "title_en": "Underlag för allt utfört arbete sparat",
+          "why_sv": "Stödmottagarna ansvarar för att dokumentera allt arbete som görs i projektet, så att det kan visas vid en granskning.",
+          "why_en": "Stödmottagarna ansvarar för att dokumentera allt arbete som görs i projektet, så att det kan visas vid en granskning.",
+          "mandatory": true,
+          "owner": "applicant",
+          "reports": [
+            "final"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Reporting and payment arrangements",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-r-certificates",
+          "kind": "certificate",
+          "title_sv": "Intyg enligt bidragsavtalet",
+          "title_en": "Intyg enligt bidragsavtalet",
+          "why_sv": "Beroende på typ av insats, bidragets storlek och typ av stödmottagare kan intyg begäras. Vilka, när och vid vilka gränser står i bidragsavtalet (Data Sheet, punkt 4, och art. 24).",
+          "why_en": "Beroende på typ av insats, bidragets storlek och typ av stödmottagare kan intyg begäras. Vilka, när och vid vilka gränser står i bidragsavtalet (Data Sheet, punkt 4, och art. 24).",
+          "mandatory": true,
+          "condition_sv": "när bidragsavtalet kräver intyg",
+          "condition_en": "när bidragsavtalet kräver intyg",
+          "owner": "finance",
+          "leadTimeDays": 60,
+          "reports": [
+            "final"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Certificates",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "cerv-2026-daphne-prevention",
+    "programId": "cerv",
+    "title_sv": "Förebygga könsrelaterat våld (CERV-2026-DAPHNE-PREVENTION)",
+    "title_en": "Förebygga könsrelaterat våld (CERV-2026-DAPHNE-PREVENTION)",
+    "status": "open",
+    "sourceStatus": "open",
+    "opens": {
+      "date": "2026-07-07",
+      "preliminary": false
+    },
+    "closes": {
+      "date": "2026-11-05",
+      "preliminary": false
+    },
+    "deadlineDate": "2026-11-05",
+    "deadlineMonthsFromNow": 1,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Offentliga och ideella organisationer i EU-länder; partnerskap enligt utlysningstexten.",
+    "eligibleApplicants_en": "Offentliga och ideella organisationer i EU-länder; partnerskap enligt utlysningstexten.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "jamstalldhet",
+      "socialtjanst-inkludering",
+      "natverk-samverkan"
+    ],
+    "themes": [
+      "social-inkludering"
+    ],
+    "sectors": [
+      "social"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/cerv-2026-daphne-prevention",
+    "description_sv": "Förebyggande arbete mot könsrelaterat våld och våld i nära relationer, till exempel utbildning av personal, samverkan och tidiga insatser.",
+    "comment_sv": "Klumpsummebidrag. Datum från EU:s Funding & Tenders Portal (2026-10-16).",
+    "extractionSource": "call-list",
+    "requirementChanges": {
+      "add": [
+        {
+          "id": "cerv-page-limit",
+          "kind": "form",
+          "title_sv": "Del B högst 45 sidor",
+          "title_en": "Del B högst 45 sidor",
+          "why_sv": "Del B får vara högst 45 sidor (70 för prioritet 1). Bedömarna läser inte sidor därutöver.",
+          "why_en": "Del B får vara högst 45 sidor (70 för prioritet 1). Bedömarna läser inte sidor därutöver.",
+          "mandatory": true,
+          "owner": "applicant",
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-kpi-tool",
+          "kind": "form",
+          "title_sv": "KPI-verktyget ifyllt",
+          "title_en": "KPI-verktyget ifyllt",
+          "why_sv": "Projektets bidrag till programmets nyckeltal fylls i direkt i portalen; alla avsnitt ska vara ifyllda.",
+          "why_en": "Projektets bidrag till programmets nyckeltal fylls i direkt i portalen; alla avsnitt ska vara ifyllda.",
+          "mandatory": true,
+          "owner": "applicant",
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-budget-table",
+          "kind": "budget",
+          "title_sv": "Detaljerad budgettabell (klumpsumma)",
+          "title_en": "Detaljerad budgettabell (klumpsumma)",
+          "why_sv": "Mallen hämtas i inlämningssystemet och laddas upp ifylld som .xlsx. Den är underlaget för klumpsumman, så kostnaderna ska följa reglerna för stödberättigande kostnader.",
+          "why_en": "Mallen hämtas i inlämningssystemet och laddas upp ifylld som .xlsx. Den är underlaget för klumpsumman, så kostnaderna ska följa reglerna för stödberättigande kostnader.",
+          "mandatory": true,
+          "owner": "finance",
+          "leadTimeDays": 14,
+          "link": {
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/temp-form/af/detailed-budget-table_cerv-lsii_en.xlsm",
+            "label_sv": "Detaljerad budgettabell (CERV LSII)",
+            "label_en": "Detaljerad budgettabell (CERV LSII)"
+          },
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-cvs",
+          "kind": "annex",
+          "title_sv": "CV för projektets kärnteam",
+          "title_en": "CV för projektets kärnteam",
+          "why_sv": "Standard-CV för de personer som bär projektet.",
+          "why_en": "Standard-CV för de personer som bär projektet.",
+          "mandatory": true,
+          "owner": "hr",
+          "leadTimeDays": 7,
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-activity-report",
+          "kind": "annex",
+          "title_sv": "Verksamhetsberättelse för senaste året",
+          "title_en": "Verksamhetsberättelse för senaste året",
+          "why_sv": "Koordinatorns verksamhetsberättelse för förra året (inte en revisionsrapport eller balansräkning). Offentliga organ är undantagna.",
+          "why_en": "Koordinatorns verksamhetsberättelse för förra året (inte en revisionsrapport eller balansräkning). Offentliga organ är undantagna.",
+          "mandatory": true,
+          "exemptPublicBodies": true,
+          "owner": "applicant",
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-previous-projects",
+          "kind": "annex",
+          "title_sv": "Lista över tidigare projekt",
+          "title_en": "Lista över tidigare projekt",
+          "why_sv": "Koordinatorns viktigaste projekt de senaste fyra åren, enligt mallen i del B.",
+          "why_en": "Koordinatorns viktigaste projekt de senaste fyra åren, enligt mallen i del B.",
+          "mandatory": true,
+          "owner": "applicant",
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-child-protection",
+          "kind": "declaration",
+          "title_sv": "Barnskyddspolicy eller försäkran för offentliga organ",
+          "title_en": "Barnskyddspolicy eller försäkran för offentliga organ",
+          "why_sv": "Deltagare med aktiviteter som rör barn under 18 år behöver en barnskyddspolicy enligt Keeping Children Safe. Offentliga organ lämnar i stället en försäkran från behörig företrädare enligt mallen.",
+          "why_en": "Deltagare med aktiviteter som rör barn under 18 år behöver en barnskyddspolicy enligt Keeping Children Safe. Offentliga organ lämnar i stället en försäkran från behörig företrädare enligt mallen.",
+          "mandatory": true,
+          "condition_sv": "om projektet har aktiviteter med barn under 18 år",
+          "condition_en": "om projektet har aktiviteter med barn under 18 år",
+          "owner": "signatory",
+          "leadTimeDays": 14,
+          "link": {
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/temp-form/af/child-protection-policy-declaration_cerv_en.docx",
+            "label_sv": "Försäkran för offentliga organ (mall)",
+            "label_en": "Försäkran för offentliga organ (mall)"
+          },
+          "source": {
+            "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    },
+    "reportRequirementChanges": {
+      "add": [
+        {
+          "id": "cerv-r-progress",
+          "kind": "form",
+          "title_sv": "Lägesrapport",
+          "title_en": "Lägesrapport",
+          "why_sv": "Utöver slutrapporten lämnas en eller flera lägesrapporter som inte är kopplade till utbetalningar. Tidpunkterna står i bidragsavtalet (Data Sheet, punkt 4).",
+          "why_en": "Utöver slutrapporten lämnas en eller flera lägesrapporter som inte är kopplade till utbetalningar. Tidpunkterna står i bidragsavtalet (Data Sheet, punkt 4).",
+          "mandatory": true,
+          "owner": "applicant",
+          "reports": [
+            "interim"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Reporting and payment arrangements",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-r-lump-sum",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Bidraget är en klumpsumma utan krav på kostnadsredovisning. Slutrapporten visar vilka arbetspaket som är genomförda; utifrån den räknas det slutliga bidraget fram och restbeloppet betalas till koordinatorn.",
+          "why_en": "Bidraget är en klumpsumma utan krav på kostnadsredovisning. Slutrapporten visar vilka arbetspaket som är genomförda; utifrån den räknas det slutliga bidraget fram och restbeloppet betalas till koordinatorn.",
+          "mandatory": true,
+          "owner": "finance",
+          "reports": [
+            "final"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Budget och Reporting and payment arrangements",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-r-records",
+          "kind": "annex",
+          "title_sv": "Underlag för allt utfört arbete sparat",
+          "title_en": "Underlag för allt utfört arbete sparat",
+          "why_sv": "Stödmottagarna ansvarar för att dokumentera allt arbete som görs i projektet, så att det kan visas vid en granskning.",
+          "why_en": "Stödmottagarna ansvarar för att dokumentera allt arbete som görs i projektet, så att det kan visas vid en granskning.",
+          "mandatory": true,
+          "owner": "applicant",
+          "reports": [
+            "final"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Reporting and payment arrangements",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-r-certificates",
+          "kind": "certificate",
+          "title_sv": "Intyg enligt bidragsavtalet",
+          "title_en": "Intyg enligt bidragsavtalet",
+          "why_sv": "Beroende på typ av insats, bidragets storlek och typ av stödmottagare kan intyg begäras. Vilka, när och vid vilka gränser står i bidragsavtalet (Data Sheet, punkt 4, och art. 24).",
+          "why_en": "Beroende på typ av insats, bidragets storlek och typ av stödmottagare kan intyg begäras. Vilka, när och vid vilka gränser står i bidragsavtalet (Data Sheet, punkt 4, och art. 24).",
+          "mandatory": true,
+          "condition_sv": "när bidragsavtalet kräver intyg",
+          "condition_en": "när bidragsavtalet kräver intyg",
+          "owner": "finance",
+          "leadTimeDays": 60,
+          "reports": [
+            "final"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Certificates",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "erasmus-2027-ackrediterade-mobilitetsprojekt-for-skolor-ka12",
+    "programId": "erasmus",
+    "title_sv": "Erasmus+ 2027 – ackrediterade mobilitetsprojekt för skolor, KA121-SCH (prel.)",
+    "title_en": "Erasmus+ 2027 – ackrediterade mobilitetsprojekt för skolor, KA121-SCH (prel.)",
+    "status": "upcoming",
+    "sourceStatus": "expected",
+    "opens": {
+      "date": "2026-11",
+      "preliminary": true
+    },
+    "closes": {
+      "date": "2027-02",
+      "preliminary": true
+    },
+    "deadlineDate": "2027-02-28",
+    "deadlineMonthsFromNow": 4,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Skolor och skolhuvudmän med Erasmusackreditering för skolutbildning.",
+    "eligibleApplicants_en": "Skolor och skolhuvudmän med Erasmusackreditering för skolutbildning.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "ungdom",
+      "utbildning-kompetens",
+      "skolor-byggnader"
+    ],
+    "themes": [
+      "kompetens-entreprenorskap"
+    ],
+    "sectors": [
+      "education"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://erasmus-plus.ec.europa.eu/programme-guide/erasmusplus-programme-guide",
+    "description_sv": "Lärare och skolledare fortbildar sig och gör jobbskuggning i andra EU-länder, och elever gör utbyten. Bidraget betalas som enhetsbelopp för resor, uppehälle och kurser.",
+    "comment_sv": "Datum antagna utifrån tidigare års mönster; bekräftas när 2027 års utlysning publiceras. Söks via Universitets- och högskolerådet.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "erasmus-2027-samarbetspartnerskap-for-skolutbildning-ka220-s",
+    "programId": "erasmus",
+    "title_sv": "Erasmus+ 2027 – samarbetspartnerskap för skolutbildning, KA220-SCH (prel.)",
+    "title_en": "Erasmus+ 2027 – samarbetspartnerskap för skolutbildning, KA220-SCH (prel.)",
+    "status": "upcoming",
+    "sourceStatus": "expected",
+    "opens": {
+      "date": "2026-11",
+      "preliminary": true
+    },
+    "closes": {
+      "date": "2027-03",
+      "preliminary": true
+    },
+    "deadlineDate": "2027-03-31",
+    "deadlineMonthsFromNow": 5,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 1302348,
+    "maxGrantSEK": 4341160,
+    "originalGrantRange": {
+      "min": 120000,
+      "max": 400000,
+      "currency": "EUR",
+      "rate": 10.8529,
+      "rateYear": 2026
+    },
+    "requiresPartnership": true,
+    "minPartnerCountries": 3,
+    "eligibleApplicants_sv": "Konsortium med minst tre organisationer från tre länder i Erasmus+.",
+    "eligibleApplicants_en": "Konsortium med minst tre organisationer från tre länder i Erasmus+.",
+    "coFinancingRate": 1,
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "utbildning-kompetens",
+      "konsortiesamarbete",
+      "unga"
+    ],
+    "themes": [
+      "kompetens-entreprenorskap"
+    ],
+    "sectors": [
+      "education"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://erasmus-plus.ec.europa.eu/programme-guide/erasmusplus-programme-guide",
+    "description_sv": "Skolor och skolhuvudmän utvecklar tillsammans nya arbetssätt, till exempel i matematik, elevhälsa och digital kompetens, och tar fram material som andra kan använda. Klumpsumma på 120 000, 250 000 eller 400 000 euro.",
+    "comment_sv": "Datum antagna utifrån tidigare års mönster; bekräftas när 2027 års utlysning publiceras.",
+    "extractionSource": "call-list"
+  },
+  {
+    "id": "erasmus-ackreditering-for-skolutbildning-ka120-sch-prel",
+    "programId": "erasmus",
+    "title_sv": "Erasmus+ ackreditering för skolutbildning, KA120-SCH (prel.)",
+    "title_en": "Erasmus+ ackreditering för skolutbildning, KA120-SCH (prel.)",
+    "status": "upcoming",
+    "sourceStatus": "expected",
+    "closes": {
+      "date": "2027-10",
+      "preliminary": true
+    },
+    "deadlineDate": "2027-10-31",
+    "deadlineMonthsFromNow": 12,
+    "budgetTotalSEK": 0,
+    "minGrantSEK": 0,
+    "maxGrantSEK": 0,
+    "grantRangeStated": false,
+    "requiresPartnership": false,
+    "eligibleApplicants_sv": "Skolor och skolhuvudmän som vill bedriva långsiktigt utbytesarbete.",
+    "eligibleApplicants_en": "Skolor och skolhuvudmän som vill bedriva långsiktigt utbytesarbete.",
+    "priorities_sv": [],
+    "priorities_en": [],
+    "extraKeywords": [],
+    "tags": [
+      "ungdom",
+      "utbildning-kompetens"
+    ],
+    "themes": [
+      "kompetens-entreprenorskap"
+    ],
+    "sectors": [
+      "education"
+    ],
+    "evaluationCriteria": [],
+    "documents": [],
+    "link": "https://erasmus-plus.ec.europa.eu/programme-guide/erasmusplus-programme-guide",
+    "description_sv": "En Erasmusplan för skolans internationalisering godkänns för hela programperioden och ger sedan förenklad tillgång till mobilitetsbidrag varje år.",
+    "comment_sv": "Ger inget bidrag i sig utan rätt att söka KA121. Datum antaget utifrån tidigare års mönster.",
     "extractionSource": "call-list"
   }
 ]

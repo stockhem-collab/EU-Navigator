@@ -73,10 +73,39 @@ function write(config: OrgConfig) {
   }
 }
 
+export const ORG_CONFIG_KEY = STORAGE_KEY;
+export const EMPTY_ORG_CONFIG = EMPTY;
+
 let unitIdCounter = 0;
 function newUnitId(): string {
   unitIdCounter += 1;
   return `unit-${Date.now()}-${unitIdCounter}`;
+}
+
+// Fills in a real organisation's registry details. The root unit is renamed
+// in place (keeping its id, so users and shares that point at it still
+// resolve) and the preset's units are added under it, skipping any that
+// already exist by name so applying twice doesn't duplicate them.
+export function withPreset(prev: OrgConfig, preset: OrgPreset): OrgConfig {
+  const units = prev.units ?? seedOrgUnits;
+  const root = units.find((u) => u.parentId === null);
+  const pic = preset.pic || undefined;
+  const renamed = units.map((u) => (u.id === root?.id ? { ...u, name: preset.organisationName, pic } : u));
+  const existing = new Set(renamed.map((u) => u.name));
+  const added = preset.units
+    .filter((p) => !existing.has(p.name))
+    .map((p) => ({ id: newUnitId(), name: p.name, parentId: root?.id ?? null, pic: p.pic }));
+  return {
+    ...prev,
+    organisationName: preset.organisationName,
+    orgNumber: preset.orgNumber,
+    vatNumber: preset.vatNumber,
+    orgType: preset.orgType,
+    country: preset.country,
+    website: preset.website,
+    pic: preset.pic || null,
+    units: [...renamed, ...added],
+  };
 }
 
 export function useOrgConfig() {
@@ -133,34 +162,7 @@ export function useOrgConfig() {
     [update]
   );
 
-  // Fills in a real organisation's registry details. The root unit is renamed
-  // in place (keeping its id, so users and shares that point at it still
-  // resolve) and the preset's units are added under it, skipping any that
-  // already exist by name so applying twice doesn't duplicate them.
-  const applyPreset = useCallback(
-    (preset: OrgPreset) =>
-      update((prev) => {
-        const units = prev.units ?? seedOrgUnits;
-        const root = units.find((u) => u.parentId === null);
-        const renamed = units.map((u) => (u.id === root?.id ? { ...u, name: preset.organisationName, pic: preset.pic } : u));
-        const existing = new Set(renamed.map((u) => u.name));
-        const added = preset.units
-          .filter((p) => !existing.has(p.name))
-          .map((p) => ({ id: newUnitId(), name: p.name, parentId: root?.id ?? null, pic: p.pic }));
-        return {
-          ...prev,
-          organisationName: preset.organisationName,
-          orgNumber: preset.orgNumber,
-          vatNumber: preset.vatNumber,
-          orgType: preset.orgType,
-          country: preset.country,
-          website: preset.website,
-          pic: preset.pic,
-          units: [...renamed, ...added],
-        };
-      }),
-    [update]
-  );
+  const applyPreset = useCallback((preset: OrgPreset) => update((prev) => withPreset(prev, preset)), [update]);
 
   const removeUnit = useCallback(
     (id: string) =>

@@ -3,14 +3,17 @@
 // a sure hit only on organisationsnummer, momsnummer or PIC; names only make
 // a project a candidate for manual review (lib/integrations/municipality).
 //
-// Uppsala's registry numbers are read from uppsalaPreset, never copied.
+// Each demo municipality's registry numbers are read from its preset
+// (orgPresets.ts), never copied.
 // Peer identifiers come from the generated source data (checked 2026-10-08):
 // organisationsnummer from Kohesio's Beneficiary_Local_Identifier, PIC from
 // CORDIS organization.csv or keep.eu partners, and only where that same
 // record also carries the municipality's organisationsnummer. Kommunkod, län
 // and NUTS 3 follow SCB's municipality list and Eurostat's NUTS 2021.
 
-import { uppsalaPreset } from "./orgPresets";
+import type { DemoProfileId } from "./demoProfiles";
+import { Kommun, KOMMUNER } from "./kommuner";
+import { lidingoPreset, uppsalaPreset } from "./orgPresets";
 
 export interface MunicipalityIdentity {
   name: string;
@@ -54,7 +57,7 @@ export interface MunicipalityMatchConfig extends MunicipalityIdentity {
 }
 
 /** Organisations that share a city's name in every municipality's data. */
-const COMMON_EXCLUSIONS: { name: string; pattern: RegExp }[] = [
+export const COMMON_EXCLUSIONS: { name: string; pattern: RegExp }[] = [
   { name: "Universitet och högskolor", pattern: /universitet|university|högskola|hogskola/i },
   { name: "Regioner och landsting", pattern: /\bregion|landsting|county council/i },
   { name: "Länsstyrelser", pattern: /länsstyrelse|lansstyrelse|county administrative board/i },
@@ -119,6 +122,7 @@ function peer(
   };
 }
 
+/** Uppsala's comparison group: the ten largest municipalities. */
 export const peerMunicipalities: MunicipalityMatchConfig[] = [
   peer({
     name: "Stockholms stad",
@@ -223,3 +227,167 @@ export const peerMunicipalities: MunicipalityMatchConfig[] = [
     placeNames: ["Umeå", "Umea"],
   }),
 ];
+
+export const lidingoMatch: MunicipalityMatchConfig = {
+  name: lidingoPreset.organisationName,
+  orgNumber: lidingoPreset.orgNumber,
+  vatNumber: lidingoPreset.vatNumber,
+  pic: lidingoPreset.pic || null,
+  picSource: null,
+  unitPics: lidingoPreset.units,
+  kommunkod: "0186",
+  lan: "Stockholms län",
+  nuts: "SE110",
+  placeNames: ["Lidingö", "Lidingo"],
+  nameVariants: ["Lidingö stad", "Lidingö kommun", "LIDINGÖ KOMMUN", "City of Lidingö", "City of Lidingo", "Lidingö Municipality"],
+  excluded: COMMON_EXCLUSIONS,
+  companies: null,
+};
+
+/** Lidingö's comparison group: neighbouring municipalities in Stockholm
+ * county of similar character, plus the three in the county with the most
+ * EU projects of their own in the sources (Södertälje, Järfälla, Botkyrka),
+ * since the neighbours have next to none. Organisationsnummer checked in
+ * VIES 2026-10-16; no source record ties a PIC to them. */
+export const lidingoPeers: MunicipalityMatchConfig[] = [
+  { name: "Danderyds kommun", orgNumber: "212000-0126", kommunkod: "0162", placeNames: ["Danderyd", "Danderyds"] },
+  { name: "Täby kommun", orgNumber: "212000-0118", kommunkod: "0160", placeNames: ["Täby", "Taby"] },
+  { name: "Nacka kommun", orgNumber: "212000-0167", kommunkod: "0182", placeNames: ["Nacka"] },
+  { name: "Solna stad", orgNumber: "212000-0183", kommunkod: "0184", placeNames: ["Solna"] },
+  { name: "Sollentuna kommun", orgNumber: "212000-0134", kommunkod: "0163", placeNames: ["Sollentuna"] },
+  { name: "Österåkers kommun", orgNumber: "212000-2890", kommunkod: "0117", placeNames: ["Österåker", "Österåkers", "Osteraker"] },
+  { name: "Södertälje kommun", orgNumber: "212000-0159", kommunkod: "0181", placeNames: ["Södertälje", "Sodertalje"] },
+  { name: "Järfälla kommun", orgNumber: "212000-0043", kommunkod: "0123", placeNames: ["Järfälla", "Jarfalla"] },
+  { name: "Botkyrka kommun", orgNumber: "212000-2882", kommunkod: "0127", placeNames: ["Botkyrka"] },
+].map((m) => peer({ ...m, pic: null, picSource: null, lan: "Stockholms län", nuts: "SE110" }));
+
+/** Län and NUTS 3 by the first two digits of the kommunkod. */
+const COUNTIES: Record<string, { lan: string; nuts: string }> = {
+  "01": { lan: "Stockholms län", nuts: "SE110" },
+  "03": { lan: "Uppsala län", nuts: "SE121" },
+  "04": { lan: "Södermanlands län", nuts: "SE122" },
+  "05": { lan: "Östergötlands län", nuts: "SE123" },
+  "06": { lan: "Jönköpings län", nuts: "SE211" },
+  "07": { lan: "Kronobergs län", nuts: "SE212" },
+  "08": { lan: "Kalmar län", nuts: "SE213" },
+  "09": { lan: "Gotlands län", nuts: "SE214" },
+  "10": { lan: "Blekinge län", nuts: "SE221" },
+  "12": { lan: "Skåne län", nuts: "SE224" },
+  "13": { lan: "Hallands län", nuts: "SE231" },
+  "14": { lan: "Västra Götalands län", nuts: "SE232" },
+  "17": { lan: "Värmlands län", nuts: "SE311" },
+  "18": { lan: "Örebro län", nuts: "SE124" },
+  "19": { lan: "Västmanlands län", nuts: "SE125" },
+  "20": { lan: "Dalarnas län", nuts: "SE312" },
+  "21": { lan: "Gävleborgs län", nuts: "SE313" },
+  "22": { lan: "Västernorrlands län", nuts: "SE321" },
+  "23": { lan: "Jämtlands län", nuts: "SE322" },
+  "24": { lan: "Västerbottens län", nuts: "SE331" },
+  "25": { lan: "Norrbottens län", nuts: "SE332" },
+};
+
+function asciiName(text: string): string {
+  return text.normalize("NFD").replace(/\p{M}/gu, "");
+}
+
+/** Municipalities by accent-free name: "Habo" is both Habo and Håbo. */
+const ASCII_NAMES = KOMMUNER.reduce((acc, k) => acc.set(asciiName(k.name), (acc.get(asciiName(k.name)) ?? 0) + 1), new Map<string, number>());
+
+/** Match settings for any municipality in lib/data/kommuner.ts, without
+ * PIC (no source record ties one to the organisationsnummer). The
+ * accent-free spelling ("Vaxjo") is a place name only when no other
+ * municipality shares it. */
+export function kommunMatch(k: Kommun): MunicipalityMatchConfig {
+  const genitive = k.officialName.replace(/ (kommun|stad)$/, "");
+  const names = [...new Set([k.name, genitive])].filter((n) => !n.startsWith("Region "));
+  const ascii = ASCII_NAMES.get(asciiName(k.name)) === 1 ? names.map(asciiName) : [];
+  return peer({
+    name: k.officialName,
+    orgNumber: k.orgNumber,
+    pic: null,
+    picSource: null,
+    kommunkod: k.kommunkod,
+    ...COUNTIES[k.kommunkod.slice(0, 2)],
+    placeNames: [...new Set([...names, ...ascii])],
+  });
+}
+
+export interface PeerGroup {
+  /** In the URL (?grupp=). */
+  id: string;
+  label: string;
+  /** One sentence on who is in the group and why. */
+  description: string;
+  peers: MunicipalityMatchConfig[];
+}
+
+/** The municipality's SKR kommungrupp (lib/data/kommuner.ts) without itself.
+ * Municipalities already in `known` keep those settings (their PIC). */
+export function kommungruppGroup(self: MunicipalityMatchConfig, known: MunicipalityMatchConfig[]): PeerGroup {
+  const own = KOMMUNER.find((k) => k.kommunkod === self.kommunkod);
+  if (!own) throw new Error(`No kommun ${self.kommunkod} in lib/data/kommuner.ts`);
+  const byCode = new Map(known.map((m) => [m.kommunkod, m]));
+  const members = KOMMUNER.filter((k) => k.kommungrupp === own.kommungrupp && k.kommunkod !== own.kommunkod);
+  return {
+    id: "kommungrupp",
+    label: `Kommungrupp: ${own.kommungruppNamn}`,
+    description: `De ${members.length} andra kommunerna i SKR:s kommungrupp ${own.kommungrupp} ${own.kommungruppNamn.toLowerCase()} (kommungruppsindelning 2023).`,
+    peers: members.map((k) => byCode.get(k.kommunkod) ?? kommunMatch(k)),
+  };
+}
+
+export interface MunicipalityProfile {
+  match: MunicipalityMatchConfig;
+  /** Comparison groups to choose between; the first is the default. */
+  peerGroups: PeerGroup[];
+  /** The municipality's own list of EU projects to reconcile against
+   * (data/…csv), or null when there is none yet. */
+  checklist: string | null;
+  /** Shown with the comparison; what the figures can't tell. */
+  peerCaveats: string[];
+}
+
+export const municipalityProfiles: Record<DemoProfileId, MunicipalityProfile> = {
+  uppsala: {
+    match: uppsalaMatch,
+    peerGroups: [
+      {
+        id: "storsta",
+        label: "De tio största kommunerna",
+        description: "Sveriges tio största kommuner utöver Uppsala.",
+        peers: peerMunicipalities,
+      },
+      kommungruppGroup(uppsalaMatch, peerMunicipalities),
+    ],
+    checklist: "data/kontrollista.csv",
+    peerCaveats: [
+      "ESF+ 2021–2027 kommer från ESF-rådets projektbank för hela landet och från Kohesio. Socialfonden 2014–2020 kommer bara från Kohesio, där förvaltningar ofta står utan organisationsnummer; de räknas när namnet säger att de hör till kommunen (\"Arbetsmarknadsförvaltningen, Stockholms stad\").",
+      "Regionalfonden 2021–2027 kommer från Kohesio och Tillväxtverkets projektbank, som också har Fonden för en rättvis omställning och inrikesfonderna (AMIF, BMVI, ISF). Interreg kommer från keep.eu.",
+      "Kohesio, ESF-rådets och Tillväxtverkets projektbanker anger bara projektägaren; projekt där kommunen är samverkanspart syns inte.",
+      "Program som kommissionen själv förvaltar (LIFE, CEF, Digital Europe, Creative Europe, CERV, Europe Direct, WiFi4EU) kommer från EU:s Financial Transparency System, matchade på momsnummer.",
+      "Erasmus+ kommer från EU:s projektlistor, som saknar organisationsnummer. Kommunen känns igen på namnet (\"Uppsala kommun Fritid\") eller på att skolan är en av kommunens egna enligt Skolverkets skolenhetsregister. Bidraget räknas bara där kommunen är koordinator och är då hela projektets bidrag; som partner räknas projektet men inget belopp. Friskolor, kommunalförbund och kommunala bolag räknas inte.",
+      "Linköping, Örebro, Jönköping och Norrköping, och kommunerna i kommungruppen utanför de tio största, har ingen PIC som källorna knyter till organisationsnumret; CORDIS-träffar för dem kräver momsnummer eller ett namn som säger att det är kommunen.",
+    ],
+  },
+  lidingo: {
+    match: lidingoMatch,
+    peerGroups: [
+      {
+        id: "grannar",
+        label: "Grannkommuner",
+        description: "Grannkommuner i Stockholms län av liknande slag, och de tre i länet med flest egna EU-projekt.",
+        peers: lidingoPeers,
+      },
+      kommungruppGroup(lidingoMatch, lidingoPeers),
+    ],
+    checklist: null,
+    peerCaveats: [
+      "ESF+ 2021–2027 kommer från ESF-rådets projektbank för hela landet och från Kohesio. Socialfonden 2014–2020 kommer bara från Kohesio, där förvaltningar ofta står utan organisationsnummer; de räknas när namnet säger att de hör till kommunen (\"Arbetsmarknadsförvaltningen, Stockholms stad\").",
+      "Regionalfonden 2021–2027 kommer från Kohesio och Tillväxtverkets projektbank, som också har Fonden för en rättvis omställning och inrikesfonderna (AMIF, BMVI, ISF). Interreg kommer från keep.eu.",
+      "Kohesio, ESF-rådets och Tillväxtverkets projektbanker anger bara projektägaren; projekt där kommunen är samverkanspart syns inte.",
+      "Program som kommissionen själv förvaltar (LIFE, CEF, Digital Europe, Creative Europe, CERV, Europe Direct, WiFi4EU) kommer från EU:s Financial Transparency System, matchade på momsnummer.",
+      "Erasmus+ kommer från EU:s projektlistor, som saknar organisationsnummer. Kommunen känns igen på namnet (\"Uppsala kommun Fritid\") eller på att skolan är en av kommunens egna enligt Skolverkets skolenhetsregister. Bidraget räknas bara där kommunen är koordinator och är då hela projektets bidrag; som partner räknas projektet men inget belopp. Friskolor, kommunalförbund och kommunala bolag räknas inte.",
+      "Ingen av kommunerna har en PIC som källorna knyter till organisationsnumret; CORDIS-träffar kräver momsnummer eller ett namn som säger att det är kommunen.",
+    ],
+  },
+};

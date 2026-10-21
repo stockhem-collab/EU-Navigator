@@ -1,10 +1,11 @@
 // Server-only access to the imported reference data. Reads
-// data/app/referensdata.json.gz once per server process and answers the
-// API routes and server components: the reference project list, the
-// similarity search for a project idea, partner suggestions, amount
-// benchmarks and the municipality's own EU history. Never import this from
-// a client component — it reads the file system and holds ~10 000
-// projects in memory.
+// data/app/referensdata.json.gz (and, for the municipality's own EU history
+// and comparison, data/app/kommunhistorik.json.gz) once per server process
+// and answers the API routes and server components: the reference project
+// list, the similarity search for a project idea, partner suggestions,
+// amount benchmarks and the history. Never import this from a client
+// component — it reads the file system and holds ~30 000 projects in
+// memory.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -12,12 +13,15 @@ import zlib from "node:zlib";
 import { convert, eurSekRate, parseEurSekRates, type EurSekRates } from "@/lib/integrations/core/currency";
 import type { Money, OrganisationType, PartnerRole, SourceSystem } from "@/lib/integrations/core/types";
 import type { Candidate, HistoryProject } from "@/lib/integrations/municipality/match";
+import type { VinnovaProject } from "@/lib/integrations/municipality/vinnova";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import { findTag } from "@/lib/data/tags";
 import { populationOf, POPULATION_YEAR } from "@/lib/data/population";
+import { DEFAULT_PROFILE, type DemoProfileId } from "@/lib/data/demoProfiles";
 import { significantWords } from "@/lib/matching/similarProjects";
 import { sectorLabel } from "@/lib/matching/scoreMatch";
 import type { Sector } from "@/lib/types";
+import { summariseHistory } from "./historySummary";
 import { conceptsInText, projectThemes, searchableText, termOccurs, type ThemeMatch } from "./themes";
 import type {
   AmountStats,
@@ -30,6 +34,7 @@ import type {
   ReferenceFilterOptions,
   ReferenceIndex,
   ReferenceListResponse,
+  ReferenceProfiles,
   ReferenceProjectCard,
   SekAmount,
   SimilarImportedProject,
@@ -38,46 +43,80 @@ import type {
 } from "./types";
 
 const INDEX_FILE = path.join(process.cwd(), "data", "app", "referensdata.json.gz");
+const PROFILES_FILE = path.join(process.cwd(), "data", "app", "kommunhistorik.json.gz");
 const RATES_FILE = path.join(process.cwd(), "data", "vaxelkurs.csv");
 
 interface Loaded {
   index: ReferenceIndex;
   rates: EurSekRates;
   cards: ReferenceProjectCard[];
-  /** Per project: title text and title + summary text, for the searches. */
-  titleText: string[];
-  fullText: string[];
   /** Per project: [organisation index, role] pairs. */
   partnersOf: [number, PartnerRole][][];
-  /** Per organisation: its name as searchable text. */
-  orgText: string[];
   options: ReferenceFilterOptions;
 }
 
-let cache: Loaded | null = null;
+interface SearchTexts {
+  /** Per project: title text and title + summary text, for the searches. */
+  titleText: string[];
+  fullText: string[];
+  /** Per organisation: its name as searchable text. */
+  orgText: string[];
+}
+
+// Kept on globalThis: the dev server bundles every route separately, and a
+// module-level cache would load the index once per route.
+const shared = globalThis as typeof globalThis & {
+  euNavigatorReference?: {
+    loaded?: Loaded;
+    texts?: SearchTexts;
+    profiles?: { profiles: ReferenceProfiles; rates: EurSekRates };
+  };
+};
+const caches = (shared.euNavigatorReference ??= {});
 
 export function referenceDataAvailable(): boolean {
   return fs.existsSync(INDEX_FILE);
 }
 
 function load(): Loaded {
-  if (cache) return cache;
+  if (caches.loaded) return caches.loaded;
   const rates = parseEurSekRates(fs.readFileSync(RATES_FILE, "utf8"));
   const index: ReferenceIndex = referenceDataAvailable()
     ? JSON.parse(zlib.gunzipSync(fs.readFileSync(INDEX_FILE)).toString("utf8"))
-    : { generatedAt: "", sources: [], projects: [], organisations: [], partners: [], history: null, peers: null };
+    : { generatedAt: "", sources: [], projects: [], organisations: [], partners: [] };
 
   const partnersOf: [number, PartnerRole][][] = index.projects.map(() => []);
   for (const [pi, oi, role] of index.partners) partnersOf[pi].push([oi, role]);
 
   const cards = index.projects.map((p, i) => toCard(p, partnersOf[i].length, rates));
+
+  caches.loaded = { index, rates, cards, partnersOf, options: filterOptions(cards) };
+  return caches.loaded;
+}
+
+/** The searchable texts, built on the first search rather than on load:
+ * they take as long as the rest of the load, and a list without words, the
+ * amount benchmarks and the history don't need them. */
+function texts(): SearchTexts {
+  if (caches.texts) return caches.texts;
+  const { index } = load();
   const titleText = index.projects.map((p) => searchableText(`${p.title} ${p.titleEn ?? ""} ${p.acronym ?? ""}`));
   const fullText = index.projects.map((p, i) => `${titleText[i]}${searchableText(`${p.summary ?? ""} ${p.summaryEn ?? ""}`)}`);
-
   const orgText = index.organisations.map((o) => searchableText(o.name));
+  caches.texts = { titleText, fullText, orgText };
+  return caches.texts;
+}
 
-  cache = { index, rates, cards, titleText, fullText, partnersOf, orgText, options: filterOptions(cards) };
-  return cache;
+/** The demo municipalities' history and comparison, kept in a small file of
+ * their own so those pages don't load the whole reference index. */
+function loadProfiles(): { profiles: ReferenceProfiles; rates: EurSekRates } {
+  if (caches.profiles) return caches.profiles;
+  const rates = caches.loaded?.rates ?? parseEurSekRates(fs.readFileSync(RATES_FILE, "utf8"));
+  const profiles: ReferenceProfiles = fs.existsSync(PROFILES_FILE)
+    ? JSON.parse(zlib.gunzipSync(fs.readFileSync(PROFILES_FILE)).toString("utf8"))
+    : { generatedAt: "", profiles: {} };
+  caches.profiles = { profiles, rates };
+  return caches.profiles;
 }
 
 function startYear(date: string | null): number | null {
@@ -179,10 +218,11 @@ export interface ReferenceFilters {
 }
 
 export function listReferenceProjects(filters: ReferenceFilters): ReferenceListResponse {
-  const { cards, fullText, options } = load();
+  const { cards, options } = load();
   const pageSize = Math.min(Math.max(filters.pageSize ?? 20, 1), 100);
   const page = Math.max(filters.page ?? 1, 1);
   const q = filters.q?.trim() ? searchableText(filters.q).trim() : "";
+  const fullText = q ? texts().fullText : [];
   const hits: number[] = [];
   cards.forEach((c, i) => {
     if (filters.source && c.source !== filters.source) return;
@@ -231,7 +271,8 @@ function themeReason(t: ThemeMatch): SimilarityReason {
 const display = (term: string) => term.replace(/\*$/, "…");
 
 export function findSimilar(idea: IdeaInput): SimilarResponse {
-  const { cards, titleText, fullText, partnersOf, index } = load();
+  const { cards, partnersOf, index } = load();
+  const { titleText, fullText } = texts();
   const tagText = (idea.tags ?? []).map((id) => findTag(id)?.label_sv ?? "").join(" ");
   const ideaText = `${idea.title} ${idea.description} ${tagText}`;
   const concepts = conceptsInText(ideaText);
@@ -245,6 +286,11 @@ export function findSimilar(idea: IdeaInput): SimilarResponse {
 
   const scored: { i: number; score: number; reasons: SimilarityReason[] }[] = [];
   cards.forEach((card, i) => {
+    // EU projects only: the idea is matched against EU calls, and Vinnova's
+    // Swedish summaries would otherwise outrank the EU projects on shared
+    // Swedish words. Vinnova projects are found in the reference list and
+    // the partner search.
+    if (card.source === "vinnova") return;
     const reasons: SimilarityReason[] = [];
     let conceptScore = 0;
     for (const c of concepts) {
@@ -305,7 +351,7 @@ export function findSimilar(idea: IdeaInput): SimilarResponse {
       partnersOf,
       index
     ),
-    compared: cards.length,
+    compared: cards.filter((c) => c.source !== "vinnova").length,
   };
 }
 
@@ -378,7 +424,8 @@ const PARTNER_PAGE_SIZE = 25;
 const PARTNER_PROJECTS_SHOWN = 5;
 
 export function searchPartners(filters: PartnerSearchFilters): PartnerSearchResponse {
-  const { cards, fullText, partnersOf, orgText, index } = load();
+  const { cards, partnersOf, index } = load();
+  const { fullText, orgText } = texts();
   const pageSize = Math.min(Math.max(filters.pageSize ?? PARTNER_PAGE_SIZE, 1), 100);
   const page = Math.max(filters.page ?? 1, 1);
   const q = filters.q?.trim() ? searchableText(filters.q).trim() : "";
@@ -551,7 +598,7 @@ export function amountStats(programId: string, sector: Sector): AmountStats {
 }
 
 // ---------------------------------------------------------------------------
-// The municipality's own EU history (uppsala-history.json, peers.json)
+// The municipality's own EU history (<profile>-history.json, <profile>-peers.json)
 // ---------------------------------------------------------------------------
 
 export interface HistoryRow {
@@ -567,7 +614,11 @@ export interface HistoryRow {
   role: string | null;
   matchedOn: string;
   euContribution: SekAmount | null;
+  /** The EU contribution in euro, for the totals' tooltip; 0 when unknown. */
+  eur: number;
   url: string | null;
+  /** A possible match the user confirmed on the page. */
+  confirmedManually?: boolean;
 }
 
 export interface HistoryCandidateRow {
@@ -575,11 +626,15 @@ export interface HistoryCandidateRow {
   source: SourceSystem;
   title: string;
   acronym: string | null;
+  programId: string | null;
   programme: string;
   period: string | null;
+  startDate: string | null;
+  endDate: string | null;
   organisationName: string | null;
   reason: string;
   euContribution: SekAmount | null;
+  eur: number;
   url: string | null;
 }
 
@@ -589,9 +644,26 @@ export interface PeerRow {
   projects: number;
   euContributionSek: number;
   euContributionEur: number;
+  /** Vinnova projects the municipality coordinated (national funding, not
+   * part of the EU figures); null when the data has no Vinnova count. */
+  vinnova: { projects: number; grantSek: number } | null;
+}
+
+/** A Vinnova project the municipality coordinated (national funding). */
+export interface VinnovaRow {
+  id: string;
+  diarienummer: string;
+  title: string;
+  programme: string;
+  startDate: string | null;
+  endDate: string | null;
+  coordinator: string;
+  grantSek: number | null;
+  url: string | null;
 }
 
 export interface HistoryView {
+  profile: DemoProfileId;
   generatedAt: string;
   municipality: { name: string; orgNumber: string; pic: string | null };
   rules: { sureMatch: string; candidates: string; historyFrom: string };
@@ -600,8 +672,13 @@ export interface HistoryView {
   totalSek: number;
   totalEur: number;
   byProgram: { programId: string | null; programme: string; projects: number; sek: number; eur: number }[];
+  /** The comparison groups to choose between, and the one shown. */
+  peerGroups: PeerGroupOption[];
+  peerGroup: string | null;
   peers: PeerRow[];
   peerCaveats: string[];
+  /** Kept apart from the EU history above; null when not imported. */
+  vinnova: { rule: string; projects: VinnovaRow[]; totalSek: number } | null;
 }
 
 interface HistoryFile {
@@ -610,10 +687,14 @@ interface HistoryFile {
   rules: { sureMatch: string; candidates: string; historyFrom: string };
   projects: HistoryProject[];
   candidates: Candidate[];
+  vinnova?: { rule: string; projects: VinnovaProject[] };
 }
 
 interface PeersFile {
-  rules?: { caveats?: string[] };
+  rules?: { caveats?: string[]; vinnova?: string };
+  /** Comparison groups; the first is the default. Absent in older files,
+   * where every municipality is one group. */
+  groups?: { id: string; label: string; description: string; members: string[] }[];
   municipalities: {
     name: string;
     reference: boolean;
@@ -621,6 +702,7 @@ interface PeersFile {
     projects: number;
     euContributionSek: number;
     euContributionEur: number;
+    vinnova?: { projects: number; grantSek: number };
     byProgram?: {
       programId: string | null;
       programme: string;
@@ -632,11 +714,37 @@ interface PeersFile {
   }[];
 }
 
-export function historyView(): HistoryView | null {
-  const { index, rates } = load();
-  const history = index.history as HistoryFile | null;
+/** A comparison group to choose on the page. */
+export interface PeerGroupOption {
+  id: string;
+  label: string;
+  description: string;
+}
+
+/** The chosen group's municipalities (the profile's own first), or the
+ * first group when `group` names none. */
+function selectPeers(
+  file: PeersFile | null,
+  group: string | null | undefined,
+): { municipalities: PeersFile["municipalities"]; groups: PeerGroupOption[]; group: string | null } {
+  if (!file) return { municipalities: [], groups: [], group: null };
+  const groups = file.groups ?? [];
+  const chosen = groups.find((g) => g.id === group) ?? groups[0];
+  if (!chosen) return { municipalities: file.municipalities, groups: [], group: null };
+  const members = new Set(chosen.members);
+  return {
+    municipalities: file.municipalities.filter((m) => m.reference || (m.kommunkod && members.has(m.kommunkod))),
+    groups: groups.map(({ id, label, description }) => ({ id, label, description })),
+    group: chosen.id,
+  };
+}
+
+export function historyView(profile: DemoProfileId = DEFAULT_PROFILE, group?: string | null): HistoryView | null {
+  const { profiles, rates } = loadProfiles();
+  const history = (profiles.profiles[profile]?.history ?? null) as HistoryFile | null;
   if (!history) return null;
-  const peers = index.peers as PeersFile | null;
+  const peers = (profiles.profiles[profile]?.peers ?? null) as PeersFile | null;
+  const selected = selectPeers(peers, group);
 
   const projects: HistoryRow[] = history.projects
     .map((p) => ({
@@ -652,21 +760,18 @@ export function historyView(): HistoryView | null {
       role: p.partners[0]?.role ?? null,
       matchedOn: `${p.matchedOn} ${p.matchedValue}`,
       euContribution: toSek(p.euContribution, startYear(p.startDate), rates),
+      eur: toEur(p.euContribution, startYear(p.startDate), rates) ?? 0,
       url: p.sourceUrl,
     }))
     .sort((a, b) => (b.startDate ?? "").localeCompare(a.startDate ?? ""));
 
-  const byProgram = new Map<string, HistoryView["byProgram"][number]>();
-  for (const p of projects) {
-    const key = p.programId ?? p.programme;
-    const entry = byProgram.get(key) ?? { programId: p.programId, programme: p.programme, projects: 0, sek: 0, eur: 0 };
-    entry.projects += 1;
-    entry.sek += p.euContribution?.sek ?? 0;
-    entry.eur += toEur(p.euContribution?.original ?? null, startYear(p.startDate), rates) ?? 0;
-    byProgram.set(key, entry);
-  }
+  // Candidates carry only the source's programme name; take the programme id
+  // a sure match with the same name has, so a confirmed candidate joins it.
+  const programIdByName = new Map<string, string>();
+  for (const p of history.projects) if (p.programId) programIdByName.set(p.programmeName, p.programId);
 
   return {
+    profile,
     generatedAt: history.generatedAt,
     municipality: { name: history.municipality.name, orgNumber: history.municipality.orgNumber, pic: history.municipality.pic ?? null },
     rules: history.rules,
@@ -676,26 +781,50 @@ export function historyView(): HistoryView | null {
       source: c.sourceSystem,
       title: c.title,
       acronym: c.acronym,
-      programme: c.programmeName,
+      programId: programIdByName.get(c.programmeName) ?? null,
+      programme: (programIdByName.has(c.programmeName) && findProgram(programIdByName.get(c.programmeName)!)?.shortName) || c.programmeName,
       period: c.period,
+      startDate: c.startDate,
+      endDate: c.endDate,
       organisationName: c.organisationName,
       reason: c.reason,
       euContribution: toSek(c.euContribution, startYear(c.startDate), rates),
+      eur: c.euContributionEur ?? toEur(c.euContribution, startYear(c.startDate), rates) ?? 0,
       url: c.sourceUrl,
     })),
-    totalSek: projects.reduce((s, p) => s + (p.euContribution?.sek ?? 0), 0),
-    totalEur: [...byProgram.values()].reduce((s, p) => s + p.eur, 0),
-    byProgram: [...byProgram.values()].sort((a, b) => b.sek - a.sek),
-    peers: (peers?.municipalities ?? [])
+    ...summariseHistory(projects),
+    peerGroups: selected.groups,
+    peerGroup: selected.group,
+    peers: selected.municipalities
       .map((m) => ({
         name: m.name,
         reference: m.reference,
         projects: m.projects,
         euContributionSek: m.euContributionSek,
         euContributionEur: m.euContributionEur,
+        vinnova: m.vinnova ? { projects: m.vinnova.projects, grantSek: m.vinnova.grantSek } : null,
       }))
       .sort((a, b) => b.euContributionSek - a.euContributionSek),
-    peerCaveats: peers?.rules?.caveats ?? [],
+    peerCaveats: [...(peers?.rules?.caveats ?? []), ...(peers?.rules?.vinnova ? [peers.rules.vinnova] : [])],
+    vinnova: history.vinnova
+      ? {
+          rule: history.vinnova.rule,
+          projects: history.vinnova.projects
+            .map((p) => ({
+              id: p.id,
+              diarienummer: p.diarienummer,
+              title: p.title,
+              programme: p.programmeName,
+              startDate: p.startDate,
+              endDate: p.endDate,
+              coordinator: p.coordinator,
+              grantSek: p.grant?.currency === "SEK" ? p.grant.amount : null,
+              url: p.sourceUrl,
+            }))
+            .sort((a, b) => (b.startDate ?? "").localeCompare(a.startDate ?? "")),
+          totalSek: history.vinnova.projects.reduce((s, p) => s + (p.grant?.currency === "SEK" ? p.grant.amount : 0), 0),
+        }
+      : null,
   };
 }
 
@@ -717,24 +846,32 @@ export interface LeadershipPeer {
    * (the file gives periods in euro only). */
   byPeriod: Record<"2014-2020" | "2021-2027", { projects: number; sek: number }>;
   byProgram: { key: string; programme: string; projects: number; sek: number }[];
+  /** Vinnova projects coordinated (national funding, kept out of the EU
+   * figures); null when the data has no Vinnova count. */
+  vinnova: { projects: number; grantSek: number } | null;
 }
 
 export interface LeadershipView {
   generatedAt: string;
   populationYear: number;
+  peerGroups: PeerGroupOption[];
+  peerGroup: string | null;
   peers: LeadershipPeer[];
   caveats: string[];
 }
 
-export function leadershipView(): LeadershipView | null {
-  const { index } = load();
-  const peers = index.peers as PeersFile | null;
+export function leadershipView(profile: DemoProfileId = DEFAULT_PROFILE, group?: string | null): LeadershipView | null {
+  const { profiles } = loadProfiles();
+  const peers = (profiles.profiles[profile]?.peers ?? null) as (PeersFile & { generatedAt?: string }) | null;
   if (!peers?.municipalities?.length) return null;
+  const selected = selectPeers(peers, group);
   return {
-    generatedAt: (index.peers as { generatedAt?: string }).generatedAt ?? index.generatedAt,
+    generatedAt: peers.generatedAt ?? profiles.generatedAt,
     populationYear: POPULATION_YEAR,
-    caveats: peers.rules?.caveats ?? [],
-    peers: peers.municipalities.map((m) => {
+    peerGroups: selected.groups,
+    peerGroup: selected.group,
+    caveats: [...(peers.rules?.caveats ?? []), ...(peers.rules?.vinnova ? [peers.rules.vinnova] : [])],
+    peers: selected.municipalities.map((m) => {
       const population = populationOf(m.kommunkod);
       // Kronor per euro for this municipality's own mix of years.
       const sekPerEur = m.euContributionEur > 0 ? m.euContributionSek / m.euContributionEur : 0;
@@ -769,6 +906,7 @@ export function leadershipView(): LeadershipView | null {
         perCapitaSek: population ? m.euContributionSek / population : null,
         byPeriod,
         byProgram: [...byProgram.values()].sort((a, b) => b.sek - a.sek),
+        vinnova: m.vinnova ? { projects: m.vinnova.projects, grantSek: m.vinnova.grantSek } : null,
       };
     }),
   };

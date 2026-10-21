@@ -1,8 +1,9 @@
 import type { Paragraph as ParagraphType, Table as TableType } from "docx";
-import { Grant, FundingCall, FundingProgram, Lang, ReportingEvent } from "@/lib/types";
+import { CallTemplate, Grant, FundingCall, FundingProgram, Lang, ReportingEvent } from "@/lib/types";
 import { fmtSEK } from "@/lib/format";
 import { cumulativeSpentThrough, expectedShareAt, isDeviation } from "@/lib/data/grants";
 import { reportSectionsFor } from "@/lib/data/reportSections";
+import { costAmounts, costCode, costTotal } from "@/lib/data/costCategories";
 import { formatReportDue } from "@/lib/matching/reportingSchedule";
 
 // Exports a report — or every report of a grant — as a real .docx, the
@@ -11,7 +12,10 @@ import { formatReportDue } from "@/lib/matching/reportingSchedule";
 // indicators against the commitments, the finances, and the required
 // documents, so it can be finished or reviewed in Word. Available from
 // the start, not only once something is reported: an empty section is
-// marked as such rather than left out.
+// marked as such rather than left out. With the call's report form
+// (lib/data/reportTemplates.ts) the document follows the form instead:
+// its numbered sections in the form's language, its tables, and the costs
+// per the funder's cost categories.
 
 /** What's been written for one report — its draft, or what was submitted. */
 export interface ReportContent {
@@ -21,6 +25,10 @@ export interface ReportContent {
   documents: { name: string; ready: boolean; files: string[] }[];
   otherAttachments: string[];
   ownerName?: string;
+  /** The report form's tables (TemplateTable.key -> rows). */
+  tables?: Record<string, string[][]>;
+  /** The period's costs per cost category (CostCategory.key -> SEK). */
+  costs?: Record<string, number>;
 }
 
 type Docx = typeof import("docx");
@@ -64,7 +72,16 @@ function reportTypeText(event: ReportingEvent, lang: Lang): string {
 
 /** One report's content, as blocks — shared by the single-report and the
  * whole-grant export. */
-function reportBlocks(docx: Docx, grant: Grant, event: ReportingEvent, content: ReportContent, lang: Lang, headingLevel: 1 | 2): Block[] {
+function reportBlocks(
+  docx: Docx,
+  grant: Grant,
+  event: ReportingEvent,
+  content: ReportContent,
+  lang: Lang,
+  headingLevel: 1 | 2,
+  form?: CallTemplate,
+  eurRate?: number
+): Block[] {
   const { HeadingLevel, Paragraph, TextRun } = docx;
   const h = (text: string, level: 1 | 2 | 3) =>
     new Paragraph({
@@ -88,14 +105,49 @@ function reportBlocks(docx: Docx, grant: Grant, event: ReportingEvent, content: 
       [t(lang, "Förfaller", "Due"), formatReportDue(event, lang)],
       [t(lang, "Status", "Status"), statusText(event, lang)],
       [t(lang, "Ansvarig", "Responsible"), content.ownerName ?? "—"],
+      ...(form
+        ? [
+            [t(lang, "Rapportmall", "Report form"), `${lang === "sv" ? form.title_sv : form.title_en} (${form.version})`],
+            ...(form.submittedIn ? [[t(lang, "Lämnas in i", "Submitted in"), form.submittedIn]] : []),
+          ]
+        : []),
     ]),
   ];
 
   const share = expectedShareAt(grant, event.id);
-  for (const section of reportSectionsFor(event.type)) {
-    blocks.push(h(lang === "sv" ? section.label_sv : section.label_en, sub));
+  // The form's headings are in the form's own language.
+  const formLang = form?.language ?? lang;
+  const sections = reportSectionsFor(event.type, form);
+  const fromForm = sections.some((s) => s.number);
+  const deep = (Math.min(sub + 1, 3)) as 2 | 3;
+  let group: string | undefined;
+  for (const section of sections) {
+    if (section.group && section.group.number !== group) {
+      group = section.group.number;
+      blocks.push(h(`${section.group.number}. ${formLang === "sv" ? section.group.label_sv : section.group.label_en}`, sub));
+    }
+    const label = formLang === "sv" ? section.label_sv : section.label_en;
+    blocks.push(h(section.number ? `${section.number}${section.group ? "" : "."} ${label}` : label, section.group ? deep : sub));
     const value = content.sections[section.key]?.trim();
-    blocks.push(...(value ? text(value) : [empty()]));
+    blocks.push(...(value ? text(value) : section.tables?.length ? [] : [empty()]));
+    for (const tbl of section.tables ?? []) {
+      const rows = (content.tables?.[tbl.key] ?? []).filter((r) => r.some((c) => c.trim()));
+      const columns = formLang === "sv" ? tbl.columns_sv : tbl.columns_en;
+      if (tbl.docx?.mode === "repeat") {
+        // One subheading per row (Part B's 1.2.1, 1.2.2 … per work
+        // package), the last column as its text.
+        if (rows.length === 0) blocks.push(empty());
+        rows.forEach((r, i) => {
+          const head = r.slice(0, -1).filter((c) => c.trim()).join(": ");
+          blocks.push(h(`${section.number ? `${section.number}.${i + 1} ` : ""}${head}`, 3));
+          const body = r[r.length - 1]?.trim();
+          blocks.push(...(body ? text(body) : [empty()]));
+        });
+      } else {
+        blocks.push(new Paragraph({ children: [new TextRun({ text: formLang === "sv" ? tbl.title_sv : tbl.title_en, bold: true })] }));
+        blocks.push(rows.length > 0 ? table(docx, columns, rows.map((r) => columns.map((_, i) => r[i] ?? ""))) : empty());
+      }
+    }
 
     // The indicators go with the results; their deviations with the
     // deviations section.
@@ -141,9 +193,65 @@ function reportBlocks(docx: Docx, grant: Grant, event: ReportingEvent, content: 
     }
   }
 
+  // A form has no results section of the standard kind: its indicators
+  // and their deviations follow its sections.
+  if (fromForm && grant.commitments.length > 0) {
+    blocks.push(h(t(lang, "Indikatorer", "Indicators"), sub));
+    blocks.push(
+      table(
+        docx,
+        [t(lang, "Indikator", "Indicator"), t(lang, "Utlovat", "Promised"), t(lang, "Rapporterat", "Reported"), t(lang, "Förklaring", "Explanation")],
+        grant.commitments.map((c) => {
+          const unit = lang === "sv" ? c.unit_sv : c.unit_en;
+          const outcome = event.outcomes.find((o) => o.indicator_sv === c.indicator_sv);
+          return [
+            lang === "sv" ? c.indicator_sv : c.indicator_en,
+            `${fmt(c.promisedValue)} ${unit}`,
+            outcome ? `${fmt(outcome.value)} ${unit}` : "—",
+            content.deviations[c.indicator_sv]?.trim() || "",
+          ];
+        })
+      )
+    );
+  }
+
   // Finances.
   blocks.push(h(t(lang, "Ekonomi", "Finances"), sub));
-  const cumulative = cumulativeSpentThrough(grant, event.id);
+  // What the period's costs come to: as reported, or the costs per
+  // category written in the report.
+  let periodSpent = event.financials?.spentThisPeriodSEK;
+  if (form?.costCategories) {
+    // The period's costs per the funder's cost categories.
+    const entered = Object.fromEntries(Object.entries(content.costs ?? event.financials?.byCategory ?? {}).map(([k, v]) => [k, String(v)]));
+    const amounts = costAmounts(form.costCategories, entered);
+    if (content.costs) periodSpent = costTotal(amounts);
+    const kr = (n: number) => `${n.toLocaleString(lang === "sv" ? "sv-SE" : "en-US")} kr`;
+    const eur = (n: number) => `€${Math.round(n / eurRate!).toLocaleString(lang === "sv" ? "sv-SE" : "en-US")}`;
+    const header = [t(lang, "Kostnadsslag", "Cost category"), "SEK", ...(eurRate ? ["EUR"] : [])];
+    const row = (label: string, n: number) => [label, kr(n), ...(eurRate ? [eur(n)] : [])];
+    blocks.push(
+      table(docx, header, [
+        ...form.costCategories.map((c) =>
+          row(`${c.code ? `${costCode(c)} ` : ""}${formLang === "sv" ? c.label_sv : c.label_en}${c.flatRate?.percent ? ` (${c.flatRate.percent} %)` : ""}`, amounts[c.key])
+        ),
+        row(t(lang, "Summa", "Total"), costTotal(amounts)),
+      ])
+    );
+    if (eurRate) {
+      blocks.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: t(lang, `Omräknat till euro med kursen ${eurRate} kr/€.`, `Converted to euro at SEK ${eurRate} per euro.`),
+              italics: true,
+              size: 18,
+            }),
+          ],
+        })
+      );
+    }
+  }
+  const cumulative = cumulativeSpentThrough(grant, event.id) - (event.financials?.spentThisPeriodSEK ?? 0) + (periodSpent ?? 0);
   const rows: string[][] = [[t(lang, "Beviljat EU-bidrag", "Awarded EU grant"), fmtSEK(grant.awardedAmountSEK, lang)]];
   if (grant.plannedBudget) {
     rows.push([t(lang, "Total projektbudget", "Total project budget"), fmtSEK(grant.plannedBudget.totalBudgetSEK, lang)]);
@@ -151,7 +259,7 @@ function reportBlocks(docx: Docx, grant: Grant, event: ReportingEvent, content: 
   }
   rows.push([
     t(lang, "Upparbetat denna period", "Spent this period"),
-    event.financials ? fmtSEK(event.financials.spentThisPeriodSEK, lang) : "—",
+    periodSpent !== undefined ? fmtSEK(periodSpent, lang) : "—",
   ]);
   rows.push([t(lang, "Upparbetat totalt", "Spent to date"), fmtSEK(cumulative, lang)]);
   blocks.push(table(docx, [t(lang, "Post", "Item"), t(lang, "Belopp", "Amount")], rows));
@@ -201,18 +309,23 @@ function cover(docx: Docx, grant: Grant, call: FundingCall | undefined, program:
   ];
 }
 
+/** SEK per euro for a form in euro. */
+const eurRateFor = (form: CallTemplate | undefined, call: FundingCall | undefined) =>
+  form?.currency === "EUR" ? call?.originalGrantRange?.rate : undefined;
+
 export async function buildReportDocx(
   grant: Grant,
   event: ReportingEvent,
   call: FundingCall | undefined,
   program: FundingProgram | undefined,
   content: ReportContent,
-  lang: Lang
+  lang: Lang,
+  form?: CallTemplate
 ): Promise<Blob> {
   const docx = await import("docx");
   const children = [
     ...cover(docx, grant, call, program, reportTypeText(event, lang), lang),
-    ...reportBlocks(docx, grant, event, content, lang, 1),
+    ...reportBlocks(docx, grant, event, content, lang, 1, form, eurRateFor(form, call)),
   ];
   return docx.Packer.toBlob(new docx.Document({ sections: [{ children }] }));
 }
@@ -224,7 +337,8 @@ export async function buildGrantDocx(
   call: FundingCall | undefined,
   program: FundingProgram | undefined,
   contentFor: (event: ReportingEvent) => ReportContent,
-  lang: Lang
+  lang: Lang,
+  form?: CallTemplate
 ): Promise<Blob> {
   const docx = await import("docx");
   const { HeadingLevel, Paragraph } = docx;
@@ -263,7 +377,7 @@ export async function buildGrantDocx(
 
   const sections = [
     { children: overview },
-    ...grant.reportingEvents.map((event) => ({ children: reportBlocks(docx, grant, event, contentFor(event), lang, 1) })),
+    ...grant.reportingEvents.map((event) => ({ children: reportBlocks(docx, grant, event, contentFor(event), lang, 1, form, eurRateFor(form, call)) })),
   ];
   return docx.Packer.toBlob(new docx.Document({ sections }));
 }

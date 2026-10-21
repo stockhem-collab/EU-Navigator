@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 // Datacenter's views for leadership and finance: the portfolio and data
-// overview, the leadership report and co-financing — the same strip as
+// overview, the leadership report, co-financing, the funders' forms and the calls' requirements — the same strip as
 // KnowledgeTabs.
 const TABS: { href: string; label: (t: ReturnType<typeof useLanguage>["t"]) => string }[] = [
   { href: "/datacenter", label: (t) => t.ext.datacenterTabs.overview },
   { href: "/datacenter/ledningsrapport", label: (t) => t.ext.datacenterTabs.leadership },
   { href: "/datacenter/medfinansiering", label: (t) => t.ext.datacenterTabs.cofinancing },
+  { href: "/datacenter/mallar", label: (t) => t.ext.datacenterTabs.templates },
+  { href: "/datacenter/krav", label: (t) => t.req.datacenter.tab },
 ];
 
 export default function DatacenterTabs() {

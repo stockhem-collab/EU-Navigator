@@ -1,13 +1,50 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { MatchResult, ProjectInput, ReadinessBreakdown } from "@/lib/types";
-import { assessedApplicationText, generateProjectLogic, generateReviewerNotes, ProjectLogicRow } from "@/lib/matching/generateWorkspace";
+import {
+  assessedApplicationText,
+  generateProjectLogic,
+  generateReviewerNotes,
+  ProjectLogicRow,
+  sectionDraftFor,
+} from "@/lib/matching/generateWorkspace";
+import { customTemplateFileKey, useCallTemplates } from "@/lib/hooks/useCallTemplates";
+import CostCategoryEditor from "@/components/demo/CostCategoryEditor";
+import { costAmounts, costTotal } from "@/lib/data/costCategories";
+import { buildBudgetXlsx } from "@/lib/export/exportBudget";
+import {
+  TemplateExportInput,
+  buildTemplateDocx,
+  buildWebFormDocx,
+  estimatePages,
+  fillInstructions,
+  fillPlaceholders,
+  filledRows,
+} from "@/lib/export/exportTemplate";
+import { fillFunderDocx } from "@/lib/export/fillDocx";
+import { useAttachments } from "@/lib/hooks/useAttachments";
+import TemplatePanel from "@/components/demo/TemplatePanel";
+import TemplateTableEditor from "@/components/demo/TemplateTableEditor";
 import { computeGapAnalysis } from "@/lib/matching/gapAnalysis";
 import { computeReadiness, textSignals } from "@/lib/matching/readiness";
+import RequirementsPanel from "@/components/demo/RequirementsPanel";
+import {
+  GROUP_ORDER,
+  RequirementFacts,
+  evaluateRequirements,
+  isPublicBody,
+  pageLimitFor,
+  requirementFileKey,
+  resolveRequirements,
+  summarizeCompleteness,
+} from "@/lib/data/applicationRequirements";
+import { useCallRequirements } from "@/lib/hooks/useCallRequirements";
+import { useRequirementsIntro } from "@/lib/hooks/useRequirementsIntro";
+import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import ConfirmButton from "@/components/ConfirmButton";
 import { analyzeSection } from "@/lib/matching/sectionCoach";
 import { useApplication, seedApplicationDraft } from "@/lib/hooks/useApplication";
@@ -49,9 +86,14 @@ interface Props {
    * or a notification) and onBack returns there; "matches" when it goes
    * back to the match list this workspace was picked from. */
   backLabel?: "back" | "matches";
+  /** "requirements" opens the workspace on the Krav tab (from ?flik=krav,
+   * e.g. Översikt's next step). */
+  initialTab?: "requirements";
 }
 
-type Tab = "application" | "assessment" | "process";
+type Tab = "requirements" | "application" | "assessment" | "process";
+
+const SUBMITTED_STATUSES = ["submitted", "under-review", "awarded", "rejected"];
 
 export default function ApplicationWorkspace({
   project,
@@ -61,6 +103,7 @@ export default function ApplicationWorkspace({
   applicationId: requestedApplicationId = null,
   onSavedAsProject,
   backLabel = "matches",
+  initialTab,
 }: Props) {
   const router = useRouter();
   const { t, lang } = useLanguage();
@@ -70,9 +113,48 @@ export default function ApplicationWorkspace({
   const readinessT = t.demo.readiness;
   const coachT = t.demo.coach;
 
-  const [tab, setTab] = useState<Tab>("application");
+  const [tab, setTab] = useState<Tab>(initialTab ?? "application");
+  // A new tab starts at its top: when the page is scrolled past it (e.g.
+  // far down the Krav list), switching tab scrolls back up to the content.
+  const panelTop = useRef<HTMLDivElement>(null);
+  const shownTab = useRef(tab);
+  // Set when the switch goes to a place in the tab (a section, the budget).
+  const scrollTarget = useRef(false);
+  useEffect(() => {
+    if (shownTab.current === tab) return;
+    shownTab.current = tab;
+    if (scrollTarget.current) {
+      scrollTarget.current = false;
+      return;
+    }
+    const el = panelTop.current;
+    if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ block: "start" });
+  }, [tab]);
+  const rq = t.req;
 
-  const logic = generateProjectLogic(project, match.call, match.program);
+  const tp = t.tpl;
+  const templates = useCallTemplates();
+  const logic = generateProjectLogic(project, match.call, match.program, templates.registry);
+  // The funder's shared form, when the call uses one (not the seed calls'
+  // own inline sections, which keep the simpler export).
+  const callTemplate = templates.applicationTemplateFor(match.call);
+  // The call's own page limit (e.g. 45 pages for a lump-sum topic) replaces
+  // the form's, for the page estimate and the export alike.
+  const callPageLimit = pageLimitFor(callTemplate, match.call);
+  const libraryTemplate = callTemplate && !callTemplate.id.startsWith("call:") ? callTemplate : undefined;
+  const sharedTemplate =
+    libraryTemplate && callPageLimit !== libraryTemplate.pageLimit
+      ? { ...libraryTemplate, pageLimit: callPageLimit, pageLimitAlternative: undefined }
+      : libraryTemplate;
+  const funderFileKey = `funder-template:${match.call.id}`;
+  const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
+  // The user's upload for this call, else — for a form added in Datacenter —
+  // the funder's file it was added from.
+  const funderFile =
+    sharedTemplate?.format === "docx"
+      ? attachmentsFor(funderFileKey).at(-1) ?? (sharedTemplate.custom ? attachmentsFor(customTemplateFileKey(sharedTemplate.id)).at(-1) : undefined)
+      : undefined;
+  const [exportNotice, setExportNotice] = useState<{ ok: boolean; lines: string[] } | null>(null);
 
   // Editable draft of the AI-generated project logic. Persisted per (project,
   // call) when the project was saved in the Projektbank — see useApplication.
@@ -80,12 +162,21 @@ export default function ApplicationWorkspace({
     sectionDrafts,
     setSection,
     resetSection,
+    tables,
+    setTable,
     versions,
     saveVersion,
     restoreVersion,
     deleteVersion,
     budget,
     setBudget,
+    costs,
+    setCost,
+    requirementStates,
+    setRequirementState,
+    ownRequirements,
+    addOwnRequirement,
+    removeOwnRequirement,
     isPersisted,
     applicationId,
     record,
@@ -112,8 +203,67 @@ export default function ApplicationWorkspace({
   // The assessment reads what the application actually says — the project
   // description plus every section the user has written or edited — and
   // is recomputed on every keystroke (see assessedApplicationText).
-  const assessedText = useMemo(() => assessedApplicationText(project, sectionDrafts), [project, sectionDrafts]);
-  const readiness = useMemo(() => computeReadiness(project, scoredMatch, assessedText), [project, scoredMatch, assessedText]);
+  // Table cells count as written text too.
+  const assessedText = useMemo(() => {
+    const tableText = Object.fromEntries(Object.entries(tables).map(([key, rows]) => [`table:${key}`, filledRows(rows).map((r) => r.join(" ")).join("\n")]));
+    return assessedApplicationText(project, { ...sectionDrafts, ...tableText });
+  }, [project, sectionDrafts, tables]);
+  // What a complete application needs (the Krav tab) and how far this one
+  // has come — counted in the assessment as its own dimension.
+  const callRequirements = useCallRequirements();
+  const { config: orgConfig } = useOrgConfig();
+  const shownSectionText = (row: ProjectLogicRow) => sectionDraftFor(sectionDrafts, row) ?? (lang === "sv" ? row.content_sv : row.content_en);
+  // The whole application's estimated length in the funder's layout.
+  const estimatedPages = logic.reduce((sum, row) => {
+    const rows = (row.section?.tables ?? []).reduce((n, tb) => n + filledRows(tables[tb.key]).length, 0);
+    return sum + estimatePages(shownSectionText(row), rows);
+  }, 0);
+  const requirementFiles = (id: string) => (applicationId && isPersisted ? attachmentsFor(requirementFileKey(applicationId, id)) : []);
+  const resolvedRequirements = resolveRequirements({
+    call: match.call,
+    program: match.program,
+    template: callTemplate,
+    datacenter: callRequirements.all[match.call.id],
+    own: ownRequirements,
+  });
+  const enterableCategories = (sharedTemplate?.costCategories ?? []).filter((c) => c.flatRate?.percent === undefined);
+  const enteredCosts = sharedTemplate?.costCategories ? costAmounts(sharedTemplate.costCategories, costs) : {};
+  const requirementFacts: RequirementFacts = {
+    sections: logic.map((row) => {
+      const draft = sectionDraftFor(sectionDrafts, row);
+      return {
+        key: row.key,
+        required: row.section ? row.section.required !== false : true,
+        written: draft !== undefined && draft.trim().length > 0,
+        overLimit: row.section?.maxChars !== undefined && shownSectionText(row).length > row.section.maxChars,
+      };
+    }),
+    estimatedPages: sharedTemplate?.format === "docx" ? estimatedPages : undefined,
+    pageLimit: sharedTemplate?.format === "docx" ? callPageLimit : undefined,
+    costCategoriesFilled: enterableCategories.filter((c) => (enteredCosts[c.key] ?? 0) > 0).length,
+    costCategoriesTotal: enterableCategories.length,
+    budgetStated: hasApplicationBudget(budget),
+    submitted: SUBMITTED_STATUSES.includes(record?.status ?? "draft"),
+    publicBody: isPublicBody(orgConfig.orgType),
+    attachments: Object.fromEntries(resolvedRequirements.map((r) => [r.requirement.id, requirementFiles(r.requirement.id).length])),
+    deadlineDate: match.call.deadlineDate,
+    today: new Date(),
+  };
+  const requirementItems = evaluateRequirements(resolvedRequirements, requirementStates, requirementFacts);
+  const completeness = summarizeCompleteness(requirementItems);
+  const completenessInput = useMemo(
+    () => ({
+      score: completeness.score,
+      open: completeness.open.map((i) => ({ title_sv: i.requirement.title_sv, title_en: i.requirement.title_en })),
+    }),
+    // Recomputed only when the outcome changes, not on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [completeness.score, completeness.open.map((i) => i.requirement.id).join("|")]
+  );
+  const readiness = useMemo(
+    () => computeReadiness(project, scoredMatch, assessedText, completenessInput),
+    [project, scoredMatch, assessedText, completenessInput]
+  );
   const coach = useMemo(() => analyzeSection(project, scoredMatch, assessedText), [project, scoredMatch, assessedText]);
   const notes = useMemo(() => generateReviewerNotes(project, match.call, assessedText), [project, match.call, assessedText]);
 
@@ -129,6 +279,20 @@ export default function ApplicationWorkspace({
     if (draftLoaded && openedReadiness === null) setOpenedReadiness(readiness);
   }, [draftLoaded, openedReadiness, readiness]);
   const overallChange = openedReadiness ? readiness.overall - openedReadiness.overall : 0;
+
+  // The first time an application is opened, the workspace starts on the
+  // Krav tab — what a complete application needs — unless the user has
+  // turned that off or the link asked for a tab.
+  const intro = useRequirementsIntro();
+  const { hydrated: introHydrated, showFirst, firstVisit } = intro;
+  const introKey = applicationId ?? `call:${match.call.id}`;
+  const [introHandled, setIntroHandled] = useState<string | null>(null);
+  useEffect(() => {
+    if (!draftLoaded || !introHydrated || introHandled === introKey) return;
+    setIntroHandled(introKey);
+    const first = firstVisit(introKey);
+    if (first && showFirst && !initialTab) setTab("requirements");
+  }, [draftLoaded, introHydrated, showFirst, firstVisit, introKey, introHandled, initialTab]);
   const dimensionChange = (key: string) => {
     const before = openedReadiness?.dimensions.find((d) => d.key === key)?.score;
     const now = readiness.dimensions.find((d) => d.key === key)?.score;
@@ -158,12 +322,22 @@ export default function ApplicationWorkspace({
   }, [logic]);
   const sectionLabel = (row: ProjectLogicRow) => (lang === "sv" ? row.label_sv : row.label_en);
   const goToSection = (index: number) => {
+    scrollTarget.current = tab !== "application";
     setTab("application");
     window.setTimeout(() => {
       const el = document.getElementById(`section-${index}`);
       el?.scrollIntoView({ behavior: "smooth", block: "center" });
       el?.focus();
     }, 0);
+  };
+  const goToBudget = () => {
+    scrollTarget.current = tab !== "application";
+    setTab("application");
+    window.setTimeout(() => document.getElementById("budget-title")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+  };
+  const goToSectionKey = (key?: string) => {
+    const index = key ? logic.findIndex((row) => row.key === key || row.section?.key === key) : 0;
+    goToSection(index >= 0 ? index : 0);
   };
   const { all: projectBankEntries, addImported, updateEntry, hydrated: projectBankHydrated } = useProjectBank();
   const { records: allApplications, createApplication } = useApplications();
@@ -196,13 +370,107 @@ export default function ApplicationWorkspace({
   // Every section's currently *displayed* text (an override, or the AI
   // suggestion when there isn't one) — what a saved version or an export
   // should actually contain.
-  const resolveSection = (row: { label_sv: string; content_sv: string; content_en: string }) =>
-    sectionDrafts[row.label_sv] ?? (lang === "sv" ? row.content_sv : row.content_en);
+  const resolveSection = (row: ProjectLogicRow) =>
+    sectionDraftFor(sectionDrafts, row) ?? (lang === "sv" ? row.content_sv : row.content_en);
+  const resolvedSections = () => Object.fromEntries(logic.map((row) => [row.key, resolveSection(row)]));
 
+  // Exports the application the way the call's form takes it in — see
+  // lib/export/exportTemplate.ts — or, for a call without a shared form,
+  // the project-logic document as before. `suffix` names a saved version.
+  const exportApplication = async (
+    sections: Record<string, string>,
+    tableRows: Record<string, string[][]>,
+    figures: typeof budgetFigures,
+    suffix = ""
+  ) => {
+    const filename = `ansokan-${match.call.id}${suffix ? `-${suffix}` : ""}.docx`;
+    setExportNotice(null);
+    if (!sharedTemplate) {
+      const blob = await buildApplicationDocx(project, match, logic, sections, figures, lang);
+      downloadBlob(blob, filename);
+      return;
+    }
+    const input: TemplateExportInput = {
+      template: sharedTemplate,
+      call: match.call,
+      projectTitle: project.title,
+      organisationName: project.municipality,
+      sections: logic.filter((row) => row.section).map((row) => ({ section: row.section!, text: sections[row.key] ?? "" })),
+      tables: tableRows,
+      budget: figures,
+      lang,
+    };
+    if (sharedTemplate.format === "web-form") {
+      downloadBlob(await buildWebFormDocx(input), filename);
+      return;
+    }
+    // The user's upload wins over the template kept in the app.
+    const fileUrl = funderFile?.dataUrl ?? sharedTemplate.funderFile?.url;
+    if (!fileUrl) {
+      downloadBlob(await buildTemplateDocx(input), filename);
+      return;
+    }
+    try {
+      const response = await fetch(fileUrl);
+      if (!response.ok) throw new Error(`${response.status}`);
+      const { sections: fillSections, tables: fillTables, options } = fillInstructions(input);
+      const result = await fillFunderDocx(await response.arrayBuffer(), fillSections, fillTables, fillPlaceholders(input), options);
+      downloadBlob(
+        new Blob([new Uint8Array(result.bytes)], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }),
+        filename
+      );
+      setExportNotice({
+        ok: result.missing.length === 0,
+        lines: [
+          tp.fillResult(result.filled.length),
+          ...(result.missing.length > 0 ? [tp.fillMissing(result.missing.join(", "))] : []),
+          ...(funderFile ? [tp.fillInstructionsNote] : []),
+        ],
+      });
+    } catch {
+      setExportNotice({ ok: false, lines: [tp.exportFailed] });
+    }
+  };
+
+  // Exporting doesn't wait for the requirements, but says what is missing.
+  const openRequirementsNotice = () =>
+    completeness.open.length > 0
+      ? rq.exportOpen(
+          completeness.open.length,
+          completeness.open
+            .slice(0, 3)
+            .map((i) => (lang === "sv" ? i.requirement.title_sv : i.requirement.title_en))
+            .join(", ") + (completeness.open.length > 3 ? " …" : "")
+        )
+      : null;
   const handleExport = async () => {
-    const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
-    const blob = await buildApplicationDocx(project, match, logic, resolved, budgetFigures, lang);
-    downloadBlob(blob, `ansokan-${match.call.id}.docx`);
+    await exportApplication(resolvedSections(), tables, budgetFigures);
+    const open = openRequirementsNotice();
+    if (open) setExportNotice((prev) => ({ ok: false, lines: [...(prev?.lines ?? []), open] }));
+  };
+
+  // The budget per the form's cost categories, and as an Excel workbook.
+  const budgetEurRate = sharedTemplate?.currency === "EUR" ? match.call.originalGrantRange?.rate : undefined;
+  const categoryTotal = sharedTemplate?.costCategories ? costTotal(costAmounts(sharedTemplate.costCategories, costs)) : 0;
+  const handleExportBudget = async () => {
+    if (!sharedTemplate) return;
+    const bytes = await buildBudgetXlsx({
+      template: sharedTemplate,
+      projectTitle: project.title,
+      organisationName: project.municipality,
+      callTitle: lang === "sv" ? match.call.title_sv : match.call.title_en,
+      costs,
+      eurRate: budgetEurRate,
+      eligibleBudgetSEK: budgetFigures.eligibleBudgetSEK,
+      tables,
+      startYear: project.startYear,
+      endYear: project.endYear,
+      lang,
+    });
+    downloadBlob(
+      new Blob([new Uint8Array(bytes)], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
+      `budget-${match.call.id}.xlsx`
+    );
   };
 
   // Turns this ad-hoc, never-saved intake into a real Projektbank entry —
@@ -212,22 +480,27 @@ export default function ApplicationWorkspace({
   // right here, not an instruction with no matching control anywhere in
   // the app.
   const handleSaveAsNewProject = () => {
-    const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
     const entry = projectInputToProjectBankEntry(project, readiness);
     addImported([entry]);
-    seedApplicationDraft(entry.id, match.call.id, resolved, budget);
+    seedApplicationDraft(entry.id, match.call.id, resolvedSections(), budget, tables, costs, requirementStates, ownRequirements);
     onSavedAsProject?.(entry.id);
   };
 
   // An ad-hoc, unpersisted draft's edits live only in this component's
   // state (see useApplication) — leaving without a warning would silently
   // discard everything typed so far.
-  const hasUnsavedDraft = !isPersisted && (Object.keys(sectionDrafts).length > 0 || hasApplicationBudget(budget));
+  const hasUnsavedDraft =
+    !isPersisted &&
+    (Object.keys(sectionDrafts).length > 0 ||
+      Object.keys(tables).length > 0 ||
+      Object.keys(costs).length > 0 ||
+      hasApplicationBudget(budget) ||
+      Object.keys(requirementStates).length > 0 ||
+      ownRequirements.length > 0);
 
   const handleSaveVersion = (name: string) => {
     if (!name.trim()) return;
-    const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, resolveSection(row)]));
-    saveVersion(name.trim(), resolved);
+    saveVersion(name.trim(), resolvedSections());
     setVersionName("");
   };
 
@@ -236,10 +509,9 @@ export default function ApplicationWorkspace({
   // text only for a row saveVersion wouldn't have seen yet (a call template
   // that gained a section after this version was saved).
   const handleExportVersion = async (version: ApplicationVersion) => {
-    const resolved = Object.fromEntries(logic.map((row) => [row.label_sv, version.sectionDrafts[row.label_sv] ?? resolveSection(row)]));
+    const resolved = Object.fromEntries(logic.map((row) => [row.key, sectionDraftFor(version.sectionDrafts, row) ?? resolveSection(row)]));
     const versionBudget = version.budget ? resolveApplicationBudget(project, match, version.budget) : budgetFigures;
-    const blob = await buildApplicationDocx(project, match, logic, resolved, versionBudget, lang);
-    downloadBlob(blob, `ansokan-${match.call.id}-${version.name.toLowerCase().replace(/\s+/g, "-")}.docx`);
+    await exportApplication(resolved, version.tables ?? tables, versionBudget, version.name.toLowerCase().replace(/\s+/g, "-"));
   };
 
   // The single most impactful thing to fix right now, surfaced ambiently in
@@ -252,6 +524,7 @@ export default function ApplicationWorkspace({
   }, [readiness]);
 
   const tabs: { key: Tab; label: string }[] = [
+    { key: "requirements", label: rq.tab },
     { key: "application", label: ws.tabApplication },
     { key: "assessment", label: ws.tabAssessment },
     { key: "process", label: ws.tabProcess },
@@ -315,47 +588,26 @@ export default function ApplicationWorkspace({
           {otherApplicationsToCall > 0 && (
             <p className="w-full text-xs text-navy-500">{at.otherApplicationsNote(otherApplicationsToCall)}</p>
           )}
+          {applicationStatus === "submitted" && completeness.open.length > 0 && (
+            <p className="w-full text-xs font-semibold text-amber-700" role="status" data-testid="submit-requirements-warning">
+              {rq.submitWarning(completeness.open.length)}{" "}
+              <button type="button" onClick={() => setTab("requirements")} className="underline hover:text-amber-900">
+                {rq.goToRequirements}
+              </button>
+            </p>
+          )}
         </div>
       )}
 
       <div className="mt-8 grid gap-8 md:grid-cols-[240px_1fr]">
         {/* Persistent sidebar: readiness stays visible whichever tab is open */}
-        <aside className="md:sticky md:top-20 md:self-start">
-          <div className="rounded-xl border border-navy-100 bg-white p-5">
-            <p className="text-xs font-semibold uppercase text-navy-400">{readinessT.title}</p>
-            <p className="mt-1 text-4xl font-extrabold text-navy-900" data-testid="readiness-overall">
-              {readiness.overall}
-              <span className="text-base font-normal text-navy-400">/100</span>
-            </p>
-            {overallChange !== 0 && (
-              <p className={`mt-1 text-xs font-semibold ${overallChange > 0 ? "text-green-700" : "text-amber-700"}`} aria-live="polite">
-                {ws.changeSinceOpened(overallChange)}
-              </p>
-            )}
-            <div className="mt-3 border-t border-navy-50 pt-3">
-              <p className="text-xs font-semibold uppercase text-navy-400">{ws.topPriorityLabel}</p>
-              <p className="mt-1 text-sm text-amber-800">
-                {topPriority
-                  ? lang === "sv"
-                    ? topPriority.action_sv
-                    : topPriority.action_en
-                  : ws.topPriorityNone}
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleExport}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-navy-200 bg-white px-3 py-2 text-sm font-semibold text-navy-700 transition hover:bg-navy-50"
-          >
-            {ws.exportButton}
-          </button>
-
+        {/* The tabs come first, and the sidebar scrolls on its own when it is
+            taller than the window, so every tab can always be reached. */}
+        <aside className="md:sticky md:top-20 md:max-h-[calc(100vh-14rem)] md:self-start md:overflow-y-auto md:pb-2">
           <div
             role="tablist"
             aria-label={ws.title}
-            className="mt-4 flex gap-2 overflow-x-auto md:mt-6 md:flex-col md:gap-1 md:overflow-visible"
+            className="mb-4 flex gap-2 overflow-x-auto md:mb-6 md:flex-col md:gap-1 md:overflow-visible"
             onKeyDown={(e) => {
               if (!["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
               e.preventDefault();
@@ -386,24 +638,135 @@ export default function ApplicationWorkspace({
               </button>
             ))}
           </div>
+          <div className="rounded-xl border border-navy-100 bg-white p-5">
+            <p className="text-xs font-semibold uppercase text-navy-400">{readinessT.title}</p>
+            <p className="mt-1 text-4xl font-extrabold text-navy-900" data-testid="readiness-overall">
+              {readiness.overall}
+              <span className="text-base font-normal text-navy-400">/100</span>
+            </p>
+            {overallChange !== 0 && (
+              <p className={`mt-1 text-xs font-semibold ${overallChange > 0 ? "text-green-700" : "text-amber-700"}`} aria-live="polite">
+                {ws.changeSinceOpened(overallChange)}
+              </p>
+            )}
+            <div className="mt-3 border-t border-navy-50 pt-3">
+              <p className="text-xs font-semibold uppercase text-navy-400">{ws.topPriorityLabel}</p>
+              <p className="mt-1 text-sm text-amber-800">
+                {topPriority
+                  ? lang === "sv"
+                    ? topPriority.action_sv
+                    : topPriority.action_en
+                  : ws.topPriorityNone}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-navy-100 bg-white p-5" data-testid="requirements-sidebar">
+            <p className="text-xs font-semibold uppercase text-navy-400">{rq.sidebarLabel}</p>
+            <p className="mt-1 text-sm font-semibold text-navy-800">{rq.progress(completeness.done, completeness.counted)}</p>
+            <div className="mt-2 h-1.5 rounded-full bg-navy-100">
+              <div
+                className={`h-1.5 rounded-full ${completeness.score >= 100 ? "bg-green-600" : "bg-gold-500"}`}
+                style={{ width: `${completeness.score}%` }}
+              />
+            </div>
+            {completeness.urgent.length > 0 && <p className="mt-2 text-xs font-semibold text-amber-700">{rq.sidebarUrgent(completeness.urgent.length)}</p>}
+            {tab !== "requirements" && (
+              <button type="button" onClick={() => setTab("requirements")} className="mt-2 text-xs font-semibold text-navy-600 underline hover:text-navy-900">
+                {rq.sidebarOpen}
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleExport}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-navy-200 bg-white px-3 py-2 text-sm font-semibold text-navy-700 transition hover:bg-navy-50"
+          >
+            {sharedTemplate
+              ? sharedTemplate.format === "web-form"
+                ? tp.exportWebForm
+                : funderFile || sharedTemplate.funderFile
+                ? tp.exportFilled
+                : tp.exportDocx
+              : ws.exportButton}
+          </button>
+          {exportNotice && (
+            <div
+              role="status"
+              data-testid="export-notice"
+              className={`mt-2 rounded-md p-3 text-xs ${exportNotice.ok ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}
+            >
+              {exportNotice.lines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
+          )}
+
         </aside>
 
         {/* Active tab content */}
-        <div className="min-w-0">
+        <div className="min-w-0 scroll-mt-24" ref={panelTop}>
+          {tab === "requirements" && (
+            <div id="panel-requirements" role="tabpanel" aria-labelledby="tab-requirements" tabIndex={0}>
+              <RequirementsPanel
+                call={match.call}
+                program={match.program}
+                template={callTemplate && !callTemplate.id.startsWith("call:") ? callTemplate : undefined}
+                pageLimit={callPageLimit}
+                items={requirementItems}
+                summary={completeness}
+                states={requirementStates}
+                onSetState={setRequirementState}
+                onAddOwn={addOwnRequirement}
+                onRemoveOwn={removeOwnRequirement}
+                files={
+                  applicationId && isPersisted
+                    ? {
+                        list: requirementFiles,
+                        add: (id, file) => addAttachment(requirementFileKey(applicationId, id), file),
+                        remove: (id, attachmentId) => removeAttachment(requirementFileKey(applicationId, id), attachmentId),
+                      }
+                    : undefined
+                }
+                onOpenSection={goToSectionKey}
+                onOpenBudget={goToBudget}
+                onStartWriting={() => setTab("application")}
+                showFirst={intro.showFirst}
+                onShowFirstChange={intro.setShowFirst}
+              />
+            </div>
+          )}
+
           {tab === "application" && (
             <div id="panel-application" role="tabpanel" aria-labelledby="tab-application" tabIndex={0}>
               <section>
                 <h2 className="text-lg font-bold text-navy-800">{ws.logicTitle}</h2>
                 <p className="mt-1 text-sm text-navy-500">{ws.logicHint}</p>
-                <p className="mt-1 text-xs text-navy-400">
-                  {hasCallTemplate ? ws.templateSourceNote(callTitle) : ws.templateGenericNote}
-                </p>
+                {sharedTemplate ? (
+                  <TemplatePanel
+                    template={sharedTemplate}
+                    estimatedPages={estimatedPages}
+                    funderFile={funderFile}
+                    onUploadFunderFile={(file) => addAttachment(funderFileKey, file)}
+                    onRemoveFunderFile={() => funderFile && removeAttachment(funderFileKey, funderFile.id)}
+                  />
+                ) : (
+                  <p className="mt-1 text-xs text-navy-400">
+                    {hasCallTemplate ? ws.templateSourceNote(callTitle) : ws.templateGenericNote}
+                  </p>
+                )}
                 <p className="mt-1 text-xs text-navy-400">{isPersisted ? ws.draftSavedNote : ws.draftNotSavedNote}</p>
                 <div className="mt-4 space-y-4">
                   {logic.map((row, index) => {
                     const content = lang === "sv" ? row.content_sv : row.content_en;
-                    const isEdited = sectionDrafts[row.label_sv] !== undefined;
-                    const signals = isEdited ? textSignals(sectionDrafts[row.label_sv]) : null;
+                    const draft = sectionDraftFor(sectionDrafts, row);
+                    const isEdited = draft !== undefined;
+                    const signals = isEdited ? textSignals(draft) : null;
+                    const section = row.section;
+                    const shown = draft ?? content;
+                    const overLimit = section?.maxChars !== undefined && shown.length > section.maxChars;
+                    const sectionTableRows = (section?.tables ?? []).reduce((n, tb) => n + filledRows(tables[tb.key]).length, 0);
                     const found = signals
                       ? [
                           signals.quantifiedEffect && ws.signalQuantified,
@@ -416,10 +779,16 @@ export default function ApplicationWorkspace({
                       (d) => d.action_sv && sectionForDimension[d.key] === index
                     );
                     return (
-                      <div key={row.label_sv} className="rounded-xl border border-navy-100 bg-white p-4">
+                      <div key={row.key} className="rounded-xl border border-navy-100 bg-white p-4">
+                        {section?.group && (index === 0 || logic[index - 1].section?.group?.number !== section.group.number) && (
+                          <p className="mb-2 text-xs font-semibold uppercase text-navy-400">
+                            {section.group.number}. {lang === "sv" ? section.group.label_sv : section.group.label_en}
+                          </p>
+                        )}
                         <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2">
-                            <label className="text-sm font-semibold text-navy-700">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <label htmlFor={`section-${index}`} className="text-sm font-semibold text-navy-700">
+                              {section?.number && sharedTemplate ? `${section.number} ` : ""}
                               {lang === "sv" ? row.label_sv : row.label_en}
                             </label>
                             <span
@@ -434,20 +803,67 @@ export default function ApplicationWorkspace({
                             message={ws.confirmResetField}
                             confirmLabel={t.confirm.yesReset}
                             cancelLabel={t.confirm.cancel}
-                            onConfirm={() => resetSection(row.label_sv)}
+                            onConfirm={() => resetSection(row.key, row.label_sv)}
                             skipConfirm={!isEdited}
                             danger
                             className="text-xs font-medium text-navy-400 hover:text-navy-700"
                           />
                         </div>
+                        {sharedTemplate && section && (
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                            {section.criterion_sv && (
+                              <span className="badge bg-navy-50 text-navy-600">
+                                {tp.criterion(lang === "sv" ? section.criterion_sv : section.criterion_en ?? section.criterion_sv)}
+                              </span>
+                            )}
+                            {section.indicativePages !== undefined && (
+                              <span className="badge bg-navy-50 text-navy-600">{tp.indicativePages(section.indicativePages)}</span>
+                            )}
+                            {section.required === false && <span className="badge bg-navy-50 text-navy-500">{tp.optional}</span>}
+                          </div>
+                        )}
+                        {sharedTemplate && section && (
+                          <details className="mt-2 rounded-md bg-navy-50/60 px-3 py-2" data-testid={`section-instructions-${index}`}>
+                            <summary className="cursor-pointer text-xs font-semibold text-navy-600">{tp.instructionsToggle}</summary>
+                            <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-navy-600">
+                              {(lang === "sv" ? section.instructions_sv : section.instructions_en)
+                                .split("\n")
+                                .filter(Boolean)
+                                .map((line) => (
+                                  <li key={line}>{line}</li>
+                                ))}
+                            </ul>
+                          </details>
+                        )}
                         <textarea
                           id={`section-${index}`}
                           aria-label={sectionLabel(row)}
-                          rows={3}
-                          value={sectionDrafts[row.label_sv] ?? content}
-                          onChange={(e) => setSection(row.label_sv, e.target.value)}
-                          className="mt-2 w-full rounded-md border border-navy-200 px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+                          rows={sharedTemplate ? 6 : 3}
+                          value={shown}
+                          onChange={(e) => setSection(row.key, e.target.value, row.label_sv)}
+                          className={`mt-2 w-full rounded-md border px-3 py-2 text-sm text-navy-700 focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500 ${
+                            overLimit ? "border-red-400" : "border-navy-200"
+                          }`}
                         />
+                        {sharedTemplate && (
+                          <p className={`mt-1 text-xs ${overLimit ? "font-semibold text-red-700" : "text-navy-400"}`} data-testid={`section-count-${index}`}>
+                            {section?.maxChars !== undefined ? tp.charCountOf(shown.length, section.maxChars) : tp.charCount(shown.length)}
+                            {overLimit && ` – ${tp.overCharLimit}`}
+                            {sharedTemplate.format === "docx" &&
+                              ` · ${tp.sectionPages(
+                                estimatePages(shown, sectionTableRows).toLocaleString(lang === "sv" ? "sv-SE" : "en-US", { maximumFractionDigits: 1 })
+                              )}`}
+                          </p>
+                        )}
+                        {sharedTemplate &&
+                          (section?.tables ?? []).map((table) => (
+                            <TemplateTableEditor
+                              key={table.key}
+                              table={table}
+                              rows={tables[table.key] ?? []}
+                              onChange={(rows) => setTable(table.key, rows)}
+                            />
+                          ))}
                         <div className="mt-2 flex flex-wrap items-center gap-1.5" data-testid={`section-assessment-${index}`}>
                           {!isEdited && <span className="text-xs text-navy-400">{ws.notAssessedNote}</span>}
                           {found.map((label) => (
@@ -514,6 +930,30 @@ export default function ApplicationWorkspace({
                       onChange={(value) => setBudget({ requestedGrantSEK: value })}
                     />
                   </div>
+                  {sharedTemplate?.costCategories && (
+                    <div className="mt-6 border-t border-navy-100 pt-5" data-testid="budget-categories">
+                      <h3 className="font-semibold text-navy-800">{tp.budgetTitle}</h3>
+                      <p className="mt-1 text-xs text-navy-500">{tp.budgetHint}</p>
+                      <div className="mt-3">
+                        <CostCategoryEditor
+                          idPrefix="budget"
+                          categories={sharedTemplate.costCategories}
+                          values={costs}
+                          onChange={setCost}
+                          eurRate={budgetEurRate}
+                          testId="budget-costs"
+                        />
+                      </div>
+                      {categoryTotal > 0 && Math.abs(categoryTotal - budgetFigures.eligibleBudgetSEK) >= 1 && (
+                        <p className="mt-2 text-xs text-amber-700" role="status" data-testid="budget-differs">
+                          {tp.budgetDiffers(fmtSEK(budgetFigures.eligibleBudgetSEK, lang))}
+                        </p>
+                      )}
+                      <button type="button" onClick={handleExportBudget} className="btn-secondary mt-3 text-sm" data-testid="export-budget">
+                        {tp.exportBudget}
+                      </button>
+                    </div>
+                  )}
                   {budgetIssues.length > 0 && (
                     <div className="mt-5 rounded-md border border-amber-200 bg-amber-50 p-3" role="status" data-testid="budget-issues">
                       <p className="text-xs font-semibold uppercase text-amber-800">{ws.budgetIssuesTitle}</p>
@@ -666,6 +1106,15 @@ export default function ApplicationWorkspace({
                           .map((d) => (
                             <li key={d.key} className="text-sm text-amber-800">
                               ⚠ {lang === "sv" ? d.action_sv : d.action_en}{" "}
+                              {d.key === "completeness" && (
+                                <button
+                                  type="button"
+                                  onClick={() => setTab("requirements")}
+                                  className="font-semibold text-navy-700 underline hover:text-navy-900"
+                                >
+                                  {rq.goToRequirements}
+                                </button>
+                              )}
                               {sectionForDimension[d.key] !== undefined && logic[sectionForDimension[d.key]] && (
                                 <button
                                   type="button"
@@ -681,6 +1130,38 @@ export default function ApplicationWorkspace({
                     </div>
                   )}
                 </div>
+              </section>
+
+              <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6" data-testid="completeness-breakdown">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 className="text-lg font-bold text-navy-800">{rq.completenessTitle}</h2>
+                  <span className="text-2xl font-extrabold text-navy-900">{completeness.score} %</span>
+                </div>
+                <p className="mt-1 text-xs text-navy-400">{rq.completenessHint}</p>
+                <ul className="mt-4 space-y-2">
+                  {GROUP_ORDER.map((group) => {
+                    const counted = requirementItems.filter((i) => i.group === group && i.counted);
+                    if (counted.length === 0) return null;
+                    const done = counted.filter((i) => i.status === "done").length;
+                    return (
+                      <li key={group} className="flex items-center gap-3 text-sm">
+                        <span className="w-48 shrink-0 text-navy-700">{rq.groups[group]}</span>
+                        <div className="h-2 flex-1 rounded-full bg-navy-100">
+                          <div
+                            className={`h-2 rounded-full ${done === counted.length ? "bg-green-500" : "bg-gold-500"}`}
+                            style={{ width: `${Math.round((counted.reduce((sum, i) => sum + i.progress, 0) / counted.length) * 100)}%` }}
+                          />
+                        </div>
+                        <span className="w-24 shrink-0 text-right text-xs font-semibold text-navy-600">{rq.completenessGroup(done, counted.length)}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {completeness.open.length > 0 && (
+                  <button type="button" onClick={() => setTab("requirements")} className="mt-4 text-sm font-semibold text-navy-700 underline hover:text-navy-900">
+                    {rq.goToRequirements}
+                  </button>
+                )}
               </section>
 
               <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
