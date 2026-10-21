@@ -72,6 +72,35 @@ export interface RequirementTexts {
   completenessGroup: (done: number, total: number) => string;
   goToRequirements: string;
   nextUpOpen: (n: number) => string;
+  report: {
+    title: string;
+    intro: string;
+    callTextWins: string;
+    summaryReportForm: string;
+    summaryPeriodicity: string;
+    summaryNextReport: string;
+    summaryAudit: string;
+    summaryAuditValue: (amount: string) => string;
+    statusFor: (report: string) => string;
+    noActiveReport: string;
+    progress: (done: number, total: number) => string;
+    allDone: string;
+    groups: Record<RequirementGroup, string>;
+    appliesInterim: string;
+    appliesFinal: string;
+    otherReportsTitle: string;
+    otherReportsHint: string;
+    show: string;
+    hide: string;
+    goToReport: string;
+    cardLine: (pct: number, open: number) => string;
+    openWarning: (n: number, titles: string) => string;
+    andMore: string;
+    autoBadge: string;
+    addOwnHint: string;
+    datacenterApplication: string;
+    datacenterReport: string;
+  };
   datacenter: {
     tab: string;
     title: string;
@@ -204,6 +233,43 @@ export const requirementSv: RequirementTexts = {
   completenessGroup: (done, total) => `${done} av ${total} klara`,
   goToRequirements: "Visa kraven",
   nextUpOpen: (n) => (n === 1 ? "1 bilaga, intyg eller villkor kvar" : `${n} bilagor, intyg och villkor kvar`),
+  report: {
+    title: "Krav för rapporteringen",
+    intro:
+      "Vad finansiären och beslutet kräver för att en rapport ska vara komplett: rapportformulär, ekonomisk redovisning, bilagor, intyg och inlämning. Statusen gäller rapporten som ska skrivas nu. Där systemet kan se hur långt rapporten har kommit sätts den automatiskt; resten markerar du själv.",
+    callTextWins: "Beslutet om stöd och bidragsavtalet gäller alltid. Kontrollera kraven mot dem innan rapporten skickas in.",
+    summaryReportForm: "Rapportformulär",
+    summaryPeriodicity: "Rapportering",
+    summaryNextReport: "Nästa rapport",
+    summaryAudit: "Revisorsintyg",
+    summaryAuditValue: (amount) => `med slutrapporten (bidrag över ${amount})`,
+    statusFor: (report) => `Status för ${report}`,
+    noActiveReport: "Det finns ingen rapport att skriva just nu. Kraven visas som referens.",
+    progress: (done, total) => `Komplett: ${done} av ${total} krav för rapporten`,
+    allDone: "Alla krav för rapporten är klara",
+    groups: {
+      form: "Rapportformulär",
+      budget: "Ekonomisk redovisning",
+      annexes: "Bilagor och intyg",
+      eligibility: "Villkor i beslutet",
+      submission: "Inlämning",
+    },
+    appliesInterim: "Delrapport",
+    appliesFinal: "Slutrapport",
+    otherReportsTitle: "Gäller andra rapporter",
+    otherReportsHint: "Krav som inte gäller rapporten som skrivs nu, men som kommer i en senare rapport.",
+    show: "Visa kraven",
+    hide: "Dölj kraven",
+    goToReport: "Till rapporten",
+    cardLine: (pct, open) => `Krav för rapporten: ${pct} % komplett${open > 0 ? ` · ${open} obligatoriska kvar` : ""}`,
+    openWarning: (n, titles) =>
+      `${n === 1 ? "1 obligatoriskt krav" : `${n} obligatoriska krav`} för rapporten är inte ${n === 1 ? "klart" : "klara"}: ${titles}.`,
+    andMore: "med flera",
+    autoBadge: "Följer rapporten",
+    addOwnHint: "Något som beslutet eller finansiären kräver av rapporterna och som saknas i listan, till exempel en bilaga som beslutet nämner eller en intern attest.",
+    datacenterApplication: "Ansökan",
+    datacenterReport: "Rapportering",
+  },
   datacenter: {
     tab: "Krav",
     title: "Krav för komplett ansökan",
@@ -338,6 +404,42 @@ export const requirementEn: RequirementTexts = {
   completenessGroup: (done, total) => `${done} of ${total} done`,
   goToRequirements: "Show the requirements",
   nextUpOpen: (n) => (n === 1 ? "1 annex, certificate or condition left" : `${n} annexes, certificates and conditions left`),
+  report: {
+    title: "Reporting requirements",
+    intro:
+      "What the funder and the grant decision require for a report to be complete: the report form, the financial statement, annexes, certificates and submission. The status is for the report to write now. Where the system can tell how far the report has come it is set automatically; you mark the rest yourself.",
+    callTextWins: "The grant decision and the grant agreement always apply. Check the requirements against them before the report is submitted.",
+    summaryReportForm: "Report form",
+    summaryPeriodicity: "Reporting",
+    summaryNextReport: "Next report",
+    summaryAudit: "Auditor's certificate",
+    summaryAuditValue: (amount) => `with the final report (grant above ${amount})`,
+    statusFor: (report) => `Status for ${report}`,
+    noActiveReport: "There is no report to write right now. The requirements are shown for reference.",
+    progress: (done, total) => `Complete: ${done} of ${total} requirements for the report`,
+    allDone: "Every requirement for the report is met",
+    groups: {
+      form: "Report form",
+      budget: "Financial statement",
+      annexes: "Annexes and certificates",
+      eligibility: "Conditions of the decision",
+      submission: "Submission",
+    },
+    appliesInterim: "Interim report",
+    appliesFinal: "Final report",
+    otherReportsTitle: "For other reports",
+    otherReportsHint: "Requirements that don't apply to the report being written now, but come with a later one.",
+    show: "Show the requirements",
+    hide: "Hide the requirements",
+    goToReport: "Go to the report",
+    cardLine: (pct, open) => `Report requirements: ${pct}% complete${open > 0 ? ` · ${open} mandatory left` : ""}`,
+    openWarning: (n, titles) => `${n === 1 ? "1 mandatory requirement" : `${n} mandatory requirements`} for the report ${n === 1 ? "is" : "are"} not met: ${titles}.`,
+    andMore: "and more",
+    autoBadge: "Follows the report",
+    addOwnHint: "Something the decision or the funder requires of the reports that is missing from the list, such as an annex the decision names or an internal sign-off.",
+    datacenterApplication: "Application",
+    datacenterReport: "Reporting",
+  },
   datacenter: {
     tab: "Requirements",
     title: "Requirements for a complete application",

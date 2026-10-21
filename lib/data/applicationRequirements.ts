@@ -518,9 +518,26 @@ export interface RequirementFacts {
   publicBody: boolean;
   /** Files uploaded per requirement id. */
   attachments: Record<string, number>;
-  /** The call's deadline (YYYY-MM-DD) and today, for lead-time warnings. */
+  /** The call's deadline (YYYY-MM-DD) and today, for lead-time warnings.
+   * For a report: the report's due date. */
   deadlineDate?: string;
   today?: Date;
+  /** For a report: what the report draft holds. */
+  report?: ReportFacts;
+}
+
+/** What a report draft holds, for the report requirements the app checks. */
+export interface ReportFacts {
+  sectionsWritten: number;
+  sectionsTotal: number;
+  indicatorsFilled: number;
+  indicatorsTotal: number;
+  /** Indicators off target without an explanation. */
+  deviationsUnexplained: number;
+  /** The period's costs are entered. */
+  spendReported: boolean;
+  /** Whether each of the call's required documents for the report is ready. */
+  documentsReady: boolean[];
 }
 
 export interface EvaluatedRequirement extends ResolvedRequirement {
@@ -608,9 +625,50 @@ function autoStatus(req: ApplicationRequirement, facts: RequirementFacts): AutoR
       return {
         status: facts.submitted ? "done" : "todo",
         progress: facts.submitted ? 1 : 0,
-        detail_sv: facts.submitted ? "Ansökan har status inskickad" : undefined,
-        detail_en: facts.submitted ? "The application is marked as submitted" : undefined,
+        detail_sv: facts.submitted ? (facts.report ? "Rapporten är inskickad" : "Ansökan har status inskickad") : undefined,
+        detail_en: facts.submitted ? (facts.report ? "The report is submitted" : "The application is marked as submitted") : undefined,
       };
+    case "report-sections": {
+      const r = facts.report;
+      if (!r || r.sectionsTotal === 0) return null;
+      const done = r.sectionsWritten;
+      return {
+        status: done === r.sectionsTotal ? "done" : done > 0 ? "in-progress" : "todo",
+        progress: done / r.sectionsTotal,
+        detail_sv: `${done} av ${r.sectionsTotal} avsnitt skrivna`,
+        detail_en: `${done} of ${r.sectionsTotal} sections written`,
+      };
+    }
+    case "report-indicators": {
+      const r = facts.report;
+      if (!r || r.indicatorsTotal === 0) return null;
+      const filled = r.indicatorsFilled;
+      const complete = filled === r.indicatorsTotal && r.deviationsUnexplained === 0;
+      const progress = filled / r.indicatorsTotal;
+      return {
+        status: complete ? "done" : filled > 0 ? "in-progress" : "todo",
+        progress: r.deviationsUnexplained > 0 ? Math.min(progress, 0.9) : progress,
+        detail_sv: `${filled} av ${r.indicatorsTotal} utfall ifyllda${r.deviationsUnexplained > 0 ? `, ${r.deviationsUnexplained} avvikelser utan förklaring` : ""}`,
+        detail_en: `${filled} of ${r.indicatorsTotal} outcomes filled in${r.deviationsUnexplained > 0 ? `, ${r.deviationsUnexplained} deviations unexplained` : ""}`,
+      };
+    }
+    case "report-spend": {
+      const r = facts.report;
+      if (!r) return null;
+      return {
+        status: r.spendReported ? "done" : "todo",
+        progress: r.spendReported ? 1 : 0,
+        detail_sv: r.spendReported ? "Periodens kostnader är ifyllda" : "Fyll i periodens kostnader",
+        detail_en: r.spendReported ? "The period's costs are entered" : "Enter the period's costs",
+      };
+    }
+    case "report-document": {
+      const ready = facts.report?.documentsReady[check.index];
+      if (ready === undefined) return null;
+      return ready
+        ? { status: "done", progress: 1, detail_sv: "Markerat klart i rapportens dokumentlista", detail_en: "Ticked off in the report's document list" }
+        : { status: "todo", progress: 0 };
+    }
     case "partner-countries": {
       if (facts.partnerCountries === undefined) return null;
       const ok = facts.partnerCountries >= check.min;

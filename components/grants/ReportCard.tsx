@@ -21,6 +21,8 @@ import { useCallTemplates } from "@/lib/hooks/useCallTemplates";
 import { readApplicationSections, readApplicationTables } from "@/lib/hooks/useApplication";
 import { costAmounts, costTotal } from "@/lib/data/costCategories";
 import { ReportSection } from "@/lib/data/reportSections";
+import { documentAttachmentKey, reportAttachmentKey, requiredDocuments } from "@/lib/data/reportDocuments";
+import { useReportRequirements } from "@/lib/hooks/useReportRequirements";
 
 export interface ReportCardApi {
   draft: ReportDraft;
@@ -44,18 +46,7 @@ export interface ReportCardApi {
   seedEvent?: ReportingEvent;
 }
 
-/** Attachment storage key of one report, and of one required document. */
-export const reportAttachmentKey = (grantId: string, eventId: string) => `report:${grantId}:${eventId}`;
-export const documentAttachmentKey = (grantId: string, eventId: string, index: number) =>
-  `${reportAttachmentKey(grantId, eventId)}:doc:${index}`;
-
-/** The documents the call requires for this kind of report. */
-export function requiredDocuments(grant: Grant, event: ReportingEvent, lang: "sv" | "en"): string[] {
-  const req = findCall(grant.callId)?.reportingRequirements;
-  if (!req || event.type === "sustainability") return [];
-  if (event.type === "final") return lang === "sv" ? req.finalReportDocuments_sv : req.finalReportDocuments_en;
-  return lang === "sv" ? req.interimDocuments_sv : req.interimDocuments_en;
-}
+export { documentAttachmentKey, reportAttachmentKey, requiredDocuments } from "@/lib/data/reportDocuments";
 
 export function statusStyle(status: ReportingEventStatus): string {
   if (status === "approved") return "bg-green-100 text-green-800";
@@ -75,12 +66,15 @@ export default function ReportCard({
   working,
   users,
   api,
+  onShowRequirements,
 }: {
   grant: Grant;
   event: ReportingEvent;
   working: boolean;
   users: DemoUser[];
   api: ReportCardApi;
+  /** Opens the overview of the reports' requirements. */
+  onShowRequirements?: () => void;
 }) {
   const { t, lang } = useLanguage();
   const ap = t.grants;
@@ -112,6 +106,14 @@ export default function ReportCard({
     setApplication({ sections: readApplicationSections(grant.applicationId), tables: readApplicationTables(grant.applicationId) });
   }, [grant.applicationId]);
   const documents = requiredDocuments(grant, event, lang);
+  // How far the report's requirements have come (the overview at the top
+  // of the grant) — open mandatory ones are named before it's submitted;
+  // its own submission and the documents listed here aren't.
+  const { summary: requirements } = useReportRequirements(grant, working ? event : undefined, draft);
+  const openRequirements = (requirements?.open ?? []).filter(
+    (i) => i.requirement.check?.type !== "submitted" && i.requirement.check?.type !== "report-document"
+  );
+  const rp = t.req.report;
   const otherKey = reportAttachmentKey(grant.id, event.id);
 
   const typeLabel =
@@ -250,6 +252,17 @@ export default function ReportCard({
 
       {event.status === "revision-requested" && (
         <p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">{ap.revisionNotice}</p>
+      )}
+
+      {working && requirements && (
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs" data-testid="report-requirements-card">
+          <span className="font-semibold text-navy-700">{rp.cardLine(requirements.score, requirements.open.length)}</span>
+          {onShowRequirements && (
+            <button type="button" onClick={onShowRequirements} className="font-semibold text-navy-600 underline hover:text-navy-900">
+              {rp.show}
+            </button>
+          )}
+        </div>
       )}
 
       {working ? (
@@ -463,6 +476,25 @@ export default function ReportCard({
           />
           {attachmentError && <p className="text-xs text-amber-700">⚠ {attachmentError}</p>}
 
+          {openRequirements.length > 0 && (
+            <p className="rounded-md bg-gold-50 px-3 py-2 text-xs text-gold-900" data-testid="report-requirements-warning">
+              {rp.openWarning(
+                openRequirements.length,
+                openRequirements
+                  .slice(0, 3)
+                  .map((i) => (lang === "sv" ? i.requirement.title_sv : i.requirement.title_en))
+                  .join(", ") + (openRequirements.length > 3 ? ` ${rp.andMore}` : "")
+              )}
+              {onShowRequirements && (
+                <>
+                  {" "}
+                  <button type="button" onClick={onShowRequirements} className="font-semibold underline hover:text-navy-900">
+                    {rp.show}
+                  </button>
+                </>
+              )}
+            </p>
+          )}
           {errors.map((e) => (
             <p key={e} role="alert" className="text-sm font-semibold text-amber-800">
               ⚠ {e}

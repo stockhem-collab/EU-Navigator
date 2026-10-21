@@ -34,6 +34,7 @@ if (require.main === module) {
     console.log(`\n[utlysningar]`);
     console.log(`  läst fil     data/utlysningar.csv, data/utlysningskrav.csv`);
     console.log(`  egna krav    ${calls.filter((c) => c.requirementChanges).length} utlysningar`);
+    console.log(`  rapportkrav  ${calls.filter((c) => c.reportRequirementChanges).length} utlysningar`);
     console.log(`  utlysningar  ${calls.length} (öppna ${count("open")}, planerade ${count("planned")}, kommande ${count("upcoming")}, förväntade ${count("expected")})`);
     console.log(`  skriven fil  ${path.relative(ROOT, CALL_LIST_JSON)}`);
   });

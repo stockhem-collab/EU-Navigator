@@ -10,9 +10,10 @@ import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { useCallTemplates } from "@/lib/hooks/useCallTemplates";
 import { useCallRequirements } from "@/lib/hooks/useCallRequirements";
 import { findProgram } from "@/lib/data/fundingPrograms";
-import { GROUP_ORDER, resolveRequirements } from "@/lib/data/applicationRequirements";
+import { GROUP_ORDER, ResolvedRequirement, resolveRequirements } from "@/lib/data/applicationRequirements";
+import { reportRequirementsKey, resolveReportRequirements } from "@/lib/data/reportRequirements";
 import { extractRequirements, requirementFromSuggestion, RequirementSuggestion } from "@/lib/matching/requirementExtraction";
-import { FundingCall, RequirementKind } from "@/lib/types";
+import { FundingCall, Grant, RequirementChanges, RequirementKind } from "@/lib/types";
 
 const input = "w-full rounded-md border border-navy-200 px-2 py-1.5 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500";
 const fieldLabel = "flex flex-col gap-1 text-xs font-semibold text-navy-600";
@@ -29,7 +30,8 @@ const emptyDraft = (): Draft => ({ title: "", kind: "annex", why: "", mandatory:
 // complete — how many calls have their own requirements on file, the list
 // per call with where each requirement comes from, and adding the call's
 // own (by hand, or suggested from pasted call text and reviewed) or
-// marking one of the form's or programme's as not applying.
+// marking one of the form's or programme's as not applying. The same for
+// what the call's reports require, under "Rapportering".
 export default function RequirementsPage() {
   const { t, lang } = useLanguage();
   const rq = t.req;
@@ -45,16 +47,26 @@ export default function RequirementsPage() {
   const [sourceUrl, setSourceUrl] = useState("");
   const [manual, setManual] = useState<Draft>(emptyDraft());
   const [status, setStatus] = useState<string | null>(null);
+  const [scope, setScope] = useState<"application" | "report">("application");
+  const rp = rq.report;
+  const reporting = scope === "report";
+  // The application's changes are stored under the call's id, the
+  // reports' under their own key.
+  const storeKey = (c: FundingCall) => (reporting ? reportRequirementsKey(c.id) : c.id);
+  const csvChanges = (c: FundingCall): RequirementChanges | undefined => (reporting ? c.reportRequirementChanges : c.requirementChanges);
+  const formFor = (c: FundingCall) => (reporting ? templates.reportTemplateFor(c) : templates.applicationTemplateFor(c));
+  const resolve = (c: FundingCall, changes: RequirementChanges | undefined, datacenter: RequirementChanges | undefined): ResolvedRequirement[] => {
+    const call = reporting ? { ...c, reportRequirementChanges: changes } : { ...c, requirementChanges: changes };
+    const program = findProgram(c.programId);
+    if (!reporting) return resolveRequirements({ call, program, template: formFor(c), datacenter });
+    // Every report of a grant from the call, before there is one.
+    const grant: Grant = { id: "", title_sv: "", title_en: "", callId: c.id, awardedAmountSEK: 0, commitments: [], reportingEvents: [] };
+    return resolveReportRequirements({ grant, call, program, template: formFor(c), datacenter });
+  };
 
   const callTitle = (c: FundingCall) => (sv ? c.title_sv : c.title_en);
-  const resolvedFor = (c: FundingCall) =>
-    resolveRequirements({
-      call: c,
-      program: findProgram(c.programId),
-      template: templates.applicationTemplateFor(c),
-      datacenter: callRequirements.all[c.id],
-    });
-  const hasOwn = (c: FundingCall) => (c.requirementChanges?.add?.length ?? 0) > 0 || (callRequirements.all[c.id]?.add?.length ?? 0) > 0;
+  const resolvedFor = (c: FundingCall) => resolve(c, csvChanges(c), callRequirements.all[storeKey(c)]);
+  const hasOwn = (c: FundingCall) => (csvChanges(c)?.add?.length ?? 0) > 0 || (callRequirements.all[storeKey(c)]?.add?.length ?? 0) > 0;
   const selected = calls.find((c) => c.id === selectedId);
 
   const pick = (id: string) => {
@@ -82,7 +94,7 @@ export default function RequirementsPage() {
         return r;
       });
     if (reqs.length === 0) return;
-    callRequirements.add(selected.id, reqs);
+    callRequirements.add(storeKey(selected), reqs);
     setStatus(dc.saved(reqs.length));
   };
 
@@ -95,7 +107,27 @@ export default function RequirementsPage() {
         <DatacenterTabs />
         <PageHeader title={dc.title} subtitle={dc.intro} />
 
-        <section className="mt-6 rounded-2xl border border-navy-100 bg-white p-5 shadow-sm">
+        <div className="mt-6 inline-flex rounded-lg border border-navy-200 bg-white p-0.5 text-sm" role="tablist">
+          {(["application", "report"] as const).map((sc) => (
+            <button
+              key={sc}
+              type="button"
+              role="tab"
+              aria-selected={scope === sc}
+              onClick={() => {
+                setScope(sc);
+                setSuggestions(null);
+                setStatus(null);
+              }}
+              className={`rounded-md px-3 py-1.5 font-semibold ${scope === sc ? "bg-navy-800 text-white" : "text-navy-600 hover:text-navy-900"}`}
+              data-testid={`requirements-scope-${sc}`}
+            >
+              {sc === "application" ? rp.datacenterApplication : rp.datacenterReport}
+            </button>
+          ))}
+        </div>
+
+        <section className="mt-4 rounded-2xl border border-navy-100 bg-white p-5 shadow-sm">
           <p className="text-sm font-semibold text-navy-700" data-testid="requirements-coverage">
             {dc.coverage(covered, calls.length)}
           </p>
@@ -112,7 +144,7 @@ export default function RequirementsPage() {
               </thead>
               <tbody>
                 {calls.map((c) => {
-                  const form = templates.applicationTemplateFor(c);
+                  const form = formFor(c);
                   return (
                     <tr key={c.id} className={`border-b border-navy-50 ${c.id === selectedId ? "bg-navy-50/60" : ""}`} data-testid={`requirements-row-${c.id}`}>
                       <td className="px-2 py-2 text-navy-800">{callTitle(c)}</td>
@@ -136,21 +168,20 @@ export default function RequirementsPage() {
           <section className="mt-6 rounded-2xl border border-navy-100 bg-white p-5 shadow-sm" data-testid="requirements-detail">
             <h2 className="text-lg font-semibold text-navy-900">{dc.listTitle(callTitle(selected))}</h2>
             {GROUP_ORDER.map((group) => {
-              const all = resolveRequirements({
-                call: { ...selected, requirementChanges: { ...selected.requirementChanges, remove: [] } },
-                program: findProgram(selected.programId),
-                template: templates.applicationTemplateFor(selected),
-                datacenter: { ...callRequirements.all[selected.id], remove: [] },
-              }).filter((r) => GROUP_ORDER.indexOf(group) === GROUP_ORDER.indexOf(groupOfKind(r.requirement.kind)));
+              const all = resolve(
+                selected,
+                { ...csvChanges(selected), remove: [] },
+                { ...callRequirements.all[storeKey(selected)], remove: [] }
+              ).filter((r) => GROUP_ORDER.indexOf(group) === GROUP_ORDER.indexOf(groupOfKind(r.requirement.kind)));
               if (all.length === 0) return null;
-              const removed = new Set([...(selected.requirementChanges?.remove ?? []), ...(callRequirements.all[selected.id]?.remove ?? [])]);
+              const removed = new Set([...(csvChanges(selected)?.remove ?? []), ...(callRequirements.all[storeKey(selected)]?.remove ?? [])]);
               return (
                 <div key={group} className="mt-4">
-                  <h3 className="text-sm font-bold text-navy-800">{rq.groups[group]}</h3>
+                  <h3 className="text-sm font-bold text-navy-800">{(reporting ? rp.groups : rq.groups)[group]}</h3>
                   <ul className="mt-1 divide-y divide-navy-50 rounded-lg border border-navy-100">
                     {all.map(({ requirement: r, origin }) => {
                       const isRemoved = removed.has(r.id);
-                      const removedInCsv = selected.requirementChanges?.remove?.includes(r.id);
+                      const removedInCsv = csvChanges(selected)?.remove?.includes(r.id);
                       return (
                         <li key={r.id} className="flex flex-wrap items-start justify-between gap-2 px-3 py-2 text-sm" data-testid={`dc-requirement-${r.id}`}>
                           <div className="min-w-0 flex-1">
@@ -159,10 +190,11 @@ export default function RequirementsPage() {
                               {rq.origins[origin]} · {rq.source(r.source.document, r.source.checkedAt)}
                               {!r.mandatory && ` · ${rq.recommended}`}
                               {isRemoved && ` · ${dc.excluded}`}
+                              {r.reports?.length === 1 && ` · ${r.reports[0] === "final" ? rp.appliesFinal : rp.appliesInterim}`}
                             </p>
                           </div>
                           {origin === "datacenter" ? (
-                            <button type="button" onClick={() => callRequirements.removeAdded(selected.id, r.id)} className="text-xs font-semibold text-navy-400 hover:text-amber-700">
+                            <button type="button" onClick={() => callRequirements.removeAdded(storeKey(selected), r.id)} className="text-xs font-semibold text-navy-400 hover:text-amber-700">
                               {dc.removeAdded}
                             </button>
                           ) : (
@@ -170,7 +202,7 @@ export default function RequirementsPage() {
                             !removedInCsv && (
                               <button
                                 type="button"
-                                onClick={() => callRequirements.setExcluded(selected.id, r.id, !isRemoved)}
+                                onClick={() => callRequirements.setExcluded(storeKey(selected), r.id, !isRemoved)}
                                 className="text-xs font-semibold text-navy-500 hover:text-navy-800"
                               >
                                 {isRemoved ? dc.restore : dc.exclude}

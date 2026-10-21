@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Grant, ReportingEvent, ReportingEventStatus } from "@/lib/types";
+import { Grant, ReportingEvent, ReportingEventStatus, RequirementState } from "@/lib/types";
+import { sanitizeRequirementStates } from "@/lib/hooks/useApplication";
 import { notifyDataChanged } from "@/lib/hooks/useActivityLog";
 import { withCurrentDeadline } from "@/lib/matching/reportingSchedule";
 
@@ -74,6 +75,9 @@ export interface ReportDraft {
   /** The period's costs per cost category as typed (CostCategory.key ->
    * amount in SEK), for a report form with cost categories. */
   costs: Record<string, string>;
+  /** Where the user is with each of the report's requirements
+   * (requirement id -> status), as on an application's Krav tab. */
+  requirementStates: Record<string, RequirementState>;
   updatedAt: string;
 }
 
@@ -85,6 +89,7 @@ export const EMPTY_REPORT_DRAFT: ReportDraft = {
   spentThisPeriod: "",
   tables: {},
   costs: {},
+  requirementStates: {},
   updatedAt: "",
 };
 
@@ -142,6 +147,7 @@ function sanitizeDraft(value: unknown): ReportDraft {
     spentThisPeriod: typeof v.spentThisPeriod === "string" ? v.spentThisPeriod : "",
     tables: sanitizeTables(v.tables),
     costs: record(v.costs),
+    requirementStates: sanitizeRequirementStates(v.requirementStates),
     updatedAt: typeof v.updatedAt === "string" ? v.updatedAt : "",
   };
 }

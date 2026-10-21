@@ -55,7 +55,7 @@ const EMPTY_DRAFT: ApplicationDraft = {
 const REQUIREMENT_STATUSES = ["todo", "in-progress", "done", "not-applicable"];
 
 /** Keeps only well-formed requirement states from storage. */
-function sanitizeRequirementStates(value: unknown): Record<string, RequirementState> {
+export function sanitizeRequirementStates(value: unknown): Record<string, RequirementState> {
   if (!value || typeof value !== "object") return {};
   const out: Record<string, RequirementState> = {};
   for (const [id, state] of Object.entries(value as Record<string, unknown>)) {
@@ -71,7 +71,7 @@ function sanitizeRequirementStates(value: unknown): Record<string, RequirementSt
 }
 
 /** Keeps only requirements with an id, a kind and a title. */
-function sanitizeOwnRequirements(value: unknown): ApplicationRequirement[] {
+export function sanitizeOwnRequirements(value: unknown): ApplicationRequirement[] {
   if (!Array.isArray(value)) return [];
   return value.filter(
     (r): r is ApplicationRequirement => !!r && typeof r.id === "string" && typeof r.kind === "string" && typeof r.title_sv === "string" && !!r.source

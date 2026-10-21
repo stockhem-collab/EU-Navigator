@@ -31,16 +31,17 @@ import { buildGrantDocx, ReportContent } from "@/lib/export/exportReport";
 import { downloadBlob } from "@/lib/export/exportApplication";
 import { formatReportDue } from "@/lib/matching/reportingSchedule";
 import { fmtSEK } from "@/lib/format";
-import { Grant, Commitment, ReportingEvent, ReportingPeriodicity } from "@/lib/types";
+import { Grant, Commitment, ReportingEvent } from "@/lib/types";
 import ReportCard, { ReportCardApi, documentAttachmentKey, reportAttachmentKey, requiredDocuments, statusStyle } from "@/components/grants/ReportCard";
 import CommitmentsEditor, { completeCommitments } from "@/components/grants/CommitmentsEditor";
 import AuditChecklist from "@/components/grants/AuditChecklist";
+import ReportRequirementsPanel from "@/components/grants/ReportRequirementsPanel";
+import { useRequirementsIntro } from "@/lib/hooks/useRequirementsIntro";
 
 // A grant and its reporting, ordered from "what do I do now" to reference:
-// the key figures, the report to write next, how the project is doing
+// the key figures, what the reports require, the report to write next, how the project is doing
 // (commitments and finances together), every report in the plan, audit
-// readiness, and last the call's reporting requirements and the links to
-// project and application.
+// readiness, and last the links to project and application.
 export default function GrantPage() {
   const params = useParams<{ id: string }>();
   const { t, lang } = useLanguage();
@@ -63,6 +64,16 @@ export default function GrantPage() {
   const { attachmentsFor } = useAttachments();
   const templates = useCallTemplates();
   const [openReports, setOpenReports] = useState<string[]>([]);
+  // The overview of what the reports require opens the first time the
+  // grant is opened (unless turned off, as for applications).
+  const [requirementsOpen, setRequirementsOpen] = useState(false);
+  const { hydrated: introHydrated, showFirst, firstVisit } = useRequirementsIntro();
+  const grantFound = grants.some((g) => g.id === params.id);
+  useEffect(() => {
+    if (!introHydrated || !grantFound) return;
+    const first = firstVisit(`grant:${params.id}`);
+    if (first && showFirst) setRequirementsOpen(true);
+  }, [introHydrated, grantFound, params.id, showFirst, firstVisit]);
 
   // A grant registered from an application only exists in this browser's
   // storage, unavailable during the server render — wait for it before
@@ -104,15 +115,12 @@ export default function GrantPage() {
 
   const call = findCall(grant.callId);
   const program = call ? findProgram(call.programId) : undefined;
-  const reportingReq = call?.reportingRequirements;
   const nextActionable = nextActionableReport(grant);
   const health = reportingHealth(grant);
   const hasSustainabilityEvent = grant.reportingEvents.some((e) => e.type === "sustainability");
   const seedGrant = seedGrants.find((g) => g.id === grant.id);
   const totalSpent = financialHistory(grant).reduce((sum, h) => sum + h.spentThisPeriodSEK, 0);
 
-  const periodicityLabel = (p: ReportingPeriodicity) =>
-    p === "quarterly" ? ap.periodicityQuarterly : p === "biannual" ? ap.periodicityBiannual : ap.periodicityAnnual;
   const healthStyle = (h: ReportingHealth) =>
     h === "blocked" ? "bg-amber-100 text-amber-800" : h === "attention" ? "bg-gold-100 text-gold-800" : "bg-green-100 text-green-800";
   const healthLabel = (h: ReportingHealth) =>
@@ -222,14 +230,35 @@ export default function GrantPage() {
           </div>
         </dl>
 
-        {/* 2. The report to write now */}
+        {/* 2. What the reports require, and how far the next one has come */}
+        <ReportRequirementsPanel
+          grant={grant}
+          event={nextActionable}
+          draft={nextActionable ? reportDraft(grant.id, nextActionable.id) : undefined}
+          onStatesChange={(requirementStates) => nextActionable && updateReportDraft(grant.id, nextActionable.id, { requirementStates })}
+          onOwnChange={(ownReportRequirements) => updateGrant(grant.id, { ownReportRequirements })}
+          open={requirementsOpen}
+          onOpenChange={setRequirementsOpen}
+        />
+
+        {/* 3. The report to write now */}
         <section id="next-report" className="mt-8" aria-labelledby="next-report-heading">
           <h2 id="next-report-heading" className="text-lg font-bold text-navy-800">
             {ap.nextReportTitle}
           </h2>
           {nextActionable ? (
             <div className="mt-3">
-              <ReportCard grant={grant} event={nextActionable} working users={users} api={apiFor(nextActionable)} />
+              <ReportCard
+                grant={grant}
+                event={nextActionable}
+                working
+                users={users}
+                api={apiFor(nextActionable)}
+                onShowRequirements={() => {
+                  setRequirementsOpen(true);
+                  requestAnimationFrame(() => document.getElementById("report-requirements")?.scrollIntoView({ behavior: "smooth" }));
+                }}
+              />
             </div>
           ) : (
             <div className="mt-3 rounded-xl border border-dashed border-navy-200 p-4">
@@ -250,7 +279,7 @@ export default function GrantPage() {
           )}
         </section>
 
-        {/* 3. How it's going: commitments and finances together */}
+        {/* 4. How it's going: commitments and finances together */}
         <section id="follow-up" className="mt-10" aria-labelledby="follow-up-heading">
           <h2 id="follow-up-heading" className="text-lg font-bold text-navy-800">
             {ap.followUpTitle}
@@ -259,7 +288,7 @@ export default function GrantPage() {
           <FinancialSummaryCard grant={grant} totalSpent={totalSpent} />
         </section>
 
-        {/* 4. Every report in the plan */}
+        {/* 5. Every report in the plan */}
         <section id="reports" className="mt-10" aria-labelledby="reports-heading">
           <h2 id="reports-heading" className="text-lg font-bold text-navy-800">
             {ap.allReportsTitle}
@@ -313,44 +342,10 @@ export default function GrantPage() {
           </ul>
         </section>
 
-        {/* 5. Audit readiness: what an audit will ask for, ticked off */}
+        {/* 6. Audit readiness: what an audit will ask for, ticked off */}
         <AuditChecklist grant={grant} call={call} program={program} />
 
-        {/* 6. Reference: the call's reporting requirements, in one place */}
-        {reportingReq && (
-          <details className="mt-10 rounded-xl border border-navy-100 bg-white p-5">
-            <summary className="cursor-pointer text-sm font-semibold text-navy-800">{ap.reportingRequirementsTitle}</summary>
-            <dl className="mt-3">
-              <dt className="text-xs text-navy-400">{ap.periodicityLabel}</dt>
-              <dd className="font-semibold text-navy-800">{periodicityLabel(reportingReq.periodicity)}</dd>
-            </dl>
-            <p className="mt-3 text-sm text-navy-600">{ap.interimReportsRequiredLabel(reportingReq.interimReportsRequired)}</p>
-            {reportingReq.requiresAuditAboveSEK !== null && grant.awardedAmountSEK > reportingReq.requiresAuditAboveSEK && (
-              <p className="mt-3 text-sm text-navy-600">
-                {ap.auditRequiredAboveLabel} {fmtSEK(reportingReq.requiresAuditAboveSEK, lang)}
-              </p>
-            )}
-            <div className="mt-4 grid gap-5 sm:grid-cols-2">
-              {[
-                { label: ap.interimDocumentsLabel, docs: lang === "sv" ? reportingReq.interimDocuments_sv : reportingReq.interimDocuments_en },
-                { label: ap.finalReportDocumentsLabel, docs: lang === "sv" ? reportingReq.finalReportDocuments_sv : reportingReq.finalReportDocuments_en },
-              ].map((group) => (
-                <div key={group.label}>
-                  <p className="text-xs font-semibold uppercase text-navy-400">{group.label}</p>
-                  <ul className="mt-1.5 space-y-1">
-                    {group.docs.map((d) => (
-                      <li key={d} className="text-sm text-navy-600">
-                        · {d}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </details>
-        )}
-
-        {/* 6. Links, and the whole grant as one document */}
+        {/* 7. Links, and the whole grant as one document */}
         <section className="mb-16 mt-6 rounded-xl bg-navy-50 px-4 py-3" aria-labelledby="links-heading">
           <h2 id="links-heading" className="text-xs font-semibold uppercase text-navy-400">
             {ap.linksTitle}

@@ -332,7 +332,13 @@ export type RequirementCheck =
   | { type: "cost-categories" }
   | { type: "budget" }
   | { type: "submitted" }
-  | { type: "partner-countries"; min: number };
+  | { type: "partner-countries"; min: number }
+  // Reports: the report's sections, its outcomes for the commitments, the
+  // period's costs and one of the call's required documents.
+  | { type: "report-sections" }
+  | { type: "report-indicators" }
+  | { type: "report-spend" }
+  | { type: "report-document"; index: number };
 
 export interface ApplicationRequirement {
   /** Stable id — a call removes a form's requirement by it. */
@@ -359,6 +365,9 @@ export interface ApplicationRequirement {
   /** For "after-close": how many hours after the deadline. */
   dueOffsetHours?: number;
   check?: RequirementCheck;
+  /** For a report requirement: the kinds of report it applies to;
+   * undefined = every report. */
+  reports?: ("interim" | "final")[];
   /** The funder's template or page for it. */
   link?: { url: string; label_sv: string; label_en: string };
   /** Where the requirement is stated, and when it was last checked. */
@@ -501,6 +510,9 @@ export interface FundingCall {
    * requirements for a complete application (see ApplicationRequirement),
    * from data/utlysningskrav.csv. */
   requirementChanges?: RequirementChanges;
+  /** The call's own changes to what its reports require — from
+   * data/utlysningskrav.csv (Gäller: rapport, delrapport, slutrapport). */
+  reportRequirementChanges?: RequirementChanges;
   /** The shared funder form this call's applications follow (a
    * CallTemplate id, from the call list's Ansökningsmall column). Ignored
    * when applicationTemplate is set. Undefined = no form on file. */
@@ -822,6 +834,8 @@ export interface Grant {
    * is a later, separate long-tail follow-up rather than part of this
    * core cycle. */
   reportingEvents: ReportingEvent[];
+  /** Requirements the user added for the grant's reports. */
+  ownReportRequirements?: ApplicationRequirement[];
 }
 
 // ---------------------------------------------------------------------------

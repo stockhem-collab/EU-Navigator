@@ -219,6 +219,29 @@
         }
       ],
       "pageLimit": 45
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2026-04-CIT-02, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-02",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
     }
   },
   {
@@ -333,6 +356,29 @@
         }
       ],
       "pageLimit": 45
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2026-04-CIT-NEB-B4P-CCRI-03, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2026-04-cit-neb-b4p-ccri-03",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
     }
   },
   {
@@ -603,6 +649,29 @@
         }
       ],
       "pageLimit": 45
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-01, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-01",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
     }
   },
   {
@@ -720,6 +789,29 @@
         }
       ],
       "pageLimit": 28
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-02, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-02",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
     }
   },
   {
@@ -850,6 +942,29 @@
         }
       ],
       "pageLimit": 45
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-03, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-03",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
     }
   },
   {
@@ -979,6 +1094,29 @@
         }
       ],
       "pageLimit": 45
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-04-CIT-CCRI-04, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-04-cit-ccri-04",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
     }
   },
   {
@@ -1366,6 +1504,29 @@
         }
       ],
       "pageLimit": 45
+    },
+    "reportRequirementChanges": {
+      "remove": [
+        "he-r-cfs",
+        "he-r-financial-statements"
+      ],
+      "add": [
+        {
+          "id": "he-r-ls-work-packages",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "why_en": "Ämnet finansieras med klumpsumma: inga kostnader redovisas och inget revisorsintyg krävs. Den finansiella rapporten anger vilka arbetspaket som är slutförda, och klumpsumman för ett arbetspaket betalas ut när det är slutfört enligt beskrivningen i bidragsavtalet.",
+          "mandatory": true,
+          "owner": "finance",
+          "source": {
+            "document": "Ämnessidan HORIZON-MISS-2027-01-CLIMA-02, Legal and financial set-up (klumpsumma)",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/horizon-miss-2027-01-clima-02",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
     }
   },
   {
@@ -1891,6 +2052,85 @@
           }
         }
       ]
+    },
+    "reportRequirementChanges": {
+      "add": [
+        {
+          "id": "cerv-r-progress",
+          "kind": "form",
+          "title_sv": "Lägesrapport",
+          "title_en": "Lägesrapport",
+          "why_sv": "Utöver slutrapporten lämnas en eller flera lägesrapporter som inte är kopplade till utbetalningar. Tidpunkterna står i bidragsavtalet (Data Sheet, punkt 4).",
+          "why_en": "Utöver slutrapporten lämnas en eller flera lägesrapporter som inte är kopplade till utbetalningar. Tidpunkterna står i bidragsavtalet (Data Sheet, punkt 4).",
+          "mandatory": true,
+          "owner": "applicant",
+          "reports": [
+            "interim"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Reporting and payment arrangements",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-r-lump-sum",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Bidraget är en klumpsumma utan krav på kostnadsredovisning. Slutrapporten visar vilka arbetspaket som är genomförda; utifrån den räknas det slutliga bidraget fram och restbeloppet betalas till koordinatorn.",
+          "why_en": "Bidraget är en klumpsumma utan krav på kostnadsredovisning. Slutrapporten visar vilka arbetspaket som är genomförda; utifrån den räknas det slutliga bidraget fram och restbeloppet betalas till koordinatorn.",
+          "mandatory": true,
+          "owner": "finance",
+          "reports": [
+            "final"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Budget och Reporting and payment arrangements",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-r-records",
+          "kind": "annex",
+          "title_sv": "Underlag för allt utfört arbete sparat",
+          "title_en": "Underlag för allt utfört arbete sparat",
+          "why_sv": "Stödmottagarna ansvarar för att dokumentera allt arbete som görs i projektet, så att det kan visas vid en granskning.",
+          "why_en": "Stödmottagarna ansvarar för att dokumentera allt arbete som görs i projektet, så att det kan visas vid en granskning.",
+          "mandatory": true,
+          "owner": "applicant",
+          "reports": [
+            "final"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Reporting and payment arrangements",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-r-certificates",
+          "kind": "certificate",
+          "title_sv": "Intyg enligt bidragsavtalet",
+          "title_en": "Intyg enligt bidragsavtalet",
+          "why_sv": "Beroende på typ av insats, bidragets storlek och typ av stödmottagare kan intyg begäras. Vilka, när och vid vilka gränser står i bidragsavtalet (Data Sheet, punkt 4, och art. 24).",
+          "why_en": "Beroende på typ av insats, bidragets storlek och typ av stödmottagare kan intyg begäras. Vilka, när och vid vilka gränser står i bidragsavtalet (Data Sheet, punkt 4, och art. 24).",
+          "mandatory": true,
+          "condition_sv": "när bidragsavtalet kräver intyg",
+          "condition_en": "när bidragsavtalet kräver intyg",
+          "owner": "finance",
+          "leadTimeDays": 60,
+          "reports": [
+            "final"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Certificates",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
     }
   },
   {
@@ -2056,6 +2296,85 @@
           },
           "source": {
             "document": "Utlysningsdokumentet CERV-2026-DAPHNE, 5. Admissibility and documents",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        }
+      ]
+    },
+    "reportRequirementChanges": {
+      "add": [
+        {
+          "id": "cerv-r-progress",
+          "kind": "form",
+          "title_sv": "Lägesrapport",
+          "title_en": "Lägesrapport",
+          "why_sv": "Utöver slutrapporten lämnas en eller flera lägesrapporter som inte är kopplade till utbetalningar. Tidpunkterna står i bidragsavtalet (Data Sheet, punkt 4).",
+          "why_en": "Utöver slutrapporten lämnas en eller flera lägesrapporter som inte är kopplade till utbetalningar. Tidpunkterna står i bidragsavtalet (Data Sheet, punkt 4).",
+          "mandatory": true,
+          "owner": "applicant",
+          "reports": [
+            "interim"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Reporting and payment arrangements",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-r-lump-sum",
+          "kind": "budget",
+          "title_sv": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "title_en": "Slutförda arbetspaket redovisade (klumpsumma)",
+          "why_sv": "Bidraget är en klumpsumma utan krav på kostnadsredovisning. Slutrapporten visar vilka arbetspaket som är genomförda; utifrån den räknas det slutliga bidraget fram och restbeloppet betalas till koordinatorn.",
+          "why_en": "Bidraget är en klumpsumma utan krav på kostnadsredovisning. Slutrapporten visar vilka arbetspaket som är genomförda; utifrån den räknas det slutliga bidraget fram och restbeloppet betalas till koordinatorn.",
+          "mandatory": true,
+          "owner": "finance",
+          "reports": [
+            "final"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Budget och Reporting and payment arrangements",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-r-records",
+          "kind": "annex",
+          "title_sv": "Underlag för allt utfört arbete sparat",
+          "title_en": "Underlag för allt utfört arbete sparat",
+          "why_sv": "Stödmottagarna ansvarar för att dokumentera allt arbete som görs i projektet, så att det kan visas vid en granskning.",
+          "why_en": "Stödmottagarna ansvarar för att dokumentera allt arbete som görs i projektet, så att det kan visas vid en granskning.",
+          "mandatory": true,
+          "owner": "applicant",
+          "reports": [
+            "final"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Reporting and payment arrangements",
+            "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
+            "checkedAt": "2026-10-21"
+          }
+        },
+        {
+          "id": "cerv-r-certificates",
+          "kind": "certificate",
+          "title_sv": "Intyg enligt bidragsavtalet",
+          "title_en": "Intyg enligt bidragsavtalet",
+          "why_sv": "Beroende på typ av insats, bidragets storlek och typ av stödmottagare kan intyg begäras. Vilka, när och vid vilka gränser står i bidragsavtalet (Data Sheet, punkt 4, och art. 24).",
+          "why_en": "Beroende på typ av insats, bidragets storlek och typ av stödmottagare kan intyg begäras. Vilka, när och vid vilka gränser står i bidragsavtalet (Data Sheet, punkt 4, och art. 24).",
+          "mandatory": true,
+          "condition_sv": "när bidragsavtalet kräver intyg",
+          "condition_en": "när bidragsavtalet kräver intyg",
+          "owner": "finance",
+          "leadTimeDays": 60,
+          "reports": [
+            "final"
+          ],
+          "source": {
+            "document": "Call fiche CERV-2026-DAPHNE, 10. Certificates",
             "url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/cerv/wp-call/2026/call-fiche_cerv-2026-daphne_en.pdf",
             "checkedAt": "2026-10-21"
           }

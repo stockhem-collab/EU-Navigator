@@ -220,8 +220,14 @@ export function callsFromList(records: Record<string, string>[], options: CallLi
       };
       return call;
     });
-  const changes = requirementChangesFromList(requirements, calls.map((c) => c.id));
-  return calls.map((c) => (changes[c.id] ? { ...c, requirementChanges: changes[c.id] } : c));
+  const ids = calls.map((c) => c.id);
+  const changes = requirementChangesFromList(requirements, ids);
+  const reportChanges = requirementChangesFromList(requirements, ids, "report");
+  return calls.map((c) => ({
+    ...c,
+    ...(changes[c.id] ? { requirementChanges: changes[c.id] } : {}),
+    ...(reportChanges[c.id] ? { reportRequirementChanges: reportChanges[c.id] } : {}),
+  }));
 }
 
 const KINDS: Record<string, RequirementKind> = {
@@ -243,6 +249,16 @@ const OWNERS: Record<string, RequirementOwner> = {
   hr: "hr",
 };
 
+// Gäller: what the row is a requirement for — the application (the
+// default) or the reports, all of them or one kind.
+const APPLIES: Record<string, { scope: "application" | "report"; reports?: ("interim" | "final")[] }> = {
+  "": { scope: "application" },
+  ansökan: { scope: "application" },
+  rapport: { scope: "report" },
+  delrapport: { scope: "report", reports: ["interim"] },
+  slutrapport: { scope: "report", reports: ["final"] },
+};
+
 const DUE: Record<string, RequirementDue> = {
   "med ansökan": "with-application",
   "efter stängning": "after-close",
@@ -256,17 +272,26 @@ const DUE: Record<string, RequirementDue> = {
  * Titel, Beskrivning, Villkor, Obligatorisk (ja/nej), Undantag offentliga
  * organ (ja), Ansvarig (sökande, firmatecknare, ekonomi, inköp, partner,
  * hr), Ledtid (dagar), Lämnas (med ansökan, efter stängning, före avtal),
- * Länk, Länktext, Sidgräns, Källa, Källänk, Kontrollerad. "ta bort" names
- * a requirement of the form or programme that doesn't apply to the call;
+ * Länk, Länktext, Sidgräns, Källa, Källänk, Kontrollerad, Gäller (ansökan
+ * — the default —, rapport, delrapport or slutrapport). "ta bort" names a
+ * requirement of the form or programme that doesn't apply to the call;
  * "sidgräns" sets the call's page limit. The texts are Swedish only, like
- * the call list itself. */
-export function requirementChangesFromList(rows: Record<string, string>[], callIds: string[]): Record<string, RequirementChanges> {
+ * the call list itself. `scope` picks the rows for the application or for
+ * the reports. */
+export function requirementChangesFromList(
+  rows: Record<string, string>[],
+  callIds: string[],
+  scope: "application" | "report" = "application"
+): Record<string, RequirementChanges> {
   const out: Record<string, RequirementChanges> = {};
   rows.forEach((r, i) => {
     const row = i + 2;
     const callId = (r["Utlysning"] ?? "").trim();
     if (!callId) return;
     if (!callIds.includes(callId)) throw new Error(`utlysningskrav.csv rad ${row}: okänd utlysning "${callId}"`);
+    const applies = APPLIES[(r["Gäller"] ?? "").trim().toLowerCase()];
+    if (!applies) throw new Error(`utlysningskrav.csv rad ${row}: okänt värde i Gäller "${r["Gäller"]}"`);
+    if (applies.scope !== scope) return;
     const changes = (out[callId] ??= {});
     const action = (r["Åtgärd"] ?? "").trim().toLowerCase();
     const id = (r["Krav-id"] ?? "").trim();
@@ -310,6 +335,7 @@ export function requirementChangesFromList(rows: Record<string, string>[], callI
       ...(owner ? { owner } : {}),
       ...(lead > 0 ? { leadTimeDays: lead } : {}),
       ...(due && due !== "with-application" ? { due } : {}),
+      ...(applies.reports ? { reports: applies.reports } : {}),
       ...(url ? { link: { url, label_sv: (r["Länktext"] ?? "").trim() || title, label_en: (r["Länktext"] ?? "").trim() || title } } : {}),
       source: {
         document: (r["Källa"] ?? "").trim() || "Utlysningen",
