@@ -62,6 +62,7 @@ test("resuming a deep link to a localStorage-only project causes no hydration er
     buffer: Buffer.from("Titel,Budget\nDjuplänkstest,5000000\n", "utf-8"),
   });
   await page.getByText("Djuplänkstest").click();
+  await page.getByRole("tab", { name: /^Utlysningar/ }).click();
 
   const href = await page.locator('a[href*="/ansokan?project=import-"]').first().getAttribute("href");
   expect(href).toBeTruthy();
