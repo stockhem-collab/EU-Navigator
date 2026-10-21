@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
 
 test("picking a theme groups funds like eufonder.se and keeps the theme in the URL", async ({ page }) => {
   await page.goto("/eu-databas");
-  await page.getByRole("button", { name: "Transport och resande" }).click();
+  await page.getByLabel("Tema").selectOption("transport-resande");
 
   await expect(page).toHaveURL(/tema=transport-resande/);
   await expect(page.getByRole("heading", { name: "Fonder som finansierar projekt inom transport och resande" })).toBeVisible();
@@ -16,7 +16,7 @@ test("picking a theme groups funds like eufonder.se and keeps the theme in the U
   // AMIF finances nothing within transport.
   await expect(page.getByTestId("program-card-amif")).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Alla teman" }).click();
+  await page.getByLabel("Tema").selectOption("");
   await expect(page).not.toHaveURL(/tema=/);
   await expect(page.getByTestId("program-card-amif")).toBeVisible();
 });

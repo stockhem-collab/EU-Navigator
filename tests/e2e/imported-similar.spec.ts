@@ -8,7 +8,7 @@ import { test, expect } from "@playwright/test";
 test("a project's page shows similar imported projects with reasons, and possible partners", async ({ page }) => {
   // "Nordiskt klimatsamarbete – dagvattenhantering", a climate project
   // described only in Swedish.
-  await page.goto("/projekt/pb-5");
+  await page.goto("/projekt/pb-5#similar");
   const similar = page.getByTestId("imported-similar");
   await expect(similar.getByRole("heading", { name: "Liknande projekt i EU:s projektdatabaser" })).toBeVisible();
   const cards = similar.getByTestId("imported-project-card");
@@ -26,7 +26,7 @@ test("a project's page shows similar imported projects with reasons, and possibl
 });
 
 test("the match list shows what similar projects were granted", async ({ page }) => {
-  await page.goto("/projekt/pb-5");
+  await page.goto("/projekt/pb-5#matches");
   const benchmark = page.locator("#matches").getByTestId("amount-benchmark").first();
   await expect(benchmark).toBeVisible();
   await expect(benchmark).toContainText(/Beviljat i liknande projekt: .*mnkr, median .*mnkr|Inget underlag/);

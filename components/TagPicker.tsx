@@ -25,14 +25,19 @@ interface Props {
     addNewPlaceholder: string;
     addNewButton: string;
   };
+  /** When provided, only these groups (plus any holding a selected tag)
+   * show at first — e.g. the project's own areas — and the rest open with
+   * "Visa alla taggar". Without it every group shows. */
+  focusGroups?: string[];
   /** When provided, shows an inline "add a new tag" field — for when none
    * of the fixed vocabulary fits. The new tag is added to the shared pool
    * (see useTags) and auto-selected, same as picking an existing one. */
   onAddTag?: (label: string) => Tag;
 }
 
-export default function TagPicker({ tags, selected, onChange, suggested = [], lang, labels, onAddTag }: Props) {
+export default function TagPicker({ tags, selected, onChange, suggested = [], lang, labels, onAddTag, focusGroups }: Props) {
   const [newTagLabel, setNewTagLabel] = useState("");
+  const [showAllGroups, setShowAllGroups] = useState(false);
   const intake = useLanguage().t.demo.intake;
   const groupLabel = (group: TagGroup) =>
     group === "approach" ? intake.tagGroupApproach : group === "custom" ? intake.tagGroupCustom : intake.sectors[group];
@@ -42,6 +47,10 @@ export default function TagPicker({ tags, selected, onChange, suggested = [], la
   const groups = TAG_GROUP_ORDER.map((group) => ({ group, tags: tags.filter((tag) => tagGroup(tag) === group) })).filter(
     (g) => g.tags.length > 0
   );
+  const inFocus = (g: (typeof groups)[number]) =>
+    !focusGroups || focusGroups.includes(g.group) || g.tags.some((tag) => selected.includes(tag.id));
+  const shownGroups = showAllGroups ? groups : groups.filter(inFocus);
+  const hiddenGroupCount = groups.length - shownGroups.length;
 
   const toggle = (id: string) => {
     onChange(selected.includes(id) ? selected.filter((t) => t !== id) : [...selected, id]);
@@ -91,7 +100,7 @@ export default function TagPicker({ tags, selected, onChange, suggested = [], la
       )}
 
       <div className="space-y-2.5">
-        {groups.map(({ group, tags: groupTags }) => (
+        {shownGroups.map(({ group, tags: groupTags }) => (
           <div key={group} className="sm:flex sm:gap-3">
             <div className="mb-1 shrink-0 pt-1 text-[11px] font-semibold uppercase tracking-wide text-navy-400 sm:mb-0 sm:w-36">
               {groupLabel(group)}
@@ -119,6 +128,16 @@ export default function TagPicker({ tags, selected, onChange, suggested = [], la
           </div>
         ))}
       </div>
+
+      {(hiddenGroupCount > 0 || (focusGroups && showAllGroups)) && (
+        <button
+          type="button"
+          onClick={() => setShowAllGroups(!showAllGroups)}
+          className="mt-2 text-xs font-semibold text-navy-600 hover:text-navy-900"
+        >
+          {showAllGroups ? intake.tagsShowFewer : intake.tagsShowAll(hiddenGroupCount)}
+        </button>
+      )}
 
       {onAddTag && (
         <div className="mt-3 flex items-center gap-2">

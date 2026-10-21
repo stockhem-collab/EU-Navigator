@@ -5,7 +5,7 @@ import { test, expect, Page } from "@playwright/test";
 // doing now, and a notification bell replaces the old Bevakning tab.
 
 async function startApplication(page: Page, projectId: string) {
-  await page.goto(`/projekt/${projectId}`);
+  await page.goto(`/projekt/${projectId}#matches`);
   const href = await page.locator("main").getByRole("link", { name: /^(Starta ansökan|Fortsätt ansökan)$/ }).first().getAttribute("href");
   await page.goto(href!);
   await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();

@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
 
 test("a new project can be saved from the form, and its fields are kept and editable", async ({ page }) => {
   await page.goto("/ansokan");
-  await expect(page.getByRole("heading", { name: "Nytt projekt – beskriv projektet" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ny ansökan – börja med projektet" })).toBeVisible();
   await page.getByRole("button", { name: "Fyll i exempel" }).click();
   const title = `Sparat projekt ${Date.now()}`;
   await page.getByLabel("Projektnamn").fill(title);

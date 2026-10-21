@@ -11,7 +11,7 @@ import { test, expect } from "@playwright/test";
 // opens.
 
 test("a document can be attached to, downloaded from, and removed from a project", async ({ page }) => {
-  await page.goto("/projekt/pb-1");
+  await page.goto("/projekt/pb-1#team");
 
   await expect(page.getByText("Inga bilagor sparade än.")).toBeVisible();
 
@@ -103,7 +103,7 @@ test("every grant's outstanding reports show under Rapportera by default, with n
 });
 
 test("a saved application version exports independently of later edits to the live draft", async ({ page }) => {
-  await page.goto("/projekt/pb-4");
+  await page.goto("/projekt/pb-4#matches");
   const startLink = page.locator('a[href*="/ansokan?project=pb-4"]').first();
   const href = await startLink.getAttribute("href");
   await page.goto(href!);
@@ -132,7 +132,7 @@ test("a saved application version exports independently of later edits to the li
 });
 
 test("a document can be attached to a specific reporting event", async ({ page }) => {
-  await page.goto("/stod/ap-1");
+  await page.goto("/stod/ap-1#follow-up");
 
   // Past reports are listed folded; opening one shows its attachments.
   const row = page.locator("#reports li", { hasText: "Lägesrapport 2027" });

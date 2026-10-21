@@ -8,7 +8,7 @@ import { test, expect, Page } from "@playwright/test";
 // and the whole grant, export to Word at any point.
 
 async function registerFromApplication(page: Page, sentence: string) {
-  await page.goto("/projekt/pb-3");
+  await page.goto("/projekt/pb-3#matches");
   const link = page.locator("main").getByRole("link", { name: /^(Starta ansökan|Fortsätt ansökan)$/ }).first();
   await page.goto((await link.getAttribute("href"))!);
   await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
@@ -31,6 +31,7 @@ test("registering a grant confirms its commitments and schedules every report wi
   await expect(page).toHaveURL(/\/stod\//);
 
   // The whole plan, each report dated, the final report last.
+  await page.getByRole("tab", { name: "Uppföljning" }).click();
   const reports = page.locator("#reports li");
   expect(await reports.count()).toBeGreaterThan(1);
   await expect(reports.last().getByRole("heading", { name: "Slutrapport" })).toBeVisible();
@@ -76,7 +77,7 @@ test("the next report is written on the page, and the funder's response is recor
   await expect(page.locator("main").getByText("Ansvarig: Andrea Lindqvist").first()).toBeVisible();
 
   // A submitted report gets the funder's response as an action, dated.
-  await page.goto("/stod/ap-1");
+  await page.goto("/stod/ap-1#follow-up");
   const row = page.locator("#reports li", { hasText: "Lägesrapport 2028" });
   await row.getByRole("button", { name: "Visa" }).click();
   await row.getByRole("button", { name: "Godkänd" }).click();

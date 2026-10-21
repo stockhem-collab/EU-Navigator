@@ -128,34 +128,44 @@ export default function RequirementList({ items, states, onSetState, onAddOwn, o
                       </select>
                       <div className="min-w-0 flex-1">
                         <p className={`text-sm font-semibold ${item.status === "not-applicable" ? "text-navy-400 line-through" : "text-navy-800"}`}>{title}</p>
-                        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-                          <span className="badge bg-navy-50 text-navy-500">{rq.origins[item.origin]}</span>
-                          {!req.mandatory && <span className="badge bg-navy-50 text-navy-500">{rq.recommended}</span>}
-                          {condition && <span className="badge bg-navy-50 text-navy-600">{rq.condition(condition)}</span>}
-                          {req.owner && <span className="badge bg-navy-50 text-navy-600">{rq.ownerLabel(rq.owners[req.owner])}</span>}
-                          {req.leadTimeDays !== undefined && item.status !== "done" && item.status !== "not-applicable" && (
-                            <span className={`badge ${item.leadTimeWarning ? "bg-amber-100 text-amber-800" : "bg-navy-50 text-navy-600"}`}>
-                              {item.leadTimeWarning ? rq.leadTimeUrgent(req.leadTimeDays) : rq.leadTime(req.leadTimeDays)}
-                            </span>
+                        {/* Where it comes from, who and how long as one quiet line;
+                            only what needs attention keeps a coloured badge. */}
+                        <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-navy-500">
+                          <span>
+                            {[
+                              rq.origins[item.origin],
+                              !req.mandatory ? rq.recommended : null,
+                              condition ? rq.condition(condition) : null,
+                              req.owner ? rq.ownerLabel(rq.owners[req.owner]) : null,
+                              req.leadTimeDays !== undefined && !item.leadTimeWarning && item.status !== "done" && item.status !== "not-applicable"
+                                ? rq.leadTime(req.leadTimeDays)
+                                : null,
+                              req.due === "before-agreement" ? rq.dueBeforeAgreement : null,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
+                          {req.leadTimeDays !== undefined && item.leadTimeWarning && item.status !== "done" && item.status !== "not-applicable" && (
+                            <span className="badge bg-amber-100 text-amber-800">{rq.leadTimeUrgent(req.leadTimeDays)}</span>
                           )}
                           {req.due === "after-close" && <span className="badge bg-gold-100 text-gold-800">{rq.dueAfterClose(req.dueOffsetHours ?? 24)}</span>}
-                          {req.due === "before-agreement" && <span className="badge bg-navy-50 text-navy-500">{rq.dueBeforeAgreement}</span>}
                           {badges?.(item)}
+                          {(why || req.source) && (
+                            <button
+                              type="button"
+                              aria-expanded={whyOpen}
+                              onClick={() => setOpenWhy(whyOpen ? openWhy.filter((x) => x !== req.id) : [...openWhy, req.id])}
+                              className="font-semibold text-navy-500 hover:text-navy-800"
+                            >
+                              <span aria-hidden className="mr-1.5 font-normal">·</span>
+                              {whyOpen ? t.ext.audit.whyHide : t.ext.audit.whyShow}
+                            </button>
+                          )}
                         </div>
                         {detail && (
                           <p className="mt-1 text-xs text-navy-600" data-testid={`requirement-detail-${req.id}`}>
                             {detail}
                           </p>
-                        )}
-                        {(why || req.source) && (
-                          <button
-                            type="button"
-                            aria-expanded={whyOpen}
-                            onClick={() => setOpenWhy(whyOpen ? openWhy.filter((x) => x !== req.id) : [...openWhy, req.id])}
-                            className="mt-1 text-xs font-semibold text-navy-500 hover:text-navy-800"
-                          >
-                            {whyOpen ? t.ext.audit.whyHide : t.ext.audit.whyShow}
-                          </button>
                         )}
                         {whyOpen && (
                           <div className="mt-1 space-y-1 text-xs text-navy-600">

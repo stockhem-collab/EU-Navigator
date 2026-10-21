@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SectionTabs, { SectionTabPanel, useSectionTab } from "@/components/SectionTabs";
+import { useAuditChecklist } from "@/lib/hooks/useAuditChecklist";
+import { auditItemsFor } from "@/lib/data/auditChecklist";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import {
   nextActionableReport,
@@ -64,6 +67,15 @@ export default function GrantPage() {
   const { attachmentsFor } = useAttachments();
   const templates = useCallTemplates();
   const [openReports, setOpenReports] = useState<string[]>([]);
+  // The grant in three tabs: the report to write now, how the project is
+  // going, and audit readiness. Links to a section open its tab.
+  const grantTabs = [
+    { id: "report", label: t.grants.tabReport, anchors: ["next-report", "report-requirements"] },
+    { id: "follow-up", label: t.grants.tabFollowUp, anchors: ["reports"] },
+    { id: "audit", label: t.grants.tabAudit },
+  ];
+  const [activeTab, setActiveTab] = useSectionTab(grantTabs);
+  const { done: auditDone, hydrated: auditHydrated } = useAuditChecklist(params.id);
   // The overview of what the reports require opens the first time the
   // grant is opened (unless turned off, as for applications).
   const [requirementsOpen, setRequirementsOpen] = useState(false);
@@ -115,6 +127,7 @@ export default function GrantPage() {
 
   const call = findCall(grant.callId);
   const program = call ? findProgram(call.programId) : undefined;
+  const auditItems = auditItemsFor({ grant, call, program });
   const nextActionable = nextActionableReport(grant);
   const health = reportingHealth(grant);
   const hasSustainabilityEvent = grant.reportingEvents.some((e) => e.type === "sustainability");
@@ -230,120 +243,142 @@ export default function GrantPage() {
           </div>
         </dl>
 
-        {/* 2. What the reports require, and how far the next one has come */}
-        <ReportRequirementsPanel
-          grant={grant}
-          event={nextActionable}
-          draft={nextActionable ? reportDraft(grant.id, nextActionable.id) : undefined}
-          onStatesChange={(requirementStates) => nextActionable && updateReportDraft(grant.id, nextActionable.id, { requirementStates })}
-          onOwnChange={(ownReportRequirements) => updateGrant(grant.id, { ownReportRequirements })}
-          open={requirementsOpen}
-          onOpenChange={setRequirementsOpen}
-        />
+        <SectionTabs tabs={grantTabs} active={activeTab} onSelect={setActiveTab} label={ap.tabsLabel} />
 
-        {/* 3. The report to write now */}
-        <section id="next-report" className="mt-8 scroll-mt-24" aria-labelledby="next-report-heading">
-          <h2 id="next-report-heading" className="text-lg font-bold text-navy-800">
-            {ap.nextReportTitle}
-          </h2>
-          {nextActionable ? (
-            <div className="mt-3">
-              <ReportCard
-                grant={grant}
-                event={nextActionable}
-                working
-                users={users}
-                api={apiFor(nextActionable)}
-                onShowRequirements={() => {
-                  setRequirementsOpen(true);
-                  requestAnimationFrame(() => document.getElementById("report-requirements")?.scrollIntoView({ behavior: "smooth" }));
-                }}
-              />
-            </div>
-          ) : (
-            <div className="mt-3 rounded-xl border border-dashed border-navy-200 p-4">
-              <p className="text-sm font-semibold text-navy-700">{ap.reportingCompleteLabel}</p>
-              {reportingComplete && !hasSustainabilityEvent && (
-                <>
-                  <p className="mt-1 text-sm text-navy-600">{ap.addSustainabilityHint}</p>
-                  <button
-                    type="button"
-                    onClick={() => addSustainabilityEvent(grant.id, 36)}
-                    className="mt-2 rounded-md border border-navy-200 bg-white px-3 py-2 text-xs font-semibold text-navy-700 hover:bg-navy-50"
-                  >
-                    {ap.addSustainabilityButton}
-                  </button>
-                </>
-              )}
-            </div>
+        <SectionTabPanel id="report" active={activeTab}>
+          {/* 2. What the reports require, and how far the next one has come */}
+          <ReportRequirementsPanel
+            grant={grant}
+            event={nextActionable}
+            draft={nextActionable ? reportDraft(grant.id, nextActionable.id) : undefined}
+            onStatesChange={(requirementStates) => nextActionable && updateReportDraft(grant.id, nextActionable.id, { requirementStates })}
+            onOwnChange={(ownReportRequirements) => updateGrant(grant.id, { ownReportRequirements })}
+            open={requirementsOpen}
+            onOpenChange={setRequirementsOpen}
+          />
+
+          {/* 3. The report to write now */}
+          <section id="next-report" className="mt-8 scroll-mt-24" aria-labelledby="next-report-heading">
+            <h2 id="next-report-heading" className="text-lg font-bold text-navy-800">
+              {ap.nextReportTitle}
+            </h2>
+            {nextActionable ? (
+              <div className="mt-3">
+                <ReportCard
+                  grant={grant}
+                  event={nextActionable}
+                  working
+                  users={users}
+                  api={apiFor(nextActionable)}
+                  onShowRequirements={() => {
+                    setRequirementsOpen(true);
+                    requestAnimationFrame(() => document.getElementById("report-requirements")?.scrollIntoView({ behavior: "smooth" }));
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="mt-3 rounded-xl border border-dashed border-navy-200 p-4">
+                <p className="text-sm font-semibold text-navy-700">{ap.reportingCompleteLabel}</p>
+                {reportingComplete && !hasSustainabilityEvent && (
+                  <>
+                    <p className="mt-1 text-sm text-navy-600">{ap.addSustainabilityHint}</p>
+                    <button
+                      type="button"
+                      onClick={() => addSustainabilityEvent(grant.id, 36)}
+                      className="mt-2 rounded-md border border-navy-200 bg-white px-3 py-2 text-xs font-semibold text-navy-700 hover:bg-navy-50"
+                    >
+                      {ap.addSustainabilityButton}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </section>
+
+          {auditHydrated && auditItems.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("audit")}
+              className="mt-6 flex w-full items-center justify-between gap-3 rounded-xl border border-navy-100 bg-white px-4 py-3 text-left text-sm"
+              data-testid="audit-summary"
+            >
+              <span className="font-semibold text-navy-800">{t.ext.audit.title}</span>
+              <span className="text-navy-600">
+                {t.ext.audit.progress(auditItems.filter((i) => auditDone[i.id]).length, auditItems.length)} →
+              </span>
+            </button>
           )}
-        </section>
+        </SectionTabPanel>
 
-        {/* 4. How it's going: commitments and finances together */}
-        <section id="follow-up" className="mt-10" aria-labelledby="follow-up-heading">
-          <h2 id="follow-up-heading" className="text-lg font-bold text-navy-800">
-            {ap.followUpTitle}
-          </h2>
-          <CommitmentsSection grant={grant} onSave={(commitments) => updateGrant(grant.id, { commitments })} />
-          <FinancialSummaryCard grant={grant} totalSpent={totalSpent} />
-        </section>
+        <SectionTabPanel id="follow-up" active={activeTab}>
+          {/* 4. How it's going: commitments and finances together */}
+          <section id="follow-up" className="mt-10" aria-labelledby="follow-up-heading">
+            <h2 id="follow-up-heading" className="text-lg font-bold text-navy-800">
+              {ap.followUpTitle}
+            </h2>
+            <CommitmentsSection grant={grant} onSave={(commitments) => updateGrant(grant.id, { commitments })} />
+            <FinancialSummaryCard grant={grant} totalSpent={totalSpent} />
+          </section>
 
-        {/* 5. Every report in the plan */}
-        <section id="reports" className="mt-10" aria-labelledby="reports-heading">
-          <h2 id="reports-heading" className="text-lg font-bold text-navy-800">
-            {ap.allReportsTitle}
-          </h2>
-          <p className="mt-1 text-sm text-navy-500">{ap.allReportsHint}</p>
-          <ul className="mt-3 divide-y divide-navy-50 rounded-xl border border-navy-100 bg-white">
-            {grant.reportingEvents.map((event) => {
-              const isNext = event.id === nextActionable?.id;
-              const open = openReports.includes(event.id);
-              return (
-                <li key={event.id} className="px-4 py-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <h3 className="text-sm font-semibold text-navy-800">{lang === "sv" ? event.periodLabel_sv : event.periodLabel_en}</h3>
-                      <p className="text-xs text-navy-500">{ap.dueOn(formatReportDue(event, lang))}</p>
+          {/* 5. Every report in the plan */}
+          <section id="reports" className="mt-10" aria-labelledby="reports-heading">
+            <h2 id="reports-heading" className="text-lg font-bold text-navy-800">
+              {ap.allReportsTitle}
+            </h2>
+            <ul className="mt-3 divide-y divide-navy-50 rounded-xl border border-navy-100 bg-white">
+              {grant.reportingEvents.map((event) => {
+                const isNext = event.id === nextActionable?.id;
+                const open = openReports.includes(event.id);
+                return (
+                  <li key={event.id} className="px-4 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <h3 className="text-sm font-semibold text-navy-800">{lang === "sv" ? event.periodLabel_sv : event.periodLabel_en}</h3>
+                        <p className="text-xs text-navy-500">{ap.dueOn(formatReportDue(event, lang))}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className={`badge ${statusStyle(event.status)}`}>
+                          {event.status === "approved"
+                            ? ap.reportStatusApproved
+                            : event.status === "submitted"
+                            ? ap.reportStatusSubmitted
+                            : event.status === "revision-requested"
+                            ? ap.reportStatusRevisionRequested
+                            : ap.reportStatusUpcoming}
+                        </span>
+                        {isNext ? (
+                          <a href="#next-report" className="text-xs font-semibold text-navy-600 hover:text-navy-900">
+                            {ap.seeNextReport}
+                          </a>
+                        ) : (
+                          <button
+                            type="button"
+                            aria-expanded={open}
+                            onClick={() => setOpenReports(open ? openReports.filter((id) => id !== event.id) : [...openReports, event.id])}
+                            className="text-xs font-semibold text-navy-600 hover:text-navy-900"
+                          >
+                            {open ? ap.hideDetails : ap.showDetails}
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`badge ${statusStyle(event.status)}`}>
-                        {event.status === "approved"
-                          ? ap.reportStatusApproved
-                          : event.status === "submitted"
-                          ? ap.reportStatusSubmitted
-                          : event.status === "revision-requested"
-                          ? ap.reportStatusRevisionRequested
-                          : ap.reportStatusUpcoming}
-                      </span>
-                      {isNext ? (
-                        <a href="#next-report" className="text-xs font-semibold text-navy-600 hover:text-navy-900">
-                          {ap.seeNextReport}
-                        </a>
-                      ) : (
-                        <button
-                          type="button"
-                          aria-expanded={open}
-                          onClick={() => setOpenReports(open ? openReports.filter((id) => id !== event.id) : [...openReports, event.id])}
-                          className="text-xs font-semibold text-navy-600 hover:text-navy-900"
-                        >
-                          {open ? ap.hideDetails : ap.showDetails}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  {open && !isNext && (
-                    <div className="mt-3">
-                      <ReportCard grant={grant} event={event} working={false} users={users} api={apiFor(event)} />
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+                    {open && !isNext && (
+                      <div className="mt-3">
+                        <ReportCard grant={grant} event={event} working={false} users={users} api={apiFor(event)} />
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
 
-        {/* 6. Audit readiness: what an audit will ask for, ticked off */}
-        <AuditChecklist grant={grant} call={call} program={program} />
+        </SectionTabPanel>
+
+        <SectionTabPanel id="audit" active={activeTab}>
+          {/* 6. Audit readiness: what an audit will ask for, ticked off */}
+          <AuditChecklist grant={grant} call={call} program={program} />
+        </SectionTabPanel>
 
         {/* 7. Links, and the whole grant as one document */}
         <section className="mb-16 mt-6 rounded-xl bg-navy-50 px-4 py-3" aria-labelledby="links-heading">

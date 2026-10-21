@@ -15,7 +15,7 @@ test("appears once a draft has edits and resumes straight into the workspace", a
   await expect(applicationsSection(page).getByText("Cykelinfrastruktur city")).toHaveCount(0);
 
   // Start and edit an application for a saved Projektbank entry.
-  await page.goto("/projekt/pb-4");
+  await page.goto("/projekt/pb-4#matches");
   const startLink = page.locator('a[href*="/ansokan?project=pb-4"]').first();
   const href = await startLink.getAttribute("href");
   await page.goto(href!);

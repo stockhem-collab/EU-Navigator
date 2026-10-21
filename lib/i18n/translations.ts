@@ -48,6 +48,7 @@ export interface TranslationTree {
     overview: string;
     settings: string;
     menu: string;
+    onlyMine: string;
   };
   home: {
     entryTitle: string;
@@ -114,6 +115,10 @@ export interface TranslationTree {
     intake: {
       title: string;
       titleExisting: string;
+      moreDetailsSummary: string;
+      moreDetailsHint: string;
+      tagsShowAll: (hiddenGroups: number) => string;
+      tagsShowFewer: string;
       subtitle: string;
       saveProject: string;
       saveProjectHint: string;
@@ -287,6 +292,8 @@ export interface TranslationTree {
     grantsSectionTitle: string;
     grantsSectionHint: string;
     grantsNone: string;
+    noApplicationsYet: string;
+    seeMatchingCalls: (n: number) => string;
     columnApplications: string;
     applicationsSummary: (active: number, awarded: number) => string;
     searchPlaceholder: string;
@@ -342,6 +349,15 @@ export interface TranslationTree {
     detailDescriptionLabel: string;
     detailMissingInfoTitle: string;
     detailMissingInfoBody: string;
+    detailMissingInfoSummary: (n: number) => string;
+    detailMissingInfoShow: string;
+    detailMissingInfoHide: string;
+    tabsLabel: string;
+    tabOverview: string;
+    tabMatches: string;
+    tabSimilar: string;
+    tabTeam: string;
+    similarExamplesSummary: (n: number) => string;
     detailFindFunding: string;
     detailMatchesTitle: string;
     showAllMatches: (n: number) => string;
@@ -398,6 +414,8 @@ export interface TranslationTree {
     statusOpen: string;
     statusUpcoming: string;
     closedProgrammeBadge: string;
+    closedProgrammesTitle: string;
+    showClosedProgrammes: (n: number) => string;
     deadlineIn: (months: number) => string;
     budgetLabel: string;
     grantRangeLabel: string;
@@ -612,6 +630,10 @@ export interface TranslationTree {
     reportFormCorrectButton: string;
     reportSubmittedIndicator: string;
     reportingCompleteLabel: string;
+    tabsLabel: string;
+    tabReport: string;
+    tabFollowUp: string;
+    tabAudit: string;
     reportTypeSustainability: string;
     reportHistoryToggle: (n: number) => string;
     reportHistoryEntryLabel: (date: string) => string;
@@ -709,6 +731,8 @@ export interface TranslationTree {
     portfolioMatchSectionTitle: string;
     otherCallsSectionTitle: (n: number) => string;
     showOtherCallsButton: (n: number) => string;
+    showMoreMatchingCalls: (n: number) => string;
+    moreMatchingProjects: (n: number) => string;
     hideOtherCallsButton: string;
     noPortfolioMatches: string;
   };
@@ -1044,6 +1068,7 @@ export const translations: Record<Lang, TranslationTree> = {
       overview: "Översikt",
       settings: "Inställningar",
       menu: "Meny",
+      onlyMine: "Mina projekt",
     },
     home: {
       entryTitle: "Var är ni just nu?",
@@ -1191,8 +1216,12 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     demo: {
       intake: {
-        title: "Nytt projekt – beskriv projektet",
+        title: "Ny ansökan – börja med projektet",
         titleExisting: "Projektet – granska och hitta finansiering",
+        moreDetailsSummary: "Fler uppgifter (valfritt)",
+        moreDetailsHint: "Övriga områden, målgrupp, län, organisationstyp och partnerskap. Gör matchningen säkrare men behövs inte för att komma igång.",
+        tagsShowAll: (n: number) => `Visa alla taggar (${n} områden till)`,
+        tagsShowFewer: "Visa bara projektets områden",
         saveProject: "Spara projektet",
         saveProjectHint: "Sparar projektet under Projekt utan att söka finansiering nu — det matchas mot utlysningarna där också.",
         subtitle:
@@ -1441,6 +1470,15 @@ export const translations: Record<Lang, TranslationTree> = {
       detailMissingInfoTitle: "Information som saknas för optimal EU-matchning",
       detailMissingInfoBody:
         "Projektinformationen är inte tillräcklig för optimal EU-matchning. Komplettera enligt nedan innan en specifik utlysning väljs.",
+      detailMissingInfoSummary: (n: number) => `${n} ${n === 1 ? "uppgift saknas" : "uppgifter saknas"} för säkrare matchning`,
+      detailMissingInfoShow: "Visa",
+      detailMissingInfoHide: "Dölj",
+      tabsLabel: "Projektets delar",
+      tabOverview: "Översikt",
+      tabMatches: "Utlysningar",
+      tabSimilar: "Liknande projekt och partner",
+      tabTeam: "Team och filer",
+      similarExamplesSummary: (n: number) => `Exempelprojekt i systemet (${n})`,
       detailMatchesTitle: "Matchningar mot öppna och kommande utlysningar",
       showAllMatches: (n: number) => `Visa alla ${n} utlysningar`,
       showFewerMatches: "Visa bara de bästa",
@@ -1466,6 +1504,8 @@ export const translations: Record<Lang, TranslationTree> = {
       grantsSectionTitle: "Beviljat stöd och rapportering",
       grantsSectionHint: "Varje beviljad ansökan får ett eget beviljat stöd med egen rapportering. Rapporterna hanteras under Rapportera.",
       grantsNone: "Inget beviljat stöd ännu. När en ansökan beviljas registrerar du stödet på ansökan ovan.",
+      noApplicationsYet: "Inga ansökningar ännu.",
+      seeMatchingCalls: (n: number) => `Se ${n} matchande utlysningar`,
       importButton: "Importera projekt (CSV)",
       addProjectTitle: "Lägg till projekt",
       addFormTitle: "Beskriv ett projekt",
@@ -1514,6 +1554,8 @@ export const translations: Record<Lang, TranslationTree> = {
       deadlineLabel: "Deadline",
       statusOpen: "Öppen",
       closedProgrammeBadge: "Avslutat program",
+      closedProgrammesTitle: "Avslutade program",
+      showClosedProgrammes: (n: number) => `Visa avslutade program (${n})`,
       statusUpcoming: "Kommande",
       deadlineIn: (m) => (m < 0 ? "Deadline har passerat" : `Deadline om ${m} månader`),
       budgetLabel: "Utlysningens totala budget",
@@ -1735,6 +1777,10 @@ export const translations: Record<Lang, TranslationTree> = {
       reportFormCorrectButton: "Skicka in korrigering",
       reportSubmittedIndicator: "Sparat i din webbläsare — ersätter inte en faktisk inlämning till finansiären.",
       reportingCompleteLabel: "All rapportering avslutad.",
+      tabsLabel: "Stödets delar",
+      tabReport: "Nästa rapport",
+      tabFollowUp: "Uppföljning",
+      tabAudit: "Revision",
       reportTypeSustainability: "Hållbarhetsuppföljning",
       reportHistoryToggle: (n) => `Tidigare inlämningar (${n})`,
       reportHistoryEntryLabel: (date) => `Inlämnad ${date}`,
@@ -1833,7 +1879,9 @@ export const translations: Record<Lang, TranslationTree> = {
       noReportingWatched: "Inga utestående rapporteringsdeadlines just nu — alla beviljade projekts rapporter är inskickade.",
       portfolioMatchSectionTitle: "Utlysningar som matchar din portfölj",
       otherCallsSectionTitle: (n) => `Övriga utlysningar (${n})`,
-      showOtherCallsButton: (n) => `Visa fler / övriga utlysningar (${n})`,
+      showOtherCallsButton: (n) => `Visa utlysningar utan matchande projekt (${n})`,
+      showMoreMatchingCalls: (n) => `Visa ${n} fler matchande utlysningar`,
+      moreMatchingProjects: (n) => `+${n} projekt till`,
       hideOtherCallsButton: "Dölj övriga utlysningar",
       noPortfolioMatches:
         "Inga utlysningar matchar din portfölj ännu. Här är samtliga utlysningar ändå, sorterade efter deadline.",
@@ -2198,6 +2246,7 @@ export const translations: Record<Lang, TranslationTree> = {
       overview: "Overview",
       settings: "Settings",
       menu: "Menu",
+      onlyMine: "My projects",
     },
     home: {
       entryTitle: "Where are you right now?",
@@ -2345,8 +2394,12 @@ export const translations: Record<Lang, TranslationTree> = {
     },
     demo: {
       intake: {
-        title: "New project — describe the project",
+        title: "New application — start with the project",
         titleExisting: "The project — review and find funding",
+        moreDetailsSummary: "More details (optional)",
+        moreDetailsHint: "Other areas, target group, county, organisation type and partnership. They make the matching more reliable but aren't needed to get started.",
+        tagsShowAll: (n: number) => `Show all tags (${n} more areas)`,
+        tagsShowFewer: "Show only the project's areas",
         saveProject: "Save the project",
         saveProjectHint: "Saves the project under Projects without looking for funding now — it's matched against the calls there too.",
         subtitle:
@@ -2591,6 +2644,15 @@ export const translations: Record<Lang, TranslationTree> = {
       detailMissingInfoTitle: "Information missing for optimal EU matching",
       detailMissingInfoBody:
         "The project information isn't sufficient for optimal EU matching. Complete it as below before selecting a specific call.",
+      detailMissingInfoSummary: (n: number) => `${n} ${n === 1 ? "detail is" : "details are"} missing for more reliable matching`,
+      detailMissingInfoShow: "Show",
+      detailMissingInfoHide: "Hide",
+      tabsLabel: "Project sections",
+      tabOverview: "Overview",
+      tabMatches: "Calls",
+      tabSimilar: "Similar projects and partners",
+      tabTeam: "Team and files",
+      similarExamplesSummary: (n: number) => `Example projects in the system (${n})`,
       detailMatchesTitle: "Matches against open and upcoming calls",
       showAllMatches: (n: number) => `Show all ${n} calls`,
       showFewerMatches: "Show only the best",
@@ -2616,6 +2678,8 @@ export const translations: Record<Lang, TranslationTree> = {
       grantsSectionTitle: "Grants and reporting",
       grantsSectionHint: "Each awarded application gets its own grant with its own reporting. Reports are handled under Report.",
       grantsNone: "No grant yet. When an application is awarded, register the grant on the application above.",
+      noApplicationsYet: "No applications yet.",
+      seeMatchingCalls: (n: number) => `See ${n} matching calls`,
       importButton: "Import projects (CSV)",
       addProjectTitle: "Add projects",
       addFormTitle: "Describe a project",
@@ -2664,6 +2728,8 @@ export const translations: Record<Lang, TranslationTree> = {
       deadlineLabel: "Deadline",
       statusOpen: "Open",
       closedProgrammeBadge: "Closed programme",
+      closedProgrammesTitle: "Closed programmes",
+      showClosedProgrammes: (n: number) => `Show closed programmes (${n})`,
       statusUpcoming: "Upcoming",
       deadlineIn: (m) => (m < 0 ? "Deadline has passed" : `Deadline in ${m} months`),
       budgetLabel: "Call's total budget",
@@ -2884,6 +2950,10 @@ export const translations: Record<Lang, TranslationTree> = {
       reportFormCorrectButton: "Submit correction",
       reportSubmittedIndicator: "Saved in your browser — this does not replace an actual submission to the funder.",
       reportingCompleteLabel: "All reporting complete.",
+      tabsLabel: "Grant sections",
+      tabReport: "Next report",
+      tabFollowUp: "Follow-up",
+      tabAudit: "Audit",
       reportTypeSustainability: "Sustainability follow-up",
       reportHistoryToggle: (n) => `Previous submissions (${n})`,
       reportHistoryEntryLabel: (date) => `Submitted ${date}`,
@@ -2982,7 +3052,9 @@ export const translations: Record<Lang, TranslationTree> = {
       noReportingWatched: "No outstanding reporting deadlines right now — every awarded project's reports are submitted.",
       portfolioMatchSectionTitle: "Calls that match your portfolio",
       otherCallsSectionTitle: (n) => `Other calls (${n})`,
-      showOtherCallsButton: (n) => `Show more / other calls (${n})`,
+      showOtherCallsButton: (n) => `Show calls without matching projects (${n})`,
+      showMoreMatchingCalls: (n) => `Show ${n} more matching calls`,
+      moreMatchingProjects: (n) => `+${n} more ${n === 1 ? "project" : "projects"}`,
       hideOtherCallsButton: "Hide other calls",
       noPortfolioMatches: "No calls match your portfolio yet. Here are all the calls anyway, sorted by deadline.",
     },

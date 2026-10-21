@@ -24,6 +24,7 @@ test("marking a funded project as awarded creates real reporting tracking and sy
   await expect(page).toHaveURL(/\/stod\/ap-pb-2/);
   // The whole plan is scheduled, the first report next.
   await expect(page.locator("#next-report").getByRole("heading", { name: /Lägesrapport 1/ })).toBeVisible();
+  await page.getByRole("tab", { name: "Uppföljning" }).click();
   await expect(page.locator("#reports").getByRole("heading", { name: "Slutrapport" })).toBeVisible();
   await expect(page.getByRole("link", { name: "AI-baserad medborgarservice", exact: false }).first()).toBeVisible();
 

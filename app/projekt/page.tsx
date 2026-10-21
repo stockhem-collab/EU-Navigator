@@ -80,7 +80,7 @@ function ProjectsPageInner() {
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">(
     isProjectStatus(initialStatus) ? initialStatus : "all"
   );
-  const [onlyMineAndShared, setOnlyMineAndShared] = useOnlyMineAndShared();
+  const [onlyMineAndShared] = useOnlyMineAndShared();
   const [search, setSearch] = useState("");
   // The page of the list (?sida=); every filter change goes back to page 1.
   const [page, setPage] = useState(pageFromParams(searchParams));
@@ -204,13 +204,6 @@ function ProjectsPageInner() {
               aria-label={pb.searchPlaceholder}
               className="w-full max-w-xs rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
             />
-            <label className="flex items-center gap-2 text-sm font-semibold text-navy-700">
-              <input type="checkbox" checked={onlyMineAndShared} onChange={(e) => {
-                  setOnlyMineAndShared(e.target.checked);
-                  setPage(1);
-                }} />
-              {ap.onlyMineAndSharedToggle}
-            </label>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
             <button type="button" onClick={() => {

@@ -7,6 +7,11 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import NotificationBell from "@/components/NotificationBell";
 import { USER_COOKIE } from "@/lib/auth/shared";
 import { syncProfileCookie } from "@/lib/demoProfile";
+import { useOnlyMineAndShared } from "@/lib/hooks/useOnlyMineAndShared";
+
+// Pages that list the organisation's projects, applications or reports,
+// where "Visa endast mina och delade projekt" narrows what is shown.
+const SCOPED_PAGES = ["/oversikt", "/projekt", "/ansok", "/rapportera"];
 
 type NavKey = keyof ReturnType<typeof useLanguage>["t"]["nav"];
 
@@ -33,6 +38,8 @@ export default function Header() {
   // the only one seen logged out. There the menu is replaced by "Logga in".
   const loggedIn = pathname !== "/";
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [onlyMineAndShared, setOnlyMineAndShared] = useOnlyMineAndShared();
+  const scoped = loggedIn && SCOPED_PAGES.includes(pathname ?? "");
   const router = useRouter();
   // Server-rendered pages read the demo profile from a cookie; put it back
   // if it went missing so they match this browser's data.
@@ -81,6 +88,23 @@ export default function Header() {
         )}
 
         <div className="flex items-center gap-3">
+          {scoped && (
+            <label
+              title={t.grants.onlyMineAndSharedToggle}
+              className={`hidden cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition lg:flex ${
+                onlyMineAndShared ? "border-navy-800 bg-navy-50 text-navy-900" : "border-navy-200 text-navy-600 hover:bg-navy-50"
+              }`}
+            >
+              <input
+                type="checkbox"
+                className="h-3.5 w-3.5 accent-navy-800"
+                aria-label={t.grants.onlyMineAndSharedToggle}
+                checked={onlyMineAndShared}
+                onChange={(e) => setOnlyMineAndShared(e.target.checked)}
+              />
+              {t.nav.onlyMine}
+            </label>
+          )}
           {loggedIn && <NotificationBell />}
           <Link
             href="/installningar"
@@ -158,6 +182,14 @@ export default function Header() {
                 </Link>
               </li>
             ))}
+            {scoped && (
+              <li>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={onlyMineAndShared} onChange={(e) => setOnlyMineAndShared(e.target.checked)} />
+                  {t.grants.onlyMineAndSharedToggle}
+                </label>
+              </li>
+            )}
             <li>
               <Link
                 href="/installningar"

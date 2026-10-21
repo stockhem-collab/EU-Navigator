@@ -24,6 +24,7 @@ test("correcting a revision-requested report shows the original outcome as repor
 
   // The corrected report now waits for the funder again; its history is in
   // the list of all reports.
+  await page.getByRole("tab", { name: "Uppföljning" }).click();
   const row = page.locator("#reports li", { hasText: "Delrapport Q1 2027" });
   await row.getByRole("button", { name: "Visa" }).click();
   await expect(row.getByText("Tidigare inlämningar (1)")).toBeVisible();

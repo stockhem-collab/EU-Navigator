@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
 import UnreadDot from "@/components/UnreadDot";
 import Icon, { IconName } from "@/components/Icon";
-import PageHeader, { HeaderToggle, headerButtonClass } from "@/components/PageHeader";
+import PageHeader, { headerButtonClass } from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
 import { useNotifications } from "@/components/NotificationsProvider";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -58,7 +58,7 @@ export default function OversiktPage() {
   const notifications = useNotifications();
   const currentUser = users.find((u) => u.id === CURRENT_USER_ID);
   const orgUnitsAll = orgConfig.units ?? seedOrgUnits;
-  const [onlyMineAndShared, setOnlyMineAndShared] = useOnlyMineAndShared();
+  const [onlyMineAndShared] = useOnlyMineAndShared();
 
   const inScope = (entry: ProjectBankEntry | undefined) =>
     !onlyMineAndShared || (entry ? isProjectRelevantToUser(entry, currentUser, orgUnitsAll) : false);
@@ -211,7 +211,6 @@ export default function OversiktPage() {
             <Icon name="search" className="h-4 w-4" />
             {ov.findCall}
           </Link>
-          <HeaderToggle checked={onlyMineAndShared} onChange={setOnlyMineAndShared} label={ap.onlyMineAndSharedToggle} />
         </PageHeader>
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">

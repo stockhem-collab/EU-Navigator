@@ -13,7 +13,7 @@ import Footer from "@/components/Footer";
 import KnowledgeTabs from "@/components/KnowledgeTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fundingPrograms } from "@/lib/data/fundingPrograms";
-import { callThemes, findFundTheme, fundThemeLabel, fundThemes, isFundTheme } from "@/lib/data/fundThemes";
+import { callThemes, findFundTheme, fundThemes, isFundTheme } from "@/lib/data/fundThemes";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { fmtSEK } from "@/lib/format";
 import { FundingCall, FundingProgram, FundTheme } from "@/lib/types";
@@ -27,9 +27,6 @@ export default function EuDatabasePage() {
   );
 }
 
-const byStatus = (a: FundingProgram, b: FundingProgram) =>
-  a.status === b.status ? 0 : a.status === "active" ? -1 : 1;
-
 function EuDatabaseInner() {
   const { t, lang } = useLanguage();
   const db = t.euDatabase;
@@ -37,6 +34,7 @@ function EuDatabaseInner() {
   const searchParams = useSearchParams();
   const { all: fundingCalls } = useFundingCalls();
   const [search, setSearch] = useState("");
+  const [showLegacy, setShowLegacy] = useState(false);
   const { show: showOutdated, setShow: setShowOutdated } = useShowOutdatedCalls();
   // The theme lives in the URL (?tema=…) so a themed view can be shared.
   const temaParam = searchParams.get("tema");
@@ -93,12 +91,6 @@ function EuDatabaseInner() {
               )}
             </div>
             <p className="mt-1 text-sm text-navy-600">{lang === "sv" ? program.description_sv : program.description_en}</p>
-            {!theme && program.themes.length > 0 && (
-              <p className="mt-2 text-xs text-navy-500">
-                <span className="font-semibold">{db.themesLabel}:</span>{" "}
-                {program.themes.map((th) => fundThemeLabel(th, lang)).join(", ")}
-              </p>
-            )}
           </div>
         </div>
         {singleCall ? (
@@ -120,14 +112,14 @@ function EuDatabaseInner() {
     );
   };
 
-  const chipClass = (active: boolean) =>
-    `rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-      active ? "bg-navy-800 text-white" : "border border-navy-200 text-navy-600 hover:bg-navy-50"
-    }`;
-
   const themeInfo = theme ? findFundTheme(theme) : null;
-  const shared = filteredPrograms.filter((p) => p.management === "shared").sort(byStatus);
-  const direct = filteredPrograms.filter((p) => p.management === "direct").sort(byStatus);
+  // Closed programmes (Horisont 2020, FP7, …) are history, folded away at
+  // the end unless a search finds them.
+  const activePrograms = filteredPrograms.filter((p) => p.status !== "legacy");
+  const legacyPrograms = filteredPrograms.filter((p) => p.status === "legacy");
+  const legacyShown = showLegacy || query.length > 0;
+  const shared = activePrograms.filter((p) => p.management === "shared");
+  const direct = activePrograms.filter((p) => p.management === "direct");
 
   return (
     <>
@@ -136,31 +128,30 @@ function EuDatabaseInner() {
         <KnowledgeTabs />
         <PageHeader title={db.title} subtitle={db.subtitle} />
 
-        <div role="group" aria-label={db.themeFilterLabel} className="mt-6 flex flex-wrap items-center gap-2">
-          <span className="mr-1 text-xs font-semibold uppercase text-navy-400">{db.themeFilterLabel}</span>
-          <button type="button" aria-pressed={!theme} onClick={() => selectTheme(null)} className={chipClass(!theme)}>
-            {db.allThemes}
-          </button>
-          {fundThemes.map((th) => (
-            <button
-              key={th.id}
-              type="button"
-              aria-pressed={theme === th.id}
-              onClick={() => selectTheme(th.id)}
-              className={chipClass(theme === th.id)}
-            >
-              {lang === "sv" ? th.label_sv : th.label_en}
-            </button>
-          ))}
-        </div>
-
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={db.searchProgramsPlaceholder}
-            className="w-full max-w-sm rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
-          />
+          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={db.searchProgramsPlaceholder}
+              className="w-full max-w-sm rounded-md border border-navy-200 px-3 py-2 text-sm focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+            />
+            <label className="flex items-center gap-2 text-sm font-semibold text-navy-700">
+              {db.themeFilterLabel}
+              <select
+                value={theme ?? ""}
+                onChange={(e) => selectTheme(isFundTheme(e.target.value) ? e.target.value : null)}
+                className="rounded-md border border-navy-200 bg-white px-3 py-2 text-sm font-normal focus:border-navy-500 focus:outline-none focus:ring-1 focus:ring-navy-500"
+              >
+                <option value="">{db.allThemes}</option>
+                {fundThemes.map((th) => (
+                  <option key={th.id} value={th.id}>
+                    {lang === "sv" ? th.label_sv : th.label_en}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <OutdatedCallsToggle count={outdatedCount} show={showOutdated} onChange={setShowOutdated} />
         </div>
 
@@ -192,7 +183,26 @@ function EuDatabaseInner() {
             )}
           </>
         ) : (
-          <div className="mt-8 grid gap-5 sm:grid-cols-2">{[...filteredPrograms].sort(byStatus).map(renderCard)}</div>
+          <div className="mt-8 grid gap-5 sm:grid-cols-2">{activePrograms.map(renderCard)}</div>
+        )}
+
+        {legacyPrograms.length > 0 && (
+          <section className="mb-16 mt-10">
+            {legacyShown ? (
+              <>
+                <h3 className="text-sm font-semibold uppercase text-navy-400">{db.closedProgrammesTitle}</h3>
+                <div className="mt-4 grid gap-5 sm:grid-cols-2">{legacyPrograms.map(renderCard)}</div>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowLegacy(true)}
+                className="text-sm font-semibold text-navy-600 hover:text-navy-900"
+              >
+                {db.showClosedProgrammes(legacyPrograms.length)}
+              </button>
+            )}
+          </section>
         )}
       </main>
       <Footer />
