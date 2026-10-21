@@ -24,6 +24,11 @@ import { findProgram } from "@/lib/data/fundingPrograms";
 import { CURRENT_USER_ID, isProjectRelevantToUser, orgUnits as seedOrgUnits } from "@/lib/data/users";
 import { ProjectBankEntry } from "@/lib/types";
 import { useOnlyMineAndShared } from "@/lib/hooks/useOnlyMineAndShared";
+import { useCallTemplates } from "@/lib/hooks/useCallTemplates";
+import { useCallRequirements } from "@/lib/hooks/useCallRequirements";
+import { useAttachments } from "@/lib/hooks/useAttachments";
+import { readApplicationRequirements } from "@/lib/hooks/useApplication";
+import { isPublicBody, openManualRequirements, requirementFileKey, resolveRequirements } from "@/lib/data/applicationRequirements";
 
 const LIST_LIMIT = 5;
 
@@ -113,6 +118,24 @@ export default function OversiktPage() {
   const projectTitle = (entry: ProjectBankEntry | undefined, fallback: { title_sv: string; title_en: string }) =>
     lang === "sv" ? entry?.title_sv ?? fallback.title_sv : entry?.title_en ?? fallback.title_en;
 
+  const templates = useCallTemplates();
+  const callRequirements = useCallRequirements();
+  const { attachmentsFor } = useAttachments();
+  const openRequirementsFor = (application: (typeof applications)[number]) => {
+    const { states, own } = readApplicationRequirements(application.record.id);
+    const resolved = resolveRequirements({
+      call: application.call,
+      program: application.program,
+      template: templates.applicationTemplateFor(application.call),
+      datacenter: callRequirements.all[application.call.id],
+      own,
+    });
+    const files = Object.fromEntries(
+      resolved.map((r) => [r.requirement.id, attachmentsFor(requirementFileKey(application.record.id, r.requirement.id)).length])
+    );
+    return openManualRequirements(resolved, states, isPublicBody(orgConfig.orgType), files, application.call.deadlineDate, now ?? undefined);
+  };
+
   // The single most pressing thing: a report that needs action, else the
   // application closest to its deadline, else the soonest dated task.
   const nextUp = (() => {
@@ -130,13 +153,17 @@ export default function OversiktPage() {
     }
     const application = applications[0];
     if (application) {
+      // The annexes, certificates and conditions still open on it — read
+      // from the browser once mounted.
+      const open = now ? openRequirementsFor(application) : [];
+      const href = `/ansokan?project=${application.entry.id}&call=${application.call.id}&application=${encodeURIComponent(application.record.id)}`;
       return {
         kind: ov.nextUpApplication,
         title: lang === "sv" ? application.call.title_sv : application.call.title_en,
-        detail: `${application.program.shortName} · ${projectTitle(application.entry, application.entry)}`,
+        detail: `${application.program.shortName} · ${projectTitle(application.entry, application.entry)}${open.length > 0 ? ` · ${t.req.nextUpOpen(open.length)}` : ""}`,
         badge: bv.deadlineInMonths(callDeadlineMonths(application.call)),
-        href: `/ansokan?project=${application.entry.id}&call=${application.call.id}&application=${encodeURIComponent(application.record.id)}`,
-        urgent: callDeadlineMonths(application.call) <= 1,
+        href: open.length > 0 ? `${href}&flik=krav` : href,
+        urgent: callDeadlineMonths(application.call) <= 1 || open.some((i) => i.leadTimeWarning),
       };
     }
     const task = openTasks.find((x) => x.task.dueDate);

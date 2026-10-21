@@ -42,6 +42,8 @@ function DemoPageInner() {
   const preselectedCallId = searchParams.get("call");
   const preselectedProjectId = searchParams.get("project");
   const requestedApplicationId = searchParams.get("application");
+  // ?flik=krav opens the workspace on its Krav tab.
+  const requestedTab = searchParams.get("flik") === "krav" ? ("requirements" as const) : undefined;
   const { profile: fundingProfile, hydrated: profileHydrated } = useFundingProfile();
   const { all: fundingCalls, hydrated: callsHydrated } = useFundingCalls();
 
@@ -201,6 +203,7 @@ function DemoPageInner() {
             match={step.match}
             customerProjectId={customerProjectId}
             applicationId={requestedApplicationId}
+            initialTab={requestedTab}
             onSavedAsProject={(newId) => {
               setCustomerProjectId(newId);
               // Keeps the URL resumable after a refresh, without remounting
