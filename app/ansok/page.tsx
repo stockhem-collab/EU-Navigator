@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import { IconName } from "@/components/Icon";
-import PageHeader, { HeaderToggle } from "@/components/PageHeader";
+import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
 import Footer from "@/components/Footer";
 import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
@@ -59,7 +59,7 @@ function ApplyPageInner() {
   // filtered that way.
   const initialFilter = searchParams.get("filter");
   const [filter, setFilter] = useState<Filter>(isFilter(initialFilter) ? initialFilter : "active");
-  const [onlyMineAndShared, setOnlyMineAndShared] = useOnlyMineAndShared();
+  const [onlyMineAndShared] = useOnlyMineAndShared();
 
   // Only applications whose project and call still exist.
   const rows = records
@@ -117,12 +117,9 @@ function ApplyPageInner() {
     <>
       <Header />
       <main className="page">
-        <PageHeader title={a.title} subtitle={a.subtitle}>
-          {/* Applies to the whole page — the applications and the projects
-              matched under Hitta finansiering — and is remembered across
-              Översikt, Projekt, Ansöka and Rapportera. */}
-          <HeaderToggle checked={onlyMineAndShared} onChange={setOnlyMineAndShared} label={t.grants.onlyMineAndSharedToggle} />
-        </PageHeader>
+        {/* "Visa endast mina och delade projekt" (in the header) narrows the
+            applications and the projects matched under Hitta finansiering. */}
+        <PageHeader title={a.title} subtitle={a.subtitle} />
 
         <section id="applications" className="mt-8" aria-labelledby="applications-heading">
           <div className="flex flex-wrap items-center justify-between gap-3">

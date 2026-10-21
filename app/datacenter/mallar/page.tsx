@@ -43,6 +43,7 @@ export default function TemplatesPage() {
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
   const [reading, setReading] = useState(false);
+  const [showAllCalls, setShowAllCalls] = useState(false);
 
   const read = async (file: File) => {
     setStatus(null);
@@ -87,6 +88,12 @@ export default function TemplatesPage() {
   const reportForms = templates.all.filter((f) => f.kind === "report");
   const title = (f: CallTemplate) => (lang === "sv" ? f.title_sv : f.title_en);
   const callTitle = (c: FundingCall) => (lang === "sv" ? c.title_sv : c.title_en);
+  // Calls with a form of their own, by the call list or chosen here, show
+  // first; the ones on the default only on request.
+  const hasForm = (c: FundingCall) => {
+    const a = templates.assignments[c.id] ?? {};
+    return Boolean(c.applicationTemplateId || c.reportTemplateId || a.application || a.report);
+  };
   const standardTitle = (id: string | undefined) => {
     const f = id ? templates.all.find((x) => x.id === id) : undefined;
     return f ? `${tl.standardForm} (${title(f)})` : `${tl.standardForm} (${tl.noForm.toLowerCase()})`;
@@ -308,7 +315,7 @@ export default function TemplatesPage() {
                 </tr>
               </thead>
               <tbody>
-                {calls.map((c) => {
+                {(showAllCalls ? calls : calls.filter(hasForm)).map((c) => {
                   const a = templates.assignments[c.id] ?? {};
                   return (
                     <tr key={c.id} className="border-b border-navy-50 align-top" data-testid={`assign-${c.id}`}>
@@ -349,6 +356,15 @@ export default function TemplatesPage() {
               </tbody>
             </table>
           </div>
+          {calls.length > calls.filter(hasForm).length && (
+            <button
+              type="button"
+              onClick={() => setShowAllCalls(!showAllCalls)}
+              className="mt-3 text-sm font-semibold text-navy-600 hover:text-navy-900"
+            >
+              {showAllCalls ? tl.showOnlyCallsWithForm : tl.showAllCalls(calls.length - calls.filter(hasForm).length)}
+            </button>
+          )}
         </section>
       </main>
       <Footer />

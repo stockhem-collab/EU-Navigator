@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 // Ansöka, Rapportera, Kunskapsbank, Datacenter): a small label, the page
 // title and a line under it, with the page's own actions on the right.
 // Actions sit on the dark background, so use headerButtonClass /
-// headerSecondaryButtonClass and HeaderToggle for what goes there.
+// headerSecondaryButtonClass for what goes there.
 export default function PageHeader({
   eyebrow,
   title,
@@ -45,13 +45,3 @@ export const headerButtonClass =
 
 export const headerSecondaryButtonClass =
   "inline-flex items-center gap-1.5 rounded-lg border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10";
-
-/** The "Visa endast mina och delade projekt" checkbox, styled for the band. */
-export function HeaderToggle({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) {
-  return (
-    <label className="flex items-center gap-2 text-sm text-navy-100">
-      <input type="checkbox" className="accent-gold-400" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      {label}
-    </label>
-  );
-}

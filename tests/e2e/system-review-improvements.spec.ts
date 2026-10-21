@@ -35,12 +35,12 @@ test("Inställningar subpages share a tab strip, and resetting asks for confirma
   await expect(page.getByRole("heading", { name: "Organisationsstruktur" })).toBeVisible();
 });
 
-test("Datacenter surfaces reports needing attention with a link into the grant", async ({ page }) => {
+test("Datacenter keeps only its own figures; reports needing attention live under Rapportera", async ({ page }) => {
   await page.goto("/datacenter");
-  await expect(page.getByRole("heading", { name: "Rapporteringar som kräver uppmärksamhet" })).toBeVisible();
-  await page.getByRole("link", { name: "Visa beviljat stöd →" }).first().click();
-  // A client-side navigation: on a cold dev server the grant page may still
-  // be compiling, which takes longer than the default.
+  await expect(page.getByRole("heading", { name: "Dokument som behöver uppdateras" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Rapporteringar som kräver uppmärksamhet" })).toHaveCount(0);
+  await page.goto("/rapportera");
+  await page.locator('main a[href^="/stod/ap-"]').first().click();
   await expect(page).toHaveURL(/\/stod\/ap-/, { timeout: 20_000 });
 });
 

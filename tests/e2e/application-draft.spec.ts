@@ -8,7 +8,7 @@ import { test, expect } from "@playwright/test";
 // workspace — no intake-form resubmission needed to resume.
 
 test("a saved project's application draft survives re-entering the workspace", async ({ page }) => {
-  await page.goto("/projekt/pb-4");
+  await page.goto("/projekt/pb-4#matches");
   const startLink = page.locator('a[href*="/ansokan?project=pb-4"]').first();
   const href = await startLink.getAttribute("href");
   expect(href).toBeTruthy();
@@ -48,7 +48,7 @@ test("an ad-hoc, unsaved project shows the not-persisted note instead", async ({
 });
 
 test("a version can be saved and restored, and the application exports as .docx", async ({ page }) => {
-  await page.goto("/projekt/pb-4");
+  await page.goto("/projekt/pb-4#matches");
   const startLink = page.locator('a[href*="/ansokan?project=pb-4"]').first();
   const href = await startLink.getAttribute("href");
   await page.goto(href!);

@@ -100,6 +100,8 @@ export interface TemplateTexts {
     removeConfirm: string;
     assignTitle: string;
     assignHint: string;
+    showAllCalls: (n: number) => string;
+    showOnlyCallsWithForm: string;
     columnCall: string;
     columnApplication: string;
     columnReport: string;
@@ -142,7 +144,7 @@ export const templateSv: TemplateTexts = {
   addRow: "+ Lägg till rad",
   removeRow: "Ta bort rad",
   rowLabel: (n) => `Rad ${n}`,
-  noRows: "Inga rader än.",
+  noRows: "inga rader än",
   exportDocx: "Exportera enligt mallen (.docx)",
   exportFilled: "Exportera i funderns Word-mall (.docx)",
   exportWebForm: "Exportera fält för fält (.docx)",
@@ -205,7 +207,9 @@ export const templateSv: TemplateTexts = {
     remove: "Ta bort",
     removeConfirm: "Ta bort mallen? Utlysningar som använder den går tillbaka till sin standardmall.",
     assignTitle: "Mall per utlysning",
-    assignHint: "Välj vilken mall ansökan och rapporterna ska följa. Standard är den mall utlysningslistan anger.",
+    assignHint: "Välj vilken mall ansökan och rapporterna ska följa. Standard är den mall utlysningslistan anger. Här visas utlysningar som har en mall.",
+    showAllCalls: (n: number) => `Visa även utlysningar utan mall (${n})`,
+    showOnlyCallsWithForm: "Visa bara utlysningar med mall",
     columnCall: "Utlysning",
     columnApplication: "Ansökningsmall",
     columnReport: "Rapportmall",
@@ -248,7 +252,7 @@ export const templateEn: TemplateTexts = {
   addRow: "+ Add row",
   removeRow: "Remove row",
   rowLabel: (n) => `Row ${n}`,
-  noRows: "No rows yet.",
+  noRows: "no rows yet",
   exportDocx: "Export following the template (.docx)",
   exportFilled: "Export in the funder's Word template (.docx)",
   exportWebForm: "Export field by field (.docx)",
@@ -311,7 +315,9 @@ export const templateEn: TemplateTexts = {
     remove: "Remove",
     removeConfirm: "Remove the template? Calls using it go back to their standard form.",
     assignTitle: "Template per call",
-    assignHint: "Choose the form the application and the reports follow. Standard is the form the call list names.",
+    assignHint: "Choose the form the application and the reports follow. Standard is the form the call list names. Calls with a form are shown here.",
+    showAllCalls: (n: number) => `Also show calls without a form (${n})`,
+    showOnlyCallsWithForm: "Show only calls with a form",
     columnCall: "Call",
     columnApplication: "Application form",
     columnReport: "Report form",

@@ -5,9 +5,7 @@ import { test, expect, Page } from "@playwright/test";
 // project page lists them, and the project's own status follows them.
 
 async function startFromMatch(page: Page, projectId: string, nth: number) {
-  await page.goto(`/projekt/${projectId}`);
-  // The match list's own buttons — the applications section above it links
-  // into the workspace too.
+  await page.goto(`/projekt/${projectId}#matches`);
   const link = page.locator("main").getByRole("link", { name: /^(Starta ansökan|Fortsätt ansökan)$/ }).nth(nth);
   await page.goto((await link.getAttribute("href"))!);
   await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();

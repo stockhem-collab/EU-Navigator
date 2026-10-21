@@ -69,8 +69,8 @@ test("Datacenter's figures lead to their lists", async ({ page }) => {
   await expectHeadingClearOfHeader(page, page.getByRole("heading", { name: "Dokument som behöver uppdateras" }));
 
   await page.goto("/datacenter");
-  await page.getByRole("link", { name: /Beviljade referensprojekt/ }).click();
-  await expect(page).toHaveURL(/\/referensprojekt/);
+  await page.getByRole("link", { name: /Projekt med ofullständig information/ }).click();
+  await expectHeadingClearOfHeader(page, page.getByRole("heading", { name: "Projekt med ofullständig information" }));
 
   // Applications by status open Ansöka filtered to that status.
   await page.goto("/datacenter");

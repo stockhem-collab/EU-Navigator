@@ -11,7 +11,7 @@ const WRITTEN =
 const overall = async (page: Page) => Number((await page.getByTestId("readiness-overall").innerText()).split("/")[0]);
 
 async function openFromProject(page: Page, projectId: string) {
-  await page.goto(`/projekt/${projectId}`);
+  await page.goto(`/projekt/${projectId}#matches`);
   const href = await page.locator("#matches").getByRole("link", { name: /^(Starta ansökan|Fortsätt ansökan)$/ }).first().getAttribute("href");
   await page.goto(href!);
   await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();

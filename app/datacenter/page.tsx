@@ -9,13 +9,10 @@ import StatCard from "@/components/StatCard";
 import Footer from "@/components/Footer";
 import DatacenterTabs from "@/components/DatacenterTabs";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { fundingPrograms, findProgram } from "@/lib/data/fundingPrograms";
-import { fundedProjects } from "@/lib/data/fundedProjects";
-import { isCallOutdated } from "@/lib/data/fundingCalls";
+import { findProgram } from "@/lib/data/fundingPrograms";
 import { useProjectBank } from "@/lib/hooks/useProjectBank";
 import { useFundingCalls } from "@/lib/hooks/useFundingCalls";
 import { useGrants } from "@/lib/hooks/useGrants";
-import { useReportingSubmissions } from "@/lib/hooks/useReportingSubmissions";
 import { useApplications } from "@/lib/hooks/useApplications";
 import StatusBadge from "@/components/StatusBadge";
 import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
@@ -43,11 +40,9 @@ function useNowStamp(): string | null {
 export default function DatacenterPage() {
   const { t, lang } = useLanguage();
   const dc = t.datacenter;
-  const ap = t.grants;
   const { all: projectBank } = useProjectBank();
   const { all: fundingCalls } = useFundingCalls();
   const { all: awardedProjects } = useGrants();
-  const { withSubmissions } = useReportingSubmissions();
   const lastSync = useNowStamp();
   const { records: applicationRecords } = useApplications();
   const pb = t.projectBank;
@@ -60,25 +55,9 @@ export default function DatacenterPage() {
 
   const docs = fundingCalls.flatMap((c) => c.documents.map((d) => ({ ...d, callId: c.id })));
   const docsNeedingUpdate = docs.filter((d) => d.needsUpdate);
-  const openCalls = fundingCalls.filter((c) => c.status === "open" && !isCallOutdated(c));
-  const upcomingCalls = fundingCalls.filter((c) => c.status === "upcoming");
-  const activeProjects = projectBank.filter(
-    (p) => p.status !== "idea" && p.status !== "completed"
-  );
   const incompleteProjects = projectBank.filter(
     (p) => (lang === "sv" ? p.missingFields_sv : p.missingFields_en).length > 0
   );
-
-  const reportingRows = awardedProjects.flatMap((p) => {
-    const project = withSubmissions(p);
-    return project.reportingEvents.map((event) => ({ project, event }));
-  });
-  const reportsNeedingAttention = reportingRows
-    .filter((r) => r.event.status === "revision-requested" || r.event.status === "upcoming")
-    // Revision-requested is the more urgent of the two — surface it first.
-    .sort((a, b) => (a.event.status === b.event.status ? 0 : a.event.status === "revision-requested" ? -1 : 1));
-  const upcomingReportsCount = reportingRows.filter((r) => r.event.status === "upcoming").length;
-  const reportsNeedingRevisionCount = reportingRows.filter((r) => r.event.status === "revision-requested").length;
 
   const callsWithStructuredEligibility = fundingCalls.filter((c) => c.applicantTypes && c.applicantTypes.length > 0).length;
 
@@ -97,7 +76,6 @@ export default function DatacenterPage() {
           <h2 id="portfolio-heading" className="text-lg font-bold text-navy-800">
             {dc.portfolioTitle}
           </h2>
-          <p className="mt-1 text-sm text-navy-500">{dc.portfolioHint}</p>
 
           <div className="mt-4 rounded-xl bg-navy-800 p-6 text-white">
             <h3 className="font-bold">{pb.economicsTitle}</h3>
@@ -163,20 +141,14 @@ export default function DatacenterPage() {
           </div>
         </section>
 
-        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          <StatCard icon="folder" label={dc.statProjectIdeas} value={projectBank.length} href="/projekt" />
-          <StatCard icon="chart" label={dc.statActiveProjects} value={activeProjects.length} href="/projekt" />
-          <StatCard icon="book" label={dc.statPrograms} value={fundingPrograms.length} href="/eu-databas" />
-          <StatCard icon="search" label={dc.statCalls} value={fundingCalls.length} href="/eu-databas" />
-          <StatCard icon="inbox" label={dc.statOpenCalls} value={openCalls.length} href="/eu-databas" />
-          <StatCard icon="calendar" label={dc.statUpcomingCalls} value={upcomingCalls.length} href="/eu-databas" />
-          <StatCard icon="award" label={dc.statReferenceProjects} value={fundedProjects.length} href="/referensprojekt" />
-          <StatCard icon="application" label={dc.statDocuments} value={docs.length} href="/eu-databas" />
+        {/* Only what has no other home: projects, calls, reference projects
+            and reports are counted where they're listed (Projekt,
+            Kunskapsbanken, Rapportera). */}
+        <div className="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatCard icon="alert" warn label={dc.statDocumentsNeedUpdate} value={docsNeedingUpdate.length} href="#documents-needing-update" />
-          <StatCard icon="clock" label={dc.statLastSync} value={lastSync ?? "…"} />
-          <StatCard icon="calendar" label={dc.statUpcomingReports} value={upcomingReportsCount} href="/rapportera#upcoming" />
-          <StatCard icon="alert" warn label={dc.statReportsNeedingRevision} value={reportsNeedingRevisionCount} href="#reporting-attention" />
+          <StatCard icon="folder" warn label={dc.incompleteProjectsTitle} value={incompleteProjects.length} href="#incomplete-projects" />
           <StatCard icon="layers" label={dc.statStructuredEligibility} value={`${callsWithStructuredEligibility} / ${fundingCalls.length}`} />
+          <StatCard icon="clock" label={dc.statLastSync} value={lastSync ?? "…"} />
         </div>
 
         <section id="documents-needing-update" className="mt-10">
@@ -209,40 +181,8 @@ export default function DatacenterPage() {
           </div>
         </section>
 
-        <section id="reporting-attention" className="mt-10">
-          <h2 className="text-lg font-bold text-navy-800">{dc.reportingAttentionTitle}</h2>
-          <p className="mt-1 text-sm text-navy-500">{dc.reportingAttentionBody}</p>
-          <div className="mt-4 overflow-hidden rounded-xl border border-navy-100 bg-white">
-            {reportsNeedingAttention.length === 0 ? (
-              <p className="px-4 py-3 text-sm text-navy-500">{dc.noReportingAttention}</p>
-            ) : (
-              <ul className="divide-y divide-navy-50">
-                {reportsNeedingAttention.map(({ project, event }) => (
-                  <li key={event.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
-                    <div>
-                      <p className="font-medium text-navy-800">
-                        {lang === "sv" ? project.title_sv : project.title_en}
-                      </p>
-                      <p className="text-xs text-navy-400">
-                        {lang === "sv" ? event.periodLabel_sv : event.periodLabel_en} ·{" "}
-                        <span className={event.status === "revision-requested" ? "text-amber-700" : ""}>
-                          {event.status === "revision-requested" ? ap.reportStatusRevisionRequested : ap.nextReportDue(event.deadlineMonthsFromNow)}
-                        </span>
-                      </p>
-                    </div>
-                    <Link href={`/stod/${project.id}`} className="text-xs font-semibold text-navy-600 hover:text-navy-900">
-                      {dc.viewProjectLink}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
-
-        <section className="mb-16 mt-10">
+        <section id="incomplete-projects" className="mb-16 mt-10">
           <h2 className="text-lg font-bold text-navy-800">{dc.incompleteProjectsTitle}</h2>
-          <p className="mt-1 text-sm text-navy-500">{dc.incompleteProjectsBody}</p>
           <div className="mt-4 overflow-hidden rounded-xl border border-navy-100 bg-white">
             <ul className="divide-y divide-navy-50">
               {incompleteProjects.map((p) => (

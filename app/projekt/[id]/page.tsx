@@ -20,6 +20,7 @@ import { scoreMatch } from "@/lib/matching/scoreMatch";
 import { findProgram } from "@/lib/data/fundingPrograms";
 import ApplicationStatusBadge from "@/components/ApplicationStatusBadge";
 import ProjectLifecycle from "@/components/ProjectLifecycle";
+import SectionTabs, { SectionTabPanel, useSectionTab } from "@/components/SectionTabs";
 import { computeReadiness } from "@/lib/matching/readiness";
 import ConfirmButton from "@/components/ConfirmButton";
 import { readApplicationBudget, readApplicationSections } from "@/lib/hooks/useApplication";
@@ -112,6 +113,18 @@ export default function ProjectBankDetailPage() {
   const [editTaskDue, setEditTaskDue] = useState("");
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const [showAllMatches, setShowAllMatches] = useState(false);
+  const [showMissing, setShowMissing] = useState(false);
+  const matches = useMemo(() => (entry ? computeMatchesForEntry(entry, fundingCalls) : []), [entry, fundingCalls]);
+  // The page in four tabs: what the project is and where it stands, what it
+  // could apply to, what others have done, and who works on it. Links to a
+  // section (#matches, #applications-title, …) open its tab.
+  const projectTabs = [
+    { id: "overview", label: pb.tabOverview, anchors: ["applications-title", "grants-title"] },
+    { id: "matches", label: pb.tabMatches, count: matches.length },
+    { id: "similar", label: pb.tabSimilar, anchors: ["imported-similar-title", "partners-title"] },
+    { id: "team", label: pb.tabTeam, anchors: ["tasks-title", "attachments-title"] },
+  ];
+  const [activeTab, setActiveTab] = useSectionTab(projectTabs);
   const suggestedTagsForDraft = useMemo(
     () => suggestTags(`${draft?.title ?? ""} ${draft?.description ?? ""}`),
     [draft?.title, draft?.description]
@@ -134,7 +147,6 @@ export default function ProjectBankDetailPage() {
   }
 
   const storedMissing = lang === "sv" ? entry.missingFields_sv : entry.missingFields_en;
-  const matches = computeMatchesForEntry(entry, fundingCalls);
   // The best few matches first; the long tail (often 25–30 calls, most of
   // them weak) only on request, so the page stays readable.
   const visibleMatches = showAllMatches ? matches : matches.slice(0, MATCHES_SHOWN);
@@ -523,75 +535,94 @@ export default function ProjectBankDetailPage() {
                 />
               </div>
             )}
-
-            <dl className="mt-8 grid gap-6 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-2">
-              <div>
-                <dt className="text-xs font-semibold uppercase text-navy-400">{pb.columnCost}</dt>
-                <dd className="mt-1 text-lg font-bold text-navy-900">{fmtSEK(entry.estimatedCostSEK, lang)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase text-navy-400">{pb.columnPeriod}</dt>
-                <dd className="mt-1 text-lg font-bold text-navy-900">
-                  {entry.periodStart}–{entry.periodEnd}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase text-navy-400">{pb.detailThemeLabel}</dt>
-                <dd className="mt-1 text-lg font-bold text-navy-900">{t.demo.intake.sectors[entry.sector]}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase text-navy-400">{pb.columnReadiness}</dt>
-                <dd className="mt-1 text-lg font-bold text-gold-600" data-testid="project-readiness">
-                  {readinessPct}%
-                </dd>
-                {bestMatch && (
-                  <dd className="mt-0.5 text-xs text-navy-400">
-                    {pb.readinessAgainst(lang === "sv" ? bestMatch.call.title_sv : bestMatch.call.title_en)}
-                  </dd>
-                )}
-              </div>
-              {matchingDetails.map((d) => (
-                <div key={d.label}>
-                  <dt className="text-xs font-semibold uppercase text-navy-400">{d.label}</dt>
-                  <dd className="mt-1 text-sm font-semibold text-navy-900">{d.value}</dd>
-                </div>
-              ))}
-              {entry.tags && entry.tags.length > 0 && (
-                <div className="sm:col-span-2">
-                  <dt className="text-xs font-semibold uppercase text-navy-400">{t.demo.intake.fieldTags}</dt>
-                  <dd className="mt-2 flex flex-wrap gap-2">
-                    {entry.tags.map((id) => {
-                      const tag = allTags.find((t) => t.id === id);
-                      const label = tag ? (lang === "sv" ? tag.label_sv : tag.label_en) : id;
-                      return (
-                        <span key={id} className="rounded-full bg-navy-50 px-2.5 py-1 text-xs font-medium text-navy-700">
-                          {label}
-                        </span>
-                      );
-                    })}
-                  </dd>
-                </div>
-              )}
-            </dl>
-
-            <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
-              <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.detailDescriptionLabel}</h2>
-              <p className="mt-2 text-sm text-navy-700">{lang === "sv" ? entry.description_sv : entry.description_en}</p>
-            </div>
           </>
         )}
 
+        <SectionTabs tabs={projectTabs} active={activeTab} onSelect={setActiveTab} label={pb.tabsLabel} />
+
+        <SectionTabPanel id="overview" active={activeTab}>
+          {!draft && (
+            <>
+              <dl className="mt-6 grid gap-6 rounded-xl border border-navy-100 bg-white p-6 sm:grid-cols-2">
+                <div>
+                  <dt className="text-xs font-semibold uppercase text-navy-400">{pb.columnCost}</dt>
+                  <dd className="mt-1 text-lg font-bold text-navy-900">{fmtSEK(entry.estimatedCostSEK, lang)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase text-navy-400">{pb.columnPeriod}</dt>
+                  <dd className="mt-1 text-lg font-bold text-navy-900">
+                    {entry.periodStart}–{entry.periodEnd}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase text-navy-400">{pb.detailThemeLabel}</dt>
+                  <dd className="mt-1 text-lg font-bold text-navy-900">{t.demo.intake.sectors[entry.sector]}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase text-navy-400">{pb.columnReadiness}</dt>
+                  <dd className="mt-1 text-lg font-bold text-gold-600" data-testid="project-readiness">
+                    {readinessPct}%
+                  </dd>
+                  {bestMatch && (
+                    <dd className="mt-0.5 text-xs text-navy-400">
+                      {pb.readinessAgainst(lang === "sv" ? bestMatch.call.title_sv : bestMatch.call.title_en)}
+                    </dd>
+                  )}
+                </div>
+                {matchingDetails.map((d) => (
+                  <div key={d.label}>
+                    <dt className="text-xs font-semibold uppercase text-navy-400">{d.label}</dt>
+                    <dd className="mt-1 text-sm font-semibold text-navy-900">{d.value}</dd>
+                  </div>
+                ))}
+                {entry.tags && entry.tags.length > 0 && (
+                  <div className="sm:col-span-2">
+                    <dt className="text-xs font-semibold uppercase text-navy-400">{t.demo.intake.fieldTags}</dt>
+                    <dd className="mt-2 flex flex-wrap gap-2">
+                      {entry.tags.map((id) => {
+                        const tag = allTags.find((t) => t.id === id);
+                        const label = tag ? (lang === "sv" ? tag.label_sv : tag.label_en) : id;
+                        return (
+                          <span key={id} className="rounded-full bg-navy-50 px-2.5 py-1 text-xs font-medium text-navy-700">
+                            {label}
+                          </span>
+                        );
+                      })}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+
+              <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+                <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.detailDescriptionLabel}</h2>
+                <p className="mt-2 text-sm text-navy-700">{lang === "sv" ? entry.description_sv : entry.description_en}</p>
+              </div>
+            </>
+          )}
+
         {missing.length > 0 && (
-          <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-6">
-            <h2 className="font-bold text-amber-900">{pb.detailMissingInfoTitle}</h2>
-            <p className="mt-1 text-sm text-amber-800">{pb.detailMissingInfoBody}</p>
-            <ul className="mt-4 space-y-1.5">
-              {missing.map((m) => (
-                <li key={m} className="text-sm text-amber-800">
-                  ⚠ {m}
-                </li>
-              ))}
-            </ul>
+          <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-3" data-testid="missing-info">
+            <button
+              type="button"
+              onClick={() => setShowMissing(!showMissing)}
+              aria-expanded={showMissing}
+              className="flex w-full items-center justify-between gap-3 text-left text-sm font-semibold text-amber-900"
+            >
+              <span>⚠ {pb.detailMissingInfoSummary(missing.length)}</span>
+              <span className="text-xs">{showMissing ? pb.detailMissingInfoHide : pb.detailMissingInfoShow}</span>
+            </button>
+            {showMissing && (
+              <>
+                <p className="mt-2 text-sm text-amber-800">{pb.detailMissingInfoBody}</p>
+                <ul className="mt-3 space-y-1.5 pb-2">
+                  {missing.map((m) => (
+                    <li key={m} className="text-sm text-amber-800">
+                      ⚠ {m}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         )}
 
@@ -599,9 +630,15 @@ export default function ProjectBankDetailPage() {
           <h2 id="applications-title" className="text-lg font-bold text-navy-800">
             {at.sectionTitle}
           </h2>
-          <p className="mt-1 text-sm text-navy-500">{at.sectionHint}</p>
           {applications.length === 0 ? (
-            <p className="mt-3 text-sm text-navy-500">{at.none}</p>
+            <p className="mt-2 text-sm text-navy-500">
+              {pb.noApplicationsYet}{" "}
+              {matches.length > 0 && (
+                <button type="button" onClick={() => setActiveTab("matches")} className="font-semibold text-navy-700 hover:underline">
+                  {pb.seeMatchingCalls(matches.length)} →
+                </button>
+              )}
+            </p>
           ) : (
             <ul className="mt-4 space-y-3">
               {applications.map((record) => {
@@ -695,9 +732,8 @@ export default function ProjectBankDetailPage() {
           <h2 id="grants-title" className="text-lg font-bold text-navy-800">
             {pb.grantsSectionTitle}
           </h2>
-          <p className="mt-1 text-sm text-navy-500">{pb.grantsSectionHint}</p>
           {projectGrants.length === 0 ? (
-            <p className="mt-3 text-sm text-navy-500">{pb.grantsNone}</p>
+            <p className="mt-2 text-sm text-navy-500">{pb.grantsNone}</p>
           ) : (
             <ul className="mt-4 space-y-3">
               {projectGrants.map((grant) => {
@@ -736,122 +772,8 @@ export default function ProjectBankDetailPage() {
           )}
         </section>
 
-        <div className="mt-6" id="matches">
-          <h2 className="text-lg font-bold text-navy-800">{pb.detailMatchesTitle}</h2>
-          {matches.length === 0 ? (
-            <p className="mt-2 text-sm text-navy-500">{pb.detailNoMatches}</p>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {visibleMatches.map((match) => (
-                <div
-                  key={match.call.id}
-                  className="flex flex-col gap-3 rounded-xl border border-navy-100 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-xs font-bold text-white">
-                      {match.program.logoLetter}
-                    </span>
-                    <div>
-                      <p className="text-xs font-semibold uppercase text-navy-400">
-                        {match.program.shortName}
-                        {match.call.status === "upcoming" && (
-                          <span className="ml-2 normal-case">
-                            <CallStatusBadge call={match.call} />
-                          </span>
-                        )}
-                      </p>
-                      <p className="font-semibold text-navy-800">
-                        {lang === "sv" ? match.call.title_sv : match.call.title_en}
-                      </p>
-                      <AmountBenchmark stats={benchmarks[match.call.programId]} />
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-3">
-                    <span className={`badge ${recommendationStyle(match.recommendation)}`}>{match.score}%</span>
-                    {(() => {
-                      // An application already in progress to this call is
-                      // resumed; otherwise a new one starts.
-                      const active = activeApplicationFor(match.call.id);
-                      return (
-                        <Link
-                          href={active ? applicationHref(active) : `/ansokan?project=${entry.id}&call=${match.call.id}`}
-                          className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
-                        >
-                          {active ? at.continueApplication : results.startApplication}
-                        </Link>
-                      );
-                    })()}
-                  </div>
-                </div>
-              ))}
-              {matches.length > MATCHES_SHOWN && (
-                <button
-                  type="button"
-                  onClick={() => setShowAllMatches(!showAllMatches)}
-                  className="w-full rounded-xl border border-dashed border-navy-200 bg-white py-2.5 text-sm font-semibold text-navy-600 transition hover:bg-navy-50"
-                >
-                  {showAllMatches ? pb.showFewerMatches : pb.showAllMatches(matches.length)}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Who, tasks and attachments come after the project's applications,
-            grants and matches — those are what people open the page for. */}
         <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.peopleAndSharingTitle}</h2>
-            <Link href="/installningar/anvandare" className="text-xs font-semibold text-navy-500 hover:text-navy-800">
-              ⚙ {t.usersSettings.title}
-            </Link>
-          </div>
-
-          <div className="mt-3">
-            <h3 className="text-xs font-semibold uppercase text-navy-400">{pb.assignedRolesTitle}</h3>
-            {assignedUsers.length === 0 ? (
-              <p className="mt-1 text-sm text-navy-500">{pb.noAssignedRoles}</p>
-            ) : (
-              <ul className="mt-1.5 space-y-1.5">
-                {assignedUsers.map((u) => {
-                  const role = u.projectRoles.find((r) => r.projectId === entry.id)?.role;
-                  if (!role) return null;
-                  return (
-                    <li key={u.id} className="flex items-center justify-between text-sm">
-                      <span className="text-navy-800">
-                        {u.firstName} {u.lastName}
-                      </span>
-                      <span className="text-navy-500">{projectRoleLabels[role][lang]}</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-
-          <div className="mt-5 border-t border-navy-50 pt-4">
-            <h3 className="text-xs font-semibold uppercase text-navy-400">{pb.shareTitle}</h3>
-            <p className="mt-1 text-xs text-navy-400">{pb.shareHint}</p>
-            <ul className="mt-2 space-y-1.5">
-              {shareTargets.map((unit) => (
-                <li key={unit.id} className="flex items-center gap-2" style={{ paddingLeft: unitDepth(orgUnits, unit.id) * 20 }}>
-                  <label className="flex items-center gap-2 text-sm text-navy-700">
-                    <input
-                      type="checkbox"
-                      checked={(entry.sharedWithUnitIds ?? []).includes(unit.id)}
-                      onChange={() => toggleShareUnit(unit.id)}
-                    />
-                    {unit.name}
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
-          <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.tasksTitle}</h2>
-          <p className="mt-1 text-xs text-navy-400">{pb.tasksHint}</p>
+          <h2 id="tasks-title" className="text-sm font-semibold uppercase text-navy-400">{pb.tasksTitle}</h2>
 
           {tasksFor(entry.id).length === 0 ? (
             <p className="mt-3 text-sm text-navy-500">{pb.noTasks}</p>
@@ -956,8 +878,171 @@ export default function ProjectBankDetailPage() {
           </div>
         </div>
 
+        </SectionTabPanel>
+
+        <SectionTabPanel id="matches" active={activeTab}>
+        <div className="mt-6" id="matches">
+          <h2 className="text-lg font-bold text-navy-800">{pb.detailMatchesTitle}</h2>
+          {matches.length === 0 ? (
+            <p className="mt-2 text-sm text-navy-500">{pb.detailNoMatches}</p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {visibleMatches.map((match) => (
+                <div
+                  key={match.call.id}
+                  className="flex flex-col gap-3 rounded-xl border border-navy-100 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-700 text-xs font-bold text-white">
+                      {match.program.logoLetter}
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-navy-400">
+                        {match.program.shortName}
+                        {match.call.status === "upcoming" && (
+                          <span className="ml-2 normal-case">
+                            <CallStatusBadge call={match.call} />
+                          </span>
+                        )}
+                      </p>
+                      <p className="font-semibold text-navy-800">
+                        {lang === "sv" ? match.call.title_sv : match.call.title_en}
+                      </p>
+                      <AmountBenchmark stats={benchmarks[match.call.programId]} />
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <span className={`badge ${recommendationStyle(match.recommendation)}`}>{match.score}%</span>
+                    {(() => {
+                      // An application already in progress to this call is
+                      // resumed; otherwise a new one starts.
+                      const active = activeApplicationFor(match.call.id);
+                      return (
+                        <Link
+                          href={active ? applicationHref(active) : `/ansokan?project=${entry.id}&call=${match.call.id}`}
+                          className="rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700"
+                        >
+                          {active ? at.continueApplication : results.startApplication}
+                        </Link>
+                      );
+                    })()}
+                  </div>
+                </div>
+              ))}
+              {matches.length > MATCHES_SHOWN && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllMatches(!showAllMatches)}
+                  className="w-full rounded-xl border border-dashed border-navy-200 bg-white py-2.5 text-sm font-semibold text-navy-600 transition hover:bg-navy-50"
+                >
+                  {showAllMatches ? pb.showFewerMatches : pb.showAllMatches(matches.length)}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        </SectionTabPanel>
+
+        <SectionTabPanel id="similar" active={activeTab}>
+        <div className="mb-16">
+          <ImportedSimilarProjects project={projectBankEntryToProjectInput(entry)} />
+          <details className="mt-8 rounded-xl border border-navy-100 bg-white p-5" data-testid="example-similar">
+            <summary className="cursor-pointer text-sm font-semibold text-navy-700">
+              {pb.similarExamplesSummary(similar.length)}
+            </summary>
+            <p className="mt-2 text-sm text-navy-500">{pb.similarProjectsIntro}</p>
+            {similar.length === 0 ? (
+              <p className="mt-3 text-sm text-navy-500">{pb.similarProjectsNone}</p>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {similar.map(({ project, similarityPct, sharedKeywords }) => (
+                  <div key={project.id} className="rounded-xl border border-navy-100 bg-white p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase text-navy-400">
+                          {lang === "sv" ? project.theme_sv : project.theme_en}
+                        </p>
+                        <p className="font-semibold text-navy-800">{project.title}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {project.source === "example" && (
+                          <span
+                            className="badge bg-gold-100 text-navy-700"
+                            title={t.referenceProjects.sourceExampleTooltip}
+                          >
+                            {t.referenceProjects.sourceExampleBadge}
+                          </span>
+                        )}
+                        <span className="badge bg-navy-100 text-navy-700">{similarityPct}%</span>
+                      </div>
+                    </div>
+                    {sharedKeywords.length > 0 && (
+                      <p className="mt-2 text-xs text-navy-400">
+                        {pb.similarProjectsSharedLabel}: {sharedKeywords.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </details>
+        </div>
+        </SectionTabPanel>
+
+        <SectionTabPanel id="team" active={activeTab}>
         <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
-          <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.attachmentsTitle}</h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold uppercase text-navy-400">{pb.peopleAndSharingTitle}</h2>
+            <Link href="/installningar/anvandare" className="text-xs font-semibold text-navy-500 hover:text-navy-800">
+              ⚙ {t.usersSettings.title}
+            </Link>
+          </div>
+
+          <div className="mt-3">
+            <h3 className="text-xs font-semibold uppercase text-navy-400">{pb.assignedRolesTitle}</h3>
+            {assignedUsers.length === 0 ? (
+              <p className="mt-1 text-sm text-navy-500">{pb.noAssignedRoles}</p>
+            ) : (
+              <ul className="mt-1.5 space-y-1.5">
+                {assignedUsers.map((u) => {
+                  const role = u.projectRoles.find((r) => r.projectId === entry.id)?.role;
+                  if (!role) return null;
+                  return (
+                    <li key={u.id} className="flex items-center justify-between text-sm">
+                      <span className="text-navy-800">
+                        {u.firstName} {u.lastName}
+                      </span>
+                      <span className="text-navy-500">{projectRoleLabels[role][lang]}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          <div className="mt-5 border-t border-navy-50 pt-4">
+            <h3 className="text-xs font-semibold uppercase text-navy-400">{pb.shareTitle}</h3>
+            <p className="mt-1 text-xs text-navy-400">{pb.shareHint}</p>
+            <ul className="mt-2 space-y-1.5">
+              {shareTargets.map((unit) => (
+                <li key={unit.id} className="flex items-center gap-2" style={{ paddingLeft: unitDepth(orgUnits, unit.id) * 20 }}>
+                  <label className="flex items-center gap-2 text-sm text-navy-700">
+                    <input
+                      type="checkbox"
+                      checked={(entry.sharedWithUnitIds ?? []).includes(unit.id)}
+                      onChange={() => toggleShareUnit(unit.id)}
+                    />
+                    {unit.name}
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-xl border border-navy-100 bg-white p-6">
+          <h2 id="attachments-title" className="text-sm font-semibold uppercase text-navy-400">{pb.attachmentsTitle}</h2>
           <p className="mt-1 text-xs text-navy-400">{pb.attachmentsHint}</p>
 
           {attachmentsFor(`projectbank:${entry.id}`).length === 0 ? (
@@ -1009,45 +1094,8 @@ export default function ProjectBankDetailPage() {
           {attachmentError && <p className="mt-2 text-xs text-amber-700">⚠ {attachmentError}</p>}
         </div>
 
-        <div className="mb-16 mt-8">
-          <h2 className="text-lg font-bold text-navy-800">{pb.similarProjectsTitle}</h2>
-          <p className="mt-1 text-sm text-navy-500">{pb.similarProjectsIntro}</p>
-          {similar.length === 0 ? (
-            <p className="mt-3 text-sm text-navy-500">{pb.similarProjectsNone}</p>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {similar.map(({ project, similarityPct, sharedKeywords }) => (
-                <div key={project.id} className="rounded-xl border border-navy-100 bg-white p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase text-navy-400">
-                        {lang === "sv" ? project.theme_sv : project.theme_en}
-                      </p>
-                      <p className="font-semibold text-navy-800">{project.title}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {project.source === "example" && (
-                        <span
-                          className="badge bg-gold-100 text-navy-700"
-                          title={t.referenceProjects.sourceExampleTooltip}
-                        >
-                          {t.referenceProjects.sourceExampleBadge}
-                        </span>
-                      )}
-                      <span className="badge bg-navy-100 text-navy-700">{similarityPct}%</span>
-                    </div>
-                  </div>
-                  {sharedKeywords.length > 0 && (
-                    <p className="mt-2 text-xs text-navy-400">
-                      {pb.similarProjectsSharedLabel}: {sharedKeywords.join(", ")}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-          <ImportedSimilarProjects project={projectBankEntryToProjectInput(entry)} />
-        </div>
+          <div className="mb-16" />
+        </SectionTabPanel>
       </main>
       <Footer />
     </>

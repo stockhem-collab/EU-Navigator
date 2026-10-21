@@ -117,7 +117,10 @@ export default function ProjectForm({
   const { config: orgConfig } = useOrgConfig();
 
   const formRef = useRef<HTMLFormElement>(null);
-  const fillExample = () => setProject(lang === "sv" ? EXAMPLE_SV : EXAMPLE_EN);
+  const fillExample = () => {
+    setProject(lang === "sv" ? EXAMPLE_SV : EXAMPLE_EN);
+    setMoreOpen(true);
+  };
 
   const suggestedTags = useMemo(
     () => suggestTags(`${project.title} ${project.description}`),
@@ -135,6 +138,15 @@ export default function ProjectForm({
   const partnerLevel: PartnerLevel = project.partnerLevel ?? (project.hasInternationalPartner ? "international" : "none");
   const requestedGrantTooHigh =
     project.requestedGrantSEK !== undefined && project.requestedGrantSEK > project.budgetSEK;
+
+  // Open from the start when the project already says something there
+  // (an existing project, the example, a draft brought back).
+  const [moreOpen, setMoreOpen] = useState(() => {
+    const p = initialProject ?? draftProject;
+    return Boolean(
+      p && ((p.secondarySectors ?? []).length > 0 || (p.targetGroups ?? []).length > 0 || p.region || p.applicantType || (p.partnerLevel && p.partnerLevel !== "none"))
+    );
+  });
 
   const toggleIn = <T,>(list: T[] | undefined, value: T): T[] =>
     (list ?? []).includes(value) ? (list ?? []).filter((v) => v !== value) : [...(list ?? []), value];
@@ -239,35 +251,6 @@ export default function ProjectForm({
         </div>
         <p className="-mt-4 text-xs text-navy-500">{intake.activityTypeHint}</p>
 
-        <fieldset>
-          <legend className="block text-sm font-semibold text-navy-800">{intake.fieldSecondarySectors}</legend>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {SECTORS.filter((s) => s !== project.sector).map((s) => (
-              <Chip
-                key={s}
-                label={intake.sectors[s]}
-                checked={(project.secondarySectors ?? []).includes(s)}
-                onChange={() => setProject({ ...project, secondarySectors: toggleIn(project.secondarySectors, s) })}
-              />
-            ))}
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend className="block text-sm font-semibold text-navy-800">{intake.fieldTargetGroups}</legend>
-          <p className="mt-1 text-xs text-navy-500">{intake.targetGroupsHint}</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {ALL_TARGET_GROUPS.map((g) => (
-              <Chip
-                key={g}
-                label={targetGroupLabel(g, lang)}
-                checked={(project.targetGroups ?? []).includes(g)}
-                onChange={() => setProject({ ...project, targetGroups: toggleIn(project.targetGroups, g) })}
-              />
-            ))}
-          </div>
-        </fieldset>
-
         <div className="grid gap-6 sm:grid-cols-2">
           <div>
             <label htmlFor="intake-budget" className="block text-sm font-semibold text-navy-800">{intake.fieldBudget}</label>
@@ -336,6 +319,7 @@ export default function ProjectForm({
               selected={project.tags ?? []}
               onChange={(tags) => setProject({ ...project, tags })}
               suggested={suggestedTags}
+              focusGroups={[project.sector, ...(project.secondarySectors ?? [])]}
               lang={lang}
               labels={{
                 hint: intake.tagsHint,
@@ -373,67 +357,110 @@ export default function ProjectForm({
               className={inputClass}
             />
           </div>
-
-          <div>
-            <label htmlFor="intake-region" className="block text-sm font-semibold text-navy-800">{intake.fieldRegion}</label>
-            <select
-              id="intake-region"
-              value={project.region ?? ""}
-              onChange={(e) => setProject({ ...project, region: (e.target.value || undefined) as SwedishRegion | undefined })}
-              className={inputClass}
-            >
-              <option value="">{intake.regionPlaceholder}</option>
-              {ALL_REGIONS.map((r) => (
-                <option key={r} value={r}>
-                  {regionLabel(r)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="intake-applicant" className="block text-sm font-semibold text-navy-800">{intake.fieldApplicantType}</label>
-            <select
-              id="intake-applicant"
-              value={applicantType}
-              onChange={(e) => setProject({ ...project, applicantType: e.target.value as ApplicantType })}
-              aria-describedby="intake-applicant-hint"
-              className={inputClass}
-            >
-              {ALL_APPLICANT_TYPES.map((a) => (
-                <option key={a} value={a}>
-                  {applicantTypeLabel(a, lang)}
-                </option>
-              ))}
-            </select>
-            <p id="intake-applicant-hint" className="mt-1 text-xs text-navy-500">
-              {applicantTypeIsFromProfile ? intake.applicantTypeFromProfile : intake.applicantTypeDefault}
-            </p>
-          </div>
-
-          <div>
-            <label htmlFor="intake-partnership" className="block text-sm font-semibold text-navy-800">{intake.fieldPartnership}</label>
-            <select
-              id="intake-partnership"
-              value={partnerLevel}
-              onChange={(e) => {
-                const level = e.target.value as PartnerLevel;
-                setProject({
-                  ...project,
-                  partnerLevel: level,
-                  hasInternationalPartner: level === "international" || level === "consortium",
-                });
-              }}
-              className={inputClass}
-            >
-              {ALL_PARTNER_LEVELS.map((l) => (
-                <option key={l} value={l}>
-                  {partnerLevelLabel(l, lang)}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
+
+        {/* What sharpens the matching but isn't needed to start: folded away
+            unless something in it is already filled in. */}
+        <details
+          open={moreOpen}
+          onToggle={(e) => setMoreOpen((e.target as HTMLDetailsElement).open)}
+          className="rounded-xl border border-navy-100 bg-white p-5"
+        >
+          <summary className="cursor-pointer text-sm font-semibold text-navy-800">{intake.moreDetailsSummary}</summary>
+          <p className="mt-1 text-xs text-navy-500">{intake.moreDetailsHint}</p>
+          <div className="mt-5 space-y-6">
+            <fieldset>
+              <legend className="block text-sm font-semibold text-navy-800">{intake.fieldSecondarySectors}</legend>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {SECTORS.filter((s) => s !== project.sector).map((s) => (
+                  <Chip
+                    key={s}
+                    label={intake.sectors[s]}
+                    checked={(project.secondarySectors ?? []).includes(s)}
+                    onChange={() => setProject({ ...project, secondarySectors: toggleIn(project.secondarySectors, s) })}
+                  />
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend className="block text-sm font-semibold text-navy-800">{intake.fieldTargetGroups}</legend>
+              <p className="mt-1 text-xs text-navy-500">{intake.targetGroupsHint}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {ALL_TARGET_GROUPS.map((g) => (
+                  <Chip
+                    key={g}
+                    label={targetGroupLabel(g, lang)}
+                    checked={(project.targetGroups ?? []).includes(g)}
+                    onChange={() => setProject({ ...project, targetGroups: toggleIn(project.targetGroups, g) })}
+                  />
+                ))}
+              </div>
+            </fieldset>
+
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div>
+                <label htmlFor="intake-region" className="block text-sm font-semibold text-navy-800">{intake.fieldRegion}</label>
+                <select
+                  id="intake-region"
+                  value={project.region ?? ""}
+                  onChange={(e) => setProject({ ...project, region: (e.target.value || undefined) as SwedishRegion | undefined })}
+                  className={inputClass}
+                >
+                  <option value="">{intake.regionPlaceholder}</option>
+                  {ALL_REGIONS.map((r) => (
+                    <option key={r} value={r}>
+                      {regionLabel(r)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="intake-applicant" className="block text-sm font-semibold text-navy-800">{intake.fieldApplicantType}</label>
+                <select
+                  id="intake-applicant"
+                  value={applicantType}
+                  onChange={(e) => setProject({ ...project, applicantType: e.target.value as ApplicantType })}
+                  aria-describedby="intake-applicant-hint"
+                  className={inputClass}
+                >
+                  {ALL_APPLICANT_TYPES.map((a) => (
+                    <option key={a} value={a}>
+                      {applicantTypeLabel(a, lang)}
+                    </option>
+                  ))}
+                </select>
+                <p id="intake-applicant-hint" className="mt-1 text-xs text-navy-500">
+                  {applicantTypeIsFromProfile ? intake.applicantTypeFromProfile : intake.applicantTypeDefault}
+                </p>
+              </div>
+
+              <div>
+                <label htmlFor="intake-partnership" className="block text-sm font-semibold text-navy-800">{intake.fieldPartnership}</label>
+                <select
+                  id="intake-partnership"
+                  value={partnerLevel}
+                  onChange={(e) => {
+                    const level = e.target.value as PartnerLevel;
+                    setProject({
+                      ...project,
+                      partnerLevel: level,
+                      hasInternationalPartner: level === "international" || level === "consortium",
+                    });
+                  }}
+                  className={inputClass}
+                >
+                  {ALL_PARTNER_LEVELS.map((l) => (
+                    <option key={l} value={l}>
+                      {partnerLevelLabel(l, lang)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        </details>
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <button

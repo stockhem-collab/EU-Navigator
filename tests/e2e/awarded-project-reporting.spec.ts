@@ -13,12 +13,14 @@ test("an awarded project's reporting timeline and requirements are visible", asy
   await page.getByTestId("report-requirements-toggle").click();
   await expect(page.getByTestId("report-requirements-summary")).toContainText("Årsvis");
 
-  // Every report in the plan, with its status.
+  // The final report is the one to write now, on the first tab.
+  await expect(page.locator("#next-report").getByRole("heading", { name: "Slutrapport" })).toBeVisible();
+
+  // Every report in the plan, with its status, under Uppföljning.
+  await page.getByRole("tab", { name: "Uppföljning" }).click();
   const reports = page.locator("#reports");
   await expect(reports.locator("li", { hasText: "Lägesrapport 2027" }).getByText("Godkänd")).toBeVisible();
   await expect(reports.locator("li", { hasText: "Lägesrapport 2028" }).getByText("Inlämnad")).toBeVisible();
-  // The final report is the one to write now, at the top.
-  await expect(page.locator("#next-report").getByRole("heading", { name: "Slutrapport" })).toBeVisible();
 });
 
 test("submitting the next upcoming report updates the commitment summary and moves the project into closure", async ({
@@ -34,9 +36,10 @@ test("submitting the next upcoming report updates the commitment summary and mov
   await page.getByRole("button", { name: "Markera som inlämnad" }).click();
   await page.getByRole("button", { name: "Lämna in ändå" }).click();
 
-  // The commitment summary now reflects the just-submitted final report.
-  await expect(page.getByText("1 500 / 1 500 personer")).toBeVisible();
   await expect(page.locator("#next-report").getByText("All rapportering avslutad.")).toBeVisible();
+  // The commitment summary now reflects the just-submitted final report.
+  await page.getByRole("tab", { name: "Uppföljning" }).click();
+  await expect(page.getByText("1 500 / 1 500 personer")).toBeVisible();
 
   // The reporting badge on the Projekt list reflects the same local submission
   // — folded into the project's own status row (see LinkedReportingBadge),
@@ -52,8 +55,10 @@ test("a financial summary is shown once spend has been reported, and updates whe
 
   // ap-1's seed data already has spend figures on its two past reports
   // (9.5M + 8.9M of a 42.4M award).
+  await page.getByRole("tab", { name: "Uppföljning" }).click();
   await expect(page.getByText("Ekonomisk uppföljning")).toBeVisible();
   await expect(page.getByText("18,4 mnkr / 42,4 mnkr")).toBeVisible();
+  await page.getByRole("tab", { name: "Nästa rapport" }).click();
 
   // Submitting the next report (Slutrapport) with a spend figure rolls it
   // into the cumulative total shown in the summary card.
@@ -65,6 +70,7 @@ test("a financial summary is shown once spend has been reported, and updates whe
   await page.getByRole("button", { name: "Markera som inlämnad" }).click();
   await page.getByRole("button", { name: "Lämna in ändå" }).click();
 
+  await page.getByRole("tab", { name: "Uppföljning" }).click();
   const final = page.locator("#reports li", { hasText: "Slutrapport" });
   await final.getByRole("button", { name: "Visa" }).click();
   await expect(final.getByText("Förbrukat denna period: 13 mnkr")).toBeVisible();

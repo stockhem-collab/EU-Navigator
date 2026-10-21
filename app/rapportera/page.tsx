@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
-import PageHeader, { HeaderToggle } from "@/components/PageHeader";
+import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
 import Footer from "@/components/Footer";
 import LinkedReportingBadge from "@/components/LinkedReportingBadge";
@@ -38,7 +38,7 @@ export default function ReportPage() {
   const { config: orgConfig } = useOrgConfig();
   const currentUser = users.find((u) => u.id === CURRENT_USER_ID);
   const orgUnitsAll = orgConfig.units ?? seedOrgUnits;
-  const [onlyMineAndShared, setOnlyMineAndShared] = useOnlyMineAndShared();
+  const [onlyMineAndShared] = useOnlyMineAndShared();
   const [showDone, setShowDone] = useState(false);
   // Arriving at #done (e.g. from Översikt or Datacenter) unfolds that list.
   useEffect(() => {
@@ -73,9 +73,7 @@ export default function ReportPage() {
     <>
       <Header />
       <main className="page">
-        <PageHeader title={r.title} subtitle={r.subtitle}>
-          <HeaderToggle checked={onlyMineAndShared} onChange={setOnlyMineAndShared} label={ap.onlyMineAndSharedToggle} />
-        </PageHeader>
+        <PageHeader title={r.title} subtitle={r.subtitle} />
 
         {/* Each figure is a shortcut to its own list below, as on Översikt. */}
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">

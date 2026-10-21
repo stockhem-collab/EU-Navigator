@@ -55,7 +55,7 @@ test("co-financing shows own financing per year and exports a decision brief", a
 });
 
 test("audit readiness is ticked off per grant", async ({ page }) => {
-  await page.goto("/stod/ap-2");
+  await page.goto("/stod/ap-2#audit");
   const progress = page.getByTestId("audit-progress");
   await expect(progress).toHaveText(/^0 av \d+ klara$/);
   await page.getByTestId("audit-item-time-records").check();

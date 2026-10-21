@@ -16,6 +16,9 @@ import { computeMatchesForCall } from "@/lib/matching/portfolio";
 import { FundingCall, FundingProgram } from "@/lib/types";
 
 const MATCH_THRESHOLD = 50;
+/** Calls shown as full cards; the rest of the matching calls are rows in
+ * a compact list, opened on request. */
+const CARDS_SHOWN = 5;
 
 type CallRow = {
   call: FundingCall;
@@ -40,6 +43,7 @@ export default function FundingOpportunities({ projects }: { projects?: ProjectB
   const { prefs, hydrated: watchHydrated, toggleCall } = useWatchPreferences();
   const [onlyWatched, setOnlyWatched] = useState(false);
   const [showOtherCalls, setShowOtherCalls] = useState(false);
+  const [showAllRelevant, setShowAllRelevant] = useState(false);
   const { show: showOutdated, setShow: setShowOutdated } = useShowOutdatedCalls();
   const outdatedCount = fundingCalls.filter((call) => isCallOutdated(call)).length;
 
@@ -95,10 +99,26 @@ export default function FundingOpportunities({ projects }: { projects?: ProjectB
         <div className="mt-4">
           <h3 className="text-sm font-semibold uppercase text-navy-400">{bv.portfolioMatchSectionTitle}</h3>
           <div className="mt-3 space-y-4">
-            {relevant.map((row) => (
+            {relevant.slice(0, CARDS_SHOWN).map((row) => (
               <CallCard key={row.call.id} row={row} watchedCallIds={prefs.callIds} onToggleCall={toggleCall} />
             ))}
           </div>
+          {relevant.length > CARDS_SHOWN &&
+            (showAllRelevant ? (
+              <ul className="mt-4 divide-y divide-navy-50 rounded-xl border border-navy-100 bg-white" data-testid="more-matching-calls">
+                {relevant.slice(CARDS_SHOWN).map((row) => (
+                  <CallListItem key={row.call.id} row={row} />
+                ))}
+              </ul>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowAllRelevant(true)}
+                className="mt-4 w-full rounded-xl border border-dashed border-navy-200 bg-white py-2.5 text-sm font-semibold text-navy-600 transition hover:bg-navy-50"
+              >
+                {bv.showMoreMatchingCalls(relevant.length - CARDS_SHOWN)}
+              </button>
+            ))}
         </div>
       ) : (
         otherCalls.length > 0 && (
@@ -111,11 +131,19 @@ export default function FundingOpportunities({ projects }: { projects?: ProjectB
           {relevant.length > 0 && (
             <h3 className="text-sm font-semibold uppercase text-navy-400">{bv.otherCallsSectionTitle(otherCalls.length)}</h3>
           )}
-          <div className="mt-3 space-y-4">
-            {otherCalls.map((row) => (
-              <CallCard key={row.call.id} row={row} watchedCallIds={prefs.callIds} onToggleCall={toggleCall} />
-            ))}
-          </div>
+          {relevant.length === 0 ? (
+            <div className="mt-3 space-y-4">
+              {otherCalls.map((row) => (
+                <CallCard key={row.call.id} row={row} watchedCallIds={prefs.callIds} onToggleCall={toggleCall} />
+              ))}
+            </div>
+          ) : (
+            <ul className="mt-3 divide-y divide-navy-50 rounded-xl border border-navy-100 bg-white">
+              {otherCalls.map((row) => (
+                <CallListItem key={row.call.id} row={row} />
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
@@ -129,6 +157,44 @@ export default function FundingOpportunities({ projects }: { projects?: ProjectB
         </button>
       )}
     </div>
+  );
+}
+
+// One line per call in the compact list: the call, its deadline and the
+// best-matching project with a way to start applying.
+function CallListItem({ row: { call, program, matches, isWatched } }: { row: CallRow }) {
+  const { t, lang } = useLanguage();
+  const bv = t.bevakning;
+  const best = matches[0];
+  return (
+    <li className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase text-navy-400">
+          {program.shortName}
+          {isWatched && <span className="ml-2 normal-case text-gold-700">{bv.watchedBadge}</span>}
+        </p>
+        <Link href={`/eu-databas/${program.id}/${call.id}`} className="text-sm font-semibold text-navy-800 hover:underline">
+          {lang === "sv" ? call.title_sv : call.title_en}
+        </Link>
+        {best && (
+          <p className="mt-0.5 text-xs text-navy-500">
+            {lang === "sv" ? best.entry.title_sv : best.entry.title_en} · {best.match.score}%
+            {matches.length > 1 && ` · ${bv.moreMatchingProjects(matches.length - 1)}`}
+          </p>
+        )}
+      </div>
+      <div className="flex shrink-0 items-center gap-3">
+        <span className="text-xs text-navy-500">{bv.deadlineInMonths(callDeadlineMonths(call))}</span>
+        {best && (
+          <Link
+            href={`/ansokan?project=${best.entry.id}&call=${call.id}`}
+            className="rounded-md bg-navy-800 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-navy-700"
+          >
+            {bv.startApplication}
+          </Link>
+        )}
+      </div>
+    </li>
   );
 }
 

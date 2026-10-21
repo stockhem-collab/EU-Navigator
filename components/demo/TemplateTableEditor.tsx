@@ -23,11 +23,30 @@ export default function TemplateTableEditor({ table, rows, onChange }: Props) {
   const setCell = (rowIndex: number, col: number, value: string) =>
     onChange(rows.map((row, i) => (i === rowIndex ? columns.map((_, c) => (c === col ? value : row[c] ?? "")) : row)));
 
+  const addRow = () => onChange([...rows, columns.map(() => "")]);
+
+  // An empty table is one line — its name and a way to start it — so a
+  // section with many tables (Horizon Europe's 3.1a–h) stays readable.
+  if (rows.length === 0) {
+    return (
+      <div
+        className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-navy-200 px-3 py-2"
+        data-testid={`template-table-${table.key}`}
+      >
+        <p className="text-sm text-navy-700" title={note}>
+          {title} <span className="text-xs text-navy-400">· {tp.noRows}</span>
+        </p>
+        <button type="button" onClick={addRow} className="text-sm font-semibold text-navy-600 hover:text-navy-900">
+          {tp.addRow}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-3 rounded-lg border border-navy-100 bg-navy-50/40 p-3" data-testid={`template-table-${table.key}`}>
       <p className="text-sm font-semibold text-navy-700">{title}</p>
       {note && <p className="mt-0.5 text-xs text-navy-500">{note}</p>}
-      {rows.length === 0 && <p className="mt-2 text-xs text-navy-400">{tp.noRows}</p>}
       <div className="mt-2 space-y-3">
         {rows.map((row, rowIndex) => (
           <fieldset key={rowIndex} className="rounded-md border border-navy-100 bg-white p-3">
@@ -76,7 +95,7 @@ export default function TemplateTableEditor({ table, rows, onChange }: Props) {
       </div>
       <button
         type="button"
-        onClick={() => onChange([...rows, columns.map(() => "")])}
+        onClick={addRow}
         className="mt-2 text-sm font-semibold text-navy-600 hover:text-navy-900"
       >
         {tp.addRow}

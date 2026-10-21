@@ -227,15 +227,20 @@ function PartnerSearchInner() {
           {state === "ready" && result?.total === 0 && <p className="mt-3 text-sm text-navy-500">{ps.none}</p>}
         </div>
 
-        <ul className={`mt-3 space-y-3 ${state === "loading" ? "opacity-60" : ""}`} data-testid="partner-results">
+        <ul
+          className={`mt-3 divide-y divide-navy-50 overflow-hidden rounded-xl border border-navy-100 bg-white ${state === "loading" ? "opacity-60" : ""} ${hits.length === 0 ? "hidden" : ""}`}
+          data-testid="partner-results"
+        >
           {hits.map((org) => {
             const isOpen = openOrgs.includes(org.organisationId);
             return (
-              <li key={org.organisationId} className="rounded-xl border border-navy-100 bg-white p-5">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h2 className="font-bold text-navy-900">{org.name}</h2>
-                    <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-navy-500">
+              <li key={org.organisationId} className="px-4 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="truncate text-sm font-semibold text-navy-900" title={org.name}>
+                      {org.name}
+                    </h2>
+                    <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-navy-500">
                       <span>{countryName(org.country, lang)}</span>
                       {org.type && (
                         <span className="badge bg-navy-50 text-navy-600" title={org.typeFromName ? ps.typeFromNameTooltip : undefined}>
@@ -246,20 +251,22 @@ function PartnerSearchInner() {
                       {org.latestYear && <span>{ps.latestYear(org.latestYear)}</span>}
                     </p>
                   </div>
-                  <div className="text-right text-sm">
-                    <p className="font-semibold text-navy-800">{ps.projectCount(org.projectCount)}</p>
-                    <p className="text-xs text-navy-500">{ps.roleSummary(org.coordinatorCount, org.partnerCount, org.associatedCount)}</p>
+                  <div className="flex shrink-0 items-center gap-4 text-right text-sm">
+                    <div>
+                      <p className="font-semibold text-navy-800">{ps.projectCount(org.projectCount)}</p>
+                      <p className="text-xs text-navy-500">{ps.roleSummary(org.coordinatorCount, org.partnerCount, org.associatedCount)}</p>
+                    </div>
+                    <button
+                      type="button"
+                      aria-expanded={isOpen}
+                      onClick={() => setOpenOrgs(isOpen ? openOrgs.filter((id) => id !== org.organisationId) : [...openOrgs, org.organisationId])}
+                      className="w-28 text-right text-xs font-semibold text-navy-600 hover:text-navy-900"
+                    >
+                      {isOpen ? ps.hideProjects : ps.showProjects(org.projects.length)}
+                    </button>
                   </div>
                 </div>
-                <p className="mt-2 text-xs text-navy-500">{org.programmes.map((p) => `${p.label} (${p.count})`).join(" · ")}</p>
-                <button
-                  type="button"
-                  aria-expanded={isOpen}
-                  onClick={() => setOpenOrgs(isOpen ? openOrgs.filter((id) => id !== org.organisationId) : [...openOrgs, org.organisationId])}
-                  className="mt-2 text-xs font-semibold text-navy-600 hover:text-navy-900"
-                >
-                  {isOpen ? ps.hideProjects : ps.showProjects(org.projects.length)}
-                </button>
+                {isOpen && <p className="mt-2 text-xs text-navy-500">{org.programmes.map((p) => `${p.label} (${p.count})`).join(" · ")}</p>}
                 {isOpen && (
                   <ul className="mt-2 space-y-1.5 border-t border-navy-50 pt-2 text-sm">
                     {org.projects.map((p) => (
