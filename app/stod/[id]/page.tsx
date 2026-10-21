@@ -242,7 +242,7 @@ export default function GrantPage() {
         />
 
         {/* 3. The report to write now */}
-        <section id="next-report" className="mt-8" aria-labelledby="next-report-heading">
+        <section id="next-report" className="mt-8 scroll-mt-24" aria-labelledby="next-report-heading">
           <h2 id="next-report-heading" className="text-lg font-bold text-navy-800">
             {ap.nextReportTitle}
           </h2>

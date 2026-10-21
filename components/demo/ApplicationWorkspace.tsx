@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -114,6 +114,22 @@ export default function ApplicationWorkspace({
   const coachT = t.demo.coach;
 
   const [tab, setTab] = useState<Tab>(initialTab ?? "application");
+  // A new tab starts at its top: when the page is scrolled past it (e.g.
+  // far down the Krav list), switching tab scrolls back up to the content.
+  const panelTop = useRef<HTMLDivElement>(null);
+  const shownTab = useRef(tab);
+  // Set when the switch goes to a place in the tab (a section, the budget).
+  const scrollTarget = useRef(false);
+  useEffect(() => {
+    if (shownTab.current === tab) return;
+    shownTab.current = tab;
+    if (scrollTarget.current) {
+      scrollTarget.current = false;
+      return;
+    }
+    const el = panelTop.current;
+    if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ block: "start" });
+  }, [tab]);
   const rq = t.req;
 
   const tp = t.tpl;
@@ -306,6 +322,7 @@ export default function ApplicationWorkspace({
   }, [logic]);
   const sectionLabel = (row: ProjectLogicRow) => (lang === "sv" ? row.label_sv : row.label_en);
   const goToSection = (index: number) => {
+    scrollTarget.current = tab !== "application";
     setTab("application");
     window.setTimeout(() => {
       const el = document.getElementById(`section-${index}`);
@@ -314,6 +331,7 @@ export default function ApplicationWorkspace({
     }, 0);
   };
   const goToBudget = () => {
+    scrollTarget.current = tab !== "application";
     setTab("application");
     window.setTimeout(() => document.getElementById("budget-title")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
   };
@@ -583,7 +601,43 @@ export default function ApplicationWorkspace({
 
       <div className="mt-8 grid gap-8 md:grid-cols-[240px_1fr]">
         {/* Persistent sidebar: readiness stays visible whichever tab is open */}
-        <aside className="md:sticky md:top-20 md:self-start">
+        {/* The tabs come first, and the sidebar scrolls on its own when it is
+            taller than the window, so every tab can always be reached. */}
+        <aside className="md:sticky md:top-20 md:max-h-[calc(100vh-14rem)] md:self-start md:overflow-y-auto md:pb-2">
+          <div
+            role="tablist"
+            aria-label={ws.title}
+            className="mb-4 flex gap-2 overflow-x-auto md:mb-6 md:flex-col md:gap-1 md:overflow-visible"
+            onKeyDown={(e) => {
+              if (!["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
+              e.preventDefault();
+              const i = tabs.findIndex((tb) => tb.key === tab);
+              let next = i;
+              if (e.key === "Home") next = 0;
+              else if (e.key === "End") next = tabs.length - 1;
+              else if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (i + 1) % tabs.length;
+              else next = (i - 1 + tabs.length) % tabs.length;
+              setTab(tabs[next].key);
+              document.getElementById(`tab-${tabs[next].key}`)?.focus();
+            }}
+          >
+            {tabs.map((tb) => (
+              <button
+                key={tb.key}
+                id={`tab-${tb.key}`}
+                role="tab"
+                aria-selected={tab === tb.key}
+                aria-controls={`panel-${tb.key}`}
+                tabIndex={tab === tb.key ? 0 : -1}
+                onClick={() => setTab(tb.key)}
+                className={`shrink-0 rounded-md px-3 py-2 text-left text-sm font-semibold transition ${
+                  tab === tb.key ? "bg-navy-800 text-white" : "text-navy-600 hover:bg-navy-50"
+                }`}
+              >
+                {tb.label}
+              </button>
+            ))}
+          </div>
           <div className="rounded-xl border border-navy-100 bg-white p-5">
             <p className="text-xs font-semibold uppercase text-navy-400">{readinessT.title}</p>
             <p className="mt-1 text-4xl font-extrabold text-navy-900" data-testid="readiness-overall">
@@ -649,44 +703,10 @@ export default function ApplicationWorkspace({
             </div>
           )}
 
-          <div
-            role="tablist"
-            aria-label={ws.title}
-            className="mt-4 flex gap-2 overflow-x-auto md:mt-6 md:flex-col md:gap-1 md:overflow-visible"
-            onKeyDown={(e) => {
-              if (!["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
-              e.preventDefault();
-              const i = tabs.findIndex((tb) => tb.key === tab);
-              let next = i;
-              if (e.key === "Home") next = 0;
-              else if (e.key === "End") next = tabs.length - 1;
-              else if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (i + 1) % tabs.length;
-              else next = (i - 1 + tabs.length) % tabs.length;
-              setTab(tabs[next].key);
-              document.getElementById(`tab-${tabs[next].key}`)?.focus();
-            }}
-          >
-            {tabs.map((tb) => (
-              <button
-                key={tb.key}
-                id={`tab-${tb.key}`}
-                role="tab"
-                aria-selected={tab === tb.key}
-                aria-controls={`panel-${tb.key}`}
-                tabIndex={tab === tb.key ? 0 : -1}
-                onClick={() => setTab(tb.key)}
-                className={`shrink-0 rounded-md px-3 py-2 text-left text-sm font-semibold transition ${
-                  tab === tb.key ? "bg-navy-800 text-white" : "text-navy-600 hover:bg-navy-50"
-                }`}
-              >
-                {tb.label}
-              </button>
-            ))}
-          </div>
         </aside>
 
         {/* Active tab content */}
-        <div className="min-w-0">
+        <div className="min-w-0 scroll-mt-24" ref={panelTop}>
           {tab === "requirements" && (
             <div id="panel-requirements" role="tabpanel" aria-labelledby="tab-requirements" tabIndex={0}>
               <RequirementsPanel

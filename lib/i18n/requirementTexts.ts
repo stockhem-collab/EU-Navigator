@@ -93,6 +93,7 @@ export interface RequirementTexts {
     show: string;
     hide: string;
     goToReport: string;
+    continueToReport: string;
     cardLine: (pct: number, open: number) => string;
     openWarning: (n: number, titles: string) => string;
     andMore: string;
@@ -261,6 +262,7 @@ export const requirementSv: RequirementTexts = {
     show: "Visa kraven",
     hide: "Dölj kraven",
     goToReport: "Till rapporten",
+    continueToReport: "Dölj kraven och skriv rapporten →",
     cardLine: (pct, open) => `Krav för rapporten: ${pct} % komplett${open > 0 ? ` · ${open} obligatoriska kvar` : ""}`,
     openWarning: (n, titles) =>
       `${n === 1 ? "1 obligatoriskt krav" : `${n} obligatoriska krav`} för rapporten är inte ${n === 1 ? "klart" : "klara"}: ${titles}.`,
@@ -432,6 +434,7 @@ export const requirementEn: RequirementTexts = {
     show: "Show the requirements",
     hide: "Hide the requirements",
     goToReport: "Go to the report",
+    continueToReport: "Hide the requirements and write the report →",
     cardLine: (pct, open) => `Report requirements: ${pct}% complete${open > 0 ? ` · ${open} mandatory left` : ""}`,
     openWarning: (n, titles) => `${n === 1 ? "1 mandatory requirement" : `${n} mandatory requirements`} for the report ${n === 1 ? "is" : "are"} not met: ${titles}.`,
     andMore: "and more",

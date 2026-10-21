@@ -47,6 +47,11 @@ test("the grant opens with the reporting requirements; the report moves them on"
   await expect(page.getByTestId("report-requirements-card")).toContainText("Krav för rapporten:");
   await expect(page.getByTestId("report-requirements-warning")).toContainText("obligatoriska krav för rapporten är inte klara");
 
+  // From the end of the list straight on to the report.
+  await page.getByTestId("report-requirements-continue").click();
+  await expect(page.getByTestId("report-requirements-summary")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Nästa rapport" })).toBeInViewport();
+
   // Opened again: a line, not the whole overview, and the statuses are kept.
   await page.waitForTimeout(200);
   await page.reload();

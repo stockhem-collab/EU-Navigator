@@ -66,7 +66,7 @@ export default function ReportRequirementsPanel({
 
   const pct = summary?.score ?? 0;
   return (
-    <section id="report-requirements" className="mt-8 rounded-xl border border-navy-100 bg-white p-5" data-testid="report-requirements" aria-labelledby="report-requirements-heading">
+    <section id="report-requirements" className="mt-8 scroll-mt-24 rounded-xl border border-navy-100 bg-white p-5" data-testid="report-requirements" aria-labelledby="report-requirements-heading">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 id="report-requirements-heading" className="text-lg font-bold text-navy-800">
@@ -78,15 +78,22 @@ export default function ReportRequirementsPanel({
             </p>
           )}
         </div>
-        <button
-          type="button"
-          aria-expanded={open}
-          onClick={() => onOpenChange(!open)}
-          className="text-sm font-semibold text-navy-600 hover:text-navy-900"
-          data-testid="report-requirements-toggle"
-        >
-          {open ? rp.hide : rp.show}
-        </button>
+        <div className="flex flex-wrap items-center gap-4">
+          {open && active && (
+            <a href="#next-report" className="text-sm font-semibold text-navy-600 hover:text-navy-900">
+              {rp.goToReport} ↓
+            </a>
+          )}
+          <button
+            type="button"
+            aria-expanded={open}
+            onClick={() => onOpenChange(!open)}
+            className="text-sm font-semibold text-navy-600 hover:text-navy-900"
+            data-testid="report-requirements-toggle"
+          >
+            {open ? rp.hide : rp.show}
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -185,6 +192,20 @@ export default function ReportRequirementsPanel({
             <OtherReports title={items ? rp.otherReportsTitle : undefined} requirements={other} appliesTo={appliesTo} />
           )}
           <p className="mt-4 text-xs text-navy-500">{rp.callTextWins}</p>
+          {/* From the end of a long list straight on to the report. */}
+          {active && (
+            <button
+              type="button"
+              onClick={() => {
+                onOpenChange(false);
+                requestAnimationFrame(() => document.getElementById("next-report")?.scrollIntoView({ block: "start" }));
+              }}
+              className="mt-4 rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white hover:bg-navy-700"
+              data-testid="report-requirements-continue"
+            >
+              {rp.continueToReport}
+            </button>
+          )}
         </div>
       )}
     </section>

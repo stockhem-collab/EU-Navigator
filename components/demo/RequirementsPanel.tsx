@@ -183,7 +183,16 @@ export default function RequirementsPanel({
         }}
       />
 
-      <p className="mb-16 mt-4 text-xs text-navy-500">{rq.callTextWins}</p>
+      <p className="mt-4 text-xs text-navy-500">{rq.callTextWins}</p>
+      {/* From the end of the list straight on to writing. */}
+      <button
+        type="button"
+        onClick={onStartWriting}
+        className="mb-16 mt-4 rounded-md bg-navy-800 px-4 py-2 text-sm font-semibold text-white hover:bg-navy-700"
+        data-testid="requirements-start-writing-bottom"
+      >
+        {rq.startWriting}
+      </button>
     </div>
   );
 }

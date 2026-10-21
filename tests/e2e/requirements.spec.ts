@@ -34,7 +34,7 @@ test("a new application opens on Krav; statuses count in the assessment and are 
   await page.getByLabel("Anteckning").blur();
 
   // Writing a section moves the form's requirement on its own.
-  await page.getByRole("button", { name: "Börja skriva ansökan →" }).click();
+  await page.getByRole("button", { name: "Börja skriva ansökan →" }).first().click();
   await page.locator("#section-0").fill("Problemet: för få yrkesverksamma i äldreomsorgen har grundläggande digital kompetens.");
   await page.getByRole("tab", { name: "Krav" }).click();
   await expect(page.getByTestId("requirement-esf-form")).toHaveAttribute("data-status", "in-progress");
@@ -55,6 +55,23 @@ test("a new application opens on Krav; statuses count in the assessment and are 
   await expect(page.getByTestId("requirement-esf-authorised-signatory")).toHaveAttribute("data-status", "done");
   await expect(page.getByTestId("requirement-esf-de-minimis-form")).toHaveAttribute("data-status", "not-applicable");
   await expect(page.getByLabel("Anteckning")).toHaveValue("Inga deltagande företag");
+});
+
+test("every tab can be reached from far down the Krav list, and opens at its top", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto(`${ESF}&flik=krav`);
+  await expect(page.locator('[data-draft-loaded="true"]')).toBeVisible();
+  await page.getByTestId("requirements-start-writing-bottom").scrollIntoViewIfNeeded();
+  for (const name of ["Krav", "Ansökan", "Bedömning", "Process & granskning"]) {
+    await expect(page.getByRole("tab", { name })).toBeInViewport();
+  }
+  await page.getByRole("tab", { name: "Ansökan" }).click();
+  await expect(page.locator("#panel-application")).toBeInViewport();
+
+  // And from the very end of the list, a button straight on to writing.
+  await page.getByRole("tab", { name: "Krav" }).click();
+  await page.getByTestId("requirements-start-writing-bottom").click();
+  await expect(page.getByRole("tab", { name: "Ansökan" })).toHaveAttribute("aria-selected", "true");
 });
 
 test("an own requirement and an uploaded file", async ({ page }) => {
