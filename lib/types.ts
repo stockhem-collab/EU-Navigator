@@ -298,7 +298,101 @@ export interface CallTemplate {
   /** The evaluation criteria the form's sections are assessed against —
    * given to calls using the template that don't state their own. */
   evaluationCriteria?: EvaluationCriterion[];
+  /** What a complete application with this form needs besides the form
+   * itself: annexes, certificates, declarations and formal conditions (see
+   * lib/data/applicationRequirements.ts). Shared by every call using the
+   * form; a call adds or removes its own (FundingCall.requirementChanges). */
+  requirements?: ApplicationRequirement[];
   sections: ApplicationTemplateSection[];
+}
+
+// ---------------------------------------------------------------------------
+// Application requirements — what a call asks for to count an application
+// as complete: the form, the budget, annexes, certificates, declarations,
+// eligibility conditions and the submission itself. Listed in the
+// Ansökningsstudio's Krav tab with a status per application; see
+// lib/data/applicationRequirements.ts.
+// ---------------------------------------------------------------------------
+export type RequirementKind = "form" | "budget" | "annex" | "certificate" | "declaration" | "eligibility" | "submission";
+
+/** When the requirement is due: with the application, after the call has
+ * closed (e.g. ESF's confirmation within 24 hours) or before the grant
+ * agreement is signed (not counted in the application's completeness). */
+export type RequirementDue = "with-application" | "after-close" | "before-agreement";
+
+/** Who in the organisation usually provides it. */
+export type RequirementOwner = "applicant" | "signatory" | "finance" | "procurement" | "partners" | "hr";
+
+/** What the app can check on its own, so the status follows the
+ * application instead of being ticked by hand. */
+export type RequirementCheck =
+  | { type: "form" }
+  | { type: "page-limit" }
+  | { type: "section"; key: string }
+  | { type: "cost-categories" }
+  | { type: "budget" }
+  | { type: "submitted" }
+  | { type: "partner-countries"; min: number }
+  // Reports: the report's sections, its outcomes for the commitments, the
+  // period's costs and one of the call's required documents.
+  | { type: "report-sections" }
+  | { type: "report-indicators" }
+  | { type: "report-spend" }
+  | { type: "report-document"; index: number };
+
+export interface ApplicationRequirement {
+  /** Stable id — a call removes a form's requirement by it. */
+  id: string;
+  kind: RequirementKind;
+  title_sv: string;
+  title_en: string;
+  /** What it is and why it is asked for, in a sentence or two. */
+  why_sv: string;
+  why_en: string;
+  /** False = recommended, not counted as missing. */
+  mandatory: boolean;
+  /** When it only applies to some applicants ("offentliga aktörer", "om de
+   * minimis används") — the user marks it not applicable otherwise. */
+  condition_sv?: string;
+  condition_en?: string;
+  /** Public bodies are exempt — not applicable for one. */
+  exemptPublicBodies?: boolean;
+  owner?: RequirementOwner;
+  /** How long it usually takes to get in place, in days — warns when the
+   * deadline is closer than that. */
+  leadTimeDays?: number;
+  due?: RequirementDue;
+  /** For "after-close": how many hours after the deadline. */
+  dueOffsetHours?: number;
+  check?: RequirementCheck;
+  /** For a report requirement: the kinds of report it applies to;
+   * undefined = every report. */
+  reports?: ("interim" | "final")[];
+  /** The funder's template or page for it. */
+  link?: { url: string; label_sv: string; label_en: string };
+  /** Where the requirement is stated, and when it was last checked. */
+  source: { document: string; url?: string; section?: string; checkedAt: string };
+}
+
+/** A call's own changes to its form's requirements — from
+ * data/utlysningskrav.csv. */
+export interface RequirementChanges {
+  add?: ApplicationRequirement[];
+  /** Requirement ids of the form or programme that don't apply. */
+  remove?: string[];
+  /** The call's page limit, when it differs from the form's (e.g. 45 pages
+   * for a lump-sum topic). */
+  pageLimit?: number;
+}
+
+/** Where the user is with one requirement in one application. */
+export type RequirementStatus = "todo" | "in-progress" | "done" | "not-applicable";
+
+export interface RequirementState {
+  status: RequirementStatus;
+  /** Why it doesn't apply, or anything else worth noting. */
+  note?: string;
+  updatedAt: string; // ISO
 }
 
 /** Structured applicant-eligibility categories — the typed alternative to
@@ -412,6 +506,13 @@ export interface FundingCall {
    * ApplicationTemplateSection. Undefined = no call-specific structure on
    * file; the workspace falls back to the generic project-logic template. */
   applicationTemplate?: ApplicationTemplateSection[];
+  /** This call's own additions to and exceptions from its form's
+   * requirements for a complete application (see ApplicationRequirement),
+   * from data/utlysningskrav.csv. */
+  requirementChanges?: RequirementChanges;
+  /** The call's own changes to what its reports require — from
+   * data/utlysningskrav.csv (Gäller: rapport, delrapport, slutrapport). */
+  reportRequirementChanges?: RequirementChanges;
   /** The shared funder form this call's applications follow (a
    * CallTemplate id, from the call list's Ansökningsmall column). Ignored
    * when applicationTemplate is set. Undefined = no form on file. */
@@ -733,6 +834,8 @@ export interface Grant {
    * is a later, separate long-tail follow-up rather than part of this
    * core cycle. */
   reportingEvents: ReportingEvent[];
+  /** Requirements the user added for the grant's reports. */
+  ownReportRequirements?: ApplicationRequirement[];
 }
 
 // ---------------------------------------------------------------------------

@@ -12,7 +12,8 @@ test("a Horizon Europe call follows Part B: instructions, tables and the funder'
 
   const panel = page.getByTestId("template-panel");
   await expect(panel).toContainText("Horisont Europa RIA/IA – Part B");
-  await expect(page.getByTestId("template-page-estimate")).toContainText("av högst 40 sidor");
+  // A lump-sum topic: the call's own 45 pages replace the form's 40.
+  await expect(page.getByTestId("template-page-estimate")).toContainText("av högst 45 sidor");
   await expect(page.getByTestId("funder-file-bundled")).toContainText("Part B HE RIA IA V5.1.docx");
 
   await expect(page.getByText("1.1 Mål och ambition")).toBeVisible();

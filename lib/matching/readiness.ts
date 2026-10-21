@@ -60,7 +60,52 @@ export function textSignals(text: string): TextSignals {
 // assessedApplicationText). Unedited AI suggestions are left out on
 // purpose: they are generated from the call's own wording, so counting
 // them would let an untouched draft score as if someone had written it.
-export function computeReadiness(project: ProjectInput, match: MatchResult, text: string = project.description): ReadinessBreakdown {
+/** How complete the whole application is — its form, budget, annexes,
+ * certificates and formal conditions (summarizeCompleteness in
+ * lib/data/applicationRequirements.ts) — for the workspace's assessment. */
+export interface CompletenessInput {
+  /** 0–100. */
+  score: number;
+  /** The mandatory requirements still open, in list order. */
+  open: { title_sv: string; title_en: string }[];
+}
+
+function listTitles(titles: string[], and: string): string {
+  const shown = titles.slice(0, 3);
+  return shown.length <= 1 ? shown.join("") : `${shown.slice(0, -1).join(", ")} ${and} ${shown[shown.length - 1]}`;
+}
+
+/** The completeness dimension: 30 % of the overall score — about as much
+ * as the strategic match — so an application that reads well but lacks its
+ * sections, annexes or certificates can't look ready. */
+export function completenessDimension(completeness: CompletenessInput): ReadinessBreakdown["dimensions"][number] {
+  const n = completeness.open.length;
+  const missing = n > 0;
+  return {
+    key: "completeness",
+    label_sv: "Färdigställande",
+    label_en: "Completeness",
+    score: completeness.score,
+    weight: 0.3,
+    action_sv: missing
+      ? `${n === 1 ? "Ett obligatoriskt krav återstår" : `${n} obligatoriska krav återstår`}: ${listTitles(completeness.open.map((o) => o.title_sv), "och")}${n > 3 ? " med flera" : ""}.`
+      : undefined,
+    action_en: missing
+      ? `${n === 1 ? "One mandatory requirement is left" : `${n} mandatory requirements are left`}: ${listTitles(completeness.open.map((o) => o.title_en), "and")}${n > 3 ? " and more" : ""}.`
+      : undefined,
+  };
+}
+
+// `completeness`, when given (the application workspace), adds how
+// complete the whole application is as a dimension of its own. The other
+// dimensions then share the remaining weight in the same proportions, so
+// the project page's readiness (without it) is unchanged.
+export function computeReadiness(
+  project: ProjectInput,
+  match: MatchResult,
+  text: string = project.description,
+  completeness?: CompletenessInput
+): ReadinessBreakdown {
   const signals = textSignals(text);
   const logicScore = signals.length > 220 ? 92 : signals.length > 120 ? 78 : 45;
   const impactScore = signals.quantifiedEffect ? (signals.baseline ? 92 : 85) : 32;
@@ -118,6 +163,12 @@ export function computeReadiness(project: ProjectInput, match: MatchResult, text
           : undefined,
     },
   ];
+
+  if (completeness) {
+    const dimension = completenessDimension(completeness);
+    for (const d of dims) d.weight = Math.round(d.weight * (1 - dimension.weight) * 1000) / 1000;
+    dims.push(dimension);
+  }
 
   const overall = Math.round(dims.reduce((sum, d) => sum + d.score * d.weight, 0));
 

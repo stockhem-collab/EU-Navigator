@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -31,6 +31,20 @@ import TemplatePanel from "@/components/demo/TemplatePanel";
 import TemplateTableEditor from "@/components/demo/TemplateTableEditor";
 import { computeGapAnalysis } from "@/lib/matching/gapAnalysis";
 import { computeReadiness, textSignals } from "@/lib/matching/readiness";
+import RequirementsPanel from "@/components/demo/RequirementsPanel";
+import {
+  GROUP_ORDER,
+  RequirementFacts,
+  evaluateRequirements,
+  isPublicBody,
+  pageLimitFor,
+  requirementFileKey,
+  resolveRequirements,
+  summarizeCompleteness,
+} from "@/lib/data/applicationRequirements";
+import { useCallRequirements } from "@/lib/hooks/useCallRequirements";
+import { useRequirementsIntro } from "@/lib/hooks/useRequirementsIntro";
+import { useOrgConfig } from "@/lib/hooks/useOrgConfig";
 import ConfirmButton from "@/components/ConfirmButton";
 import { analyzeSection } from "@/lib/matching/sectionCoach";
 import { useApplication, seedApplicationDraft } from "@/lib/hooks/useApplication";
@@ -72,9 +86,14 @@ interface Props {
    * or a notification) and onBack returns there; "matches" when it goes
    * back to the match list this workspace was picked from. */
   backLabel?: "back" | "matches";
+  /** "requirements" opens the workspace on the Krav tab (from ?flik=krav,
+   * e.g. Översikt's next step). */
+  initialTab?: "requirements";
 }
 
-type Tab = "application" | "assessment" | "process";
+type Tab = "requirements" | "application" | "assessment" | "process";
+
+const SUBMITTED_STATUSES = ["submitted", "under-review", "awarded", "rejected"];
 
 export default function ApplicationWorkspace({
   project,
@@ -84,6 +103,7 @@ export default function ApplicationWorkspace({
   applicationId: requestedApplicationId = null,
   onSavedAsProject,
   backLabel = "matches",
+  initialTab,
 }: Props) {
   const router = useRouter();
   const { t, lang } = useLanguage();
@@ -93,7 +113,24 @@ export default function ApplicationWorkspace({
   const readinessT = t.demo.readiness;
   const coachT = t.demo.coach;
 
-  const [tab, setTab] = useState<Tab>("application");
+  const [tab, setTab] = useState<Tab>(initialTab ?? "application");
+  // A new tab starts at its top: when the page is scrolled past it (e.g.
+  // far down the Krav list), switching tab scrolls back up to the content.
+  const panelTop = useRef<HTMLDivElement>(null);
+  const shownTab = useRef(tab);
+  // Set when the switch goes to a place in the tab (a section, the budget).
+  const scrollTarget = useRef(false);
+  useEffect(() => {
+    if (shownTab.current === tab) return;
+    shownTab.current = tab;
+    if (scrollTarget.current) {
+      scrollTarget.current = false;
+      return;
+    }
+    const el = panelTop.current;
+    if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ block: "start" });
+  }, [tab]);
+  const rq = t.req;
 
   const tp = t.tpl;
   const templates = useCallTemplates();
@@ -101,7 +138,14 @@ export default function ApplicationWorkspace({
   // The funder's shared form, when the call uses one (not the seed calls'
   // own inline sections, which keep the simpler export).
   const callTemplate = templates.applicationTemplateFor(match.call);
-  const sharedTemplate = callTemplate && !callTemplate.id.startsWith("call:") ? callTemplate : undefined;
+  // The call's own page limit (e.g. 45 pages for a lump-sum topic) replaces
+  // the form's, for the page estimate and the export alike.
+  const callPageLimit = pageLimitFor(callTemplate, match.call);
+  const libraryTemplate = callTemplate && !callTemplate.id.startsWith("call:") ? callTemplate : undefined;
+  const sharedTemplate =
+    libraryTemplate && callPageLimit !== libraryTemplate.pageLimit
+      ? { ...libraryTemplate, pageLimit: callPageLimit, pageLimitAlternative: undefined }
+      : libraryTemplate;
   const funderFileKey = `funder-template:${match.call.id}`;
   const { attachmentsFor, addAttachment, removeAttachment } = useAttachments();
   // The user's upload for this call, else — for a form added in Datacenter —
@@ -128,6 +172,11 @@ export default function ApplicationWorkspace({
     setBudget,
     costs,
     setCost,
+    requirementStates,
+    setRequirementState,
+    ownRequirements,
+    addOwnRequirement,
+    removeOwnRequirement,
     isPersisted,
     applicationId,
     record,
@@ -159,7 +208,62 @@ export default function ApplicationWorkspace({
     const tableText = Object.fromEntries(Object.entries(tables).map(([key, rows]) => [`table:${key}`, filledRows(rows).map((r) => r.join(" ")).join("\n")]));
     return assessedApplicationText(project, { ...sectionDrafts, ...tableText });
   }, [project, sectionDrafts, tables]);
-  const readiness = useMemo(() => computeReadiness(project, scoredMatch, assessedText), [project, scoredMatch, assessedText]);
+  // What a complete application needs (the Krav tab) and how far this one
+  // has come — counted in the assessment as its own dimension.
+  const callRequirements = useCallRequirements();
+  const { config: orgConfig } = useOrgConfig();
+  const shownSectionText = (row: ProjectLogicRow) => sectionDraftFor(sectionDrafts, row) ?? (lang === "sv" ? row.content_sv : row.content_en);
+  // The whole application's estimated length in the funder's layout.
+  const estimatedPages = logic.reduce((sum, row) => {
+    const rows = (row.section?.tables ?? []).reduce((n, tb) => n + filledRows(tables[tb.key]).length, 0);
+    return sum + estimatePages(shownSectionText(row), rows);
+  }, 0);
+  const requirementFiles = (id: string) => (applicationId && isPersisted ? attachmentsFor(requirementFileKey(applicationId, id)) : []);
+  const resolvedRequirements = resolveRequirements({
+    call: match.call,
+    program: match.program,
+    template: callTemplate,
+    datacenter: callRequirements.all[match.call.id],
+    own: ownRequirements,
+  });
+  const enterableCategories = (sharedTemplate?.costCategories ?? []).filter((c) => c.flatRate?.percent === undefined);
+  const enteredCosts = sharedTemplate?.costCategories ? costAmounts(sharedTemplate.costCategories, costs) : {};
+  const requirementFacts: RequirementFacts = {
+    sections: logic.map((row) => {
+      const draft = sectionDraftFor(sectionDrafts, row);
+      return {
+        key: row.key,
+        required: row.section ? row.section.required !== false : true,
+        written: draft !== undefined && draft.trim().length > 0,
+        overLimit: row.section?.maxChars !== undefined && shownSectionText(row).length > row.section.maxChars,
+      };
+    }),
+    estimatedPages: sharedTemplate?.format === "docx" ? estimatedPages : undefined,
+    pageLimit: sharedTemplate?.format === "docx" ? callPageLimit : undefined,
+    costCategoriesFilled: enterableCategories.filter((c) => (enteredCosts[c.key] ?? 0) > 0).length,
+    costCategoriesTotal: enterableCategories.length,
+    budgetStated: hasApplicationBudget(budget),
+    submitted: SUBMITTED_STATUSES.includes(record?.status ?? "draft"),
+    publicBody: isPublicBody(orgConfig.orgType),
+    attachments: Object.fromEntries(resolvedRequirements.map((r) => [r.requirement.id, requirementFiles(r.requirement.id).length])),
+    deadlineDate: match.call.deadlineDate,
+    today: new Date(),
+  };
+  const requirementItems = evaluateRequirements(resolvedRequirements, requirementStates, requirementFacts);
+  const completeness = summarizeCompleteness(requirementItems);
+  const completenessInput = useMemo(
+    () => ({
+      score: completeness.score,
+      open: completeness.open.map((i) => ({ title_sv: i.requirement.title_sv, title_en: i.requirement.title_en })),
+    }),
+    // Recomputed only when the outcome changes, not on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [completeness.score, completeness.open.map((i) => i.requirement.id).join("|")]
+  );
+  const readiness = useMemo(
+    () => computeReadiness(project, scoredMatch, assessedText, completenessInput),
+    [project, scoredMatch, assessedText, completenessInput]
+  );
   const coach = useMemo(() => analyzeSection(project, scoredMatch, assessedText), [project, scoredMatch, assessedText]);
   const notes = useMemo(() => generateReviewerNotes(project, match.call, assessedText), [project, match.call, assessedText]);
 
@@ -175,6 +279,20 @@ export default function ApplicationWorkspace({
     if (draftLoaded && openedReadiness === null) setOpenedReadiness(readiness);
   }, [draftLoaded, openedReadiness, readiness]);
   const overallChange = openedReadiness ? readiness.overall - openedReadiness.overall : 0;
+
+  // The first time an application is opened, the workspace starts on the
+  // Krav tab — what a complete application needs — unless the user has
+  // turned that off or the link asked for a tab.
+  const intro = useRequirementsIntro();
+  const { hydrated: introHydrated, showFirst, firstVisit } = intro;
+  const introKey = applicationId ?? `call:${match.call.id}`;
+  const [introHandled, setIntroHandled] = useState<string | null>(null);
+  useEffect(() => {
+    if (!draftLoaded || !introHydrated || introHandled === introKey) return;
+    setIntroHandled(introKey);
+    const first = firstVisit(introKey);
+    if (first && showFirst && !initialTab) setTab("requirements");
+  }, [draftLoaded, introHydrated, showFirst, firstVisit, introKey, introHandled, initialTab]);
   const dimensionChange = (key: string) => {
     const before = openedReadiness?.dimensions.find((d) => d.key === key)?.score;
     const now = readiness.dimensions.find((d) => d.key === key)?.score;
@@ -204,12 +322,22 @@ export default function ApplicationWorkspace({
   }, [logic]);
   const sectionLabel = (row: ProjectLogicRow) => (lang === "sv" ? row.label_sv : row.label_en);
   const goToSection = (index: number) => {
+    scrollTarget.current = tab !== "application";
     setTab("application");
     window.setTimeout(() => {
       const el = document.getElementById(`section-${index}`);
       el?.scrollIntoView({ behavior: "smooth", block: "center" });
       el?.focus();
     }, 0);
+  };
+  const goToBudget = () => {
+    scrollTarget.current = tab !== "application";
+    setTab("application");
+    window.setTimeout(() => document.getElementById("budget-title")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+  };
+  const goToSectionKey = (key?: string) => {
+    const index = key ? logic.findIndex((row) => row.key === key || row.section?.key === key) : 0;
+    goToSection(index >= 0 ? index : 0);
   };
   const { all: projectBankEntries, addImported, updateEntry, hydrated: projectBankHydrated } = useProjectBank();
   const { records: allApplications, createApplication } = useApplications();
@@ -304,7 +432,22 @@ export default function ApplicationWorkspace({
     }
   };
 
-  const handleExport = () => exportApplication(resolvedSections(), tables, budgetFigures);
+  // Exporting doesn't wait for the requirements, but says what is missing.
+  const openRequirementsNotice = () =>
+    completeness.open.length > 0
+      ? rq.exportOpen(
+          completeness.open.length,
+          completeness.open
+            .slice(0, 3)
+            .map((i) => (lang === "sv" ? i.requirement.title_sv : i.requirement.title_en))
+            .join(", ") + (completeness.open.length > 3 ? " …" : "")
+        )
+      : null;
+  const handleExport = async () => {
+    await exportApplication(resolvedSections(), tables, budgetFigures);
+    const open = openRequirementsNotice();
+    if (open) setExportNotice((prev) => ({ ok: false, lines: [...(prev?.lines ?? []), open] }));
+  };
 
   // The budget per the form's cost categories, and as an Excel workbook.
   const budgetEurRate = sharedTemplate?.currency === "EUR" ? match.call.originalGrantRange?.rate : undefined;
@@ -330,12 +473,6 @@ export default function ApplicationWorkspace({
     );
   };
 
-  // The whole application's estimated length in the funder's layout.
-  const estimatedPages = logic.reduce((sum, row) => {
-    const rows = (row.section?.tables ?? []).reduce((n, tb) => n + filledRows(tables[tb.key]).length, 0);
-    return sum + estimatePages(resolveSection(row), rows);
-  }, 0);
-
   // Turns this ad-hoc, never-saved intake into a real Projektbank entry —
   // carrying over everything already typed into the draft, not just the
   // original intake fields — so "save it to the project bank" (the note
@@ -345,7 +482,7 @@ export default function ApplicationWorkspace({
   const handleSaveAsNewProject = () => {
     const entry = projectInputToProjectBankEntry(project, readiness);
     addImported([entry]);
-    seedApplicationDraft(entry.id, match.call.id, resolvedSections(), budget, tables, costs);
+    seedApplicationDraft(entry.id, match.call.id, resolvedSections(), budget, tables, costs, requirementStates, ownRequirements);
     onSavedAsProject?.(entry.id);
   };
 
@@ -354,7 +491,12 @@ export default function ApplicationWorkspace({
   // discard everything typed so far.
   const hasUnsavedDraft =
     !isPersisted &&
-    (Object.keys(sectionDrafts).length > 0 || Object.keys(tables).length > 0 || Object.keys(costs).length > 0 || hasApplicationBudget(budget));
+    (Object.keys(sectionDrafts).length > 0 ||
+      Object.keys(tables).length > 0 ||
+      Object.keys(costs).length > 0 ||
+      hasApplicationBudget(budget) ||
+      Object.keys(requirementStates).length > 0 ||
+      ownRequirements.length > 0);
 
   const handleSaveVersion = (name: string) => {
     if (!name.trim()) return;
@@ -382,6 +524,7 @@ export default function ApplicationWorkspace({
   }, [readiness]);
 
   const tabs: { key: Tab; label: string }[] = [
+    { key: "requirements", label: rq.tab },
     { key: "application", label: ws.tabApplication },
     { key: "assessment", label: ws.tabAssessment },
     { key: "process", label: ws.tabProcess },
@@ -445,64 +588,26 @@ export default function ApplicationWorkspace({
           {otherApplicationsToCall > 0 && (
             <p className="w-full text-xs text-navy-500">{at.otherApplicationsNote(otherApplicationsToCall)}</p>
           )}
+          {applicationStatus === "submitted" && completeness.open.length > 0 && (
+            <p className="w-full text-xs font-semibold text-amber-700" role="status" data-testid="submit-requirements-warning">
+              {rq.submitWarning(completeness.open.length)}{" "}
+              <button type="button" onClick={() => setTab("requirements")} className="underline hover:text-amber-900">
+                {rq.goToRequirements}
+              </button>
+            </p>
+          )}
         </div>
       )}
 
       <div className="mt-8 grid gap-8 md:grid-cols-[240px_1fr]">
         {/* Persistent sidebar: readiness stays visible whichever tab is open */}
-        <aside className="md:sticky md:top-20 md:self-start">
-          <div className="rounded-xl border border-navy-100 bg-white p-5">
-            <p className="text-xs font-semibold uppercase text-navy-400">{readinessT.title}</p>
-            <p className="mt-1 text-4xl font-extrabold text-navy-900" data-testid="readiness-overall">
-              {readiness.overall}
-              <span className="text-base font-normal text-navy-400">/100</span>
-            </p>
-            {overallChange !== 0 && (
-              <p className={`mt-1 text-xs font-semibold ${overallChange > 0 ? "text-green-700" : "text-amber-700"}`} aria-live="polite">
-                {ws.changeSinceOpened(overallChange)}
-              </p>
-            )}
-            <div className="mt-3 border-t border-navy-50 pt-3">
-              <p className="text-xs font-semibold uppercase text-navy-400">{ws.topPriorityLabel}</p>
-              <p className="mt-1 text-sm text-amber-800">
-                {topPriority
-                  ? lang === "sv"
-                    ? topPriority.action_sv
-                    : topPriority.action_en
-                  : ws.topPriorityNone}
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleExport}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-navy-200 bg-white px-3 py-2 text-sm font-semibold text-navy-700 transition hover:bg-navy-50"
-          >
-            {sharedTemplate
-              ? sharedTemplate.format === "web-form"
-                ? tp.exportWebForm
-                : funderFile || sharedTemplate.funderFile
-                ? tp.exportFilled
-                : tp.exportDocx
-              : ws.exportButton}
-          </button>
-          {exportNotice && (
-            <div
-              role="status"
-              data-testid="export-notice"
-              className={`mt-2 rounded-md p-3 text-xs ${exportNotice.ok ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}
-            >
-              {exportNotice.lines.map((line) => (
-                <p key={line}>{line}</p>
-              ))}
-            </div>
-          )}
-
+        {/* The tabs come first, and the sidebar scrolls on its own when it is
+            taller than the window, so every tab can always be reached. */}
+        <aside className="md:sticky md:top-20 md:max-h-[calc(100vh-14rem)] md:self-start md:overflow-y-auto md:pb-2">
           <div
             role="tablist"
             aria-label={ws.title}
-            className="mt-4 flex gap-2 overflow-x-auto md:mt-6 md:flex-col md:gap-1 md:overflow-visible"
+            className="mb-4 flex gap-2 overflow-x-auto md:mb-6 md:flex-col md:gap-1 md:overflow-visible"
             onKeyDown={(e) => {
               if (!["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
               e.preventDefault();
@@ -533,10 +638,106 @@ export default function ApplicationWorkspace({
               </button>
             ))}
           </div>
+          <div className="rounded-xl border border-navy-100 bg-white p-5">
+            <p className="text-xs font-semibold uppercase text-navy-400">{readinessT.title}</p>
+            <p className="mt-1 text-4xl font-extrabold text-navy-900" data-testid="readiness-overall">
+              {readiness.overall}
+              <span className="text-base font-normal text-navy-400">/100</span>
+            </p>
+            {overallChange !== 0 && (
+              <p className={`mt-1 text-xs font-semibold ${overallChange > 0 ? "text-green-700" : "text-amber-700"}`} aria-live="polite">
+                {ws.changeSinceOpened(overallChange)}
+              </p>
+            )}
+            <div className="mt-3 border-t border-navy-50 pt-3">
+              <p className="text-xs font-semibold uppercase text-navy-400">{ws.topPriorityLabel}</p>
+              <p className="mt-1 text-sm text-amber-800">
+                {topPriority
+                  ? lang === "sv"
+                    ? topPriority.action_sv
+                    : topPriority.action_en
+                  : ws.topPriorityNone}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-navy-100 bg-white p-5" data-testid="requirements-sidebar">
+            <p className="text-xs font-semibold uppercase text-navy-400">{rq.sidebarLabel}</p>
+            <p className="mt-1 text-sm font-semibold text-navy-800">{rq.progress(completeness.done, completeness.counted)}</p>
+            <div className="mt-2 h-1.5 rounded-full bg-navy-100">
+              <div
+                className={`h-1.5 rounded-full ${completeness.score >= 100 ? "bg-green-600" : "bg-gold-500"}`}
+                style={{ width: `${completeness.score}%` }}
+              />
+            </div>
+            {completeness.urgent.length > 0 && <p className="mt-2 text-xs font-semibold text-amber-700">{rq.sidebarUrgent(completeness.urgent.length)}</p>}
+            {tab !== "requirements" && (
+              <button type="button" onClick={() => setTab("requirements")} className="mt-2 text-xs font-semibold text-navy-600 underline hover:text-navy-900">
+                {rq.sidebarOpen}
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleExport}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-navy-200 bg-white px-3 py-2 text-sm font-semibold text-navy-700 transition hover:bg-navy-50"
+          >
+            {sharedTemplate
+              ? sharedTemplate.format === "web-form"
+                ? tp.exportWebForm
+                : funderFile || sharedTemplate.funderFile
+                ? tp.exportFilled
+                : tp.exportDocx
+              : ws.exportButton}
+          </button>
+          {exportNotice && (
+            <div
+              role="status"
+              data-testid="export-notice"
+              className={`mt-2 rounded-md p-3 text-xs ${exportNotice.ok ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}
+            >
+              {exportNotice.lines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
+          )}
+
         </aside>
 
         {/* Active tab content */}
-        <div className="min-w-0">
+        <div className="min-w-0 scroll-mt-24" ref={panelTop}>
+          {tab === "requirements" && (
+            <div id="panel-requirements" role="tabpanel" aria-labelledby="tab-requirements" tabIndex={0}>
+              <RequirementsPanel
+                call={match.call}
+                program={match.program}
+                template={callTemplate && !callTemplate.id.startsWith("call:") ? callTemplate : undefined}
+                pageLimit={callPageLimit}
+                items={requirementItems}
+                summary={completeness}
+                states={requirementStates}
+                onSetState={setRequirementState}
+                onAddOwn={addOwnRequirement}
+                onRemoveOwn={removeOwnRequirement}
+                files={
+                  applicationId && isPersisted
+                    ? {
+                        list: requirementFiles,
+                        add: (id, file) => addAttachment(requirementFileKey(applicationId, id), file),
+                        remove: (id, attachmentId) => removeAttachment(requirementFileKey(applicationId, id), attachmentId),
+                      }
+                    : undefined
+                }
+                onOpenSection={goToSectionKey}
+                onOpenBudget={goToBudget}
+                onStartWriting={() => setTab("application")}
+                showFirst={intro.showFirst}
+                onShowFirstChange={intro.setShowFirst}
+              />
+            </div>
+          )}
+
           {tab === "application" && (
             <div id="panel-application" role="tabpanel" aria-labelledby="tab-application" tabIndex={0}>
               <section>
@@ -905,6 +1106,15 @@ export default function ApplicationWorkspace({
                           .map((d) => (
                             <li key={d.key} className="text-sm text-amber-800">
                               ⚠ {lang === "sv" ? d.action_sv : d.action_en}{" "}
+                              {d.key === "completeness" && (
+                                <button
+                                  type="button"
+                                  onClick={() => setTab("requirements")}
+                                  className="font-semibold text-navy-700 underline hover:text-navy-900"
+                                >
+                                  {rq.goToRequirements}
+                                </button>
+                              )}
                               {sectionForDimension[d.key] !== undefined && logic[sectionForDimension[d.key]] && (
                                 <button
                                   type="button"
@@ -920,6 +1130,38 @@ export default function ApplicationWorkspace({
                     </div>
                   )}
                 </div>
+              </section>
+
+              <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6" data-testid="completeness-breakdown">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 className="text-lg font-bold text-navy-800">{rq.completenessTitle}</h2>
+                  <span className="text-2xl font-extrabold text-navy-900">{completeness.score} %</span>
+                </div>
+                <p className="mt-1 text-xs text-navy-400">{rq.completenessHint}</p>
+                <ul className="mt-4 space-y-2">
+                  {GROUP_ORDER.map((group) => {
+                    const counted = requirementItems.filter((i) => i.group === group && i.counted);
+                    if (counted.length === 0) return null;
+                    const done = counted.filter((i) => i.status === "done").length;
+                    return (
+                      <li key={group} className="flex items-center gap-3 text-sm">
+                        <span className="w-48 shrink-0 text-navy-700">{rq.groups[group]}</span>
+                        <div className="h-2 flex-1 rounded-full bg-navy-100">
+                          <div
+                            className={`h-2 rounded-full ${done === counted.length ? "bg-green-500" : "bg-gold-500"}`}
+                            style={{ width: `${Math.round((counted.reduce((sum, i) => sum + i.progress, 0) / counted.length) * 100)}%` }}
+                          />
+                        </div>
+                        <span className="w-24 shrink-0 text-right text-xs font-semibold text-navy-600">{rq.completenessGroup(done, counted.length)}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {completeness.open.length > 0 && (
+                  <button type="button" onClick={() => setTab("requirements")} className="mt-4 text-sm font-semibold text-navy-700 underline hover:text-navy-900">
+                    {rq.goToRequirements}
+                  </button>
+                )}
               </section>
 
               <section className="mt-6 rounded-xl border border-navy-100 bg-white p-6">

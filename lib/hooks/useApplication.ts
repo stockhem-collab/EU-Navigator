@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApplicationRecord, ApplicationStatus, ApplicationVersion } from "@/lib/types";
+import { ApplicationRecord, ApplicationRequirement, ApplicationStatus, ApplicationVersion, RequirementState } from "@/lib/types";
 import {
   DRAFT_KEY_PREFIX,
   defaultApplicationId,
@@ -32,9 +32,51 @@ interface ApplicationDraft {
   /** The budget per the form's cost categories, as typed
    * (CostCategory.key -> amount in SEK). */
   costs: Record<string, string>;
+  /** Where the user is with each of the call's requirements for a
+   * complete application (ApplicationRequirement.id -> state) — only the
+   * ones they set; the rest follow the application (see
+   * evaluateRequirements). */
+  requirementStates: Record<string, RequirementState>;
+  /** Requirements the user added to this application. */
+  ownRequirements: ApplicationRequirement[];
 }
 
-const EMPTY_DRAFT: ApplicationDraft = { sectionDrafts: {}, tables: {}, updatedAt: "", versions: [], budget: {}, costs: {} };
+const EMPTY_DRAFT: ApplicationDraft = {
+  sectionDrafts: {},
+  tables: {},
+  updatedAt: "",
+  versions: [],
+  budget: {},
+  costs: {},
+  requirementStates: {},
+  ownRequirements: [],
+};
+
+const REQUIREMENT_STATUSES = ["todo", "in-progress", "done", "not-applicable"];
+
+/** Keeps only well-formed requirement states from storage. */
+export function sanitizeRequirementStates(value: unknown): Record<string, RequirementState> {
+  if (!value || typeof value !== "object") return {};
+  const out: Record<string, RequirementState> = {};
+  for (const [id, state] of Object.entries(value as Record<string, unknown>)) {
+    const s = state as Partial<RequirementState> | null;
+    if (!s || typeof s.status !== "string" || !REQUIREMENT_STATUSES.includes(s.status)) continue;
+    out[id] = {
+      status: s.status,
+      ...(typeof s.note === "string" && s.note ? { note: s.note } : {}),
+      updatedAt: typeof s.updatedAt === "string" ? s.updatedAt : "",
+    };
+  }
+  return out;
+}
+
+/** Keeps only requirements with an id, a kind and a title. */
+export function sanitizeOwnRequirements(value: unknown): ApplicationRequirement[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (r): r is ApplicationRequirement => !!r && typeof r.id === "string" && typeof r.kind === "string" && typeof r.title_sv === "string" && !!r.source
+  );
+}
 
 /** Keeps only string amounts from storage. */
 function sanitizeCosts(value: unknown): Record<string, string> {
@@ -69,6 +111,8 @@ function readDraft(applicationId: string): ApplicationDraft {
       versions: Array.isArray(parsed?.versions) ? parsed.versions : [],
       budget: sanitizeApplicationBudget(parsed?.budget),
       costs: sanitizeCosts(parsed?.costs),
+      requirementStates: sanitizeRequirementStates(parsed?.requirementStates),
+      ownRequirements: sanitizeOwnRequirements(parsed?.ownRequirements),
     };
   } catch {
     return EMPTY_DRAFT;
@@ -97,10 +141,12 @@ export function seedApplicationDraft(
   sectionDrafts: Record<string, string>,
   budget: ApplicationBudget = {},
   tables: Record<string, string[][]> = {},
-  costs: Record<string, string> = {}
+  costs: Record<string, string> = {},
+  requirementStates: Record<string, RequirementState> = {},
+  ownRequirements: ApplicationRequirement[] = []
 ) {
   const id = defaultApplicationId(customerProjectId, callId);
-  writeDraft(id, { sectionDrafts, tables, updatedAt: new Date().toISOString(), versions: [], budget, costs });
+  writeDraft(id, { sectionDrafts, tables, updatedAt: new Date().toISOString(), versions: [], budget, costs, requirementStates, ownRequirements });
   touchApplicationRecord(id, customerProjectId, callId);
 }
 
@@ -115,6 +161,16 @@ export function readApplicationBudget(applicationId: string): ApplicationBudget 
  * application promised. */
 export function readApplicationSections(applicationId: string): Record<string, string> {
   return readDraft(applicationId).sectionDrafts;
+}
+
+/** A stored application's own requirement states and requirements — e.g.
+ * for Översikt's next step. */
+export function readApplicationRequirements(applicationId: string): {
+  states: Record<string, RequirementState>;
+  own: ApplicationRequirement[];
+} {
+  const draft = readDraft(applicationId);
+  return { states: draft.requirementStates, own: draft.ownRequirements };
 }
 
 /** A stored application's form tables — e.g. its work packages for the
@@ -257,6 +313,40 @@ export function useApplication(customerProjectId: string | null, callId: string,
     [commit]
   );
 
+  /** Sets (or, with null, clears back to automatic) where the user is with
+   * one requirement. */
+  const setRequirementState = useCallback(
+    (id: string, state: Omit<RequirementState, "updatedAt"> | null) =>
+      commit((prev) => {
+        const requirementStates = { ...prev.requirementStates };
+        if (state) requirementStates[id] = { status: state.status, ...(state.note ? { note: state.note } : {}), updatedAt: new Date().toISOString() };
+        else delete requirementStates[id];
+        return { ...prev, requirementStates, updatedAt: new Date().toISOString() };
+      }),
+    [commit]
+  );
+
+  const addOwnRequirement = useCallback(
+    (requirement: ApplicationRequirement) =>
+      commit((prev) => ({ ...prev, ownRequirements: [...prev.ownRequirements, requirement], updatedAt: new Date().toISOString() })),
+    [commit]
+  );
+
+  const removeOwnRequirement = useCallback(
+    (id: string) =>
+      commit((prev) => {
+        const requirementStates = { ...prev.requirementStates };
+        delete requirementStates[id];
+        return {
+          ...prev,
+          ownRequirements: prev.ownRequirements.filter((r) => r.id !== id),
+          requirementStates,
+          updatedAt: new Date().toISOString(),
+        };
+      }),
+    [commit]
+  );
+
   // Saves a named, immutable snapshot of the application as it reads right
   // now. `resolvedSections` is every section's *displayed* text (AI
   // suggestion or override alike) — the caller resolves this, since the
@@ -329,6 +419,11 @@ export function useApplication(customerProjectId: string | null, callId: string,
     setBudget,
     costs: draft.costs,
     setCost,
+    requirementStates: draft.requirementStates,
+    setRequirementState,
+    ownRequirements: draft.ownRequirements,
+    addOwnRequirement,
+    removeOwnRequirement,
     setSection,
     resetSection,
     saveVersion,

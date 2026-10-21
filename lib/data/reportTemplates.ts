@@ -1,5 +1,6 @@
 import type { CallTemplate } from "../types";
 import { ESF_COST_CATEGORIES, HE_COST_CATEGORIES } from "./costCategories";
+import { ESF_REPORT_REQUIREMENTS, HE_REPORT_REQUIREMENTS } from "./reportRequirements";
 
 // The funders' report forms, shared by every call that uses them, like the
 // application forms in callTemplates.ts. A call points to one through the
@@ -15,6 +16,7 @@ import { ESF_COST_CATEGORIES, HE_COST_CATEGORIES } from "./costCategories";
 const HE_PERIODIC_REPORT: CallTemplate = {
   id: "he-periodic-report",
   kind: "report",
+  requirements: HE_REPORT_REQUIREMENTS,
   format: "docx",
   language: "en",
   title_sv: "Horisont Europa – periodisk rapport, Part B (teknisk rapport)",
@@ -196,6 +198,7 @@ const HE_PERIODIC_REPORT: CallTemplate = {
 const ESF_REPORT: CallTemplate = {
   id: "esf-rapport",
   kind: "report",
+  requirements: ESF_REPORT_REQUIREMENTS,
   format: "web-form",
   language: "sv",
   title_sv: "ESF+ – kvartalsrapport och slutrapport i Projektrummet+",

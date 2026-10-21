@@ -1,6 +1,7 @@
 import type { CallTemplate, FundingCall } from "../types";
 import { ESF_COST_CATEGORIES, HE_COST_CATEGORIES } from "./costCategories";
 import { reportTemplates } from "./reportTemplates";
+import { ESF_REQUIREMENTS, HE_RIA_IA_REQUIREMENTS } from "./applicationRequirements";
 
 // The funders' application forms, shared by every call that uses them — a
 // form follows the programme and type of action, not the single call. A
@@ -45,6 +46,7 @@ const HE_RIA_IA: CallTemplate = {
     { name_sv: "Effekt", name_en: "Impact", maxPoints: 5 },
     { name_sv: "Kvalitet och effektivitet i genomförandet", name_en: "Quality and efficiency of the implementation", maxPoints: 5 },
   ],
+  requirements: HE_RIA_IA_REQUIREMENTS,
   sections: [
     {
       key: "he-1.1",
@@ -286,6 +288,7 @@ const ESF_PLUS: CallTemplate = {
     "Ansökan skrivs direkt i Projektrummet+. Avsnitten följer ESF+:s fem urvalskriterier, som ansökan bedöms mot; formulärets exakta fält och teckengränser står i Projektrummet+ och finns inte i systemet än. Utlysningens egna krav (förväntade resultat, bilagor) gäller utöver detta.",
   note_en:
     "The application is written directly in Projektrummet+. The sections follow ESF+'s five selection criteria, which the application is assessed against; the form's exact fields and character limits are in Projektrummet+ and not in the system yet. The call's own requirements (expected results, attachments) apply on top of this.",
+  requirements: ESF_REQUIREMENTS,
   sections: [
     {
       key: "esf-problem",

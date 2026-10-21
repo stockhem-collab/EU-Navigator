@@ -8,9 +8,10 @@ import { test, expect } from "@playwright/test";
 test("an awarded project's reporting timeline and requirements are visible", async ({ page }) => {
   await page.goto("/stod/ap-1");
 
-  // The call's requirements are reference, folded at the end of the page.
-  await page.getByText("Rapporteringskrav för utlysningen").click();
-  await expect(page.getByText("Årsvis")).toBeVisible();
+  // What the reports require, folded into a line once the grant has been
+  // opened before.
+  await page.getByTestId("report-requirements-toggle").click();
+  await expect(page.getByTestId("report-requirements-summary")).toContainText("Årsvis");
 
   // Every report in the plan, with its status.
   const reports = page.locator("#reports");
